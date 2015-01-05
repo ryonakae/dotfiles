@@ -1,4 +1,4 @@
-DOT_FILES=(.zshrc)
+DOT_FILES=(.gitconfig .gitignore_global .zshrc Brewfile)
 
 for file in ${DOT_FILES[@]}
 
