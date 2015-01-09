@@ -26,6 +26,8 @@ Homebrewのインストールに必要
 
     $ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 
+ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
+
 
 ## brew-cask
 ### homebrew/boneyardリポジトリの追加
@@ -45,8 +47,7 @@ Brewfileに記述した処理が実行される
 
 * MacAppStoreで配布されているアプリ
   一覧にしてまとめておきたいけどめんどくさい
-* CleanArchiver  
-  https://www.sopht.jp/cleanarchiver/downloads.html
+* [CleanArchiver](https://www.sopht.jp/cleanarchiver/downloads.html)
 * Mangao
 
 
