@@ -186,6 +186,7 @@ esac
 # Homebrew
 export PATH=/usr/local/sbin:$PATH
 export PATH=/usr/local/bin:$PATH
+export HOMEBREW_CASK_OPTS="--appdir=/Applications --caskroom=/usr/local/Caskroom"
 
 # rbenv (install by Homebrew)
 export PATH="$HOME/.rbenv/bin:$PATH"
