@@ -45,10 +45,25 @@ Brewfileに記述した処理が実行される
 
 ### brew-caskに無いMacApp
 
-* MacAppStoreで配布されているアプリ
+* MacAppStoreで配布されているアプリ  
   一覧にしてまとめておきたいけどめんどくさい
 * [CleanArchiver](https://www.sopht.jp/cleanarchiver/downloads.html)
 * Mangao
+* Airfoil*
+* DxO FilmPack 4
+* VSCO Film
+* GraffitiPot
+* HiddenSwitch
+* HoudahGPS
+* Sculptris Alpha 6
+* KORG AudioGate 2.3.1
+* Tag
+* Th-MakerX
+* CSS Hat 2
+* コンテンツ管理アシスタント
+* VMware Fusion*
+* ワコム タブレット ドライバ
+* Logicool ウェブカメラ ドライバ
 
 
 ### 補足

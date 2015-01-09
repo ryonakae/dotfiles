@@ -59,7 +59,12 @@ cask install google-drive || true
 cask install bettertouchtool || true
 cask install steermouse || true
 cask install transmission || true
+cask install utorrent || true
 cask install easysimbl || true
+cask install licecap || true
+cask install splashtop-streamer || true
+cask install trim-enabler || true
+cask install isyncr || true
 
 # 仮想環境・開発ツール
 cask install imageoptim || true
@@ -67,14 +72,24 @@ cask install codekit || true
 cask install virtualbox || true
 cask install vagrant || true
 cask install sequel-pro || true
+cask install xbench || true
+# cask install vmware-fusion || true
 
 # デザイン
 cask install adobe-creative-cloud || true
 cask install slicy || true
 cask install ember || true
+cask install blender || true
 
 # マルチメディア
 cask install vlc || true
+cask install air-video-server-hd || true
+cask install airfoil || true
+cask install xld || true
+
+# コミュニケーション
+cask install skype || true
+cask install google-hangouts || true
 
 # QuickLookプラグイン
 cask install qlstephen || true
