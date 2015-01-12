@@ -46,6 +46,7 @@ cask install opera || true
 cask install iterm2 || true
 cask install coteditor || true
 cask install sublime-text3 || true
+cask install mou || true
 cask install macdown || true
 cask install sourcetree || true
 cask install github || true
@@ -86,6 +87,8 @@ cask install vlc || true
 cask install air-video-server-hd || true
 cask install airfoil || true
 cask install xld || true
+cask install makemkv || true
+cask install handbrake || true
 
 # コミュニケーション
 cask install skype || true
