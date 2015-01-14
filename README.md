@@ -1,8 +1,11 @@
 dotfiles
 =====
 
+Macを新規購入・OSクリーンインストールした時にやるやつ
+
 
 ## 1. リポジトリをcloneする
+ユーザーのホームディレクトリにcloneするのが良さそう
 
     $ cd ~/
     $ git clone https://github.com/ryonakae/dotfiles.git
