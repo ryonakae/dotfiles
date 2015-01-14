@@ -8,6 +8,7 @@ tap homebrew/dupes || true
 tap homebrew/boneyard || true
 tap caskroom/homebrew-cask || true
 tap caskroom/homebrew-versions || true
+tap josegonzalez/homebrew-php
 
 
 # パッケージのインストール
@@ -34,6 +35,8 @@ install openssl || true
 
 # ミドルウェア
 install mysql || true
+install php55 || true
+install wp-cli || true
 
 
 # MacAppのインストール
@@ -85,7 +88,7 @@ cask install blender || true
 # マルチメディア
 cask install vlc || true
 cask install air-video-server-hd || true
-cask install airfoil || true
+# cask install airfoil || true
 cask install xld || true
 cask install makemkv || true
 cask install handbrake || true

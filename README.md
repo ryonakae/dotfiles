@@ -66,8 +66,12 @@ Brewfileに記述した処理が実行される
 * Logicool ウェブカメラ ドライバ
 
 
-### 補足
+## 補足
+### アプリの設定
 当たり前だけど各MacAppの設定は自分でやる。
+
+### PHPのインストールで`configure: error: Cannot find OpenSSL's <evp.h>`とかいうエラーが出る場合
+参考：[OS X YosemiteにHomebrew + DropboxでPHP環境構築　〜Apache, PHP, MySQL, ComposerをインストールしてFuelPHPの設定まで - Qiita](http://qiita.com/saltyshiomix/items/aacb5f9635c0d3201174)
 
 
 ## 参考
