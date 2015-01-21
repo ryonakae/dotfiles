@@ -196,4 +196,5 @@ eval "$(rbenv init -)"
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 
 # SSH
-export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pemsource
+# 参考：http://iwashi.co/2014/05/06/digital-oceanvagrant-upssl-errorrbenv/
+export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
