@@ -8,7 +8,7 @@ tap homebrew/dupes || true
 tap homebrew/boneyard || true
 tap caskroom/homebrew-cask || true
 tap caskroom/homebrew-versions || true
-tap josegonzalez/homebrew-php
+tap josegonzalez/homebrew-php || true
 
 
 # パッケージのインストール
@@ -77,7 +77,7 @@ cask install virtualbox || true
 cask install vagrant || true
 cask install sequel-pro || true
 cask install xbench || true
-# cask install vmware-fusion || true
+cask install vmware-fusion || true
 
 # デザイン
 cask install adobe-creative-cloud || true
