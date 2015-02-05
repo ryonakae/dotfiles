@@ -9,3 +9,5 @@
 [user]
 	name = RYO NAKAE
 	email = me@ryonakae.com
+[credential]
+	helper = osxkeychain

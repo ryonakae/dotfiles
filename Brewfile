@@ -44,6 +44,7 @@ install wp-cli || true
 cask install google-chrome || true
 cask install firefox-ja || true
 cask install opera || true
+# cask install vivaldi || true
 
 # ターミナルエミュレータ・エディタ
 cask install iterm2 || true
@@ -75,6 +76,7 @@ cask install imageoptim || true
 cask install codekit || true
 cask install virtualbox || true
 cask install vagrant || true
+cask install vagrant-manager || true
 cask install sequel-pro || true
 cask install xbench || true
 cask install vmware-fusion || true
@@ -84,6 +86,9 @@ cask install adobe-creative-cloud || true
 cask install slicy || true
 cask install ember || true
 cask install blender || true
+cask install sketch-toolbox || true
+cask install framer-studio || true
+cask install pixate || true
 
 # マルチメディア
 cask install vlc || true
@@ -115,3 +120,7 @@ cask alfred link || true
 # クリーンアップ
 cleanup
 cask cleanup
+
+
+# brew doctor
+doctor

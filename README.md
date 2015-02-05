@@ -73,6 +73,18 @@ Brewfileに記述した処理が実行される
 ### アプリの設定
 当たり前だけど各MacAppの設定は自分でやる。
 
+### アプリのアップデート
+* brew-caskで入れたアプリは特定のディレクトリにインストールされ、`/Applications`にはシンボリックリンクが貼られる
+* 各アプリ内で行われるアップデートなどを行うと、`/Applications/xxxxx.app`というようにシンボリックリンクが.appファイルで上書きされてしまい、brew-caskの管理下から外れてしまう
+* 面倒だけど、アップデート通知が来たら、以下のようにする
+  1. `/Applications`にあるxxxxx.appファイルを削除
+  2. `brew cask uninstall xxxxx && brew cask install xxxxx`
+
+参考：[homebrew-caskでよくあること - Qiita](http://qiita.com/tienlen/items/1a50c7507c8f6454f6c6#2-8)
+
+「cask_upgrade.sh」を実行すると、インストールしたアプリが最新かどうかをチェックして、古いやつだけアップデートしてくれる（ただし古いバージョンはそのまま残る）  
+参考：[Homebrew-caskのアプリをアップグレードする](http://rcmdnk.github.io/blog/2014/09/01/computer-mac-homebrew/)
+
 ### PHPのインストールで`configure: error: Cannot find OpenSSL's <evp.h>`とかいうエラーが出る場合
 参考：[OS X YosemiteにHomebrew + DropboxでPHP環境構築　〜Apache, PHP, MySQL, ComposerをインストールしてFuelPHPの設定まで - Qiita](http://qiita.com/saltyshiomix/items/aacb5f9635c0d3201174)
 
