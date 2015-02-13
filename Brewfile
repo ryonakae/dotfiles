@@ -54,6 +54,7 @@ cask install mou || true
 cask install macdown || true
 cask install sourcetree || true
 cask install github || true
+cask install atom || true
 
 # ユーティリティ
 cask install google-japanese-ime || true
@@ -70,6 +71,7 @@ cask install licecap || true
 cask install splashtop-streamer || true
 cask install trim-enabler || true
 cask install isyncr || true
+cask install android-file-transfer || true
 
 # 仮想環境・開発ツール
 cask install imageoptim || true

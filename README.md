@@ -82,8 +82,10 @@ Brewfileに記述した処理が実行される
 
 参考：[homebrew-caskでよくあること - Qiita](http://qiita.com/tienlen/items/1a50c7507c8f6454f6c6#2-8)
 
-「cask_upgrade.sh」を実行すると、インストールしたアプリが最新かどうかをチェックして、古いやつだけアップデートしてくれる（ただし古いバージョンはそのまま残る）  
-参考：[Homebrew-caskのアプリをアップグレードする](http://rcmdnk.github.io/blog/2014/09/01/computer-mac-homebrew/)
+「cask_upgrade.sh」を実行すると、インストールしたアプリが最新かどうかをチェックして、古いやつだけアップデートしてくれる（ただし古いバージョンはそのまま残る）
+
+* 参考1：[Homebrew-caskのアプリをアップグレードする](http://rcmdnk.github.io/blog/2014/09/01/computer-mac-homebrew/)
+* 参考2：[homebrew-cask - brew caskのappどもをupgradeする - Qiita](http://qiita.com/2k0ri/items/9fe8d33a72dbfb15fe6b)
 
 ### PHPのインストールで`configure: error: Cannot find OpenSSL's <evp.h>`とかいうエラーが出る場合
 参考：[OS X YosemiteにHomebrew + DropboxでPHP環境構築　〜Apache, PHP, MySQL, ComposerをインストールしてFuelPHPの設定まで - Qiita](http://qiita.com/saltyshiomix/items/aacb5f9635c0d3201174)
