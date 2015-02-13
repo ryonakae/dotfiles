@@ -111,14 +111,6 @@ cask install betterzipql || true
 cask install qlcolorcode || true
 
 
-# Alfredでサーチできるようにする
-# エラーが出る場合は下記参照
-# http://waka.github.io/2014/1/19/homebrew_cask.html
-# http://qiita.com/kiyodori/items/11a314dcea71b2929d17
-# http://qiita.com/kametaro/items/942cafd910fc7989be3a
-cask alfred link || true
-
-
 # クリーンアップ
 cleanup
 cask cleanup
@@ -126,3 +118,4 @@ cask cleanup
 
 # brew doctor
 doctor
+cask doctor
