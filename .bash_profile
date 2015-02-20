@@ -1,1 +1,1 @@
-export HOMEBREW_CASK_OPTS="--appdir=/Applications --caskroom=/usr/local/Caskroom"
+export HOMEBREW_CASK_OPTS="--appdir=/Applications"
