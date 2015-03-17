@@ -72,6 +72,8 @@ cask install splashtop-streamer || true
 cask install trim-enabler || true
 cask install isyncr || true
 cask install android-file-transfer || true
+cask install flux || true
+cask install near-lock || true
 
 # 仮想環境・開発ツール
 cask install imageoptim || true
@@ -95,7 +97,7 @@ cask install pixate || true
 # マルチメディア
 cask install vlc || true
 cask install air-video-server-hd || true
-# cask install airfoil || true
+cask install airfoil || true
 cask install xld || true
 cask install makemkv || true
 cask install handbrake || true
