@@ -74,6 +74,7 @@ cask install isyncr || true
 cask install android-file-transfer || true
 cask install flux || true
 cask install near-lock || true
+cask install box-sync || true
 
 # 仮想環境・開発ツール
 cask install imageoptim || true
