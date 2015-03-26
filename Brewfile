@@ -94,6 +94,7 @@ cask install blender || true
 cask install sketch-toolbox || true
 cask install framer-studio || true
 cask install pixate || true
+cask install pixelapse || true
 
 # マルチメディア
 cask install vlc || true
