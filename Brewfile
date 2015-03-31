@@ -32,6 +32,8 @@ install libiconv || true
 install libxml2 || true
 install libxslt || true
 install openssl || true
+install pkg-config || true
+install imagemagick || true
 
 # ミドルウェア
 install mysql || true
