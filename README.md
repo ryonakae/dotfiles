@@ -46,7 +46,19 @@ Homebrewのインストールに必要
 Brewfileに記述した処理が実行される
 
 
-### brew-caskに無いMacApp
+## Homebrewでインストールしたやつを優先的に利用する
+`/etc/paths`の順番を入れ替える
+
+    /usr/local/bin
+    /usr/bin
+    /bin
+    /usr/sbin
+    /sbin
+
+`$ exec $SHELL`で反映されるはず
+
+
+## brew-caskに無いMacApp
 
 * MacAppStoreで配布されているアプリ  
   一覧にしてまとめておきたいけどめんどくさい
