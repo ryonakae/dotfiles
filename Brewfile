@@ -40,6 +40,9 @@ install mysql || true
 install php55 || true
 install wp-cli || true
 
+# Vim
+install vim || true
+
 
 # MacAppのインストール
 # ブラウザ
