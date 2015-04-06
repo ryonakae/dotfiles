@@ -58,6 +58,22 @@ Brewfileに記述した処理が実行される
 `$ exec $SHELL`で反映されるはず
 
 
+## Vimの設定
+
+    $ mkdir -p ~/.vim/bundle
+    $ git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
+    $ git clone https://github.com/Shougo/vimproc ~/.vim/bundle/vimproc
+    $ cd ~/.vim/bundle/vimproc
+    $ make -f make_mac.mak
+
+ここまでやるとNeoBundleとVimProcがインストールされたりする
+
+    $ vim hoge
+    :NeoBundleInstall
+
+とするとVimのプラグインがインストールされる
+
+
 ## brew-caskに無いMacApp
 
 * MacAppStoreで配布されているアプリ  
