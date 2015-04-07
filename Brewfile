@@ -83,6 +83,8 @@ cask install android-file-transfer || true
 cask install flux || true
 cask install near-lock || true
 cask install box-sync || true
+cask install karabiner || true
+cask install seil || true
 
 # 仮想環境・開発ツール
 cask install imageoptim || true
