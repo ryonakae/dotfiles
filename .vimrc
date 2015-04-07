@@ -14,10 +14,21 @@ endif
 
 " 以下のプラグインをバンドル
 NeoBundle 'Shougo/neobundle.vim'
-NeoBundle 'Shougo/vimproc'
+NeoBundle 'Shougo/vimproc', {
+  \ 'build' : {
+    \ 'windows' : 'make -f make_mingw32.mak',
+    \ 'cygwin' : 'make -f make_cygwin.mak',
+    \ 'mac' : 'make -f make_mac.mak',
+    \ 'unix' : 'make -f make_unix.mak',
+  \ },
+\ }
 NeoBundle 'Shougo/neocomplcache'
 NeoBundle 'Shougo/unite.vim'
 NeoBundle 'ujihisa/unite-colorscheme'
+NeoBundle 'Townk/vim-autoclose'
+NeoBundle 'Shougo/unite.vim'
+NeoBundle 'Shougo/neomru.vim'
+NeoBundle 'mattn/emmet-vim'
 
 " カラースキーム
 " NeoBundle 'chriskempson/vim-tomorrow-theme'
@@ -58,6 +69,9 @@ set showcmd
 set clipboard+=unnamed
 set clipboard=unnamed
 
+" ペースト時にインデントさせない
+set paste
+
 " 行番号を表示
 set number
 " 画面最下行にルーラーを表示する
@@ -94,3 +108,14 @@ set mouse=a
 set shiftwidth=2
 set softtabstop=2
 set expandtab
+
+" emmetの設定
+" Ctrl + e で展開
+let g:user_emmet_expandabbr_key = '<C-e>'
+" 日本語化、インデントの設定
+let g:user_emmet_settings = {
+  \ 'variables': {
+  \   'lang': "ja"
+  \ },
+  \ 'indentation': '  '
+\ }
