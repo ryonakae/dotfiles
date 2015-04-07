@@ -46,6 +46,18 @@ Homebrewのインストールに必要
 Brewfileに記述した処理が実行される
 
 
+## デフォルトのShellをzshにする
+参考：[[MacOSX]ターミナルのデフォルトShellをzshに変更する方法 - DQNEO起業日記](http://dqn.sakusakutto.jp/2014/05/macosx_shell_chsh_zsh.html)
+
+    # /etc/shells の末尾に /usr/local/bin/zsh を追記
+    sudo sh -c 'echo $(which zsh) >> /etc/shells'
+
+    # ユーザのデフォルトシェルを変更
+    chsh -s /usr/local/bin/zsh
+    
+Shellを再起動でzshがデフォルトになるはず
+
+
 ## Homebrewでインストールしたやつを優先的に利用する
 `/etc/paths`の順番を入れ替える
 
@@ -75,31 +87,33 @@ Brewfileに記述した処理が実行される
 
 
 ## brew-caskに無いMacApp
-
 * MacAppStoreで配布されているアプリ  
   一覧にしてまとめておきたいけどめんどくさい
 * [CleanArchiver](https://www.sopht.jp/cleanarchiver/downloads.html)
 * Mangao
-* Airfoil*
+* (Airfoil)
 * DxO FilmPack 4
 * VSCO Film
-* GraffitiPot
+* ~~GraffitiPot~~
+  - 2chの新仕様に対応してない
 * HiddenSwitch
 * HoudahGPS
-* Sculptris Alpha 6
+* Sculptris
 * KORG AudioGate 2.3.1
-* Tag
+* ~~Tag~~
+  - AppStoreにあるデザイン良い方のTagはID3v2.4でタグが保存されるので使わない方が良い
 * Th-MakerX
 * CSS Hat 2
 * コンテンツ管理アシスタント
-* VMware Fusion*
+* (VMware Fusion)
 * ワコム タブレット ドライバ
+  - 一応`wacom-tabet`っていうcaskがあるけど未検証
 * Logicool ウェブカメラ ドライバ
 
 
 ## 補足
 ### アプリの設定
-当たり前だけど各MacAppの設定は自分でやる。
+当たり前だけど各MacAppの設定は自分でやる
 
 ### アプリのアップデート
 * brew-caskで入れたアプリは特定のディレクトリにインストールされ、`/Applications`にはシンボリックリンクが貼られる
@@ -120,6 +134,5 @@ Brewfileに記述した処理が実行される
 
 
 ## 参考
-
 * [pixyzehn/dotfiles](https://github.com/pixyzehn/dotfiles)
 * [Macの環境構築にhomebrew-cask+Brewfile便利 - yo_waka's blog](http://waka.github.io/2014/1/19/homebrew_cask.html)

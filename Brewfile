@@ -43,6 +43,9 @@ install wp-cli || true
 # Vim
 install vim || true
 
+# その他
+install tree || true
+
 
 # MacAppのインストール
 # ブラウザ
