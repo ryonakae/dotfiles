@@ -34,6 +34,7 @@ install libxslt || true
 install openssl || true
 install pkg-config || true
 install imagemagick || true
+install sox || true
 
 # ミドルウェア
 install mysql || true
