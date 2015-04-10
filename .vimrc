@@ -29,6 +29,14 @@ NeoBundle 'Townk/vim-autoclose'
 NeoBundle 'Shougo/unite.vim'
 NeoBundle 'Shougo/neomru.vim'
 NeoBundle 'mattn/emmet-vim'
+NeoBundle 'hail2u/vim-css3-syntax'
+NeoBundle 'taichouchou2/html5.vim'
+NeoBundle 'taichouchou2/vim-javascript'
+NeoBundle 'kchmck/vim-coffee-script'
+NeoBundle 'slim-template/vim-slim'
+NeoBundle 'tpope/vim-haml'
+NeoBundle 'digitaltoad/vim-jade'
+
 
 " カラースキーム
 " NeoBundle 'chriskempson/vim-tomorrow-theme'
