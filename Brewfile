@@ -96,6 +96,7 @@ cask install vagrant-manager || true
 cask install sequel-pro || true
 cask install xbench || true
 cask install vmware-fusion || true
+cask install heroku-toolbelt || true
 
 # デザイン
 cask install adobe-creative-cloud || true
