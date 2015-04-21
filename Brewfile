@@ -77,7 +77,6 @@ cask install transmission || true
 cask install utorrent || true
 cask install easysimbl || true
 cask install licecap || true
-cask install splashtop-streamer || true
 cask install trim-enabler || true
 cask install isyncr || true
 cask install android-file-transfer || true

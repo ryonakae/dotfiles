@@ -198,3 +198,6 @@ export PATH=$HOME/.nodebrew/current/bin:$PATH
 # SSH
 # 参考：http://iwashi.co/2014/05/06/digital-oceanvagrant-upssl-errorrbenv/
 export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
+
+# PostgreSQL
+export PGDATA=/usr/local/var/postgres
