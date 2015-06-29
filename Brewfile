@@ -41,6 +41,7 @@ install mysql || true
 install php55 || true
 install wp-cli || true
 install docker || true
+install boot2docker || true
 
 # Vim
 install vim || true
@@ -97,7 +98,6 @@ cask install sequel-pro || true
 cask install xbench || true
 cask install vmware-fusion || true
 cask install heroku-toolbelt || true
-cask install boot2docker || true
 
 # デザイン
 cask install adobe-creative-cloud || true
