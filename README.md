@@ -32,14 +32,19 @@ Homebrewのインストールに必要
 ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
 
 
-## brew-cask
-### homebrew/boneyardリポジトリの追加
-`brew bundle`はもうオワコンらしいけど、homebrew/boneyardを追加すると使えるようになる。動作しなくなるまでは使いたい
+## Brew Bundle
+### フォーミュラの追加
+参考：[Homebrew-bundleとBrewfile - Qiita](http://qiita.com/mather314/items/900ae69eba8d6d980cb2)
 
-    $ brew tap homebrew/boneyard
+    $ brew tap Homebrew/bundle
+
+なんか元BrewdlerがリネームしてHomebrew-bundleになったらしい  
+Brewfileの書き方が変わってるので注意  
+`update`とか`doctor`とかができなくなって辛い…
 
 
 ### brew bundleの実行
+Brewfileがあるディレクトリで
 
     $ brew bundle
 

@@ -1,138 +1,123 @@
-# アップデート・アップグレード
-update || true
-upgrade || true
-
-
-# リポジトリの追加
-tap homebrew/dupes || true
-tap homebrew/boneyard || true
-tap caskroom/homebrew-cask || true
-tap caskroom/homebrew-versions || true
-tap josegonzalez/homebrew-php || true
+# リポジトリ(フォーミュラ)の追加
+tap 'homebrew/bundle'
+tap 'homebrew/dupes'
+tap 'caskroom/homebrew-cask'
+tap 'caskroom/homebrew-versions'
+tap 'josegonzalez/homebrew-php'
 
 
 # パッケージのインストール
 # brew-cask
-install brew-cask || true
+brew 'brew-cask'
 
 # Git・シェル
-install git || true
-install zsh || true
-install zsh-completions || true
+brew 'git'
+brew 'zsh'
+brew 'zsh-completions'
 
 # パッケージマネージャ
-install nodebrew || true
-install rbenv || true
-install ruby-build || true
+brew 'nodebrew'
+brew 'rbenv'
+brew 'ruby-build'
 
 # ライブラリ
-install autoconf || true
-install ffmpeg || true
-install libiconv || true
-install libxml2 || true
-install libxslt || true
-install openssl || true
-install pkg-config || true
-install imagemagick || true
-install sox || true
+brew 'autoconf'
+brew 'ffmpeg'
+brew 'libiconv'
+brew 'libxml2'
+brew 'libxslt'
+brew 'openssl'
+brew 'pkg-config'
+brew 'imagemagick'
+brew 'sox'
 
 # ミドルウェア
-install mysql || true
-install php55 || true
-install wp-cli || true
-install docker || true
-install boot2docker || true
+brew 'mysql'
+brew 'php55'
+brew 'wp-cli'
+brew 'docker'
+brew 'boot2docker'
 
 # Vim
-install vim || true
+brew 'vim'
 
 # その他
-install tree || true
+brew 'tree'
 
 
 # MacAppのインストール
 # ブラウザ
-cask install google-chrome || true
-cask install firefox-ja || true
-cask install opera || true
-# cask install vivaldi || true
+cask 'google-chrome'
+cask 'firefox-ja'
+cask 'opera'
+# cask 'vivaldi'
 
 # ターミナルエミュレータ・エディタ
-cask install iterm2 || true
-cask install coteditor || true
-cask install sublime-text3 || true
-cask install mou || true
-cask install macdown || true
-cask install sourcetree || true
-cask install github || true
-cask install atom || true
+cask 'iterm2'
+cask 'coteditor'
+cask 'sublime-text3'
+cask 'mou'
+cask 'macdown'
+cask 'sourcetree'
+cask 'github'
+cask 'atom'
 
 # ユーティリティ
-cask install google-japanese-ime || true
-cask install alfred || true
-cask install appcleaner || true
-cask install dropbox || true
-cask install google-drive || true
-cask install bettertouchtool || true
-cask install steermouse || true
-cask install transmission || true
-cask install utorrent || true
-cask install easysimbl || true
-cask install licecap || true
-cask install trim-enabler || true
-cask install isyncr || true
-cask install android-file-transfer || true
-cask install flux || true
-cask install near-lock || true
-cask install box-sync || true
-cask install karabiner || true
-cask install seil || true
+cask 'google-japanese-ime'
+cask 'alfred'
+cask 'appcleaner'
+cask 'dropbox'
+cask 'google-drive'
+cask 'bettertouchtool'
+cask 'steermouse'
+cask 'transmission'
+cask 'utorrent'
+cask 'easysimbl'
+cask 'licecap'
+cask 'trim-enabler'
+cask 'isyncr'
+cask 'android-file-transfer'
+cask 'flux'
+cask 'near-lock'
+cask 'box-sync'
+cask 'karabiner'
+cask 'seil'
 
 # 仮想環境・開発ツール
-cask install imageoptim || true
-cask install codekit || true
-cask install virtualbox || true
-cask install vagrant || true
-cask install vagrant-manager || true
-cask install sequel-pro || true
-cask install xbench || true
-cask install vmware-fusion || true
-cask install heroku-toolbelt || true
+cask 'imageoptim'
+cask 'codekit'
+cask 'virtualbox'
+cask 'vagrant'
+cask 'vagrant-manager'
+cask 'sequel-pro'
+cask 'xbench'
+cask 'vmware-fusion'
+cask 'heroku-toolbelt'
 
 # デザイン
-cask install adobe-creative-cloud || true
-cask install slicy || true
-cask install ember || true
-cask install blender || true
-cask install sketch-toolbox || true
-cask install framer-studio || true
-cask install pixate || true
-cask install pixelapse || true
+cask 'adobe-creative-cloud'
+cask 'slicy'
+cask 'ember'
+cask 'blender'
+cask 'sketch-toolbox'
+cask 'framer-studio'
+cask 'pixate'
+cask 'pixelapse'
 
 # マルチメディア
-cask install vlc || true
-cask install air-video-server-hd || true
-cask install airfoil || true
-cask install xld || true
-cask install makemkv || true
-cask install handbrake || true
+cask 'vlc'
+cask 'air-video-server-hd'
+cask 'airfoil'
+cask 'xld'
+cask 'makemkv'
+cask 'handbrake'
 
 # コミュニケーション
-cask install skype || true
-cask install google-hangouts || true
+cask 'skype'
+cask 'google-hangouts'
 
 # QuickLookプラグイン
-cask install qlstephen || true
-cask install qlmarkdown || true
-cask install betterzipql || true
-cask install qlcolorcode || true
-
-
-# クリーンアップ
-cleanup
-cask cleanup
-
-
-# brew doctor
-doctor
-cask doctor
+cask 'qlstephen'
+cask 'qlmarkdown'
+cask 'betterzipql'
+cask 'qlcolorcode'
