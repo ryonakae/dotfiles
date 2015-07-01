@@ -13,35 +13,36 @@ if has('vim_starting')
 endif
 
 " 以下のプラグインをバンドル
-NeoBundle 'Shougo/neobundle.vim'
-NeoBundle 'Shougo/vimproc', {
-  \ 'build' : {
-    \ 'windows' : 'make -f make_mingw32.mak',
-    \ 'cygwin' : 'make -f make_cygwin.mak',
-    \ 'mac' : 'make -f make_mac.mak',
-    \ 'unix' : 'make -f make_unix.mak',
-  \ },
-\ }
-NeoBundle 'Shougo/neocomplcache'
-NeoBundle 'Shougo/unite.vim'
-NeoBundle 'ujihisa/unite-colorscheme'
-NeoBundle 'Townk/vim-autoclose'
-NeoBundle 'Shougo/unite.vim'
-NeoBundle 'Shougo/neomru.vim'
-NeoBundle 'mattn/emmet-vim'
-NeoBundle 'hail2u/vim-css3-syntax'
-NeoBundle 'taichouchou2/html5.vim'
-NeoBundle 'taichouchou2/vim-javascript'
-NeoBundle 'kchmck/vim-coffee-script'
-NeoBundle 'slim-template/vim-slim'
-NeoBundle 'tpope/vim-haml'
-NeoBundle 'digitaltoad/vim-jade'
-
+call neobundle#begin(expand('~/.vim/bundle/'))
+  NeoBundle 'Shougo/neobundle.vim'
+  NeoBundle 'Shougo/vimproc', {
+    \ 'build' : {
+      \ 'windows' : 'make -f make_mingw32.mak',
+      \ 'cygwin' : 'make -f make_cygwin.mak',
+      \ 'mac' : 'make -f make_mac.mak',
+      \ 'unix' : 'make -f make_unix.mak',
+    \ },
+  \ }
+  NeoBundle 'Shougo/neocomplcache'
+  NeoBundle 'Shougo/unite.vim'
+  NeoBundle 'ujihisa/unite-colorscheme'
+  NeoBundle 'Townk/vim-autoclose'
+  NeoBundle 'Shougo/unite.vim'
+  NeoBundle 'Shougo/neomru.vim'
+  NeoBundle 'mattn/emmet-vim'
+  NeoBundle 'hail2u/vim-css3-syntax'
+  NeoBundle 'taichouchou2/html5.vim'
+  NeoBundle 'taichouchou2/vim-javascript'
+  NeoBundle 'kchmck/vim-coffee-script'
+  NeoBundle 'slim-template/vim-slim'
+  NeoBundle 'tpope/vim-haml'
+  NeoBundle 'digitaltoad/vim-jade'
+  " NeoBundle 'chriskempson/vim-tomorrow-theme'
+  NeoBundle 'w0ng/vim-hybrid'
+call neobundle#end()
 
 " カラースキーム
-" NeoBundle 'chriskempson/vim-tomorrow-theme'
 " colorscheme Tomorrow-Night
-NeoBundle 'w0ng/vim-hybrid'
 colorscheme hybrid
 
 " シンタックスハイライト
