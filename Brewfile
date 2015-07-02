@@ -27,6 +27,7 @@ brew 'libiconv'
 brew 'libxml2'
 brew 'libxslt'
 brew 'openssl'
+# brew 'openssh', args: ['with-brewed-openssl', 'with-keychain-support']
 brew 'pkg-config'
 brew 'imagemagick'
 brew 'sox'
@@ -39,7 +40,7 @@ brew 'docker'
 brew 'boot2docker'
 
 # Vim
-brew 'vim'
+brew 'vim', args: ['with-lua']
 
 # その他
 brew 'tree'
