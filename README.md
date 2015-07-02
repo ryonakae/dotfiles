@@ -4,24 +4,27 @@ dotfiles
 Macを新規購入・OSクリーンインストールした時にやるやつ
 
 
-## 1. リポジトリをcloneする
+## XcodeとCommand Line Tools for Xcodeのインストール
+gitコマンド使うのと、Homebrewのインストールに必要
+
+* Xcodeインストールする
+* `$ xcode-select --install`を実行
+
+
+## リポジトリをcloneする
 ユーザーのホームディレクトリにcloneするのが良さそう
 
     $ cd ~/
     $ git clone https://github.com/ryonakae/dotfiles.git
 
 
-## 2. シェルスクリプトの実行
+## シェルスクリプトの実行
 `dotfile`ディレクトリに移動し、シェルスクリプトを実行
 
     $ cd dotfiles
     $ sh setup.sh && source ~/.bash_profile
 
 brew-caskで貼られるシンボリックリンクのリンク先が変更される（`~/Applications`から`/Applications`）
-
-
-## XcodeとCommand Line Tools for Xcodeのインストール
-Homebrewのインストールに必要
 
 
 ## Homebrewのインストール
@@ -51,6 +54,22 @@ Brewfileがあるディレクトリで
 Brewfileに記述した処理が実行される
 
 
+## Vimの設定
+
+    $ mkdir -p ~/.vim/bundle
+    $ git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
+    $ git clone https://github.com/Shougo/vimproc ~/.vim/bundle/vimproc
+    $ cd ~/.vim/bundle/vimproc
+    $ make -f make_mac.mak
+
+ここまでやるとNeoBundleとVimProcがインストールされたりする
+
+    $ vim hoge
+    :NeoBundleInstall
+
+とするとVimのプラグインがインストールされる
+
+
 ## デフォルトのShellをzshにする
 参考：[[MacOSX]ターミナルのデフォルトShellをzshに変更する方法 - DQNEO起業日記](http://dqn.sakusakutto.jp/2014/05/macosx_shell_chsh_zsh.html)
 
@@ -75,20 +94,11 @@ Shellを再起動でzshがデフォルトになるはず
 `$ exec $SHELL`で反映されるはず
 
 
-## Vimの設定
+## RubyとかNode.jsとか設定する
+Homebrew経由でインストールしたrbenvとnodebrew使う
 
-    $ mkdir -p ~/.vim/bundle
-    $ git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
-    $ git clone https://github.com/Shougo/vimproc ~/.vim/bundle/vimproc
-    $ cd ~/.vim/bundle/vimproc
-    $ make -f make_mac.mak
-
-ここまでやるとNeoBundleとVimProcがインストールされたりする
-
-    $ vim hoge
-    :NeoBundleInstall
-
-とするとVimのプラグインがインストールされる
+* [rbenv を利用した Ruby 環境の構築 ｜ Developers.IO](http://dev.classmethod.jp/server-side/language/build-ruby-environment-by-rbenv/)
+* [nodebrewでNode.jsのインストール - Qiita](http://qiita.com/ombran/items/c59525e429c9c363325d)
 
 
 ## brew-caskに無いMacApp
@@ -99,8 +109,6 @@ Shellを再起動でzshがデフォルトになるはず
 * (Airfoil)
 * DxO FilmPack 4
 * VSCO Film
-* ~~GraffitiPot~~
-  - 2chの新仕様に対応してない
 * HiddenSwitch
 * HoudahGPS
 * Sculptris
