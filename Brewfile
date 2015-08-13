@@ -12,6 +12,7 @@ brew 'brew-cask'
 
 # Git・シェル
 brew 'git'
+brew 'git-flow'
 brew 'zsh'
 brew 'zsh-completions'
 
@@ -19,6 +20,7 @@ brew 'zsh-completions'
 brew 'nodebrew'
 brew 'rbenv'
 brew 'ruby-build'
+brew 'direnv'
 
 # ライブラリ
 brew 'autoconf'

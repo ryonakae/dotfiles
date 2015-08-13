@@ -101,6 +101,31 @@ Homebrew経由でインストールしたrbenvとnodebrew使う
 * [nodebrewでNode.jsのインストール - Qiita](http://qiita.com/ombran/items/c59525e429c9c363325d)
 
 
+## direnvの設定する
+ディレクトリごとに環境変数の設定ができて便利  
+例えば、特定ディレクトリ以下で、GitHubアカウントを会社のものに切り替えたりできる
+
+* [direnvを使おう - Qiita](http://qiita.com/kompiro/items/5fc46089247a56243a62)
+* [direnvを使って複数のgitコミッタ名を切り替える - MANA-DOT](http://blog.manaten.net/entry/direnv_git_account)
+
+### 使い方
+    
+    # 環境変数切り替えたいディレクトリに移動
+    $ cd ~/Projects/Private
+    
+    # .envrcの作成、編集(Vimが起動する)
+    $ direnv edit .
+    
+`.envrc`に以下のように書いたりする
+
+    export GIT_COMMITTER_NAME="YOUR NAME"
+    export GIT_COMMITTER_EMAIL="mail@example.com"
+    export GIT_AUTHOR_NAME="YOUR NAME"
+    export GIT_AUTHOR_EMAIL="mail@example.com"
+    
+`.envrc`もditfilesとして管理したいが、PCによって置く場所も書く内容も違うだろうし、都度作成・編集した方が良さそう
+
+
 ## brew-caskに無いMacApp
 * MacAppStoreで配布されているアプリ  
   一覧にしてまとめておきたいけどめんどくさい
