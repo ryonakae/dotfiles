@@ -57,13 +57,14 @@ cask 'opera'
 
 # ターミナルエミュレータ・エディタ
 cask 'iterm2'
-cask 'coteditor'
+# cask 'coteditor'
 cask 'sublime-text3'
 # cask 'mou'
 cask 'macdown'
 cask 'sourcetree'
 cask 'github'
 cask 'atom'
+cask 'processing3'
 
 # ユーティリティ
 cask 'google-japanese-ime'
@@ -73,6 +74,7 @@ cask 'dropbox'
 cask 'google-drive'
 cask 'bettertouchtool'
 cask 'steermouse'
+cask 'razer-synapse'
 cask 'transmission'
 cask 'utorrent'
 cask 'easysimbl'
@@ -106,6 +108,7 @@ cask 'sketch-toolbox'
 cask 'framer-studio'
 cask 'pixate'
 # cask 'pixelapse'
+cask 'wacom-tablet'
 
 # マルチメディア
 cask 'vlc'
@@ -114,6 +117,8 @@ cask 'air-video-server-hd'
 cask 'xld'
 cask 'makemkv'
 cask 'handbrake'
+cask 'amazon-music'
+cask 'kindle'
 
 # コミュニケーション
 cask 'skype'
