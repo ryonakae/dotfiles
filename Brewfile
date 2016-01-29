@@ -87,6 +87,8 @@ cask 'android-file-transfer'
 # cask 'box-sync'
 cask 'karabiner'
 cask 'seil'
+cask 'flash'
+cask 'java'
 
 # 仮想環境・開発ツール
 cask 'imageoptim'
@@ -104,11 +106,13 @@ cask 'adobe-creative-cloud'
 cask 'slicy'
 cask 'ember'
 cask 'blender'
+cask 'sketch-tool'
 cask 'sketch-toolbox'
 cask 'framer-studio'
 cask 'pixate'
 # cask 'pixelapse'
 cask 'wacom-tablet'
+# cask 'rightfont'
 
 # マルチメディア
 cask 'vlc'
@@ -119,8 +123,10 @@ cask 'makemkv'
 cask 'handbrake'
 cask 'amazon-music'
 cask 'kindle'
+cask 'vox'
 
 # コミュニケーション
+cask 'slack'
 cask 'skype'
 cask 'google-hangouts'
 
