@@ -1,15 +1,15 @@
-# リポジトリ(フォーミュラ)の追加
+cask_args appdir: '/Applications'
+
+
+# フォーミュラの追加
 tap 'homebrew/bundle'
+tap 'caskroom/cask'
+tap 'caskroom/versions'
+tap 'homebrew/php'
 tap 'homebrew/dupes'
-tap 'caskroom/homebrew-cask'
-tap 'caskroom/homebrew-versions'
-tap 'josegonzalez/homebrew-php'
 
 
 # パッケージのインストール
-# brew-cask
-brew 'brew-cask'
-
 # Git・シェル
 brew 'git'
 brew 'git-flow'
@@ -17,6 +17,7 @@ brew 'zsh'
 brew 'zsh-completions'
 
 # パッケージマネージャ
+brew 'mas'
 brew 'nodebrew'
 brew 'rbenv'
 brew 'ruby-build'
@@ -35,8 +36,9 @@ brew 'imagemagick'
 brew 'sox'
 
 # ミドルウェア
-brew 'mysql'
+brew 'mysql', restart_service: true
 brew 'php55'
+brew 'postgresql', restart_service: true
 brew 'wp-cli'
 brew 'docker'
 brew 'boot2docker'
@@ -46,78 +48,62 @@ brew 'vim', args: ['with-lua']
 
 # その他
 brew 'tree'
+brew 'heroku'
 
 
 # MacAppのインストール
 # ブラウザ
 cask 'google-chrome'
+cask 'google-chrome-canary'
 cask 'firefox-ja'
 cask 'opera'
-# cask 'vivaldi'
 
 # ターミナルエミュレータ・エディタ
 cask 'iterm2'
-# cask 'coteditor'
-cask 'sublime-text3'
-# cask 'mou'
+cask 'coteditor'
 cask 'macdown'
-cask 'sourcetree'
-cask 'github'
 cask 'atom'
-cask 'processing3'
+cask 'processing'
+
+# クラウドサービス
+cask 'dropbox'
+cask 'google-drive'
 
 # ユーティリティ
 cask 'google-japanese-ime'
 cask 'alfred'
 cask 'appcleaner'
-cask 'dropbox'
-cask 'google-drive'
 cask 'bettertouchtool'
 cask 'steermouse'
-cask 'razer-synapse'
-cask 'transmission'
-cask 'utorrent'
 cask 'easysimbl'
 cask 'licecap'
-cask 'trim-enabler'
-cask 'isyncr'
-cask 'android-file-transfer'
-# cask 'flux'
-# cask 'near-lock'
-# cask 'box-sync'
+cask 'flux'
 cask 'karabiner'
 cask 'seil'
+cask 'caffeine'
+cask 'cleanarchiver'
+
+# ライブラリ
 cask 'flash'
 cask 'java'
 
 # 仮想環境・開発ツール
+cask 'sourcetree'
+cask 'github-desktop'
 cask 'imageoptim'
-cask 'codekit'
 cask 'virtualbox'
 cask 'vagrant'
 cask 'vagrant-manager'
 cask 'sequel-pro'
-cask 'xbench'
-# cask 'vmware-fusion'
-cask 'heroku-toolbelt'
 
 # デザイン
-cask 'adobe-creative-cloud'
 cask 'slicy'
-cask 'ember'
-cask 'blender'
 cask 'sketch-tool'
 cask 'sketch-toolbox'
-cask 'framer-studio'
-cask 'pixate'
-# cask 'pixelapse'
-cask 'wacom-tablet'
-# cask 'rightfont'
 
 # マルチメディア
 cask 'vlc'
 cask 'air-video-server-hd'
-# cask 'airfoil'
 cask 'xld'
 cask 'makemkv'
 cask 'handbrake'
@@ -135,3 +121,24 @@ cask 'qlstephen'
 cask 'qlmarkdown'
 cask 'betterzipql'
 cask 'qlcolorcode'
+
+# MacAppStore
+mas 'Name Mangler', id: 402434720
+mas 'LINE', id: 539883307
+mas 'FreeMan', id: 510934532
+mas 'Keynote', id: 409183694
+mas 'CloudApp', id: 417602904
+mas 'Twitter', id: 409789998
+mas 'GarageBand', id: 682658836
+mas 'Pixelmator', id: 407963104
+mas 'DaisyDisk', id: 411643860
+mas '1Password', id: 443987910
+mas 'The Unarchiver', id: 425424353
+mas 'Tweetbot', id: 557168941
+mas 'Transmit', id: 403388562
+mas 'Numbers', id: 409203825
+mas 'Xcode', id: 497799835
+mas 'Pages', id: 409201541
+mas 'Minutes', id: 406827163
+mas 'iMovie', id: 408981434
+mas 'Disk Diag', id: 672206759

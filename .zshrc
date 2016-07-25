@@ -202,9 +202,6 @@ export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
 # PostgreSQL
 export PGDATA=/usr/local/var/postgres
 
-# Sublime Text 3
-export PATH=/Applications/Sublime\Text.app/Contents/SharedSupport/bin/subl:$PATH
-
 # direnv
 eval "$(direnv hook zsh)"
 export EDITOR=Vim

@@ -24,7 +24,8 @@ gitコマンド使うのと、Homebrewのインストールに必要
     $ cd dotfiles
     $ sh setup.sh && source ~/.bash_profile
 
-brew-caskで貼られるシンボリックリンクのリンク先が変更される（`~/Applications`から`/Applications`）
+brew-caskで貼られるシンボリックリンクのリンク先が変更される（`~/Applications`から`/Applications`）  
+※もしかしたらもう必要ないかも、Homebrewデフォルトのインストール先が`/Applications`になっている説
 
 
 ## Homebrewのインストール
@@ -78,7 +79,7 @@ Brewfileに記述した処理が実行される
 
     # ユーザのデフォルトシェルを変更
     chsh -s /usr/local/bin/zsh
-    
+
 Shellを再起動でzshがデフォルトになるはず
 
 
@@ -109,63 +110,40 @@ Homebrew経由でインストールしたrbenvとnodebrew使う
 * [direnvを使って複数のgitコミッタ名を切り替える - MANA-DOT](http://blog.manaten.net/entry/direnv_git_account)
 
 ### 使い方
-    
+
     # 環境変数切り替えたいディレクトリに移動
     $ cd ~/Projects/Private
-    
+
     # .envrcの作成、編集(Vimが起動する)
     $ direnv edit .
-    
+
 `.envrc`に以下のように書いたりする
 
     export GIT_COMMITTER_NAME="YOUR NAME"
     export GIT_COMMITTER_EMAIL="mail@example.com"
     export GIT_AUTHOR_NAME="YOUR NAME"
     export GIT_AUTHOR_EMAIL="mail@example.com"
-    
+
 `.envrc`もditfilesとして管理したいが、PCによって置く場所も書く内容も違うだろうし、都度作成・編集した方が良さそう
 
 
 ## brew-caskに無いMacApp
-* MacAppStoreで配布されているアプリ  
-  一覧にしてまとめておきたいけどめんどくさい
-* [CleanArchiver](https://www.sopht.jp/cleanarchiver/downloads.html)
+* Adobe系
+* [Ember](https://forums.realmacsoftware.com/t/ember-1-8-4-beta-now-updated-with-1-8-5-beta/2911)
 * Mangao
-* (Airfoil)
 * DxO FilmPack 4
 * VSCO Film
 * HiddenSwitch
-* HoudahGPS
-* Sculptris
-* KORG AudioGate 2.3.1
-* ~~Tag~~
-  - AppStoreにあるデザイン良い方のTagはID3v2.4でタグが保存されるので使わない方が良い
 * Th-MakerX
-* CSS Hat 2
-* コンテンツ管理アシスタント
-* (VMware Fusion)
 * ワコム タブレット ドライバ
   - 一応`wacom-tabet`っていうcaskがあるけど未検証
-* Logicool ウェブカメラ ドライバ
+* サブセットフォントメーカー
+* WOFFコンバーター
 
 
 ## 補足
 ### アプリの設定
 当たり前だけど各MacAppの設定は自分でやる
-
-### アプリのアップデート
-* brew-caskで入れたアプリは特定のディレクトリにインストールされ、`/Applications`にはシンボリックリンクが貼られる
-* 各アプリ内で行われるアップデートなどを行うと、`/Applications/xxxxx.app`というようにシンボリックリンクが.appファイルで上書きされてしまい、brew-caskの管理下から外れてしまう
-* 面倒だけど、アップデート通知が来たら、以下のようにする
-  1. `/Applications`にあるxxxxx.appファイルを削除
-  2. `brew cask uninstall xxxxx && brew cask install xxxxx`
-
-参考：[homebrew-caskでよくあること - Qiita](http://qiita.com/tienlen/items/1a50c7507c8f6454f6c6#2-8)
-
-「cask_upgrade.sh」を実行すると、インストールしたアプリが最新かどうかをチェックして、古いやつだけアップデートしてくれる（ただし古いバージョンはそのまま残る）
-
-* 参考1：[Homebrew-caskのアプリをアップグレードする](http://rcmdnk.github.io/blog/2014/09/01/computer-mac-homebrew/)
-* 参考2：[homebrew-cask - brew caskのappどもをupgradeする - Qiita](http://qiita.com/2k0ri/items/9fe8d33a72dbfb15fe6b)
 
 ### PHPのインストールで`configure: error: Cannot find OpenSSL's <evp.h>`とかいうエラーが出る場合
 参考：[OS X YosemiteにHomebrew + DropboxでPHP環境構築　〜Apache, PHP, MySQL, ComposerをインストールしてFuelPHPの設定まで - Qiita](http://qiita.com/saltyshiomix/items/aacb5f9635c0d3201174)

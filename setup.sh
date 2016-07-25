@@ -1,4 +1,4 @@
-DOT_FILES=(.gitconfig .gitignore_global .bash_profile .zshrc .vimrc Brewfile)
+DOT_FILES=(.gitconfig .gitignore_global .bashrc .zshrc .vimrc Brewfile)
 
 for file in ${DOT_FILES[@]}
 
