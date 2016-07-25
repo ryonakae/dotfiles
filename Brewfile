@@ -121,6 +121,8 @@ cask 'qlstephen'
 cask 'qlmarkdown'
 cask 'betterzipql'
 cask 'qlcolorcode'
+cask 'qlimagesize'
+cask 'brushviewql'
 
 # MacAppStore
 mas 'Name Mangler', id: 402434720
