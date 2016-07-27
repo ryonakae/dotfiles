@@ -7,6 +7,7 @@ tap 'caskroom/cask'
 tap 'caskroom/versions'
 tap 'homebrew/php'
 tap 'homebrew/dupes'
+tap 'cloudfoundry/tap'
 
 
 # パッケージのインストール
@@ -49,6 +50,7 @@ brew 'vim', args: ['with-lua']
 # その他
 brew 'tree'
 brew 'heroku'
+brew 'cf-cli'
 
 
 # MacAppのインストール
