@@ -41,8 +41,6 @@ brew 'mysql', restart_service: true
 brew 'php55'
 brew 'postgresql', restart_service: true
 brew 'wp-cli'
-brew 'docker'
-brew 'boot2docker'
 
 # Vim
 brew 'vim', args: ['with-lua']
@@ -62,7 +60,6 @@ cask 'opera'
 
 # ターミナルエミュレータ・エディタ
 cask 'iterm2'
-cask 'coteditor'
 cask 'macdown'
 cask 'atom'
 cask 'processing'
@@ -76,13 +73,12 @@ cask 'google-japanese-ime'
 cask 'alfred'
 cask 'appcleaner'
 cask 'bettertouchtool'
-cask 'steermouse'
+# cask 'steermouse' #v4を手動インストールしたい
 cask 'easysimbl'
 cask 'licecap'
 cask 'flux'
 cask 'karabiner'
 cask 'seil'
-cask 'caffeine'
 cask 'cleanarchiver'
 
 # ライブラリ
@@ -97,6 +93,7 @@ cask 'virtualbox'
 cask 'vagrant'
 cask 'vagrant-manager'
 cask 'sequel-pro'
+cask 'docker'
 
 # デザイン
 cask 'slicy'
@@ -114,7 +111,6 @@ cask 'kindle'
 cask 'vox'
 
 # コミュニケーション
-cask 'slack'
 cask 'skype'
 cask 'google-hangouts'
 
@@ -146,3 +142,8 @@ mas 'Pages', id: 409201541
 mas 'Minutes', id: 406827163
 mas 'iMovie', id: 408981434
 mas 'Disk Diag', id: 672206759
+mas 'Caffeine', id: 411246225
+mas 'Bear', id: 1091189122
+mas 'Slack', id: 803453959
+mas 'Affinity Designer', id: 824171161
+mas 'CotEditor', id: 1024640650

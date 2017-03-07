@@ -195,9 +195,10 @@ eval "$(rbenv init -)"
 # nodebrew (install by Homebrew)
 export PATH=$HOME/.nodebrew/current/bin:$PATH
 
-# SSH
+# openssl
 # 参考：http://iwashi.co/2014/05/06/digital-oceanvagrant-upssl-errorrbenv/
-export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
+# export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
+export PATH=/usr/local/Cellar/openssl/1.0.2k/bin:$PATH
 
 # PostgreSQL
 export PGDATA=/usr/local/var/postgres
