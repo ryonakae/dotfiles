@@ -5,7 +5,6 @@ cask_args appdir: '/Applications'
 tap 'homebrew/bundle'
 tap 'caskroom/cask'
 tap 'caskroom/versions'
-tap 'homebrew/php'
 tap 'homebrew/dupes'
 tap 'cloudfoundry/tap'
 
@@ -31,24 +30,15 @@ brew 'libiconv'
 brew 'libxml2'
 brew 'libxslt'
 brew 'openssl'
-# brew 'openssh', args: ['with-brewed-openssl', 'with-keychain-support']
 brew 'pkg-config'
 brew 'imagemagick'
 brew 'sox'
-
-# ミドルウェア
-brew 'mysql', restart_service: true
-brew 'php55'
-brew 'postgresql', restart_service: true
-brew 'wp-cli'
 
 # Vim
 brew 'vim', args: ['with-lua']
 
 # その他
 brew 'tree'
-brew 'heroku'
-brew 'cf-cli'
 
 
 # MacAppのインストール
@@ -76,7 +66,6 @@ cask 'bettertouchtool'
 # cask 'steermouse' #v4を手動インストールしたい
 cask 'easysimbl'
 cask 'licecap'
-cask 'flux'
 cask 'karabiner'
 cask 'seil'
 cask 'cleanarchiver'
@@ -87,16 +76,12 @@ cask 'java'
 
 # 仮想環境・開発ツール
 cask 'sourcetree'
-cask 'github-desktop'
 cask 'imageoptim'
 cask 'virtualbox'
-cask 'vagrant'
-cask 'vagrant-manager'
 cask 'sequel-pro'
 cask 'docker'
 
 # デザイン
-cask 'slicy'
 cask 'sketch-tool'
 cask 'sketch-toolbox'
 
@@ -106,9 +91,6 @@ cask 'air-video-server-hd'
 cask 'xld'
 cask 'makemkv'
 cask 'handbrake'
-cask 'amazon-music'
-cask 'kindle'
-cask 'vox'
 
 # コミュニケーション
 cask 'skype'

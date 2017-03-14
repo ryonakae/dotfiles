@@ -47,6 +47,7 @@ call neobundle#begin(expand('~/.vim/bundle/'))
   NeoBundle 'digitaltoad/vim-jade'
   " NeoBundle 'chriskempson/vim-tomorrow-theme'
   NeoBundle 'w0ng/vim-hybrid'
+  NeoBundle 'ConradIrwin/vim-bracketed-paste'
 call neobundle#end()
 
 " シンタックスハイライト
