@@ -24,15 +24,7 @@ brew 'ruby-build'
 brew 'direnv'
 
 # ライブラリ
-brew 'autoconf'
-brew 'ffmpeg'
-brew 'libiconv'
-brew 'libxml2'
-brew 'libxslt'
 brew 'openssl'
-brew 'pkg-config'
-brew 'imagemagick'
-brew 'sox'
 
 # Vim
 brew 'vim', args: ['with-lua']
@@ -66,9 +58,8 @@ cask 'bettertouchtool'
 # cask 'steermouse' #v4を手動インストールしたい
 cask 'easysimbl'
 cask 'licecap'
-cask 'karabiner'
-cask 'seil'
 cask 'cleanarchiver'
+cask 'keepingyouawake'
 
 # ライブラリ
 cask 'flash'
@@ -124,7 +115,6 @@ mas 'Pages', id: 409201541
 mas 'Minutes', id: 406827163
 mas 'iMovie', id: 408981434
 mas 'Disk Diag', id: 672206759
-mas 'Caffeine', id: 411246225
 mas 'Bear', id: 1091189122
 mas 'Slack', id: 803453959
 mas 'Affinity Designer', id: 824171161
