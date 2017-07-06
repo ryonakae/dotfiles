@@ -45,9 +45,10 @@ call neobundle#begin(expand('~/.vim/bundle/'))
   NeoBundle 'slim-template/vim-slim'
   NeoBundle 'tpope/vim-haml'
   NeoBundle 'digitaltoad/vim-jade'
-  " NeoBundle 'chriskempson/vim-tomorrow-theme'
+  NeoBundle 'chriskempson/vim-tomorrow-theme'
   NeoBundle 'w0ng/vim-hybrid'
   NeoBundle 'ConradIrwin/vim-bracketed-paste'
+  NeoBundle 'altercation/vim-colors-solarized'
 call neobundle#end()
 
 " シンタックスハイライト
@@ -55,7 +56,9 @@ syntax on
 
 " カラースキーム
 " colorscheme Tomorrow-Night
-colorscheme hybrid
+" colorscheme hybrid
+set background=dark
+colorscheme solarized
 
 " エンコード
 set encoding=utf8
