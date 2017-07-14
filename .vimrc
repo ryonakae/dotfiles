@@ -34,7 +34,6 @@ call neobundle#begin(expand('~/.vim/bundle/'))
 
   " カラースキーム
   NeoBundle 'cocopon/iceberg.vim'
-  NeoBundle 'w0ng/vim-hybrid'
 call neobundle#end()
 
 
