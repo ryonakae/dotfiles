@@ -25,6 +25,7 @@ brew 'direnv'
 
 # ライブラリ
 brew 'openssl'
+brew 'libpng'
 
 # Vim
 brew 'vim', args: ['with-lua']
@@ -43,6 +44,7 @@ cask 'opera'
 # ターミナルエミュレータ・エディタ
 cask 'atom'
 cask 'processing'
+cask 'iterm2'
 
 # クラウドサービス
 cask 'dropbox'
