@@ -10,9 +10,8 @@ brew 'zsh-completions'
 
 # パッケージマネージャ
 brew 'mas'
-brew 'nodebrew'
+brew 'nodenv'
 brew 'rbenv'
-brew 'ruby-build'
 brew 'direnv'
 
 # ライブラリ

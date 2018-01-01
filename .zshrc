@@ -192,8 +192,9 @@ export HOMEBREW_CASK_OPTS="--appdir=/Applications"
 export PATH="$HOME/.rbenv/bin:$PATH"
 eval "$(rbenv init -)"
 
-# nodebrew (install by Homebrew)
-export PATH=$HOME/.nodebrew/current/bin:$PATH
+# nodenv (install by Homebrew)
+export PATH="$HOME/.nodenv/bin:$PATH"
+eval "$(nodenv init -)"
 
 # openssl
 # 参考：http://iwashi.co/2014/05/06/digital-oceanvagrant-upssl-errorrbenv/
