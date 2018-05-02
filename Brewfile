@@ -4,7 +4,6 @@ cask_args appdir: '/Applications'
 # パッケージのインストール
 # Git・シェル
 brew 'git'
-brew 'git-flow'
 brew 'zsh'
 brew 'zsh-completions'
 
@@ -13,6 +12,7 @@ brew 'mas'
 brew 'nodenv'
 brew 'rbenv'
 brew 'direnv'
+brew 'yarn'
 
 # ライブラリ
 brew 'openssl'
@@ -26,16 +26,30 @@ brew 'tree'
 
 
 # MacAppのインストール
-# ブラウザ
-cask 'google-chrome'
-cask 'google-chrome-canary'
-cask 'firefox-ja'
-cask 'opera'
+# ライブラリ
+cask 'flash'
+cask 'java'
 
-# ターミナルエミュレータ・エディタ
+# ターミナルエミュレータ・仮想環境・開発ツール
 cask 'iterm2'
+cask 'sourcetree'
+cask 'virtualbox'
+cask 'docker'
+
+# エディタ・IDE
 cask 'atom'
 cask 'processing'
+cask 'android-studio'
+
+# デザイン
+cask 'sketch'
+cask 'abstract'
+cask 'zeplin'
+
+# ブラウザ
+cask 'google-chrome'
+cask 'firefox'
+cask 'opera'
 
 # クラウドサービス
 cask 'dropbox'
@@ -48,29 +62,17 @@ cask 'steermouse'
 cask 'licecap'
 cask 'cleanarchiver'
 cask 'keepingyouawake'
-cask 'hammerspoon'
-
-# ライブラリ
-cask 'flash'
-cask 'java'
-
-# 仮想環境・開発ツール
-cask 'sourcetree'
-cask 'virtualbox'
-cask 'docker'
-
-# デザイン
-cask 'sketch'
-cask 'sketchpacks'
-cask 'zeplin'
+cask 'karabiner-elements'
 
 # マルチメディア
 cask 'vlc'
 cask 'air-video-server-hd'
 cask 'xld'
+cask 'android-file-transfer'
 
 # コミュニケーション
 cask 'skype'
+cask 'discord'
 cask 'google-hangouts'
 
 # QuickLookプラグイン
@@ -84,12 +86,10 @@ cask 'brushviewql'
 # MacAppStore
 mas 'Name Mangler', id: 402434720
 mas 'LINE', id: 539883307
-mas 'FreeMan', id: 510934532
 mas 'CloudApp', id: 417602904
 mas 'Keynote', id: 409183694
 mas 'Unsplash Wallpapers', id: 1284863847
 mas 'Magnet', id: 441258766
-mas 'Twitter', id: 409789998
 mas 'The Unarchiver', id: 425424353
 mas 'Pixelmator', id: 407963104
 mas 'DaisyDisk', id: 411643860
@@ -109,3 +109,4 @@ mas 'EdgeView 2', id: 1206246482
 mas 'Affinity Designer', id: 824171161
 mas 'Slack', id: 803453959
 mas 'Disk Diag', id: 672206759
+mas 'Tag', id: 506232966
