@@ -196,14 +196,11 @@ eval "$(rbenv init -)"
 export PATH="$HOME/.nodenv/bin:$PATH"
 eval "$(nodenv init -)"
 
+# direnv
+eval "$(direnv hook zsh)"
+export EDITOR=Vim
+
 # openssl
 # 参考：http://iwashi.co/2014/05/06/digital-oceanvagrant-upssl-errorrbenv/
 # export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
 export PATH=/usr/local/Cellar/openssl/1.0.2k/bin:$PATH
-
-# PostgreSQL
-export PGDATA=/usr/local/var/postgres
-
-# direnv
-eval "$(direnv hook zsh)"
-export EDITOR=Vim

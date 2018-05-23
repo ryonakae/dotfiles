@@ -1,7 +1,7 @@
 cask_args appdir: '/Applications'
 
 
-# パッケージのインストール
+########## パッケージのインストール ##########
 # Git・シェル
 brew 'git'
 brew 'zsh'
@@ -25,9 +25,9 @@ brew 'vim', args: ['with-lua']
 brew 'tree'
 
 
-# MacAppのインストール
+########## MacAppのインストール ##########
 # ライブラリ
-cask 'flash'
+cask 'flash-player'
 cask 'java'
 
 # ターミナルエミュレータ・仮想環境・開発ツール
@@ -35,6 +35,7 @@ cask 'iterm2'
 cask 'sourcetree'
 cask 'virtualbox'
 cask 'docker'
+cask 'genymotion'
 
 # エディタ・IDE
 cask 'atom'
@@ -63,6 +64,8 @@ cask 'licecap'
 cask 'cleanarchiver'
 cask 'keepingyouawake'
 cask 'karabiner-elements'
+cask 'bartender'
+# cask 'transmission'
 
 # マルチメディア
 cask 'vlc'
@@ -81,9 +84,9 @@ cask 'qlmarkdown'
 cask 'betterzipql'
 cask 'qlcolorcode'
 cask 'qlimagesize'
-cask 'brushviewql'
 
-# MacAppStore
+
+########## MacAppStoreのアプリをインストール ##########
 mas 'Name Mangler', id: 402434720
 mas 'LINE', id: 539883307
 mas 'CloudApp', id: 417602904

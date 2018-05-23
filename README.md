@@ -1,6 +1,4 @@
-dotfiles
-=====
-
+# dotfiles
 Macを新規購入・OSクリーンインストールした時にやるやつ
 
 
@@ -8,6 +6,7 @@ Macを新規購入・OSクリーンインストールした時にやるやつ
 gitコマンド使うのと、Homebrewのインストールに必要
 
 * Xcodeインストールする
+* Xcode起動して規約にAgreeしたり追加コンポーネントをインストールしたりする
 * `$ xcode-select --install`を実行
 
 
@@ -25,32 +24,21 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 
 ```
 $ cd dotfiles
-$ sh setup.sh && source ~/.bash_profile
+$ sh setup.sh && source ~/.bashrc
 ```
-
-brew-caskで貼られるシンボリックリンクのリンク先が変更される（`~/Applications`から`/Applications`）
 
 
 ## Homebrewのインストール
 [Homebrew](http://brew.sh/index_ja.html)のインストール
 
 ```
-$ ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
 ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
 
 
-## Brew Bundle
-### フォーミュラの追加
-参考：[Homebrew-bundleとBrewfile - Qiita](http://qiita.com/mather314/items/900ae69eba8d6d980cb2)
-
-```
-$ brew tap Homebrew/bundle
-```
-
-
-### brew bundleの実行
+## brew bundleの実行
 Brewfileがあるディレクトリで
 
 ```
@@ -69,7 +57,7 @@ $ cd ~/.vim/bundle/vimproc
 $ make -f make_mac.mak
 ```
 
-ここまでやるとNeoBundleとVimProcがインストールされたりする
+ここまでやるとNeoBundleとVimProcがインストールされる
 
 ```
 $ vim hoge
@@ -108,10 +96,10 @@ Shellを再起動でzshがデフォルトになる
 
 
 ## RubyとかNode.jsとか設定する
-Homebrew経由でインストールしたrbenvとnodebrewを使う
+Homebrew経由でインストールしたrbenvとnodenvを使う
 
 * [rbenv を利用した Ruby 環境の構築 ｜ Developers.IO](http://dev.classmethod.jp/server-side/language/build-ruby-environment-by-rbenv/)
-* [nodebrewでNode.jsのインストール - Qiita](http://qiita.com/ombran/items/c59525e429c9c363325d)
+* [Nodenv環境を用意する \- Qiita](https://qiita.com/YuukiMiyoshi/items/080b6cde332d8d4e06f3)
 
 
 ## direnvの設定する
@@ -141,25 +129,25 @@ export GIT_AUTHOR_EMAIL="mail@example.com"
 
 
 ## brew-caskに無いMacApp
-* Adobe系
-* [Ember](https://forums.realmacsoftware.com/t/ember-1-8-4-beta-now-updated-with-1-8-5-beta/2911)
-* Mangao
-* DxO FilmPack 4
+* Adobe
+  - CreativeCloudから手動インストール
 * VSCO Film
-* HiddenSwitch
-* Th-MakerX
-* ワコム タブレット ドライバ
+* ペンタブのドライバ
   - 一応`wacom-tabet`っていうcaskがあるけど未検証
+* Cinema 4D
 
 
-## 補足
-### アプリの設定
-当たり前だけど各MacAppの設定は自分でやる
+## 日々のメンテナンス
+```
+$ sh maintenance.sh
+```
 
-### PHPのインストールで`configure: error: Cannot find OpenSSL's <evp.h>`とかいうエラーが出る場合
-参考：[OS X YosemiteにHomebrew + DropboxでPHP環境構築　〜Apache, PHP, MySQL, ComposerをインストールしてFuelPHPの設定まで - Qiita](http://qiita.com/saltyshiomix/items/aacb5f9635c0d3201174)
+もろもろのHomebrewのアップデートとかクリーンナップをまとめてやる
+
+
+## その他
+* 当たり前だけど各Appの設定は自分でやる
 
 
 ## 参考
 * [pixyzehn/dotfiles](https://github.com/pixyzehn/dotfiles)
-* [Macの環境構築にhomebrew-cask+Brewfile便利 - yo_waka's blog](http://waka.github.io/2014/1/19/homebrew_cask.html)
