@@ -43,6 +43,7 @@ cask 'processing'
 cask 'android-studio'
 
 # デザイン
+cask 'adobe-creative-cloud'
 cask 'sketch'
 cask 'abstract'
 cask 'zeplin'
@@ -54,7 +55,7 @@ cask 'opera'
 
 # クラウドサービス
 cask 'dropbox'
-cask 'google-drive'
+cask 'google-photos-backup-and-sync'
 
 # ユーティリティ
 cask 'appcleaner'
@@ -81,9 +82,9 @@ cask 'google-hangouts'
 # QuickLookプラグイン
 cask 'qlstephen'
 cask 'qlmarkdown'
-cask 'betterzipql'
 cask 'qlcolorcode'
 cask 'qlimagesize'
+cask 'betterzipql'
 
 
 ########## MacAppStoreのアプリをインストール ##########
