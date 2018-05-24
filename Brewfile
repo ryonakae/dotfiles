@@ -55,7 +55,7 @@ cask 'opera'
 
 # クラウドサービス
 cask 'dropbox'
-cask 'google-photos-backup-and-sync'
+cask 'google-backup-and-sync'
 
 # ユーティリティ
 cask 'appcleaner'
