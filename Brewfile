@@ -84,7 +84,7 @@ cask 'qlstephen'
 cask 'qlmarkdown'
 cask 'qlcolorcode'
 cask 'qlimagesize'
-cask 'betterzipql'
+cask 'betterzip'
 
 
 ########## MacAppStoreのアプリをインストール ##########
