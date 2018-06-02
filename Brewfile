@@ -73,6 +73,7 @@ cask 'vlc'
 cask 'air-video-server-hd'
 cask 'xld'
 cask 'android-file-transfer'
+cask 'audirvana-plus'
 
 # コミュニケーション
 cask 'skype'
@@ -98,7 +99,7 @@ mas 'The Unarchiver', id: 425424353
 mas 'Pixelmator', id: 407963104
 mas 'DaisyDisk', id: 411643860
 mas '1Password', id: 443987910
-mas 'Tweetbot', id: 557168941
+mas 'Tweetbot', id: 1384080005
 mas 'Fantastical 2', id: 975937182
 mas 'Numbers', id: 409203825
 mas 'Affinity Photo', id: 824183456
