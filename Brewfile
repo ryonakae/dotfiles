@@ -62,10 +62,12 @@ cask 'appcleaner'
 cask 'bettertouchtool'
 cask 'steermouse'
 cask 'licecap'
-cask 'cleanarchiver'
+# cask 'cleanarchiver'
 cask 'keepingyouawake'
 cask 'karabiner-elements'
 cask 'bartender'
+cask 'disablemonitor'
+cask 'steveschow-gfxcardstatus'
 # cask 'transmission'
 
 # マルチメディア
