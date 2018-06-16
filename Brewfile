@@ -66,10 +66,9 @@ cask 'licecap'
 cask 'keepingyouawake'
 cask 'karabiner-elements'
 cask 'bartender'
-cask 'disablemonitor'
-cask 'steveschow-gfxcardstatus'
 # cask 'transmission'
 cask 'alfred'
+cask 'switchresx'
 
 # マルチメディア
 cask 'vlc'
