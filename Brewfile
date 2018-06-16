@@ -69,6 +69,7 @@ cask 'bartender'
 cask 'disablemonitor'
 cask 'steveschow-gfxcardstatus'
 # cask 'transmission'
+cask 'alfred'
 
 # マルチメディア
 cask 'vlc'
