@@ -69,7 +69,7 @@ cask 'bartender'
 # cask 'transmission'
 cask 'alfred'
 cask 'switchresx'
-casl 'contexts'
+cask 'contexts'
 
 # マルチメディア
 cask 'vlc'
