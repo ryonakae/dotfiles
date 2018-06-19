@@ -26,9 +26,33 @@ brew 'tree'
 
 
 ########## MacAppのインストール ##########
+# ユーティリティ
+cask 'appcleaner'
+cask 'bettertouchtool'
+cask 'steermouse'
+cask 'licecap'
+# cask 'cleanarchiver'
+cask 'keepingyouawake'
+cask 'karabiner-elements'
+cask 'bartender'
+# cask 'transmission'
+cask 'alfred'
+cask 'switchresx'
+cask 'contexts'
+cask 'google-japanese-ime'
+
 # ライブラリ
 cask 'flash-player'
 cask 'java'
+
+# ブラウザ
+cask 'google-chrome'
+cask 'firefox'
+cask 'opera'
+
+# クラウドサービス
+cask 'dropbox'
+cask 'google-backup-and-sync'
 
 # ターミナルエミュレータ・仮想環境・開発ツール
 cask 'iterm2'
@@ -47,29 +71,6 @@ cask 'adobe-creative-cloud'
 cask 'sketch'
 cask 'abstract'
 cask 'zeplin'
-
-# ブラウザ
-cask 'google-chrome'
-cask 'firefox'
-cask 'opera'
-
-# クラウドサービス
-cask 'dropbox'
-cask 'google-backup-and-sync'
-
-# ユーティリティ
-cask 'appcleaner'
-cask 'bettertouchtool'
-cask 'steermouse'
-cask 'licecap'
-# cask 'cleanarchiver'
-cask 'keepingyouawake'
-cask 'karabiner-elements'
-cask 'bartender'
-# cask 'transmission'
-cask 'alfred'
-cask 'switchresx'
-cask 'contexts'
 
 # マルチメディア
 cask 'vlc'
