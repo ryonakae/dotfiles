@@ -148,6 +148,12 @@ $ sh maintenance.sh
 ## その他
 * 当たり前だけど各Appの設定は自分でやる
 
+### Dockの表示/非表示を早くする
+```
+$ defaults write com.apple.dock autohide-time-modifier -float 0.15;killall Dock
+$ defaults write com.apple.dock autohide-delay -float 0;killall Dock
+```
+
 
 ## 参考
 * [pixyzehn/dotfiles](https://github.com/pixyzehn/dotfiles)
