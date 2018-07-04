@@ -29,7 +29,7 @@ brew 'tree'
 # ユーティリティ
 cask 'appcleaner'
 cask 'bettertouchtool'
-cask 'steermouse'
+cask 'cursorsense'
 cask 'licecap'
 # cask 'cleanarchiver'
 cask 'keepingyouawake'
