@@ -40,6 +40,7 @@ cask 'alfred'
 cask 'switchresx'
 cask 'contexts'
 cask 'google-japanese-ime'
+cask 'haptic-touch-bar'
 
 # ライブラリ
 cask 'flash-player'
