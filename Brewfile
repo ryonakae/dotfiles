@@ -79,6 +79,7 @@ cask 'air-video-server-hd'
 cask 'xld'
 cask 'android-file-transfer'
 cask 'audirvana-plus'
+cask 'spotify'
 
 # コミュニケーション
 cask 'skype'
