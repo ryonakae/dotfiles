@@ -31,20 +31,13 @@ cask 'appcleaner'
 cask 'bettertouchtool'
 cask 'cursorsense'
 cask 'licecap'
-# cask 'cleanarchiver'
 cask 'keepingyouawake'
 cask 'karabiner-elements'
 cask 'bartender'
-# cask 'transmission'
 cask 'alfred'
-cask 'switchresx'
 cask 'contexts'
 cask 'google-japanese-ime'
 cask 'haptic-touch-bar'
-
-# ライブラリ
-cask 'flash-player'
-cask 'java'
 
 # ブラウザ
 cask 'google-chrome'
