@@ -13,7 +13,6 @@ brew cask upgrade
 
 echo "\nCleanup"
 brew cleanup
-brew cask cleanup
 
 echo "\nCheck Homebrew"
 brew doctor
