@@ -59,12 +59,14 @@ cask 'genymotion'
 cask 'atom'
 cask 'processing'
 cask 'android-studio'
+cask 'notion'
 
 # デザイン
 cask 'adobe-creative-cloud'
 cask 'sketch'
 cask 'abstract'
 cask 'zeplin'
+cask 'figma'
 
 # マルチメディア
 cask 'vlc'
