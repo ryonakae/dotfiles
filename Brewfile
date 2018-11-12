@@ -38,6 +38,7 @@ cask 'alfred'
 cask 'contexts'
 cask 'google-japanese-ime'
 cask 'haptic-touch-bar'
+cask '1password'
 
 # ブラウザ
 cask 'google-chrome'
@@ -91,7 +92,6 @@ cask 'betterzip'
 
 
 ########## MacAppStoreのアプリをインストール ##########
-mas '1Password 7', id: 1333542190
 mas 'Name Mangler', id: 402434720
 mas 'LINE', id: 539883307
 mas 'CloudApp', id: 417602904
