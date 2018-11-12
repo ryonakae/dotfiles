@@ -38,6 +38,7 @@ cask 'alfred'
 cask 'contexts'
 cask 'google-japanese-ime'
 cask 'haptic-touch-bar'
+cask '1password'
 
 # ブラウザ
 cask 'google-chrome'
@@ -99,7 +100,6 @@ mas 'Magnet', id: 441258766
 mas 'The Unarchiver', id: 425424353
 mas 'Pixelmator', id: 407963104
 mas 'DaisyDisk', id: 411643860
-mas '1Password', id: 443987910
 mas 'Tweetbot', id: 1384080005
 mas 'Fantastical 2', id: 975937182
 mas 'Numbers', id: 409203825
