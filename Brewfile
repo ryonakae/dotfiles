@@ -60,6 +60,7 @@ cask 'genymotion'
 cask 'atom'
 cask 'processing'
 cask 'android-studio'
+cask 'unity-hub'
 cask 'notion'
 
 # デザイン
