@@ -20,8 +20,8 @@ call neobundle#begin(expand('~/.vim/bundle/'))
 
   " シンタックスハイライト
   NeoBundle 'hail2u/vim-css3-syntax'
-  NeoBundle 'taichouchou2/html5.vim'
-  NeoBundle 'taichouchou2/vim-javascript'
+  NeoBundle 'othree/html5.vim'
+  NeoBundle 'othree/yajs.vim'
 
   " ペースト時にインデントされないようにする
   NeoBundle 'ConradIrwin/vim-bracketed-paste'
@@ -34,14 +34,16 @@ call neobundle#begin(expand('~/.vim/bundle/'))
 
   " カラースキーム
   NeoBundle 'cocopon/iceberg.vim'
+  NeoBundle 'ayu-theme/ayu-vim'
 call neobundle#end()
 
 
 "-------------------------------------------------------------------------------
 " シンタックスハイライト
 syntax on
-colorscheme iceberg
 set termguicolors
+let ayucolor="mirage"
+colorscheme ayu
 
 
 "-------------------------------------------------------------------------------
