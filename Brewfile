@@ -1,6 +1,10 @@
 cask_args appdir: '/Applications'
 
 
+########## フォーミュラの追加 ##########
+tap 'homebrew/php'
+
+
 ########## パッケージのインストール ##########
 # Git・シェル
 brew 'git'
