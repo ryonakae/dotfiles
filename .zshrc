@@ -201,6 +201,7 @@ eval "$(direnv hook zsh)"
 export EDITOR=Vim
 
 # openssl
-# 参考：http://iwashi.co/2014/05/06/digital-oceanvagrant-upssl-errorrbenv/
-# export SSL_CERT_FILE=/usr/local/etc/openssl/cert.pem
-export PATH=/usr/local/Cellar/openssl/1.0.2k/bin:$PATH
+export PATH="/usr/local/opt/openssl/bin:$PATH"
+export LDFLAGS="-L/usr/local/opt/openssl/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl/include"
+export PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig"
