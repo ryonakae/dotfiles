@@ -11,6 +11,7 @@ brew 'zsh-completions'
 brew 'mas'
 brew 'nodenv'
 brew 'rbenv'
+brew 'pyenv'
 brew 'direnv'
 brew 'yarn'
 
