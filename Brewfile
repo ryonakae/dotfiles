@@ -4,14 +4,17 @@ cask_args appdir: '/Applications'
 ########## パッケージのインストール ##########
 # Git・シェル
 brew 'git'
+brew 'git-lfs'
 brew 'zsh'
 brew 'zsh-completions'
+brew 'fish'
 
 # パッケージマネージャ
 brew 'mas'
 brew 'nodenv'
 brew 'rbenv'
 brew 'pyenv'
+brew 'goenv'
 brew 'direnv'
 brew 'yarn'
 
@@ -20,7 +23,7 @@ brew 'openssl'
 brew 'libpng'
 
 # Vim
-brew 'vim', args: ['with-lua']
+brew 'vim'
 
 # その他
 brew 'tree'
@@ -56,9 +59,10 @@ cask 'sourcetree'
 cask 'virtualbox'
 cask 'docker'
 cask 'genymotion'
+cask 'google-cloud-sdk'
 
 # エディタ・IDE
-cask 'atom'
+cask 'visual-studio-code'
 cask 'processing'
 cask 'android-studio'
 cask 'unity-hub'
@@ -70,13 +74,14 @@ cask 'sketch'
 cask 'abstract'
 cask 'zeplin'
 cask 'figma'
+cask 'imageoptim'
 
 # マルチメディア
 cask 'vlc'
 cask 'air-video-server-hd'
 cask 'xld'
 cask 'android-file-transfer'
-cask 'audirvana-plus'
+cask 'audirvana'
 cask 'spotify'
 
 # コミュニケーション
