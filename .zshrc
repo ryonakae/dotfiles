@@ -224,3 +224,6 @@ PATH=$PATH:$GOPATH/bin
 export PATH="/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine:$PATH"
 source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
 source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
+
+# Android SDK
+export PATH="$PATH:/Users/ryo.nakae/Library/Android/sdk/platform-tools"
