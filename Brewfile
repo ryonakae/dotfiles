@@ -1,6 +1,10 @@
 cask_args appdir: '/Applications'
 
 
+########## Tap Formula ##########
+tap 'heroku/brew'
+
+
 ########## パッケージのインストール ##########
 # Git・シェル
 brew 'git'
@@ -22,10 +26,12 @@ brew 'yarn'
 brew 'openssl'
 brew 'libpng'
 
-# Vim
-brew 'vim'
+# 開発ツール
+brew 'firebase-cli'
+brew 'heroku'
 
 # その他
+brew 'vim'
 brew 'tree'
 
 
@@ -43,11 +49,13 @@ cask 'contexts'
 cask 'google-japanese-ime'
 cask 'haptic-touch-bar'
 cask '1password'
+cask 'cmd-eikana'
 
 # ブラウザ
 cask 'google-chrome'
 cask 'firefox'
 cask 'opera'
+cask 'vivaldi'
 
 # クラウドサービス
 cask 'dropbox'
@@ -55,11 +63,13 @@ cask 'google-backup-and-sync'
 
 # ターミナルエミュレータ・仮想環境・開発ツール
 cask 'iterm2'
+cask 'hyper'
 cask 'sourcetree'
 cask 'virtualbox'
 cask 'docker'
 cask 'genymotion'
 cask 'google-cloud-sdk'
+cask 'sequel-pro'
 
 # エディタ・IDE
 cask 'visual-studio-code'
