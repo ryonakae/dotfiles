@@ -25,6 +25,7 @@ brew 'yarn'
 # ライブラリ
 brew 'openssl'
 brew 'libpng'
+brew 'fontforge'
 
 # 開発ツール
 brew 'firebase-cli'
@@ -85,6 +86,7 @@ cask 'abstract'
 cask 'zeplin'
 cask 'figma'
 cask 'imageoptim'
+cask 'fontforge'
 
 # マルチメディア
 cask 'vlc'
