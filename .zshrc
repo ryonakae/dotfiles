@@ -217,3 +217,6 @@ export PATH="$PATH:$GOPATH/bin"
 
 # google-cloud sdk
 export PATH="/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine:$PATH"
+
+# Android SDK
+export PATH="$PATH:/Users/ryo.nakae/Library/Android/sdk/platform-tools"
