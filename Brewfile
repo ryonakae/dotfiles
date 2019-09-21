@@ -51,6 +51,7 @@ cask 'google-japanese-ime'
 cask 'haptic-touch-bar'
 cask '1password'
 cask 'cmd-eikana'
+cask 'xquartz'
 
 # ブラウザ
 cask 'google-chrome'
