@@ -211,12 +211,19 @@ export LDFLAGS="-L/usr/local/opt/openssl/lib"
 export CPPFLAGS="-I/usr/local/opt/openssl/include"
 export PKG_CONFIG_PATH="/usr/local/opt/openssl/lib/pkgconfig"
 
-# golang
-export GOPATH="$HOME/go"
-export PATH="$PATH:$GOPATH/bin"
+# goenv
+export GOENV_ROOT=$HOME/.goenv
+export PATH=$GOENV_ROOT/bin:$PATH
+eval "$(goenv init -)"
+
+# go
+export GOPATH=$HOME/go
+PATH=$PATH:$GOPATH/bin
 
 # google-cloud sdk
 export PATH="/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine:$PATH"
+source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
+source "/usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/completion.zsh.inc"
 
 # Android SDK
 export PATH="$PATH:/Users/ryo.nakae/Library/Android/sdk/platform-tools"
