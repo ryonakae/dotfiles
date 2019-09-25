@@ -24,8 +24,8 @@ SAVEHIST=1000000
 # PROMPT="%~ %# "
 
 # 1行表示その２
-precmd() {print ""}
-PROMPT="%{$fg[yellow]%}[%n]%{$reset_color%}$ "
+PROMPT="
+%{$fg[yellow]%}[%n]%{$reset_color%}$ "
 
 # 2行表示
 # PROMPT="%{${fg[red]}%}[%n@%m]%{${reset_color}%} %~
