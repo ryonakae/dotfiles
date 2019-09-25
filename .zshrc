@@ -23,16 +23,20 @@ SAVEHIST=1000000
 # 1行表示
 # PROMPT="%~ %# "
 
+# 1行表示その２
+precmd() {print ""}
+PROMPT="%{$fg[yellow]%}[%n]%{$reset_color%}$ "
+
 # 2行表示
 # PROMPT="%{${fg[red]}%}[%n@%m]%{${reset_color}%} %~
 # %# "
 
 # 2行表示その2
-PROMPT="
-%{${fg[red]}%}%~%{${reset_color}%}
-[%n]$ "
+# PROMPT="
+# %{${fg[red]}%}%~%{${reset_color}%}
+# [%n]$ "
 
-PROMPT2='[%n]> '
+# PROMPT2='[%n]> '
 
 # 単語の区切り文字を指定する
 autoload -Uz select-word-style
@@ -68,15 +72,15 @@ zstyle ':completion:*:processes' command 'ps x -o pid,s,args'
 ########################################
 # vcs_info
 
-autoload -Uz vcs_info
-zstyle ':vcs_info:*' formats '(%s)-[%b]'
-zstyle ':vcs_info:*' actionformats '(%s)-[%b|%a]'
-precmd () {
-    psvar=()
-    LANG=en_US.UTF-8 vcs_info
-    [[ -n "$vcs_info_msg_0_" ]] && psvar[1]="$vcs_info_msg_0_"
-}
-RPROMPT="%1(v|%F{green}%1v%f|)"
+# autoload -Uz vcs_info
+#  zstyle ':vcs_info:*' formats '(%s)-[%b]'
+# zstyle ':vcs_info:*' actionformats '(%s)-[%b|%a]'
+# precmd () {
+#     psvar=()
+#     LANG=en_US.UTF-8 vcs_info
+#     [[ -n "$vcs_info_msg_0_" ]] && psvar[1]="$vcs_info_msg_0_"
+# }
+# RPROMPT="%1(v|%F{green}%1v%f|)"
 
 
 ########################################
