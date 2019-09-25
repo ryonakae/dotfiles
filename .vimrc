@@ -45,6 +45,12 @@ set termguicolors
 let ayucolor="mirage"
 colorscheme ayu
 
+" 背景色を透明にする
+highlight Normal ctermbg=NONE guibg=NONE
+highlight NonText ctermbg=NONE guibg=NONE
+highlight SpecialKey ctermbg=NONE guibg=NONE
+highlight EndOfBuffer ctermbg=NONE guibg=NONE
+
 
 "-------------------------------------------------------------------------------
 " エンコード

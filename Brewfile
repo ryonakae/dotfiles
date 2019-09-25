@@ -64,7 +64,6 @@ cask 'dropbox'
 cask 'google-backup-and-sync'
 
 # ターミナルエミュレータ・仮想環境・開発ツール
-cask 'iterm2'
 cask 'hyper'
 cask 'sourcetree'
 cask 'virtualbox'

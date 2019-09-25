@@ -1,4 +1,4 @@
-DOT_FILES=(.bashrc .zshrc .vimrc)
+DOT_FILES=(.bashrc .zshrc .vimrc .hyper.js)
 
 for file in ${DOT_FILES[@]}
 
