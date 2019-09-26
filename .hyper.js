@@ -15,13 +15,13 @@ module.exports = {
     fontFamily: "'Source Han Code JP', 'Source Code Pro for Powerline', Menlo, Monaco, 'Courier New', monospace",
 
     // default font weight: 'normal' or 'bold'
-    fontWeight: 'normal',
+    fontWeight: 400,
 
     // font weight for bold characters: 'normal' or 'bold'
     fontWeightBold: 'bold',
 
     // line height as a relative unit
-    lineHeight: 1,
+    lineHeight: 1.1,
 
     // letter spacing as a relative unit
     letterSpacing: 0,
@@ -141,10 +141,18 @@ module.exports = {
     
     // ayu
     ayu: {
-        noBorder: false,
-        showTabBorder: true,
-        showHeaderBorder: false
-    }
+      noBorder: false,
+      showTabBorder: true,
+      showHeaderBorder: false
+    },
+    
+    // summon
+    summon: {
+      hotkey: 'Alt+Space'
+    },
+    
+    // opacity
+    opacity: 0.95
   },
 
   // a list of plugins to fetch and install from npm
@@ -160,7 +168,8 @@ module.exports = {
     'hypercwd',
     'hyper-pane',
     'hyperterm-summon',
-    'hyper-search'
+    'hyper-search',
+    'hyper-opacity'
   ],
 
   // in development, you can create a directory under
