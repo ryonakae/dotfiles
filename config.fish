@@ -6,3 +6,5 @@ set -g theme_display_cmd_duration yes
 set -g theme_color_scheme dracula
 set -g theme_display_user ssh
 set -g theme_display_hostname ssh
+
+set -U FZF_LEGACY_KEYBINDINGS 0
