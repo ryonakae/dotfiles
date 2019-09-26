@@ -24,7 +24,7 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 
 ```
 $ cd dotfiles
-$ sh setup.sh && source ~/.bashrc
+$ sh symlink.sh && source ~/.bashrc
 ```
 
 
@@ -67,18 +67,38 @@ $ vim hoge
 とするとVimのプラグインがインストールされる
 
 
-## デフォルトのShellをzshにする
-参考：[[MacOSX]ターミナルのデフォルトShellをzshに変更する方法 - DQNEO起業日記](http://dqn.sakusakutto.jp/2014/05/macosx_shell_chsh_zsh.html)
+## デフォルトのShellをfishにする
+参考：[ログインシェルをfishにしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
 
 ```
-# /etc/shells の末尾に /usr/local/bin/zsh を追記
-sudo sh -c 'echo $(which zsh) >> /etc/shells'
+# /etc/shells の末尾に /usr/local/bin/fish を追記
+$ sudo sh -c 'echo $(which fish) >> /etc/shells'
 
 # ユーザのデフォルトシェルを変更
-chsh -s /usr/local/bin/zsh
+$ chsh -s /usr/local/bin/fish
 ```
 
 Shellを再起動でzshがデフォルトになる
+
+## fishの設定
+### Fisherをインストール
+[jorgebucaran/fisher](https://github.com/jorgebucaran/fisher)
+
+```
+$ curl https://git.io/fisher --create-dirs -sLo ~/.config/fish/functions/fisher.fish
+```
+
+### fishfileに書かれたパッケージをインストール
+```
+$ fisher
+```
+
+### powerlineフォント
+[powerline/fonts](https://github.com/powerline/fonts)
+
+### nerdフォント
+* [ryanoasis/nerd\-fonts](https://github.com/ryanoasis/nerd-fonts)
+* [nerd\-fonts/patched\-fonts/SourceCodePro](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/SourceCodePro)
 
 
 ## Homebrewでインストールしたやつを優先的に利用する

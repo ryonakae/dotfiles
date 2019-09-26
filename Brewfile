@@ -9,8 +9,6 @@ tap 'heroku/brew'
 # Git・シェル
 brew 'git'
 brew 'git-lfs'
-brew 'zsh'
-brew 'zsh-completions'
 brew 'fish'
 
 # パッケージマネージャ

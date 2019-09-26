@@ -12,7 +12,7 @@ module.exports = {
     fontSize: 13,
 
     // font family with optional fallbacks
-    fontFamily: "'Source Han Code JP', 'Source Code Pro for Powerline', Menlo, Monaco, 'Courier New', monospace",
+    fontFamily: "'Source Han Code JP', 'SauceCodePro Nerd Font', Menlo, Monaco, 'Courier New', monospace",
 
     // default font weight: 'normal' or 'bold'
     fontWeight: 400,
