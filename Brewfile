@@ -10,6 +10,7 @@ tap 'heroku/brew'
 brew 'git'
 brew 'git-lfs'
 brew 'fish'
+brew 'fzf'
 
 # パッケージマネージャ
 brew 'mas'
