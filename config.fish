@@ -8,3 +8,8 @@ set -g theme_display_user ssh
 set -g theme_display_hostname ssh
 
 set -U FZF_LEGACY_KEYBINDINGS 0
+
+status --is-interactive; and source (nodenv init -|psub)
+status --is-interactive; and source (rbenv init -|psub)
+status --is-interactive; and source (pyenv init -|psub)
+status --is-interactive; and source (goenv init -|psub)
