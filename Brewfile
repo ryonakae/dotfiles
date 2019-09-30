@@ -118,7 +118,6 @@ mas 'Magnet', id: 441258766
 mas 'The Unarchiver', id: 425424353
 mas 'Pixelmator', id: 407963104
 mas 'DaisyDisk', id: 411643860
-mas 'Tweetbot', id: 1384080005
 mas 'Fantastical 2', id: 975937182
 mas 'Numbers', id: 409203825
 mas 'Affinity Photo', id: 824183456
