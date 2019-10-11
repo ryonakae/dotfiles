@@ -77,6 +77,7 @@ cask 'processing'
 cask 'android-studio'
 cask 'unity-hub'
 cask 'notion'
+cask 'editaro'
 
 # デザイン
 cask 'adobe-creative-cloud'
