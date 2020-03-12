@@ -51,6 +51,7 @@ cask 'google-japanese-ime'
 cask '1password'
 cask 'cmd-eikana'
 cask 'xquartz'
+cask 'monitorcontrol'
 
 # ブラウザ
 cask 'google-chrome'
