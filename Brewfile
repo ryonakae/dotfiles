@@ -118,7 +118,6 @@ mas 'iMovie', id: 408981434
 mas 'GarageBand', id: 682658836
 mas 'Name Mangler', id: 402434720
 mas 'LINE', id: 539883307
-mas 'CloudApp', id: 417602904
 mas 'Unsplash Wallpapers', id: 1284863847
 mas 'Magnet', id: 441258766
 mas 'The Unarchiver', id: 425424353
@@ -127,7 +126,6 @@ mas 'DaisyDisk', id: 411643860
 mas 'Fantastical', id: 975937182
 mas 'Affinity Designer', id: 824171161
 mas 'Affinity Photo', id: 824183456
-mas 'QuickShade', id: 931571202
 mas 'Bear', id: 1091189122
 mas 'Transmit', id: 403388562
 mas 'CotEditor', id: 1024640650
