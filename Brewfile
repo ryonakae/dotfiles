@@ -51,7 +51,7 @@ cask 'google-japanese-ime'
 cask '1password'
 cask 'cmd-eikana'
 cask 'xquartz'
-cask 'monitorcontrol'
+# cask 'monitorcontrol'
 
 # ブラウザ
 cask 'google-chrome'
@@ -136,3 +136,5 @@ mas 'Disk Diag', id: 672206759
 mas 'Tag', id: 506232966
 mas 'Twitter', id: 1482454543
 mas 'Tweetbot', id: 1384080005
+mas 'QuickShade', id: 931571202
+mas 'PicGIF Lite', id: 844918735
