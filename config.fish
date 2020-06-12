@@ -47,6 +47,7 @@ set -x PATH $GOPATH/bin $PATH
 # google-cloud sdk
 set -x PATH /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
 source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+set -x CLOUDSDK_PYTHON (which python3)
 
 # Android SDK
 set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
