@@ -51,3 +51,7 @@ set -x CLOUDSDK_PYTHON (which python3)
 
 # Android SDK
 set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
+set -x ANDROID_SDK $HOME/Library/Android/sdk
+
+# PostgreSQL
+set -x PGDATA /usr/local/var/postgres

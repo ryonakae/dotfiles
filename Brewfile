@@ -33,6 +33,7 @@ brew 'heroku'
 # その他
 brew 'vim'
 brew 'tree'
+brew 'postgresql'
 
 
 ########## MacAppのインストール ##########
@@ -40,14 +41,13 @@ brew 'tree'
 cask 'appcleaner'
 cask 'bettertouchtool'
 cask 'cursorsense'
-cask 'licecap'
 cask 'keepingyouawake'
 cask 'karabiner-elements'
 cask 'bartender'
 cask 'alfred'
 cask 'contexts'
 cask 'google-japanese-ime'
-# cask 'haptic-touch-bar'
+cask 'haptic-touch-bar'
 cask '1password'
 cask 'cmd-eikana'
 cask 'xquartz'
@@ -87,6 +87,7 @@ cask 'zeplin'
 cask 'figma'
 cask 'imageoptim'
 cask 'fontforge'
+cask 'licecap'
 
 # マルチメディア
 cask 'vlc'
@@ -100,13 +101,10 @@ cask 'spotify'
 cask 'skype'
 cask 'discord'
 cask 'google-hangouts'
+cask 'zoomus'
 
 # QuickLookプラグイン
-cask 'qlstephen'
-cask 'qlmarkdown'
-cask 'qlcolorcode'
-cask 'qlimagesize'
-cask 'betterzip'
+# cask 'hetimazipql'
 
 
 ########## MacAppStoreのアプリをインストール ##########
@@ -116,7 +114,6 @@ mas 'Pages', id: 409201541
 mas 'Keynote', id: 409183694
 mas 'iMovie', id: 408981434
 mas 'GarageBand', id: 682658836
-mas 'Name Mangler', id: 402434720
 mas 'LINE', id: 539883307
 mas 'Unsplash Wallpapers', id: 1284863847
 mas 'Magnet', id: 441258766
