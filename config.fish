@@ -32,6 +32,7 @@ status --is-interactive; and source (pyenv init -|psub)
 status --is-interactive; and source (goenv init -|psub)
 
 # direnv
+eval (direnv hook fish)
 set -x EDITOR Vim
 
 # openssl
