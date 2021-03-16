@@ -50,6 +50,7 @@ cask 'google-japanese-ime'
 cask '1password'
 cask 'cmd-eikana'
 cask 'xquartz'
+cask 'authy'
 
 # ブラウザ
 cask 'google-chrome'
@@ -69,12 +70,14 @@ cask 'docker'
 cask 'genymotion'
 cask 'google-cloud-sdk'
 cask 'sequel-pro'
+cask 'react-native-debugger'
 
 # エディタ・IDE
 cask 'visual-studio-code'
 cask 'processing'
 cask 'android-studio'
 cask 'unity-hub'
+cask 'notion'
 
 # デザイン
 cask 'adobe-creative-cloud'
@@ -84,6 +87,12 @@ cask 'figma'
 cask 'homebrew/cask-versions/figma-beta'
 cask 'imageoptim'
 cask 'fontforge'
+cask 'rightfont'
+
+# Keyboard
+cask 'freecad'
+cask 'kicad'
+cask 'qmk-toolbox'
 
 # マルチメディア
 cask 'vlc'
@@ -131,6 +140,7 @@ mas 'Tweetbot', id: 1384080005
 # cask 'monitorcontrol'
 # cask 'audirvana'
 # cask 'air-video-server-hd'
+# cask 'timemachineeditor'
 # mas 'iMovie', id: 408981434
 # mas 'GarageBand', id: 682658836
 # mas 'EdgeView 2', id: 1206246482
