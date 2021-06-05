@@ -88,6 +88,7 @@ cask 'homebrew/cask-versions/figma-beta'
 cask 'imageoptim'
 cask 'fontforge'
 cask 'rightfont'
+cask 'fontbase'
 
 # Keyboard
 cask 'freecad'
