@@ -12,7 +12,7 @@ module.exports = {
     fontSize: 13,
 
     // font family with optional fallbacks
-    fontFamily: "'Source Han Code JP', 'SauceCodePro Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+    fontFamily: "'SauceCodePro Nerd Font', Menlo, Monaco, 'Courier New', monospace",
 
     // default font weight: 'normal' or 'bold'
     fontWeight: 400,
@@ -110,7 +110,9 @@ module.exports = {
     shellArgs: ['--login'],
 
     // for environment variables
-    env: {},
+    env: {
+      LANG: 'ja_JP.UTF-8'
+    },
 
     // set to `false` for no bell
     bell: 'SOUND',
