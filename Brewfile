@@ -51,6 +51,9 @@ cask '1password'
 cask 'cmd-eikana'
 cask 'xquartz'
 cask 'authy'
+cask 'choosy'
+cask 'meetingbar'
+cask 'namechanger'
 
 # ブラウザ
 cask 'google-chrome'
@@ -60,7 +63,7 @@ cask 'vivaldi'
 
 # クラウドサービス
 cask 'dropbox'
-cask 'google-backup-and-sync'
+cask 'google-drive'
 
 # ターミナルエミュレータ・仮想環境・開発ツール
 cask 'hyper'
@@ -88,24 +91,24 @@ cask 'homebrew/cask-versions/figma-beta'
 cask 'imageoptim'
 cask 'fontforge'
 cask 'rightfont'
-cask 'fontbase'
 
 # Keyboard
 cask 'freecad'
 cask 'kicad'
 cask 'qmk-toolbox'
+cask 'via'
 
 # マルチメディア
 cask 'vlc'
 cask 'xld'
 cask 'android-file-transfer'
 cask 'spotify'
-cask 'licecap'
+cask 'cleanshot'
+cask 'obs'
 
 # コミュニケーション
 cask 'skype'
 cask 'discord'
-cask 'google-hangouts'
 cask 'zoomus'
 
 # QuickLookプラグイン
@@ -134,11 +137,11 @@ mas 'Slack', id: 803453959
 mas 'Disk Diag', id: 672206759
 mas 'Twitter', id: 1482454543
 mas 'Tweetbot', id: 1384080005
+mas 'Transporter', id: 1450874784
 
 
 ########## 端末によってインストールするアプリ（適宜コメントアウト） ##########
 # cask 'haptic-touch-bar'
-# cask 'monitorcontrol'
 # cask 'audirvana'
 # cask 'air-video-server-hd'
 # cask 'timemachineeditor'
@@ -146,4 +149,3 @@ mas 'Tweetbot', id: 1384080005
 # mas 'GarageBand', id: 682658836
 # mas 'EdgeView 2', id: 1206246482
 # mas 'Tag', id: 506232966
-# mas 'QuickShade', id: 931571202
