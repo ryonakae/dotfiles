@@ -21,7 +21,8 @@ set -U FZF_LEGACY_KEYBINDINGS 0
 
 # homebrew
 set -x HOMEBREW_CASK_OPTS --appdir=/Applications
-set -g fish_user_paths "/usr/local/sbin" $fish_user_paths
+set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
+# fish_add_path /opt/homebrew/bin # for Apple Silicon
 
 # anyenv
 set -x PATH $HOME/.anyenv/bin $PATH
