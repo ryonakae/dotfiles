@@ -6,6 +6,7 @@ end
 # theme
 set -g theme_color_scheme dracula
 set -g theme_display_date no
+set -g theme_display_cmd_duration yes
 set -g theme_powerline_fonts no
 set -g theme_nerd_fonts yes
 set -g theme_display_git_master_branch yes
@@ -22,7 +23,8 @@ set -U FZF_LEGACY_KEYBINDINGS 0
 # homebrew
 set -x HOMEBREW_CASK_OPTS --appdir=/Applications
 set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
-# fish_add_path /opt/homebrew/bin # for Apple Silicon
+# for Apple Silicon
+# set -x PATH /opt/homebrew/bin $PATH
 
 # anyenv
 set -x PATH $HOME/.anyenv/bin $PATH
@@ -37,9 +39,13 @@ set -x GOPATH $HOME/go
 set -x PATH $GOPATH/bin $PATH
 
 # google-cloud sdk
-set -x PATH /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
-source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
 set -x CLOUDSDK_PYTHON (which python3)
+# for Intel
+# set -x PATH /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
+# source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+# for Apple Silicon
+# set -x PATH /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
+# source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
 
 # Android SDK
 set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
