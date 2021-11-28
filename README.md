@@ -39,11 +39,9 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 
 
 ## brew bundleの実行
-Brewfileがあるディレクトリで
-
-```
-$ brew bundle
-```
+1. Brewfile.example を Brewfile にリネーム
+2. PCによってインストールしたいものを適宜コメントアウト解除
+3. `$ brew bundle`を実行
 
 Brewfileに記述した処理が実行される
 
@@ -78,7 +76,7 @@ $ sudo sh -c 'echo $(which fish) >> /etc/shells'
 $ chsh -s /usr/local/bin/fish
 ```
 
-Shellを再起動でzshがデフォルトになる
+Shellを再起動でfishがデフォルトになる
 
 ## fishの設定
 ### Fisherをインストール
