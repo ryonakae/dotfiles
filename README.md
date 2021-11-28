@@ -11,7 +11,7 @@ gitコマンド使うのと、Homebrewのインストールに必要
 
 
 ## リポジトリをcloneする
-ユーザーのホームディレクトリにcloneするのが良さそう
+ユーザーのホームディレクトリにcloneするのが良い
 
 ```
 $ cd ~/
@@ -24,8 +24,10 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 
 ```
 $ cd dotfiles
-$ sh symlink.sh && source ~/.bashrc
+$ sh symlink.sh
 ```
+
+各設定ファイルのシンボリックリンクをホームディレクトリに貼る
 
 
 ## Homebrewのインストール
@@ -44,6 +46,34 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 3. `$ brew bundle`を実行
 
 Brewfileに記述した処理が実行される
+
+
+## デフォルトのShellをfishにする
+参考：[ログインシェルをfishにしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
+
+```
+# /etc/shells の末尾に /usr/local/bin/fish を追記
+$ sudo sh -c 'echo $(which fish) >> /etc/shells'
+
+# ユーザのデフォルトシェルを変更
+$ chsh -s /usr/local/bin/fish
+```
+
+Shellを再起動でfishがデフォルトになる
+
+
+## fishの設定
+### Fisherをインストール
+[jorgebucaran/fisher](https://github.com/jorgebucaran/fisher)
+
+```
+$ curl https://git.io/fisher --create-dirs -sLo ~/.config/fish/functions/fisher.fish
+```
+
+### fishfileに書かれたパッケージをインストール
+```
+$ fisher
+```
 
 
 ## Vimの設定
@@ -65,40 +95,6 @@ $ vim hoge
 とするとVimのプラグインがインストールされる
 
 
-## デフォルトのShellをfishにする
-参考：[ログインシェルをfishにしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
-
-```
-# /etc/shells の末尾に /usr/local/bin/fish を追記
-$ sudo sh -c 'echo $(which fish) >> /etc/shells'
-
-# ユーザのデフォルトシェルを変更
-$ chsh -s /usr/local/bin/fish
-```
-
-Shellを再起動でfishがデフォルトになる
-
-## fishの設定
-### Fisherをインストール
-[jorgebucaran/fisher](https://github.com/jorgebucaran/fisher)
-
-```
-$ curl https://git.io/fisher --create-dirs -sLo ~/.config/fish/functions/fisher.fish
-```
-
-### fishfileに書かれたパッケージをインストール
-```
-$ fisher
-```
-
-### powerlineフォント
-[powerline/fonts](https://github.com/powerline/fonts)
-
-### nerdフォント
-* [ryanoasis/nerd\-fonts](https://github.com/ryanoasis/nerd-fonts)
-* [nerd\-fonts/patched\-fonts/SourceCodePro](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/SourceCodePro)
-
-
 ## Homebrewでインストールしたやつを優先的に利用する
 `/etc/paths`の順番を入れ替える
 
@@ -114,10 +110,9 @@ $ fisher
 
 
 ## RubyとかNode.jsとか設定する
-Homebrew経由でインストールしたrbenvとnodenvを使う
+Homebrew経由でインストールしたanyenvを使う
 
-* [rbenv を利用した Ruby 環境の構築 ｜ Developers.IO](http://dev.classmethod.jp/server-side/language/build-ruby-environment-by-rbenv/)
-* [Nodenv環境を用意する \- Qiita](https://qiita.com/YuukiMiyoshi/items/080b6cde332d8d4e06f3)
+* [オールインワンな開発環境をanyenvで構築する](https://zenn.dev/ryuu/articles/use-anyversions)
 
 
 ## direnvの設定する
@@ -146,13 +141,14 @@ export GIT_AUTHOR_EMAIL="mail@example.com"
 ```
 
 
-## brew-caskに無いMacApp
-* Adobe
-  - CreativeCloudから手動インストール
-* VSCO Film
-* ペンタブのドライバ
-  - 一応`wacom-tabet`っていうcaskがあるけど未検証
-* Cinema 4D
+## プログラミング用フォント
+* 英語フォント
+  * [SauceCodePro Nerd Font](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/SourceCodePro)
+  * 「Sauce Code Pro Nerd Font Complete」を使う
+* 日本語フォント
+  * [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp)
+
+ちなみにフォントは、基本的にはRightFont + Dropboxで管理したい
 
 
 ## 日々のメンテナンス
