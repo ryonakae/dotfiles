@@ -24,7 +24,7 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 
 ```
 $ cd dotfiles
-$ sh symlink.sh
+$ sh symlink.sh && source ~/.zshrc
 ```
 
 各設定ファイルのシンボリックリンクをホームディレクトリに貼る
@@ -42,6 +42,7 @@ $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/inst
 
 ## brew bundleの実行
 1. Brewfile.example を Brewfile にリネーム
+  * `$ cp Brewfile.example Brewfile`
 2. PCによってインストールしたいものを適宜コメントアウト解除
 3. `$ brew bundle`を実行
 
