@@ -1,4 +1,4 @@
-DOT_FILES=(.bashrc .vimrc .hyper.js)
+DOT_FILES=(.zshrc .vimrc .hyper.js)
 for file in ${DOT_FILES[@]}
 do
 	if [ -a $HOME/$file ]; then
