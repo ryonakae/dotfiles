@@ -12,7 +12,7 @@ module.exports = {
     fontSize: 13,
 
     // font family with optional fallbacks
-    fontFamily: "'SauceCodePro Nerd Font', Menlo, Monaco, 'Courier New', monospace",
+    fontFamily: "'SauceCodePro Nerd Font', 'Source Han Code JP', monospace",
 
     // default font weight: 'normal' or 'bold'
     fontWeight: 400,
@@ -21,7 +21,7 @@ module.exports = {
     fontWeightBold: 'bold',
 
     // line height as a relative unit
-    lineHeight: 1.1,
+    lineHeight: 1.0,
 
     // letter spacing as a relative unit
     letterSpacing: 0,

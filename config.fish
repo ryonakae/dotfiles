@@ -1,22 +1,20 @@
 function fish_greeting
   fish_logo
-
-  set_color $fish_color_autosuggestion
-  uname -nmsr
-  command -s uptime >/dev/null
-  and uptime
-  set_color normal
+  echo ''
 end
 
 # theme
+set -g theme_color_scheme dracula
 set -g theme_display_date no
 set -g theme_powerline_fonts no
 set -g theme_nerd_fonts yes
 set -g theme_display_git_master_branch yes
 set -g theme_display_cmd_duration yes
-set -g theme_color_scheme dracula
 set -g theme_display_user ssh
 set -g theme_display_hostname ssh
+set -g theme_title_display_user no
+set -g theme_title_display_process yes
+set -g theme_title_display_path yes
 
 # fzf
 set -U FZF_LEGACY_KEYBINDINGS 0
@@ -25,24 +23,16 @@ set -U FZF_LEGACY_KEYBINDINGS 0
 set -x HOMEBREW_CASK_OPTS --appdir=/Applications
 set -g fish_user_paths "/usr/local/sbin" $fish_user_paths
 
-# *env
-status --is-interactive; and source (nodenv init -|psub)
-status --is-interactive; and source (rbenv init -|psub)
-status --is-interactive; and source (pyenv init -|psub)
-status --is-interactive; and source (goenv init -|psub)
+# anyenv
+set -x PATH $HOME/.anyenv/bin $PATH
+eval (anyenv init - | source)
 
 # direnv
 eval (direnv hook fish)
 set -x EDITOR Vim
 
-# openssl
-set -x PATH /usr/local/opt/openssl/bin $PATH
-set -x LDFLAGS -L/usr/local/opt/openssl/lib
-set -x CPPFLAGS -I/usr/local/opt/openssl/include
-set -x PKG_CONFIG_PATH /usr/local/opt/openssl/lib/pkgconfig
-
 # go
-set -Ux GOPATH $HOME/go
+set -x GOPATH $HOME/go
 set -x PATH $GOPATH/bin $PATH
 
 # google-cloud sdk

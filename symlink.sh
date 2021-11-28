@@ -1,7 +1,5 @@
 DOT_FILES=(.bashrc .vimrc .hyper.js)
-
 for file in ${DOT_FILES[@]}
-
 do
 	if [ -a $HOME/$file ]; then
 			echo "$file が存在するのでシンボリックリンクを貼りませんでした"
@@ -12,9 +10,7 @@ do
 done
 
 FISH_FILES=(config.fish fishfile)
-
 for file in ${FISH_FILES[@]}
-
 do
 	if [ -a $HOME/.config/fish/$file ]; then
 			echo "$file が存在するのでシンボリックリンクを貼りませんでした"

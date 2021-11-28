@@ -36,10 +36,10 @@ brew 'vim'
 
 # その他
 # brew 'openssl'
-# brew 'ffmpeg'
+brew 'ffmpeg'
 # brew 'libpng'
 # brew 'fontforge'
-# brew 'postgresql'
+brew 'postgresql'
 
 
 # MacAppのインストール
@@ -84,7 +84,7 @@ cask 'hyper'
 cask 'docker'
 # cask 'flutter'
 # cask 'github'
-# cask 'google-cloud-sdk'
+cask 'google-cloud-sdk'
 # cask 'react-native-debugger'
 # cask 'sequel-pro'
 # cask 'sourcetree'
@@ -96,7 +96,7 @@ cask 'docker'
 # cask 'virtualbox'
 
 # エディタ・IDE
-# cask 'android-studio'
+cask 'android-studio'
 # cask 'processing'
 # cask 'unity-hub'
 # cask 'visual-studio-code'
