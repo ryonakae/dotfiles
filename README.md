@@ -64,16 +64,9 @@ Shellを再起動でfishがデフォルトになる
 
 
 ## fishの設定
-### Fisherをインストール
-[jorgebucaran/fisher](https://github.com/jorgebucaran/fisher)
-
-```
-$ curl https://git.io/fisher --create-dirs -sLo ~/.config/fish/functions/fisher.fish
-```
-
 ### fishfileに書かれたパッケージをインストール
 ```
-$ fisher
+$ fisher update
 ```
 
 

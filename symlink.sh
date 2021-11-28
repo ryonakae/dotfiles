@@ -9,7 +9,7 @@ do
 	fi
 done
 
-FISH_FILES=(config.fish fishfile)
+FISH_FILES=(config.fish fish_plugins)
 for file in ${FISH_FILES[@]}
 do
 	if [ -a $HOME/.config/fish/$file ]; then
