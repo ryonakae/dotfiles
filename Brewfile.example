@@ -142,8 +142,8 @@ cask 'zoomus'
 
 # MacAppStoreのアプリをインストール
 ########################################
-# mas 'Affinity Designer', id: 824171161
-# mas 'Affinity Photo', id: 824183456
+mas 'Affinity Designer', id: 824171161
+mas 'Affinity Photo', id: 824183456
 # mas 'AutoMounter', id: 1160435653
 mas 'Bear', id: 1091189122
 mas 'CotEditor', id: 1024640650
@@ -154,18 +154,18 @@ mas 'Fantastical', id: 975937182
 # mas 'GarageBand', id: 682658836
 # mas 'GlueMotion', id: 1396851118
 # mas 'iMovie', id: 408981434
-# mas 'Keynote', id: 409183694
+mas 'Keynote', id: 409183694
 mas 'LINE', id: 539883307
 mas 'Magnet', id: 441258766
-# mas 'Numbers', id: 409203825
-# mas 'Pages', id: 409201541
-# mas 'Pixelmator', id: 407963104
+mas 'Numbers', id: 409203825
+mas 'Pages', id: 409201541
+mas 'Pixelmator Pro', id: 1289583905
 mas 'Slack', id: 803453959
 # mas 'Spark', id: 1176895641
 # mas 'Tag', id: 506232966
 mas 'The Unarchiver', id: 425424353
 mas 'Transmit', id: 403388562
-mas 'Transporter', id: 1450874784
+# mas 'Transporter', id: 1450874784
 # mas 'Tweetbot', id: 1384080005
 mas 'Twitter', id: 1482454543
 mas 'Unsplash Wallpapers', id: 1284863847
