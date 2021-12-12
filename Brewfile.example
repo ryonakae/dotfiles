@@ -129,7 +129,7 @@ cask 'vlc'
 
 # コミュニケーション
 cask 'discord'
-cask 'zoomus'
+cask 'zoom'
 
 # Keyboard
 # cask 'autodesk-fusion360'
