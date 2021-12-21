@@ -34,10 +34,6 @@ eval (anyenv init - | source)
 eval (direnv hook fish)
 set -x EDITOR Vim
 
-# go
-set -x GOPATH $HOME/go
-set -x PATH $GOPATH/bin $PATH
-
 # google-cloud sdk
 set -x CLOUDSDK_PYTHON (which python3)
 # for Intel
