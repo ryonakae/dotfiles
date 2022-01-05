@@ -25,10 +25,11 @@ set -x HOMEBREW_CASK_OPTS --appdir=/Applications
 set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
 # for Apple Silicon
 # set -x PATH /opt/homebrew/bin $PATH
+# set -x PATH /opt/homebrew/sbin $PATH
 
 # anyenv
-set -x PATH $HOME/.anyenv/bin $PATH
-eval (anyenv init - | source)
+set -Ux fish_user_paths $HOME/.anyenv/bin $fish_user_paths
+anyenv init - fish | source
 
 # direnv
 eval (direnv hook fish)
