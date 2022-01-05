@@ -154,7 +154,7 @@ module.exports = {
     },
     
     // opacity
-    opacity: 0.95
+    opacity: 0.9
   },
 
   // a list of plugins to fetch and install from npm
