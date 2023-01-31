@@ -19,6 +19,9 @@ brew 'fish'
 brew 'fisher'
 brew 'fzf'
 
+# プログラミング言語
+brew 'rust'
+
 # パッケージマネージャ
 brew 'anyenv'
 brew 'direnv'
@@ -46,6 +49,7 @@ brew 'postgresql'
 ########################################
 # ユーティリティ
 cask '1password'
+cask '1password-cli'
 # cask 'alfred'
 # cask 'android-file-transfer'
 cask 'appcleaner'
