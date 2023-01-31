@@ -46,13 +46,13 @@ brew 'postgresql'
 ########################################
 # ユーティリティ
 cask '1password'
-cask 'alfred'
+# cask 'alfred'
 # cask 'android-file-transfer'
 cask 'appcleaner'
 cask 'authy'
 cask 'bartender'
 cask 'bettertouchtool'
-# cask 'cleanshot'
+cask 'cleanshot'
 cask 'cmd-eikana'
 cask 'contexts'
 cask 'cursorsense'
@@ -61,14 +61,17 @@ cask 'google-japanese-ime'
 cask 'karabiner-elements'
 cask 'keepingyouawake'
 cask 'meetingbar'
-# cask 'monitorcontrol'
+cask 'monitorcontrol'
 # cask 'namechanger'
 # cask 'private-internet-access'
 # cask 'timemachineeditor'
 # cask 'xquartz'
+# cask 'amorphousdiskmark'
+cask 'logi-options-plus'
+# cask 'wireshark'
 
 # ブラウザ
-# cask 'choosy'
+cask 'choosy'
 cask 'google-chrome'
 # cask 'firefox'
 # cask 'opera'
@@ -100,6 +103,7 @@ cask 'sourcetree'
 cask 'android-studio'
 # cask 'processing'
 # cask 'unity-hub'
+# cask 'visual-studio'
 cask 'visual-studio-code'
 
 # 業務ツール
@@ -115,8 +119,10 @@ cask 'homebrew/cask-versions/figma-beta'
 # cask 'fontforge'
 cask 'imageoptim'
 # cask 'ogdesign-eagle'
+# cask ''
 # cask 'rightfont'
 # cask 'sketch'
+# cask 'framer'
 
 # マルチメディア
 # cask 'air-video-server-hd'
@@ -126,10 +132,12 @@ cask 'imageoptim'
 cask 'spotify'
 cask 'vlc'
 # cask 'xld'
+# cask 'audacity'
 
 # コミュニケーション
 cask 'discord'
 cask 'zoom'
+cask 'krisp'
 
 # Keyboard
 # cask 'autodesk-fusion360'
@@ -166,7 +174,6 @@ mas 'Slack', id: 803453959
 mas 'The Unarchiver', id: 425424353
 mas 'Transmit', id: 403388562
 # mas 'Transporter', id: 1450874784
-# mas 'Tweetbot', id: 1384080005
 mas 'Twitter', id: 1482454543
 mas 'Unsplash Wallpapers', id: 1284863847
 mas 'Xcode', id: 497799835
