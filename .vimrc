@@ -42,7 +42,7 @@ call neobundle#end()
 " シンタックスハイライト
 syntax on
 set termguicolors
-let ayucolor="mirage"
+let ayucolor="dark"
 colorscheme ayu
 
 " 背景色を透明にする
