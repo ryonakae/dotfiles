@@ -154,7 +154,7 @@ module.exports = {
     },
     
     // opacity
-    opacity: 0.9
+    opacity: 0.95
   },
 
   // a list of plugins to fetch and install from npm
@@ -164,7 +164,7 @@ module.exports = {
   //   `@company/project`
   //   `project#1.0.1`
   plugins: [
-    'hyper-ayu-mirage',
+    'hyper-ayu',
     'hyper-statusline',
     'hyper-tab-icons-plus',
     'hypercwd',
