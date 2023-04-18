@@ -22,6 +22,7 @@ set -U FZF_LEGACY_KEYBINDINGS 0
 
 # homebrew
 set -x HOMEBREW_CASK_OPTS --appdir=/Applications
+set -gx HOMEBREW_GITHUB_API_TOKEN your_access_token
 set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
 # for Apple Silicon
 # set -x PATH /opt/homebrew/bin $PATH
