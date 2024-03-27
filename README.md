@@ -19,6 +19,11 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 ```
 
 
+## config.fishファイルのコピー
+* config.fish.example を config.fish にリネーム
+* PCによって設定したいものは適宜コメント or コメントアウト解除
+
+
 ## シェルスクリプトの実行
 `dotfile`ディレクトリに移動し、シェルスクリプトを実行
 
@@ -68,6 +73,10 @@ Shellを再起動でfishがデフォルトになる
 ```
 $ fisher update
 ```
+
+### HOMEBREW_GITHUB_API_TOKENの設定
+* https://github.com/settings/tokens にアクセスして、Homebrew用のトークンを作成 (既にあればRegenerate)
+* トークンをconfig.fishのHOMEBREW_GITHUB_API_TOKENの箇所にコピペ
 
 
 ## Vimの設定

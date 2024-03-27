@@ -1,10 +1,3 @@
-# README
-########################################
-# 1. Brewfile.example を Brewfile にリネーム
-# 2. PCによってインストールしたいものは適宜コメントアウト解除
-# 3. brew bundleを実行
-
-
 # アプリケーションのインストール場所の指定
 ########################################
 cask_args appdir: '/Applications'
@@ -80,6 +73,7 @@ cask 'google-chrome'
 # cask 'firefox'
 # cask 'opera'
 # cask 'vivaldi'
+# cask 'arc'
 
 # クラウドサービス
 cask 'dropbox'
