@@ -140,19 +140,19 @@ module.exports = {
     webGLRenderer: true,
 
     // for advanced config flags please refer to https://hyper.is/#cfg
-    
+
     // ayu
     ayu: {
       noBorder: false,
       showTabBorder: true,
       showHeaderBorder: false
     },
-    
+
     // summon
     summon: {
       hotkey: 'Alt+Space'
     },
-    
+
     // opacity
     opacity: 0.95
   },
