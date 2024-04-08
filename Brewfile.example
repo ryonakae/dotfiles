@@ -46,7 +46,7 @@ cask '1password-cli'
 # cask 'alfred'
 # cask 'android-file-transfer'
 cask 'appcleaner'
-cask 'authy'
+# cask 'authy' # DEPRECATED
 cask 'bartender'
 cask 'bettertouchtool'
 cask 'cleanshot'
