@@ -171,6 +171,14 @@ $ defaults write com.apple.dock autohide-time-modifier -float 0.15;killall Dock
 $ defaults write com.apple.dock autohide-delay -float 0;killall Dock
 ```
 
+### SSH鍵を新しいPCに丸ごと移行する
+[SSH鍵を新しいPCに移動させる方法（mac） \#SSH \- Qiita](https://qiita.com/yamaking/items/65da45bd69e616f8f88d)
+
+### Homebrewで使われていないものを削除
+インストール、アンインストールを繰り返すと出てくる  
+以下を参考にすると良い  
+[Homebrew で使われていない formula を削除する :: by and for engineers](https://yulii.github.io/brew-cleanup-installed-formulae-20200509.html)
+
 
 ## 参考
 * [pixyzehn/dotfiles](https://github.com/pixyzehn/dotfiles)
