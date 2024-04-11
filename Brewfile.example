@@ -5,25 +5,26 @@ cask_args appdir: '/Applications'
 
 # パッケージのインストール
 ########################################
-# Git・シェル
+# Git
 brew 'git'
 # brew 'git-lfs'
+
+# シェル
 brew 'fish'
 brew 'fisher'
 brew 'fzf'
 
 # プログラミング言語
-brew 'rust'
+# brew 'rust'
 
 # パッケージマネージャ
 brew 'anyenv'
 brew 'direnv'
 brew 'mas'
-brew 'yarn'
 
 # エディタ
-brew 'vim'
 # brew 'tree'
+brew 'vim'
 
 # 開発ツール
 # brew 'firebase-cli'
@@ -31,19 +32,19 @@ brew 'vim'
 # brew 'heroku'
 
 # その他
-# brew 'openssl'
 # brew 'ffmpeg'
-# brew 'libpng'
 # brew 'fontforge'
-brew 'postgresql'
+# brew 'libpng'
+# brew 'openssl'
+# brew 'postgresql'
 
 
 # MacAppのインストール
 ########################################
 # ユーティリティ
 cask '1password'
-cask '1password-cli'
-# cask 'alfred'
+# cask '1password-cli'
+# cask 'amorphousdiskmark'
 # cask 'android-file-transfer'
 cask 'appcleaner'
 # cask 'authy' # DEPRECATED
@@ -53,27 +54,29 @@ cask 'cleanshot'
 cask 'cmd-eikana'
 cask 'contexts'
 cask 'cursorsense'
-cask 'google-japanese-ime'
+cask 'google-japanese-ime-dev'
 # cask 'haptic-touch-bar'
 cask 'karabiner-elements'
 cask 'keepingyouawake'
+cask 'logi-options-plus'
 cask 'meetingbar'
 cask 'monitorcontrol'
 # cask 'namechanger'
 # cask 'private-internet-access'
+cask 'raycast'
+cask 'rectangle'
+cask 'the-unarchiver'
 # cask 'timemachineeditor'
-# cask 'xquartz'
-# cask 'amorphousdiskmark'
-cask 'logi-options-plus'
 # cask 'wireshark'
+# cask 'xquartz'
 
 # ブラウザ
+# cask 'arc'
 cask 'choosy'
-cask 'google-chrome'
 # cask 'firefox'
+cask 'google-chrome'
 # cask 'opera'
 # cask 'vivaldi'
-# cask 'arc'
 
 # クラウドサービス
 cask 'dropbox'
@@ -99,6 +102,7 @@ cask 'sourcetree'
 
 # エディタ・IDE
 cask 'android-studio'
+cask 'coteditor'
 # cask 'processing'
 # cask 'unity-hub'
 # cask 'visual-studio'
@@ -106,36 +110,39 @@ cask 'visual-studio-code'
 
 # 業務ツール
 cask 'biscuit'
-cask 'notion'
+cask 'fantastical'
+# cask 'notion'
+cask 'slack'
+cask 'readdle-spark'
 
 # デザイン
 # cask 'abstract'
 cask 'adobe-creative-cloud'
 # cask 'blender'
 cask 'figma'
-cask 'homebrew/cask-versions/figma-beta'
+cask 'figma-beta'
 # cask 'fontforge'
 cask 'imageoptim'
 # cask 'ogdesign-eagle'
-# cask ''
 # cask 'rightfont'
 # cask 'sketch'
 # cask 'framer'
 
 # マルチメディア
 # cask 'air-video-server-hd'
+# cask 'audacity'
 # cask 'audirvana'
 # cask 'obs'
 # cask 'steam'
 cask 'spotify'
+# cask 'tag'
 cask 'vlc'
 # cask 'xld'
-# cask 'audacity'
 
 # コミュニケーション
-cask 'discord'
+# cask 'discord'
+# cask 'krisp'
 cask 'zoom'
-cask 'krisp'
 
 # Keyboard
 # cask 'autodesk-fusion360'
@@ -148,30 +155,23 @@ cask 'krisp'
 
 # MacAppStoreのアプリをインストール
 ########################################
-mas 'Affinity Designer', id: 824171161
-mas 'Affinity Photo', id: 824183456
+# mas 'Affinity Designer', id: 824171161
+# mas 'Affinity Photo', id: 824183456
 # mas 'AutoMounter', id: 1160435653
 mas 'Bear', id: 1091189122
-mas 'CotEditor', id: 1024640650
 # mas 'DaisyDisk', id: 411643860
 # mas 'Disk Diag', id: 672206759
 # mas 'EdgeView 2', id: 1206246482
-mas 'Fantastical', id: 975937182
 # mas 'GarageBand', id: 682658836
 # mas 'GlueMotion', id: 1396851118
 # mas 'iMovie', id: 408981434
 mas 'Keynote', id: 409183694
 mas 'LINE', id: 539883307
-mas 'Magnet', id: 441258766
 mas 'Numbers', id: 409203825
 mas 'Pages', id: 409201541
-mas 'Pixelmator Pro', id: 1289583905
-mas 'Slack', id: 803453959
-# mas 'Spark', id: 1176895641
-# mas 'Tag', id: 506232966
-mas 'The Unarchiver', id: 425424353
+# mas 'Pixelmator Pro', id: 1289583905
 mas 'Transmit', id: 403388562
-# mas 'Transporter', id: 1450874784
-mas 'Twitter', id: 1482454543
+mas 'Transporter', id: 1450874784
+# mas 'Twitter', id: 1482454543
 mas 'Unsplash Wallpapers', id: 1284863847
 mas 'Xcode', id: 497799835
