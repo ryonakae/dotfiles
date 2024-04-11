@@ -2,14 +2,6 @@
 Macを新規購入・OSクリーンインストールした時にやるやつ
 
 
-## XcodeとCommand Line Tools for Xcodeのインストール
-gitコマンド使うのと、Homebrewのインストールに必要
-
-* Xcodeインストールする
-* Xcode起動して規約にAgreeしたり追加コンポーネントをインストールしたりする
-* `$ xcode-select --install`を実行
-
-
 ## リポジトリをcloneする
 ユーザーのホームディレクトリにcloneするのが良い
 
@@ -19,8 +11,16 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 ```
 
 
+## XcodeとCommand Line Tools for Xcodeのインストール
+gitコマンド使うのと、Homebrewのインストールに必要
+
+* App StoreからXcodeをインストールする
+* `$ xcode-select --install`を実行
+
+
 ## config.fishファイルのコピー
 * config.fish.example を config.fish にリネーム
+  * `$ cp config.fish.example config.fish`
 * PCによって設定したいものは適宜コメント or コメントアウト解除
 
 
@@ -36,13 +36,13 @@ $ sh symlink.sh && source ~/.zshrc
 
 
 ## Homebrewのインストール
-[Homebrew](http://brew.sh/index_ja.html)のインストール
+[Homebrew](https://brew.sh/ja/)のインストール
 
 ```
-$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
+※ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
 
 
 ## brew bundleの実行
