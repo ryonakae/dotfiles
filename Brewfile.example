@@ -16,6 +16,9 @@ brew 'fzf'
 
 # プログラミング言語
 # brew 'rust'
+# tap 'shivammathur/php'
+# brew 'shivammathur/php/php@X.X' # https://github.com/shivammathur/homebrew-php
+# tap 'composer'
 
 # パッケージマネージャ
 brew 'anyenv'
