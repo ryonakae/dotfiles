@@ -184,6 +184,10 @@ $ defaults write com.apple.dock autohide-delay -float 0;killall Dock
 以下を参考にすると良い  
 [Homebrew で使われていない formula を削除する :: by and for engineers](https://yulii.github.io/brew-cleanup-installed-formulae-20200509.html)
 
+```
+$ brew list --formula | xargs -I{} sh -c 'brew uses --installed {} | wc -l | xargs printf "%20s is used by %2d formulae.\n" {}' | grep '0 formula'
+```
+
 ### PHPをHomebrewでインストール・切り替えする
 [Macで複数のバージョンのPHPを同時に使う \#PHP \- Qiita](https://qiita.com/koriym/items/17662cd9c44c43081bf9)
 
