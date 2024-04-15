@@ -112,7 +112,6 @@ cask 'coteditor'
 cask 'visual-studio-code'
 
 # 業務ツール
-cask 'biscuit'
 # cask 'notion'
 cask 'notion-calendar'
 cask 'slack'
@@ -127,9 +126,14 @@ cask 'figma-beta'
 # cask 'fontforge'
 cask 'imageoptim'
 # cask 'ogdesign-eagle'
-# cask 'rightfont'
+cask 'rightfont'
 # cask 'sketch'
 # cask 'framer'
+
+# フォント
+tap 'homebrew/cask-fonts'
+cask 'font-sf-pro'
+cask 'font-sf-mono'
 
 # マルチメディア
 # cask 'air-video-server-hd'
