@@ -26,7 +26,7 @@ brew 'direnv'
 brew 'mas'
 
 # エディタ
-# brew 'tree'
+brew 'tree'
 brew 'vim'
 
 # 開発ツール
@@ -35,7 +35,7 @@ brew 'vim'
 # brew 'heroku'
 
 # その他
-# brew 'ffmpeg'
+brew 'ffmpeg'
 # brew 'fontforge'
 # brew 'libpng'
 # brew 'openssl'
@@ -75,7 +75,6 @@ cask 'the-unarchiver'
 
 # ブラウザ
 # cask 'arc'
-cask 'choosy'
 # cask 'firefox'
 cask 'google-chrome'
 # cask 'opera'
@@ -181,4 +180,5 @@ mas 'Transmit', id: 403388562
 mas 'Transporter', id: 1450874784
 # mas 'Twitter', id: 1482454543
 mas 'Unsplash Wallpapers', id: 1284863847
+mas 'Velja', id: 1607635845
 mas 'Xcode', id: 497799835
