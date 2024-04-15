@@ -113,8 +113,8 @@ cask 'visual-studio-code'
 
 # 業務ツール
 cask 'biscuit'
-cask 'fantastical'
 # cask 'notion'
+cask 'notion-calendar'
 cask 'slack'
 cask 'readdle-spark'
 
