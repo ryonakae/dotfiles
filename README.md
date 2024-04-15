@@ -29,7 +29,7 @@ gitコマンド使うのと、Homebrewのインストールに必要
 
 ```
 $ cd dotfiles
-$ sh symlink.sh && source ~/.zshrc
+$ sh symlink.sh
 ```
 
 各設定ファイルのシンボリックリンクをホームディレクトリに貼る
@@ -58,14 +58,19 @@ Brewfileに記述した処理が実行される
 参考：[ログインシェルをfishにしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
 
 ```
-# /etc/shells の末尾に /usr/local/bin/fish を追記
+# /etc/shells の末尾にfishを追記
 $ sudo sh -c 'echo $(which fish) >> /etc/shells'
 
 # ユーザのデフォルトシェルを変更
-$ chsh -s /usr/local/bin/fish
+$ which fish
+$ chsh -s <which fishで表示されたパス>
 ```
 
 Shellを再起動でfishがデフォルトになる
+
+### fishがおかしい場合
+* `~/.config/fish/config.fish` がちゃんとエイリアスになっているか確認する  
+* なっていない場合 (ファイルが実在する場合) は、一度ファイルを消して、`$ cd ~/dotfiles && sh symlink.sh` を実行
 
 
 ## fishの設定
