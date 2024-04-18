@@ -3,7 +3,7 @@ Macを新規購入・OSクリーンインストールした時にやるやつ
 
 
 ## リポジトリをcloneする
-ユーザーのホームディレクトリにcloneするのが良い
+ユーザーのホームディレクトリにcloneする
 
 ```
 $ cd ~/
@@ -35,25 +35,6 @@ $ sh symlink.sh
 各設定ファイルのシンボリックリンクをホームディレクトリに貼る
 
 
-## Homebrewのインストール
-[Homebrew](https://brew.sh/ja/)のインストール
-
-```
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-※ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
-
-
-## brew bundleの実行
-1. Brewfile.example を Brewfile にリネーム
-  * `$ cp Brewfile.example Brewfile`
-2. PCによってインストールしたいものを適宜コメントアウト解除
-3. `$ brew bundle`を実行
-
-Brewfileに記述した処理が実行される
-
-
 ## デフォルトのShellをfishにする
 参考：[ログインシェルをfishにしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
 
@@ -69,7 +50,7 @@ $ chsh -s <which fishで表示されたパス>
 Shellを再起動でfishがデフォルトになる
 
 ### fishがおかしい場合
-* `~/.config/fish/config.fish` がちゃんとエイリアスになっているか確認する  
+* `~/.config/fish/config.fish` がちゃんとエイリアスになっているか確認する
 * なっていない場合 (ファイルが実在する場合) は、一度ファイルを消して、`$ cd ~/dotfiles && sh symlink.sh` を実行
 
 
@@ -98,9 +79,29 @@ $ make -f make_mac.mak
 ```
 $ vim hoge
 :NeoBundleInstall
+!q
 ```
 
 とするとVimのプラグインがインストールされる
+
+
+## Homebrewのインストール
+[Homebrew](https://brew.sh/ja/)のインストール
+
+```
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+※ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
+
+
+## brew bundleの実行
+1. Brewfile.example を Brewfile にリネーム
+  * `$ cp Brewfile.example Brewfile`
+2. PCによってインストールしたいものを適宜コメントアウト解除
+3. `$ brew bundle`を実行
+
+Brewfileに記述した処理が実行される
 
 
 ## Homebrewでインストールしたやつを優先的に利用する
@@ -117,10 +118,12 @@ $ vim hoge
 `$ exec $SHELL`で反映される
 
 
-## RubyとかNode.jsとか設定する
+## Ruby, Node, Pythonとか設定する
 Homebrew経由でインストールしたanyenvを使う
 
-* [オールインワンな開発環境をanyenvで構築する](https://zenn.dev/ryuu/articles/use-anyversions)
+[オールインワンな開発環境をanyenvで構築する](https://zenn.dev/ryuu/articles/use-anyversions)
+
+PHPはphpenvではなくHomebrewを使うのが良い
 
 
 ## direnvの設定する
@@ -156,19 +159,18 @@ export GIT_AUTHOR_EMAIL="mail@example.com"
 * 日本語フォント
   * [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp)
 
-ちなみにフォントは、基本的にはRightFont + Dropboxで管理したい
+ちなみにフォントはRightFont + Dropboxで管理したい
+
+* Rightfontを起動し、Open Library -> Dropboxに保存してるライブラリを選択
+* Sauce Code Pro Nerd Font, Source Han Code JPを有効化
 
 
-## 日々のメンテナンス
-```
-$ sh maintenance.sh
-```
-
-もろもろのHomebrewのアップデートとかクリーンナップをまとめてやる
+## 各Appの設定
+* 当たり前だけど各Appの設定は自分でやる
+* Dropbox/App にアプリの設定を保存したりしている
 
 
 ## その他
-* 当たり前だけど各Appの設定は自分でやる
 
 ### Dockの表示/非表示を早くする
 ```
@@ -179,9 +181,7 @@ $ defaults write com.apple.dock autohide-delay -float 0;killall Dock
 ### SSH鍵を新しいPCに丸ごと移行する
 [SSH鍵を新しいPCに移動させる方法（mac） \#SSH \- Qiita](https://qiita.com/yamaking/items/65da45bd69e616f8f88d)
 
-### Homebrewで使われていないものを削除
-インストール、アンインストールを繰り返すと出てくる  
-以下を参考にすると良い  
+### Homebrewで使われていないものを検索
 [Homebrew で使われていない formula を削除する :: by and for engineers](https://yulii.github.io/brew-cleanup-installed-formulae-20200509.html)
 
 ```
@@ -190,6 +190,27 @@ $ brew list --formula | xargs -I{} sh -c 'brew uses --installed {} | wc -l | xar
 
 ### PHPをHomebrewでインストール・切り替えする
 [Macで複数のバージョンのPHPを同時に使う \#PHP \- Qiita](https://qiita.com/koriym/items/17662cd9c44c43081bf9)
+
+
+## 日々のメンテナンス
+[【Homebrew】コマンド一覧 \#homebrew \- Qiita](https://qiita.com/P-man_Brown/items/82b7e2f1e108a72d89f4)
+
+```
+# Homebrew自体を更新
+$ brew update
+
+# 更新可能なformula & caskを表示
+$ brew outdated
+
+# 他のformulaの依存関係としてのみインストールされ不要となったものをアンインストール
+$ brew autoremove
+
+# formulaやcaskのキャッシュを削除
+$ brew cleanup
+
+# システムに問題がないかチェック
+$ brew doctor
+```
 
 
 ## 参考
