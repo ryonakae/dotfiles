@@ -125,38 +125,13 @@ Brewfile に記述した処理が実行される
 
 ## Ruby, Node, Python とか設定する
 
-Homebrew 経由でインストールした anyenv を使う
+Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使う
 
-[オールインワンな開発環境を anyenv で構築する](https://zenn.dev/ryuu/articles/use-anyversions)
+### PHPをmiseで管理する
+[miseを使って複数のPHPバージョンをインストールする \#PHP \- Qiita](https://qiita.com/yuki777/items/8c71f4535e696a2434b3)
 
-PHP は phpenv ではなく Homebrew を使うのが良い
-
-## direnv の設定する
-
-ディレクトリごとに環境変数の設定ができて便利  
-例えば、特定ディレクトリ以下で GitHub アカウントを会社のものに切り替えたりできる
-
-- [direnv を使おう - Qiita](http://qiita.com/kompiro/items/5fc46089247a56243a62)
-- [direnv を使って複数の git コミッタ名を切り替える - MANA-DOT](http://blog.manaten.net/entry/direnv_git_account)
-
-### 使い方
-
-```
-# 環境変数切り替えたいディレクトリに移動
-$ cd ~/Projects/Private
-
-# .envrcの作成、編集(Vimが起動する)
-$ direnv edit .
-```
-
-`.envrc`に以下のように書く
-
-```
-export GIT_COMMITTER_NAME="YOUR NAME"
-export GIT_COMMITTER_EMAIL="mail@example.com"
-export GIT_AUTHOR_NAME="YOUR NAME"
-export GIT_AUTHOR_EMAIL="mail@example.com"
-```
+### ディレクトリごとに環境変数を切り替える
+[asdf, direnvをやめてmiseに移行する](https://blog.sh1ma.dev/articles/20240108_from_asdf_to_mise)
 
 ## プログラミング用フォント
 
