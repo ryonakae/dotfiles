@@ -28,13 +28,8 @@ set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
 set -x PATH /opt/homebrew/bin $PATH
 set -x PATH /opt/homebrew/sbin $PATH
 
-# anyenv
-set -Ux fish_user_paths $HOME/.anyenv/bin $fish_user_paths
-anyenv init - fish | source
-
-# direnv
-eval (direnv hook fish)
-set -x EDITOR Vim
+# mise
+mise activate fish | source
 
 # google-cloud sdk
 set -x CLOUDSDK_PYTHON (which python3)

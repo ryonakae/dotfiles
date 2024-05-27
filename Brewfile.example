@@ -21,8 +21,7 @@ brew 'fzf'
 # tap 'composer'
 
 # パッケージマネージャ
-brew 'anyenv'
-brew 'direnv'
+brew 'mise'
 brew 'mas'
 
 # エディタ
