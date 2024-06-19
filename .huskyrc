@@ -1,2 +1,1 @@
-export PATH=\"$(dirname $(which npx)):\$PATH\"
-export PATH=\"$(dirname $(which yarn)):\$PATH\"
+mise activate --shims
