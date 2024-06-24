@@ -127,11 +127,14 @@ Brewfile に記述した処理が実行される
 
 Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使う
 
-### PHPをmiseで管理する
-[miseを使って複数のPHPバージョンをインストールする \#PHP \- Qiita](https://qiita.com/yuki777/items/8c71f4535e696a2434b3)
+### PHP を mise で管理する
+
+- [mise を使って複数の PHP バージョンをインストールする \#PHP \- Qiita](https://qiita.com/yuki777/items/8c71f4535e696a2434b3)
+- [asdf\+Homebrew で怠惰に PHP の環境を整える](https://zenn.dev/meihei/articles/85f9c235c666f6)
 
 ### ディレクトリごとに環境変数を切り替える
-[asdf, direnvをやめてmiseに移行する](https://blog.sh1ma.dev/articles/20240108_from_asdf_to_mise)
+
+[asdf, direnv をやめて mise に移行する](https://blog.sh1ma.dev/articles/20240108_from_asdf_to_mise)
 
 ## プログラミング用フォント
 
