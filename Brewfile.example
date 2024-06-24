@@ -68,6 +68,7 @@ cask 'raycast'
 cask 'rectangle'
 cask 'the-unarchiver'
 # cask 'timemachineeditor'
+cask 'topnotch'
 # cask 'wireshark'
 # cask 'xquartz'
 
