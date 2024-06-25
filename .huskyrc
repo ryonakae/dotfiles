@@ -1,1 +1,1 @@
-mise activate --shims
+eval "$(mise activate bash --shims)"
