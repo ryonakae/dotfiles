@@ -69,7 +69,7 @@ cask 'raycast'
 cask 'rectangle'
 cask 'the-unarchiver'
 # cask 'timemachineeditor'
-cask 'topnotch'
+# cask 'topnotch'
 # cask 'wireshark'
 # cask 'xquartz'
 
@@ -89,7 +89,6 @@ cask 'hyper'
 
 # 開発ツール
 cask 'docker'
-# cask 'flutter'
 # cask 'github'
 cask 'google-cloud-sdk'
 # cask 'react-native-debugger'
@@ -130,7 +129,6 @@ cask 'rightfont'
 # cask 'framer'
 
 # フォント
-tap 'homebrew/cask-fonts'
 cask 'font-sf-pro'
 cask 'font-sf-mono'
 
