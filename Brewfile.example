@@ -22,6 +22,7 @@ brew 'fzf'
 
 # パッケージマネージャ
 brew 'mise'
+brew 'usage'
 brew 'mas'
 
 # エディタ
