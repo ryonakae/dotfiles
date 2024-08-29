@@ -104,6 +104,7 @@ cask 'sourcetree'
 # エディタ・IDE
 cask 'android-studio'
 cask 'coteditor'
+cask 'cursor'
 # cask 'processing'
 # cask 'unity-hub'
 # cask 'visual-studio'
