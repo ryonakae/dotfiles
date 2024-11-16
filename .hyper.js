@@ -150,9 +150,9 @@ module.exports = {
     },
 
     // summon
-    summon: {
-      hotkey: 'Alt+Space'
-    },
+    // summon: {
+    //   hotkey: 'Alt+Space'
+    // },
 
     // opacity
     opacity: 0.95
