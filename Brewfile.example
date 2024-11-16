@@ -157,6 +157,9 @@ cask 'zoom'
 # cask 'qmk-toolbox'
 # cask 'via'
 
+# AI
+# cask 'chatgpt'
+
 
 # MacAppStoreのアプリをインストール
 ########################################
