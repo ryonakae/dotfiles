@@ -6,7 +6,7 @@ DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 CONFIG_DIR="$DOTFILES_DIR/config"
 
 # スキップするファイルのリスト
-SKIP_FILES=(".DS_Store")
+SKIP_FILES=(".DS_Store" "*.example")
 
 # config ディレクトリ配下のすべてのファイル・ディレクトリを処理
 function create_symlinks() {
@@ -32,10 +32,20 @@ function create_symlinks() {
       # スキップファイルのチェック
       skip_file=false
       for skip_pattern in "${SKIP_FILES[@]}"; do
-        if [ "$item_name" = "$skip_pattern" ]; then
-          echo "Skipping file: $item"
-          skip_file=true
-          break
+        # ワイルドカードパターンの場合
+        if [[ "$skip_pattern" == *"*"* ]]; then
+          if [[ "$item_name" == $skip_pattern ]]; then
+            echo "Skipping file: $item"
+            skip_file=true
+            break
+          fi
+        # 完全一致の場合
+        else
+          if [ "$item_name" = "$skip_pattern" ]; then
+            echo "Skipping file: $item"
+            skip_file=true
+            break
+          fi
         fi
       done
 
