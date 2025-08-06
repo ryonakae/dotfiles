@@ -1,0 +1,9 @@
+{
+  "biome.enabled": false,
+  "eslint.enable": false,
+  "prettier.enable": true,
+  "files.associations": {
+    "Brewfile.example": "ruby",
+    "config.fish.example": "fish",
+  }
+}
