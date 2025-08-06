@@ -21,12 +21,13 @@ brew 'fzf'
 # tap 'composer'
 
 # パッケージマネージャ
+brew 'mas'
 brew 'mise'
 brew 'usage'
-brew 'mas'
 brew 'uv'
 
 # エディタ
+brew 'jq'
 brew 'tree'
 brew 'vim'
 
