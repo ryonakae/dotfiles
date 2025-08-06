@@ -1,6 +1,6 @@
 # dotfiles
 
-Mac を新規購入・OSクリーンインストールした時にやるやつ
+Mac を新規購入・OS クリーンインストールした時にやるやつ
 
 ## リポジトリを clone
 
@@ -12,7 +12,7 @@ $ git clone https://github.com/ryonakae/dotfiles.git
 $ cd dotfiles
 ```
 
-## Xcode Command Line Tools と Homebrewのインストール
+## Xcode Command Line Tools と Homebrew のインストール
 
 ```
 $ sh scripts/install.sh
@@ -26,7 +26,7 @@ $ sh scripts/install.sh
 $ sh scripts/copy.sh
 ```
 
-PCによって設定を変えたいものは適宜コメント or コメントアウト解除
+PC によって設定を変えたいものは適宜コメント or コメントアウト解除
 
 ## シンボリックリンクの作成
 
@@ -80,7 +80,7 @@ $ vim hoge
 
 とすると Vim のプラグインがインストールされる
 
-## Ruby, Node, Python とか設定する
+## Ruby、Node、Python とか設定する
 
 [mise](https://mise.jdx.dev/) を使う
 
@@ -113,16 +113,16 @@ $ vim hoge
 [【Homebrew】コマンド一覧 \#homebrew \- Qiita](https://qiita.com/P-man_Brown/items/82b7e2f1e108a72d89f4)
 
 ```
-# Homebrew自体を更新
+# Homebrew 自体を更新
 $ brew update
 
-# 更新可能なformula & caskを表示
+# 更新可能な formula & cask を表示
 $ brew outdated
 
-# 他のformulaの依存関係としてのみインストールされ不要となったものをアンインストール
+# 他の formula の依存関係としてのみインストールされ不要となったものをアンインストール
 $ brew autoremove
 
-# formulaやcaskのキャッシュを削除
+# formula や cask のキャッシュを削除
 $ brew cleanup
 
 # システムに問題がないかチェック
