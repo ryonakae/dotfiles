@@ -60,7 +60,37 @@ $ brew bundle
 
 `$ exec $SHELL`で反映される
 
+## fish の設定
+
+### デフォルトの Shell を fish にする
+
+参考：[ログインシェルを fish にしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
+
+```
+# /etc/shells の末尾にfishを追記
+$ sudo sh -c 'echo $(which fish) >> /etc/shells'
+
+# ユーザのデフォルトシェルを変更
+$ which fish
+$ chsh -s <which fishで表示されたパス>
+```
+
+Shell を再起動で fish がデフォルトになる
+
+### fishfile に書かれたパッケージをインストール
+
+```
+$ fisher update
+```
+
+### HOMEBREW_GITHUB_API_TOKEN の設定
+
+- https://github.com/settings/tokens にアクセスして、Homebrew 用のトークンを作成 (既にあれば Regenerate)
+- トークンを config.fish の HOMEBREW_GITHUB_API_TOKEN の箇所にコピペ
+
 ## Vim の設定
+
+### NeoBundle と VimProc のインストール
 
 ```
 $ mkdir -p ~/.vim/bundle
@@ -70,15 +100,13 @@ $ cd ~/.vim/bundle/vimproc
 $ make -f make_mac.mak
 ```
 
-ここまでやると NeoBundle と VimProc がインストールされる
+### Vim プラグインのインストール
 
 ```
 $ vim hoge
 :NeoBundleInstall
 !q
 ```
-
-とすると Vim のプラグインがインストールされる
 
 ## Ruby、Node、Python とか設定する
 
@@ -92,19 +120,6 @@ $ vim hoge
 ### ディレクトリごとに環境変数を切り替える
 
 [asdf, direnv をやめて mise に移行する](https://blog.sh1ma.dev/articles/20240108_from_asdf_to_mise)
-
-## プログラミング用フォントのインストール
-
-- 英語フォント
-  - [SauceCodePro Nerd Font](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/SourceCodePro)
-  - 「Sauce Code Pro Nerd Font Complete」を使う
-- 日本語フォント
-  - [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp)
-
-ちなみにフォントは RightFont + Dropbox で管理したい
-
-- Rightfont を起動し、Open Library -> Dropbox に保存してるライブラリを選択
-- Sauce Code Pro Nerd Font, Source Han Code JP を有効化
 
 -----
 
