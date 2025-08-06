@@ -3,11 +3,11 @@
 cask_args appdir: '/Applications'
 
 
-# パッケージのインストール
+# Formulaのインストール
 ########################################
 # Git
 brew 'git'
-# brew 'git-lfs'
+brew 'git-lfs'
 
 # シェル
 brew 'fish'
@@ -42,7 +42,7 @@ brew 'ffmpeg'
 # brew 'postgresql'
 
 
-# MacAppのインストール
+# Caskのインストール
 ########################################
 # ユーティリティ
 cask '1password'
@@ -50,7 +50,6 @@ cask '1password'
 # cask 'amorphousdiskmark'
 # cask 'android-file-transfer'
 cask 'appcleaner'
-# cask 'authy' # DEPRECATED
 cask 'bartender'
 cask 'bettertouchtool'
 cask 'cleanshot'
@@ -58,10 +57,9 @@ cask 'cmd-eikana'
 cask 'contexts'
 cask 'cursorsense'
 cask 'google-japanese-ime-dev'
-# cask 'haptic-touch-bar'
 cask 'karabiner-elements'
 cask 'keepingyouawake'
-cask 'logi-options-plus'
+cask 'logi-options+'
 cask 'monitorcontrol'
 # cask 'namechanger'
 # cask 'private-internet-access'
@@ -69,7 +67,7 @@ cask 'raycast'
 cask 'rectangle'
 cask 'the-unarchiver'
 # cask 'timemachineeditor'
-# cask 'topnotch'
+cask 'topnotch'
 # cask 'wireshark'
 # cask 'xquartz'
 
@@ -104,11 +102,12 @@ cask 'sourcetree'
 # エディタ・IDE
 cask 'android-studio'
 cask 'coteditor'
-cask 'cursor'
+# cask 'cursor'
 # cask 'processing'
 # cask 'unity-hub'
 # cask 'visual-studio'
 cask 'visual-studio-code'
+# cask 'visual-studio-code@insiders'
 
 # 業務ツール
 # cask 'notion'
@@ -123,15 +122,18 @@ cask 'adobe-creative-cloud'
 cask 'figma'
 cask 'figma-beta'
 # cask 'fontforge'
+# cask 'framer'
 cask 'imageoptim'
 # cask 'ogdesign-eagle'
-cask 'rightfont'
+# cask 'rightfont'
 # cask 'sketch'
-# cask 'framer'
+cask 'typeface'
 
 # フォント
 cask 'font-sf-pro'
 cask 'font-sf-mono'
+cask 'font-sauce-code-pro-nerd-font'
+cask 'font-source-han-code-jp'
 
 # マルチメディア
 # cask 'air-video-server-hd'
@@ -158,7 +160,9 @@ cask 'zoom'
 # cask 'via'
 
 # AI
-# cask 'chatgpt'
+cask 'chatgpt'
+cask 'claude'
+cask 'claude-code'
 
 
 # MacAppStoreのアプリをインストール
