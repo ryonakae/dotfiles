@@ -24,6 +24,7 @@ brew 'fzf'
 brew 'mise'
 brew 'usage'
 brew 'mas'
+brew 'uv'
 
 # エディタ
 brew 'tree'
