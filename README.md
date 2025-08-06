@@ -9,64 +9,56 @@ Mac を新規購入・OS クリーンインストールした時にやるやつ
 ```
 $ cd ~/
 $ git clone https://github.com/ryonakae/dotfiles.git
+$ cd dotfiles
 ```
 
-## Xcode と Command Line Tools for Xcode のインストール
+## Xcode Command Line Tools と Homebrewのインストール
 
-git コマンド使うのと、Homebrew のインストールに必要
-
-- App Store から Xcode をインストールする
-- `$ xcode-select --install`を実行
+```
+$ sh scripts/install.sh
+```
 
 ## config.fish ファイルのコピー
 
-- config.fish.example を config.fish にリネーム
-  - `$ cp config.fish.example config.fish`
-- PC によって設定したいものは適宜コメント or コメントアウト解除
-
-## シェルスクリプトの実行
-
-`dotfile`ディレクトリに移動し、シェルスクリプトを実行
+`Brewfile.example` `fish.config.example` などを `Brewfile` `fish.config` にリネームしてコピーする
 
 ```
-$ cd dotfiles
-$ sh symlink.sh
+$ sh scripts/copy.sh
 ```
+
+PCによって設定を変えたいものは適宜コメント or コメントアウト解除
+
+## シンボリックリンクの作成
 
 各設定ファイルのシンボリックリンクをホームディレクトリに貼る
 
-## デフォルトの Shell を fish にする
-
-参考：[ログインシェルを fish にしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
-
 ```
-# /etc/shells の末尾にfishを追記
-$ sudo sh -c 'echo $(which fish) >> /etc/shells'
-
-# ユーザのデフォルトシェルを変更
-$ which fish
-$ chsh -s <which fishで表示されたパス>
+$ sh scripts/symlink.sh
 ```
 
-Shell を再起動で fish がデフォルトになる
-
-### fish がおかしい場合
-
-- `~/.config/fish/config.fish` がちゃんとエイリアスになっているか確認する
-- なっていない場合 (ファイルが実在する場合) は、一度ファイルを消して、`$ cd ~/dotfiles && sh symlink.sh` を実行
-
-## fish の設定
-
-### fishfile に書かれたパッケージをインストール
+## brew bundle の実行
 
 ```
-$ fisher update
+$ cd brew
+$ brew bundle
 ```
 
-### HOMEBREW_GITHUB_API_TOKEN の設定
+- Brewfile に記述したものがインストールされる
+- 管理者パスワード入れる必要があるのでターミナルをチラ見しておく
 
-- https://github.com/settings/tokens にアクセスして、Homebrew 用のトークンを作成 (既にあれば Regenerate)
-- トークンを config.fish の HOMEBREW_GITHUB_API_TOKEN の箇所にコピペ
+### Homebrew でインストールしたやつを優先的に利用する
+
+`/etc/paths`の順番を入れ替える
+
+```
+/usr/local/bin
+/usr/bin
+/bin
+/usr/sbin
+/sbin
+```
+
+`$ exec $SHELL`で反映される
 
 ## Vim の設定
 
@@ -87,41 +79,6 @@ $ vim hoge
 ```
 
 とすると Vim のプラグインがインストールされる
-
-## Homebrew のインストール
-
-[Homebrew](https://brew.sh/ja/)のインストール
-
-```
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-※ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
-
-## brew bundle の実行
-
-1. Brewfile.example を Brewfile にリネーム
-
-- `$ cp Brewfile.example Brewfile`
-
-2. PC によってインストールしたいものを適宜コメントアウト解除
-3. `$ brew bundle`を実行
-
-Brewfile に記述した処理が実行される
-
-## Homebrew でインストールしたやつを優先的に利用する
-
-`/etc/paths`の順番を入れ替える
-
-```
-/usr/local/bin
-/usr/bin
-/bin
-/usr/sbin
-/sbin
-```
-
-`$ exec $SHELL`で反映される
 
 ## Ruby, Node, Python とか設定する
 
@@ -203,7 +160,3 @@ $ brew cleanup
 # システムに問題がないかチェック
 $ brew doctor
 ```
-
-## 参考
-
-- [pixyzehn/dotfiles](https://github.com/pixyzehn/dotfiles)

@@ -2,7 +2,7 @@
 
 echo "Install start..."
 
-# XCode Command Line Toolsのインストール
+# Xcode Command Line Toolsのインストール
 if ! xcode-select --print-path &> /dev/null; then
   echo "Command Line Tools not found. Installing..."
   xcode-select --install
