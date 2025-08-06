@@ -2,7 +2,7 @@
 
 Mac を新規購入・OS クリーンインストールした時にやるやつ
 
-## リポジトリを clone する
+## リポジトリを clone
 
 ユーザーのホームディレクトリに clone する
 
@@ -18,7 +18,7 @@ $ cd dotfiles
 $ sh scripts/install.sh
 ```
 
-## config.fish ファイルのコピー
+## *.example ファイルのコピー
 
 `Brewfile.example` `fish.config.example` などを `Brewfile` `fish.config` にリネームしてコピーする
 
@@ -82,7 +82,7 @@ $ vim hoge
 
 ## Ruby, Node, Python とか設定する
 
-Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使う
+[mise](https://mise.jdx.dev/) を使う
 
 ### PHP を mise で管理する
 
@@ -93,7 +93,7 @@ Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使�
 
 [asdf, direnv をやめて mise に移行する](https://blog.sh1ma.dev/articles/20240108_from_asdf_to_mise)
 
-## プログラミング用フォント
+## プログラミング用フォントのインストール
 
 - 英語フォント
   - [SauceCodePro Nerd Font](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/SourceCodePro)
@@ -106,12 +106,14 @@ Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使�
 - Rightfont を起動し、Open Library -> Dropbox に保存してるライブラリを選択
 - Sauce Code Pro Nerd Font, Source Han Code JP を有効化
 
-## 各 App の設定
-
-- 当たり前だけど各 App の設定は自分でやる
-- Dropbox/App にアプリの設定を保存したりしている
+-----
 
 ## その他
+
+### 各 App の設定
+
+- 当たり前だけど各 App の設定は自分でやる
+- `Dropbox/App` にアプリの設定を保存したりしているので、適宜インポートなど
 
 ### Dock の表示/非表示を早くする
 
