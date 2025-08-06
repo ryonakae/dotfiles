@@ -1,6 +1,6 @@
 # dotfiles
 
-Mac を新規購入・OS クリーンインストールした時にやるやつ
+Mac を新規購入・OSクリーンインストールした時にやるやつ
 
 ## リポジトリを clone
 
@@ -108,11 +108,34 @@ $ vim hoge
 
 -----
 
+## 日々のメンテナンス
+
+[【Homebrew】コマンド一覧 \#homebrew \- Qiita](https://qiita.com/P-man_Brown/items/82b7e2f1e108a72d89f4)
+
+```
+# Homebrew自体を更新
+$ brew update
+
+# 更新可能なformula & caskを表示
+$ brew outdated
+
+# 他のformulaの依存関係としてのみインストールされ不要となったものをアンインストール
+$ brew autoremove
+
+# formulaやcaskのキャッシュを削除
+$ brew cleanup
+
+# システムに問題がないかチェック
+$ brew doctor
+```
+
+---
+
 ## その他
 
 ### 各 App の設定
 
-- 当たり前だけど各 App の設定は自分でやる
+- 各 App の設定は自分でやる
 - `Dropbox/App` にアプリの設定を保存したりしているので、適宜インポートなど
 
 ### Dock の表示/非表示を早くする
@@ -141,24 +164,3 @@ $ brew list --formula | xargs -I{} sh -c 'brew uses --installed {} | wc -l | xar
 ### SourceTree で push できないとき
 
 [SourceTree で GitHub の Personal access tokens を利用する方法](https://zenn.dev/koushikagawa/articles/3c35e503c8553a)
-
-## 日々のメンテナンス
-
-[【Homebrew】コマンド一覧 \#homebrew \- Qiita](https://qiita.com/P-man_Brown/items/82b7e2f1e108a72d89f4)
-
-```
-# Homebrew自体を更新
-$ brew update
-
-# 更新可能なformula & caskを表示
-$ brew outdated
-
-# 他のformulaの依存関係としてのみインストールされ不要となったものをアンインストール
-$ brew autoremove
-
-# formulaやcaskのキャッシュを削除
-$ brew cleanup
-
-# システムに問題がないかチェック
-$ brew doctor
-```
