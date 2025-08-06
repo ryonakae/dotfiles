@@ -24,21 +24,21 @@ set -U FZF_LEGACY_KEYBINDINGS 0
 set -x HOMEBREW_CASK_OPTS --appdir=/Applications
 set -gx HOMEBREW_GITHUB_API_TOKEN xxxxx
 set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
-# for Apple Silicon
-set -x PATH /opt/homebrew/bin $PATH
-set -x PATH /opt/homebrew/sbin $PATH
+# - for Apple Silicon
+# set -x PATH /opt/homebrew/bin $PATH
+# set -x PATH /opt/homebrew/sbin $PATH
 
 # mise
 mise activate fish | source
 
 # google-cloud sdk
 set -x CLOUDSDK_PYTHON (which python3)
-# for Intel
+# - for Intel
 # set -x PATH /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
 # source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
-# for Apple Silicon
-set -x PATH /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
-source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
+# - for Apple Silicon
+# set -x PATH /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
+# source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
 
 # Android SDK
 set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
@@ -46,3 +46,9 @@ set -x ANDROID_SDK $HOME/Library/Android/sdk
 
 # PostgreSQL
 set -x PGDATA /usr/local/var/postgres
+
+# uv
+fish_add_path "/Users/ryo.nakae/.local/bin"
+
+# Claude Code
+DISABLE_AUTOUPDATER=1

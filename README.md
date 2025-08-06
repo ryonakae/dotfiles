@@ -2,40 +2,67 @@
 
 Mac を新規購入・OS クリーンインストールした時にやるやつ
 
-## リポジトリを clone する
+## リポジトリを clone
 
 ユーザーのホームディレクトリに clone する
 
 ```
 $ cd ~/
 $ git clone https://github.com/ryonakae/dotfiles.git
-```
-
-## Xcode と Command Line Tools for Xcode のインストール
-
-git コマンド使うのと、Homebrew のインストールに必要
-
-- App Store から Xcode をインストールする
-- `$ xcode-select --install`を実行
-
-## config.fish ファイルのコピー
-
-- config.fish.example を config.fish にリネーム
-  - `$ cp config.fish.example config.fish`
-- PC によって設定したいものは適宜コメント or コメントアウト解除
-
-## シェルスクリプトの実行
-
-`dotfile`ディレクトリに移動し、シェルスクリプトを実行
-
-```
 $ cd dotfiles
-$ sh symlink.sh
 ```
+
+## Xcode Command Line Tools と Homebrew のインストール
+
+```
+$ sh scripts/install.sh
+```
+
+## *.example ファイルのコピー
+
+`Brewfile.example` `fish.config.example` などを `Brewfile` `fish.config` にリネームしてコピーする
+
+```
+$ sh scripts/copy.sh
+```
+
+PC によって設定を変えたいものは適宜コメント or コメントアウト解除
+
+## シンボリックリンクの作成
 
 各設定ファイルのシンボリックリンクをホームディレクトリに貼る
 
-## デフォルトの Shell を fish にする
+```
+$ sh scripts/symlink.sh
+```
+
+## brew bundle の実行
+
+```
+$ cd brew
+$ brew bundle
+```
+
+- Brewfile に記述したものがインストールされる
+- 管理者パスワード入れる必要があるのでターミナルをチラ見しておく
+
+### Homebrew でインストールしたやつを優先的に利用する
+
+`/etc/paths`の順番を入れ替える
+
+```
+/usr/local/bin
+/usr/bin
+/bin
+/usr/sbin
+/sbin
+```
+
+`$ exec $SHELL`で反映される
+
+## fish の設定
+
+### デフォルトの Shell を fish にする
 
 参考：[ログインシェルを fish にしてみる \- Qiita](https://qiita.com/bleru/items/047a4e8ea2afb654d9e1)
 
@@ -50,13 +77,6 @@ $ chsh -s <which fishで表示されたパス>
 
 Shell を再起動で fish がデフォルトになる
 
-### fish がおかしい場合
-
-- `~/.config/fish/config.fish` がちゃんとエイリアスになっているか確認する
-- なっていない場合 (ファイルが実在する場合) は、一度ファイルを消して、`$ cd ~/dotfiles && sh symlink.sh` を実行
-
-## fish の設定
-
 ### fishfile に書かれたパッケージをインストール
 
 ```
@@ -70,6 +90,8 @@ $ fisher update
 
 ## Vim の設定
 
+### NeoBundle と VimProc のインストール
+
 ```
 $ mkdir -p ~/.vim/bundle
 $ git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
@@ -78,7 +100,7 @@ $ cd ~/.vim/bundle/vimproc
 $ make -f make_mac.mak
 ```
 
-ここまでやると NeoBundle と VimProc がインストールされる
+### Vim プラグインのインストール
 
 ```
 $ vim hoge
@@ -86,46 +108,9 @@ $ vim hoge
 !q
 ```
 
-とすると Vim のプラグインがインストールされる
+## Ruby、Node、Python とか設定する
 
-## Homebrew のインストール
-
-[Homebrew](https://brew.sh/ja/)のインストール
-
-```
-$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-```
-
-※ちょいちょいインストール用のコマンドが変わるのでサイトに行ってコピペ推奨
-
-## brew bundle の実行
-
-1. Brewfile.example を Brewfile にリネーム
-
-- `$ cp Brewfile.example Brewfile`
-
-2. PC によってインストールしたいものを適宜コメントアウト解除
-3. `$ brew bundle`を実行
-
-Brewfile に記述した処理が実行される
-
-## Homebrew でインストールしたやつを優先的に利用する
-
-`/etc/paths`の順番を入れ替える
-
-```
-/usr/local/bin
-/usr/bin
-/bin
-/usr/sbin
-/sbin
-```
-
-`$ exec $SHELL`で反映される
-
-## Ruby, Node, Python とか設定する
-
-Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使う
+[mise](https://mise.jdx.dev/) を使う
 
 ### PHP を mise で管理する
 
@@ -136,25 +121,37 @@ Homebrew 経由でインストールした [mise](https://mise.jdx.dev/) を使�
 
 [asdf, direnv をやめて mise に移行する](https://blog.sh1ma.dev/articles/20240108_from_asdf_to_mise)
 
-## プログラミング用フォント
+-----
 
-- 英語フォント
-  - [SauceCodePro Nerd Font](https://github.com/ryanoasis/nerd-fonts/tree/master/patched-fonts/SourceCodePro)
-  - 「Sauce Code Pro Nerd Font Complete」を使う
-- 日本語フォント
-  - [Source Han Code JP](https://github.com/adobe-fonts/source-han-code-jp)
+## 日々のメンテナンス
 
-ちなみにフォントは RightFont + Dropbox で管理したい
+[【Homebrew】コマンド一覧 \#homebrew \- Qiita](https://qiita.com/P-man_Brown/items/82b7e2f1e108a72d89f4)
 
-- Rightfont を起動し、Open Library -> Dropbox に保存してるライブラリを選択
-- Sauce Code Pro Nerd Font, Source Han Code JP を有効化
+```
+# Homebrew 自体を更新
+$ brew update
 
-## 各 App の設定
+# 更新可能な formula & cask を表示
+$ brew outdated
 
-- 当たり前だけど各 App の設定は自分でやる
-- Dropbox/App にアプリの設定を保存したりしている
+# 他の formula の依存関係としてのみインストールされ不要となったものをアンインストール
+$ brew autoremove
+
+# formula や cask のキャッシュを削除
+$ brew cleanup
+
+# システムに問題がないかチェック
+$ brew doctor
+```
+
+---
 
 ## その他
+
+### 各 App の設定
+
+- 各 App の設定は自分でやる
+- `Dropbox/App` にアプリの設定を保存したりしているので、適宜インポートなど
 
 ### Dock の表示/非表示を早くする
 
@@ -182,28 +179,3 @@ $ brew list --formula | xargs -I{} sh -c 'brew uses --installed {} | wc -l | xar
 ### SourceTree で push できないとき
 
 [SourceTree で GitHub の Personal access tokens を利用する方法](https://zenn.dev/koushikagawa/articles/3c35e503c8553a)
-
-## 日々のメンテナンス
-
-[【Homebrew】コマンド一覧 \#homebrew \- Qiita](https://qiita.com/P-man_Brown/items/82b7e2f1e108a72d89f4)
-
-```
-# Homebrew自体を更新
-$ brew update
-
-# 更新可能なformula & caskを表示
-$ brew outdated
-
-# 他のformulaの依存関係としてのみインストールされ不要となったものをアンインストール
-$ brew autoremove
-
-# formulaやcaskのキャッシュを削除
-$ brew cleanup
-
-# システムに問題がないかチェック
-$ brew doctor
-```
-
-## 参考
-
-- [pixyzehn/dotfiles](https://github.com/pixyzehn/dotfiles)

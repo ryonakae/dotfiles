@@ -32,6 +32,9 @@ call neobundle#begin(expand('~/.vim/bundle/'))
   " コメントアウト
   NeoBundle 'tpope/vim-commentary'
 
+  " GitHub Copilot
+  NeoBundle 'github/copilot.vim'
+
   " カラースキーム
   NeoBundle 'cocopon/iceberg.vim'
   NeoBundle 'ayu-theme/ayu-vim'
