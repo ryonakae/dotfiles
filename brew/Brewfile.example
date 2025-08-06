@@ -39,6 +39,7 @@ brew 'vim'
 # その他
 brew 'ffmpeg'
 # brew 'fontforge'
+brew 'imagemagick'
 # brew 'libpng'
 # brew 'openssl'
 # brew 'postgresql'
