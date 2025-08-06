@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# dotfiles ディレクトリのパス
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
+
 # .example ファイルを探して同じディレクトリにコピーする関数
 function copy_example_files() {
   local base_dir="$1"
@@ -22,7 +26,7 @@ function copy_example_files() {
 
 echo "Copy examples start..."
 
-# カレントディレクトリ以下の .example ファイルをコピー
-copy_example_files "./"
+# dotfiles ディレクトリ以下の .example ファイルをコピー
+copy_example_files "$DOTFILES_DIR"
 
 echo "Copy examples finished."
