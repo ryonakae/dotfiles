@@ -128,7 +128,6 @@ cask 'figma-beta'
 # cask 'framer'
 cask 'imageoptim'
 # cask 'ogdesign-eagle'
-# cask 'rightfont'
 # cask 'sketch'
 cask 'typeface'
 
