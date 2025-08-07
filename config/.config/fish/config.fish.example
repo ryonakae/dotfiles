@@ -31,15 +31,6 @@ set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
 # mise
 mise activate fish | source
 
-# google-cloud sdk
-set -x CLOUDSDK_PYTHON (which python3)
-# - for Intel
-# set -x PATH /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
-# source /usr/local/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
-# - for Apple Silicon
-# set -x PATH /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/platform/google_appengine $PATH
-# source /opt/homebrew/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.fish.inc
-
 # Android SDK
 set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
 set -x ANDROID_SDK $HOME/Library/Android/sdk
@@ -51,4 +42,4 @@ set -x PGDATA /usr/local/var/postgres
 fish_add_path "/Users/ryo.nakae/.local/bin"
 
 # Claude Code
-DISABLE_AUTOUPDATER=1
+set -Ux DISABLE_AUTOUPDATER 1
