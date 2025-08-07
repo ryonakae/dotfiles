@@ -91,7 +91,7 @@ cask 'hyper'
 # 開発ツール
 cask 'docker'
 # cask 'github'
-cask 'google-cloud-sdk'
+cask 'gcloud-cli'
 # cask 'react-native-debugger'
 # cask 'sequel-pro'
 cask 'sourcetree'
