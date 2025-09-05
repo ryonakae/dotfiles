@@ -32,8 +32,10 @@ set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
 mise activate fish | source
 
 # Android SDK
+set -x ANDROID_HOME $HOME/Library/Android/sdk
+set -x JAVA_HOME /Applications/Android Studio.app/Contents/jbr/Contents/Home
+set -x PATH $JAVA_HOME/bin $PATH
 set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
-set -x ANDROID_SDK $HOME/Library/Android/sdk
 
 # PostgreSQL
 set -x PGDATA /usr/local/var/postgres
