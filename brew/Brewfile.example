@@ -36,6 +36,9 @@ brew 'vim'
 # tap 'heroku/brew'
 # brew 'heroku'
 
+# AI
+cask 'codex'
+
 # その他
 brew 'ffmpeg'
 # brew 'fontforge'

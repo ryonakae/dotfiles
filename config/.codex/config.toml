@@ -1,0 +1,9 @@
+model = "vscode-lm-proxy"
+model_provider = "vscode-lm-proxy"
+
+notify = ["bash", "-lc", "afplay /System/Library/Sounds/Blow.aiff"]
+
+[model_providers.vscode-lm-proxy]
+name = "VSCode LM Proxy"
+base_url = "http://localhost:4000/openai"
+
