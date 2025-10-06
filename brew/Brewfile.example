@@ -131,6 +131,7 @@ cask 'figma@beta'
 # cask 'framer'
 cask 'imageoptim'
 # cask 'ogdesign-eagle'
+cask 'sf-symbols'
 # cask 'sketch'
 cask 'typeface'
 
