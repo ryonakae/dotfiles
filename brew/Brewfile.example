@@ -37,7 +37,8 @@ brew 'vim'
 # brew 'heroku'
 
 # AI
-cask 'codex'
+brew 'codex'
+brew 'gemini-cli'
 
 # その他
 brew 'ffmpeg'
@@ -73,15 +74,14 @@ cask 'raycast'
 cask 'rectangle'
 cask 'the-unarchiver'
 # cask 'timemachineeditor'
-cask 'topnotch'
 # cask 'wireshark'
 # cask 'xquartz'
 
 # ブラウザ
-# cask 'arc'
 # cask 'firefox'
 cask 'google-chrome'
 # cask 'opera'
+# cask 'thebrowsercompany-dia'
 # cask 'vivaldi'
 
 # クラウドサービス
@@ -107,6 +107,7 @@ cask 'sourcetree'
 
 # エディタ・IDE
 cask 'android-studio'
+cask 'antigravity'
 cask 'coteditor'
 # cask 'cursor'
 # cask 'processing'
@@ -168,7 +169,7 @@ cask 'zoom'
 # cask 'via'
 
 # AI
-cask 'chatgpt'
+# cask 'chatgpt'
 cask 'claude'
 cask 'claude-code'
 
