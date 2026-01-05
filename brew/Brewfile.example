@@ -23,6 +23,7 @@ brew 'fzf'
 # パッケージマネージャ
 brew 'mas'
 brew 'mise'
+brew 'ni'
 brew 'usage'
 brew 'uv'
 
