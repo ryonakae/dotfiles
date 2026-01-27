@@ -44,4 +44,4 @@ set -x PGDATA /usr/local/var/postgres
 fish_add_path "/Users/ryo.nakae/.local/bin"
 
 # Claude Code
-set -Ux DISABLE_AUTOUPDATER 1
+set -gx DISABLE_AUTOUPDATER 1
