@@ -1,47 +1,57 @@
-function fish_greeting
-  fish_logo
-  echo ''
+# --- 1. Interactive Session Settings ---
+if status is-interactive
+    function fish_greeting
+        fish_logo
+        echo ''
+    end
+
+    # Theme Settings (Bobthefish / Oh My Fish)
+    set -g theme_color_scheme dracula
+    set -g theme_display_date no
+    set -g theme_display_cmd_duration yes
+    set -g theme_powerline_fonts no
+    set -g theme_nerd_fonts yes
+    set -g theme_display_git_master_branch yes
+    set -g theme_display_user ssh
+    set -g theme_display_hostname ssh
+    set -g theme_title_display_user no
+    set -g theme_title_display_process yes
+    set -g theme_title_display_path yes
+
+    # FZF
+    set -U FZF_LEGACY_KEYBINDINGS 0
 end
 
-# theme
-set -g theme_color_scheme dracula
-set -g theme_display_date no
-set -g theme_display_cmd_duration yes
-set -g theme_powerline_fonts no
-set -g theme_nerd_fonts yes
-set -g theme_display_git_master_branch yes
-set -g theme_display_cmd_duration yes
-set -g theme_display_user ssh
-set -g theme_display_hostname ssh
-set -g theme_title_display_user no
-set -g theme_title_display_process yes
-set -g theme_title_display_path yes
-
-# fzf
-set -U FZF_LEGACY_KEYBINDINGS 0
-
-# homebrew
-set -x HOMEBREW_CASK_OPTS --appdir=/Applications
+# --- 2. Environment Variables ---
+# Homebrew Cask
+set -gx HOMEBREW_CASK_OPTS --appdir=/Applications
 set -gx HOMEBREW_GITHUB_API_TOKEN xxxxx
-set -U fish_user_paths "/usr/local/sbin" $fish_user_paths
-# - for Apple Silicon
-# set -x PATH /opt/homebrew/bin $PATH
-# set -x PATH /opt/homebrew/sbin $PATH
 
-# mise
-mise activate fish | source
-
-# Android SDK
-set -x ANDROID_HOME $HOME/Library/Android/sdk
-set -x JAVA_HOME /Applications/Android Studio.app/Contents/jbr/Contents/Home
-set -x PATH $JAVA_HOME/bin $PATH
-set -x PATH $HOME/Library/Android/sdk/platform-tools $PATH
+# Android SDK & Java
+set -gx ANDROID_HOME $HOME/Library/Android/sdk
+set -gx JAVA_HOME "/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 
 # PostgreSQL
-set -x PGDATA /usr/local/var/postgres
-
-# uv
-fish_add_path "/Users/ryo.nakae/.local/bin"
+set -gx PGDATA /usr/local/var/postgres
 
 # Claude Code
 set -gx DISABLE_AUTOUPDATER 1
+
+# --- 3. PATH Configuration (Homebrew & Tools) ---
+# Homebrew
+if test -d /opt/homebrew
+    eval (/opt/homebrew/bin/brew shellenv)
+end
+
+# Legacy support (Intel mac binaries running on Rosetta 2 etc)
+fish_add_path /usr/local/sbin
+
+# Android Tools
+fish_add_path $JAVA_HOME/bin
+fish_add_path $HOME/Library/Android/sdk/platform-tools
+
+# uv
+fish_add_path "$HOME/.local/bin"
+
+# --- 4. Version Manager (Mise) ---
+mise activate fish | source
