@@ -1,0 +1,32 @@
+description = "Generate Conventional Commits message and push"
+prompt = """
+あなたはリポジトリの変更内容から、適切なコミットメッセージを自動生成し、その内容でコミットして push まで行う。
+
+## 要件
+
+- 返答・コミットメッセージは日本語
+- 敬語は使わない
+- Conventional Commits 形式にする
+
+## 手順
+
+1. ステージングされているファイルを確認する（`git diff --cached --name-only`）
+   - 1つもステージングされていない場合 → すべてのファイルをステージングする（`git add -A`）
+   - 一部ステージング済み、一部未ステージングの場合 → ステージング済みのファイルのみ対象とする（追加ステージングはしない）
+2. ステージングされている変更があるか確認する。変更が無い場合は、その旨を伝えて終了する
+3. ステージング済みの差分（`git diff --cached`）を確認し、Conventional Commits のコミットメッセージを1つ作る
+   - 形式: `<type>(<scope>): <subject>`
+   - type は `feat|fix|docs|refactor|perf|test|build|ci|chore` から選ぶ
+   - scope は分かる場合のみ付ける（例: `commands`, `config` など）。不明なら省略可
+   - subject は短く要点のみ。末尾に句点は付けない
+   - body は必要な場合のみ。変更理由・背景・注意点を書く（箇条書き可）
+4. 生成したコミットメッセージを使ってコミットし、現在のブランチを push する
+   - body がある場合: `git commit -m "<subject>" -m "<body>" -m "Co-Authored-By: Gemini CLI <gemini-cli@users.noreply.github.com>"`
+   - body が無い場合: `git commit -m "<subject>" -m "Co-Authored-By: Gemini CLI <gemini-cli@users.noreply.github.com>"`
+   - `git push`
+
+## 注意
+
+- 破壊的・危険な操作（reset / clean / rebase / force push 等）はしない
+- push が失敗したら、エラー要点と次のアクション候補（例: 認証 / remote / ブランチ名確認）を提示して終了する
+"""
