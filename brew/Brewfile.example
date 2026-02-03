@@ -32,6 +32,7 @@ brew 'uv'
 brew 'jq'
 brew 'tree'
 brew 'vim'
+brew 'tmux'
 
 # 開発ツール
 # brew 'firebase-cli'
