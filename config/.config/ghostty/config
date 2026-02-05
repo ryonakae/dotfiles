@@ -1,6 +1,6 @@
-theme = Ayu
+theme = Ghostty Default Style Dark
 
-background-opacity = 0.95
+background-opacity = 0.9
 background-blur-radius = 20
 unfocused-split-opacity = 0.7
 
@@ -16,12 +16,14 @@ macos-titlebar-style = tabs
 macos-option-as-alt = true
 
 font-family = SauceCodePro Nerd Font
-font-family = Source Han Code JP
 font-size = 13
 font-style = Medium
+font-feature = -dlig
 
 cursor-style = block
 cursor-style-blink = false
 mouse-hide-while-typing = true
 
 desktop-notifications = true
+
+keybind = shift+enter=text:\n
