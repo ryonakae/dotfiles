@@ -1,0 +1,27 @@
+theme = Ayu
+
+background-opacity = 0.95
+background-blur-radius = 20
+unfocused-split-opacity = 0.7
+
+window-inherit-working-directory = true
+window-save-state = always
+window-padding-balance = true
+window-padding-x = 12
+window-padding-y = 12
+
+resize-overlay = never
+
+macos-titlebar-style = tabs
+macos-option-as-alt = true
+
+font-family = SauceCodePro Nerd Font
+font-family = Source Han Code JP
+font-size = 13
+font-style = Medium
+
+cursor-style = block
+cursor-style-blink = false
+mouse-hide-while-typing = true
+
+desktop-notifications = true
