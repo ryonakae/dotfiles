@@ -49,22 +49,12 @@
   "hooks": {
     "Notification": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "terminal-notifier -title '🔔 Claude Code' -message 'Claude needs your input' -sound Blow -activate co.zeit.hyper"
-          }
-        ]
+        "hooks": []
       }
     ],
     "Stop": [
       {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "terminal-notifier -title '✅ Claude Code' -message 'The task has been completed' -sound Blow -activate co.zeit.hyper"
-          }
-        ]
+        "hooks": []
       }
     ]
   },
