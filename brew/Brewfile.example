@@ -93,6 +93,7 @@ cask 'google-drive'
 
 # ターミナルエミュレータ
 cask 'hyper'
+cask 'ghostty'
 
 # 開発ツール
 cask 'docker'
