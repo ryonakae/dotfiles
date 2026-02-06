@@ -20,6 +20,9 @@ if status is-interactive
 
     # FZF
     set -U FZF_LEGACY_KEYBINDINGS 0
+
+    # Abbreviations
+    abbr -a ccm npx ccmanager@latest
 end
 
 # --- 2. Environment Variables ---

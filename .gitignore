@@ -1,2 +1,3 @@
 Brewfile
 config.fish
+*.code-workspace
