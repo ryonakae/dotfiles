@@ -10,19 +10,19 @@
   },
   "statusHooks": {
     "idle": {
-      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "command": "~/.config/ccmanager/status-hook.sh",
       "enabled": true
     },
     "busy": {
-      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "command": "~/.config/ccmanager/status-hook.sh",
       "enabled": true
     },
     "waiting_input": {
-      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "command": "~/.config/ccmanager/status-hook.sh",
       "enabled": true
     },
     "pending_auto_approval": {
-      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "command": "~/.config/ccmanager/status-hook.sh",
       "enabled": true
     }
   },
