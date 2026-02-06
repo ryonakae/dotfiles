@@ -16,6 +16,7 @@ macos-titlebar-style = tabs
 macos-option-as-alt = true
 macos-icon = retro
 
+font-family = "SauceCodePro Nerd Font"
 font-family = "Maple Mono NF CN"
 font-size = 13
 font-style = Medium

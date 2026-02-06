@@ -1,0 +1,59 @@
+{
+  "shortcuts": {
+    "returnToMenu": {
+      "ctrl": true,
+      "key": "e"
+    },
+    "cancel": {
+      "key": "escape"
+    }
+  },
+  "statusHooks": {
+    "idle": {
+      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "enabled": true
+    },
+    "busy": {
+      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "enabled": true
+    },
+    "waiting_input": {
+      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "enabled": true
+    },
+    "pending_auto_approval": {
+      "command": "sh -c 'tmux set -g @ccmanager-branch \"$CCMANAGER_WORKTREE_BRANCH\" && tmux set -g @ccmanager-state \"$CCMANAGER_NEW_STATE\"'",
+      "enabled": true
+    }
+  },
+  "worktreeHooks": {},
+  "worktree": {
+    "autoDirectory": false,
+    "copySessionData": true,
+    "sortByLastSession": false,
+    "autoUseDefaultBranch": false
+  },
+  "autoApproval": {
+    "enabled": false,
+    "timeout": 30,
+    "clearHistoryOnClear": false
+  },
+  "commandPresets": {
+    "presets": [
+      {
+        "id": "claude",
+        "name": "Claude Code",
+        "command": "claude",
+        "detectionStrategy": "claude"
+      },
+      {
+        "id": "gemin",
+        "name": "Gemini CLI",
+        "command": "gemini",
+        "detectionStrategy": "gemini"
+      }
+    ],
+    "defaultPresetId": "claude",
+    "selectPresetOnStart": true
+  }
+}
