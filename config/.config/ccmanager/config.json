@@ -28,9 +28,10 @@
   },
   "worktreeHooks": {},
   "worktree": {
-    "autoDirectory": false,
+    "autoDirectory": true,
+    "autoDirectoryPattern": "../{branch}",
     "copySessionData": true,
-    "sortByLastSession": false,
+    "sortByLastSession": true,
     "autoUseDefaultBranch": false
   },
   "autoApproval": {
@@ -44,12 +45,16 @@
         "id": "claude",
         "name": "Claude Code",
         "command": "claude",
+        "args": ["--resume"],
+        "fallbackArgs": [],
         "detectionStrategy": "claude"
       },
       {
         "id": "gemin",
         "name": "Gemini CLI",
         "command": "gemini",
+        "args": ["--resume"],
+        "fallbackArgs": [],
         "detectionStrategy": "gemini"
       }
     ],
