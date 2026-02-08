@@ -1,11 +1,5 @@
 #!/bin/sh
 
-# tmux変数を更新
-if [ -n "$TMUX" ]; then
-  tmux set -g @ccmanager-branch "$CCMANAGER_WORKTREE_BRANCH"
-  tmux set -g @ccmanager-state "$CCMANAGER_NEW_STATE"
-fi
-
 # 通知が必要なステートでOSC 777を送信
 case "$CCMANAGER_NEW_STATE" in
   waiting_input|pending_auto_approval)

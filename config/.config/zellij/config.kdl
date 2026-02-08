@@ -1,0 +1,6 @@
+simplified_ui true
+pane_frames false
+default_mode "locked"
+copy_command "pbcopy"
+show_startup_tips false
+show_release_notes false

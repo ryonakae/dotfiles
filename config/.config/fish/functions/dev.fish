@@ -1,3 +1,3 @@
-function dev --description "Start tmux dev session"
-  ~/.config/fish/functions/tmux-dev-session.sh $argv
+function dev --description "Start zellij dev session"
+  ~/.config/fish/functions/zellij-dev-session.sh $argv
 end
