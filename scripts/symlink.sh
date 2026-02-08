@@ -12,6 +12,7 @@ SKIP_FILES=(".DS_Store" "*.example")
 function create_symlinks() {
   local source_dir="$1"
   local target_dir="$2"
+  local parent_path="$3"  # config からの相対パス
 
   # ソースディレクトリが存在しない場合は終了
   if [ ! -d "$source_dir" ]; then
@@ -23,11 +24,24 @@ function create_symlinks() {
   find "$source_dir" -maxdepth 1 -mindepth 1 | while read -r item; do
     local item_name=$(basename "$item")
     local target_path="$target_dir/$item_name"
+    local current_path="${parent_path:+$parent_path/}$item_name"
 
-    # ディレクトリの場合は作成してから処理
+    # ディレクトリの場合
     if [ -d "$item" ]; then
-      mkdir -p "$target_path"
-      create_symlinks "$item" "$target_path"
+      # skills ディレクトリ直下のディレクトリの場合は、ディレクトリ自体をシンボリックリンク
+      if [[ "$parent_path" =~ (^|/)skills$ ]]; then
+        if [ -e "$target_path" ] || [ -L "$target_path" ]; then
+          echo "$target_path already exists, skipping symlink creation."
+        else
+          mkdir -p "$(dirname "$target_path")"
+          ln -s "$(realpath "$item")" "$target_path"
+          echo "Created directory symlink: $target_path -> $(realpath "$item")"
+        fi
+      else
+        # 通常のディレクトリは作成してから再帰的に処理
+        mkdir -p "$target_path"
+        create_symlinks "$item" "$target_path" "$current_path"
+      fi
     else
       # スキップファイルのチェック
       skip_file=false
@@ -79,6 +93,6 @@ echo "Config directory: $CONFIG_DIR"
 echo "Target directory: $HOME"
 
 # config ディレクトリ配下のすべてのファイル・ディレクトリを $HOME にシンボリックリンク
-create_symlinks "$CONFIG_DIR" "$HOME"
+create_symlinks "$CONFIG_DIR" "$HOME" ""
 
 echo "Symlink creation finished."
