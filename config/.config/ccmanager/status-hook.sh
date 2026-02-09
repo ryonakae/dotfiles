@@ -33,20 +33,36 @@ detect_terminal_app() {
 
 }
 
+# 状態を人間が読みやすいメッセージに変換
+get_state_message() {
+  case "$1" in
+    waiting_input)
+      echo "Waiting for your input."
+      ;;
+    pending_auto_approval)
+      echo "Pending auto approval."
+      ;;
+    *)
+      echo "$1"
+      ;;
+  esac
+}
+
 ACTIVATE_APP=$(detect_terminal_app)
+STATE_MESSAGE=$(get_state_message "$CCMANAGER_NEW_STATE")
 
 case "$CCMANAGER_NEW_STATE" in
   waiting_input|pending_auto_approval)
     if [ -n "$ACTIVATE_APP" ]; then
       terminal-notifier \
         -title "CCManager" \
-        -message "[$CCMANAGER_WORKTREE_BRANCH] $CCMANAGER_NEW_STATE" \
+        -message "\[$CCMANAGER_WORKTREE_BRANCH] $STATE_MESSAGE ($ACTIVATE_APP)" \
         -sound default \
         -activate "$ACTIVATE_APP"
     else
       terminal-notifier \
         -title "CCManager" \
-        -message "[$CCMANAGER_WORKTREE_BRANCH] $CCMANAGER_NEW_STATE" \
+        -message "\[$CCMANAGER_WORKTREE_BRANCH] $STATE_MESSAGE" \
         -sound default
     fi
     ;;
