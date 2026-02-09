@@ -23,21 +23,13 @@ find_app_from_pid() {
 detect_terminal_app() {
   find_app_from_pid "$PPID" && return
 
-  # tmux経由の場合はサーバーがデーモン化しておりプロセスツリーが切れるため、クライアントPIDから辿る
-  if [ -n "$TMUX" ]; then
-    client_pid=$(tmux display-message -p '#{client_pid}' 2>/dev/null)
-    if [ -n "$client_pid" ]; then
-      find_app_from_pid "$client_pid" && return
+  # プロセスツリーが切断されている場合（tmux, zellij等）、TERM_PROGRAMからバンドルIDを解決する
+  if [ -n "$TERM_PROGRAM" ]; then
+    bundle_id=$(osascript -e "id of app \"$TERM_PROGRAM\"" 2>/dev/null)
+    if [ -n "$bundle_id" ]; then
+      echo "$bundle_id"
+      return 0
     fi
-  fi
-
-  # zellij経由も同様にサーバーがデーモン化しているため、クライアントプロセスから辿る
-  if [ -n "$ZELLIJ" ]; then
-    for cpid in $(pgrep zellij 2>/dev/null); do
-      ccmd=$(ps -ww -o command= -p "$cpid" 2>/dev/null | sed 's/^[[:space:]]*//')
-      case "$ccmd" in *--server*) continue;; esac
-      find_app_from_pid "$cpid" && return
-    done
   fi
 }
 
