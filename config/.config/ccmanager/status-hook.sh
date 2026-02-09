@@ -4,7 +4,7 @@
 find_app_from_pid() {
   pid="$1"
   while [ "$pid" -gt 1 ] 2>/dev/null; do
-    exe=$(ps -o comm= -p "$pid" 2>/dev/null)
+    exe=$(ps -ww -o command= -p "$pid" 2>/dev/null | awk '{print $1}')
     case "$exe" in
       */Contents/MacOS/*)
         app_bundle="${exe%/Contents/MacOS/*}"
@@ -21,7 +21,7 @@ find_app_from_pid() {
 }
 
 detect_terminal_app() {
-  find_app_from_pid $PPID && return
+  find_app_from_pid "$PPID" && return
 
   # tmux経由の場合はサーバーがデーモン化しておりプロセスツリーが切れるため、クライアントPIDから辿る
   if [ -n "$TMUX" ]; then
