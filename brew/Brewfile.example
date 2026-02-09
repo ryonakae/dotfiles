@@ -50,6 +50,7 @@ brew 'imagemagick'
 # brew 'libpng'
 # brew 'openssl'
 # brew 'postgresql'
+brew 'terminal-notifier'
 
 
 # Caskのインストール
