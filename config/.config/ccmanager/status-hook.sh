@@ -4,7 +4,7 @@
 find_app_from_pid() {
   pid="$1"
   while [ "$pid" -gt 1 ] 2>/dev/null; do
-    exe=$(ps -ww -o command= -p "$pid" 2>/dev/null | awk '{print $1}')
+    exe=$(ps -ww -o command= -p "$pid" 2>/dev/null | sed 's/^[[:space:]]*//')
     case "$exe" in
       */Contents/MacOS/*)
         app_bundle="${exe%/Contents/MacOS/*}"
@@ -29,6 +29,15 @@ detect_terminal_app() {
     if [ -n "$client_pid" ]; then
       find_app_from_pid "$client_pid" && return
     fi
+  fi
+
+  # zellij経由も同様にサーバーがデーモン化しているため、クライアントプロセスから辿る
+  if [ -n "$ZELLIJ" ]; then
+    for cpid in $(pgrep zellij 2>/dev/null); do
+      ccmd=$(ps -ww -o command= -p "$cpid" 2>/dev/null | sed 's/^[[:space:]]*//')
+      case "$ccmd" in *--server*) continue;; esac
+      find_app_from_pid "$cpid" && return
+    done
   fi
 }
 
@@ -55,7 +64,7 @@ case "$CCMANAGER_NEW_STATE" in
     if [ -n "$ACTIVATE_APP" ]; then
       terminal-notifier \
         -title "CCManager" \
-        -message "\[$CCMANAGER_WORKTREE_BRANCH] $STATE_MESSAGE ($ACTIVATE_APP)" \
+        -message "\[$CCMANAGER_WORKTREE_BRANCH] $STATE_MESSAGE" \
         -sound default \
         -activate "$ACTIVATE_APP"
     else
