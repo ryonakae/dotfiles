@@ -28,20 +28,15 @@ function create_symlinks() {
 
     # ディレクトリの場合
     if [ -d "$item" ]; then
-      # skills ディレクトリ直下のディレクトリの場合は、ディレクトリ自体をシンボリックリンク
-      if [[ "$parent_path" =~ (^|/)skills$ ]]; then
-        if [ -e "$target_path" ] || [ -L "$target_path" ]; then
-          echo "$target_path already exists, skipping symlink creation."
-        else
-          mkdir -p "$(dirname "$target_path")"
-          ln -s "$(realpath "$item")" "$target_path"
-          echo "Created directory symlink: $target_path -> $(realpath "$item")"
-        fi
-      else
-        # 通常のディレクトリは作成してから再帰的に処理
-        mkdir -p "$target_path"
-        create_symlinks "$item" "$target_path" "$current_path"
+      # skills ディレクトリはスキップ
+      if [ "$item_name" = "skills" ]; then
+        echo "Skipping directory: $item"
+        continue
       fi
+
+      # 通常のディレクトリは作成してから再帰的に処理
+      mkdir -p "$target_path"
+      create_symlinks "$item" "$target_path" "$current_path"
     else
       # スキップファイルのチェック
       skip_file=false
