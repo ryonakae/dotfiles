@@ -30,7 +30,6 @@ detect_terminal_app() {
       find_app_from_pid "$client_pid" && return
     fi
   fi
-
 }
 
 # 状態を人間が読みやすいメッセージに変換
