@@ -13,10 +13,7 @@
       "Bash(git status:*)",
       "WebFetch(domain:github.com)",
       "mcp__context7",
-      "mcp__apple-docs",
-      "mcp__figma-desktop",
-      "mcp__gemini-cli",
-      "mcp__expo-docs"
+      "mcp__gemini-cli"
     ],
     "deny": [
       "Bash(sudo:*)",
