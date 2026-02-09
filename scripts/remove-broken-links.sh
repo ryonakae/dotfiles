@@ -42,12 +42,31 @@ function remove_symlinks() {
 
 echo "Finding broken symlinks start..."
 
+# dotfiles/configディレクトリのパスを取得
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
+CONFIG_DIR="$DOTFILES_DIR/config"
+
+echo "Filtering symlinks that point to: $CONFIG_DIR"
+echo ""
+
 # 壊れたシンボリックリンクを収集
 broken_links=()
 
 echo "Searching in ~/ (direct children only)..."
 while IFS= read -r link; do
-  [ -n "$link" ] && broken_links+=("$link")
+  if [ -n "$link" ]; then
+    # リンク先のパスを取得（相対パスを絶対パスに解決）
+    target=$(readlink "$link")
+    # 相対パスの場合は絶対パスに変換
+    if [[ "$target" != /* ]]; then
+      target="$(cd "$(dirname "$link")" && cd "$(dirname "$target")" 2>/dev/null && pwd)/$(basename "$target")"
+    fi
+    # CONFIG_DIR配下を指している場合のみ追加
+    if [[ "$target" == "$CONFIG_DIR"/* ]]; then
+      broken_links+=("$link")
+    fi
+  fi
 done << EOF
 $(find_broken_symlinks "$HOME" 1)
 EOF
@@ -55,7 +74,18 @@ EOF
 if [ -d "$HOME/.config" ]; then
   echo "Searching in ~/.config (recursive)..."
   while IFS= read -r link; do
-    [ -n "$link" ] && broken_links+=("$link")
+    if [ -n "$link" ]; then
+      # リンク先のパスを取得（相対パスを絶対パスに解決）
+      target=$(readlink "$link")
+      # 相対パスの場合は絶対パスに変換
+      if [[ "$target" != /* ]]; then
+        target="$(cd "$(dirname "$link")" && cd "$(dirname "$target")" 2>/dev/null && pwd)/$(basename "$target")"
+      fi
+      # CONFIG_DIR配下を指している場合のみ追加
+      if [[ "$target" == "$CONFIG_DIR"/* ]]; then
+        broken_links+=("$link")
+      fi
+    fi
   done << EOF
 $(find_broken_symlinks "$HOME/.config" "")
 EOF
