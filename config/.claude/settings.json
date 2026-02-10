@@ -30,7 +30,15 @@
       "Read(**/*key*)",
       "Read(id_rsa)",
       "Read(id_ed25519)",
-      "Bash(sudo *)"
+      "Bash(sudo *)",
+      "Bash(rm *)",
+      "Bash(rmdir *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "Bash(nc *)",
+      "Bash(psql *)",
+      "Bash(mysql *)",
+      "Bash(mongod *)"
     ],
     "defaultMode": "plan"
   },
