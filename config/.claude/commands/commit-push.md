@@ -1,7 +1,7 @@
 ---
-allowed-tools: Bash(git status:*), Bash(git diff:*)
 description: Generate Conventional Commits message and push
 model: claude-haiku-4-5
+allowed-tools: Bash(git:*)
 ---
 
 あなたはリポジトリの変更内容から、適切なコミットメッセージを自動生成し、その内容でコミットして push まで行う。
