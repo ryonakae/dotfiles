@@ -15,7 +15,8 @@
       "WebFetch",
       "WebSearch",
       "mcp__context7",
-      "mcp__gemini-cli"
+      "mcp__gemini-cli",
+      "mcp__acp"
     ],
     "deny": [
       "Read(.env)",
