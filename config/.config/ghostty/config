@@ -1,31 +1,38 @@
+# テーマ
 theme = "Ayu"
 
+# 背景・透明度
 background-opacity = 0.95
 background-blur-radius = 20
 unfocused-split-opacity = 0.7
 
+# フォント
+font-family = "SauceCodePro Nerd Font"
+font-family = "HackGen Console NF"
+font-size = 13
+font-style = Medium
+font-feature = -dlig
+
+# ウィンドウ
 window-inherit-working-directory = true
 window-save-state = always
 window-padding-balance = true
 window-padding-x = 12
 window-padding-y = 12
-
 resize-overlay = never
 
-macos-titlebar-style = tabs
-macos-option-as-alt = true
-macos-icon = retro
-
-font-family = "SauceCodePro Nerd Font"
-font-family = "Maple Mono NF CN"
-font-size = 13
-font-style = Medium
-font-feature = -dlig
-
+# カーソル・マウス
 cursor-style = block
 cursor-style-blink = false
 mouse-hide-while-typing = true
 
+# キーバインド
+keybind = shift+enter=text:\n
+
+# 通知
 desktop-notifications = true
 
-keybind = shift+enter=text:\n
+# macOS固有
+macos-titlebar-style = tabs
+macos-option-as-alt = true
+macos-icon = retro

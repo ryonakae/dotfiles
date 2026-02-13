@@ -148,7 +148,7 @@ cask 'font-sf-pro'
 cask 'font-sf-mono'
 cask 'font-sauce-code-pro-nerd-font'
 cask 'font-source-han-code-jp'
-cask 'font-maple-mono-nf-cn'
+cask 'font-hackgen-nerd'
 
 # マルチメディア
 # cask 'air-video-server-hd'

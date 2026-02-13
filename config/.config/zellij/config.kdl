@@ -1,6 +1,12 @@
+// UI
+theme "ayu_dark"
 simplified_ui true
 pane_frames false
+
+// 操作
 default_mode "locked"
 copy_command "pbcopy"
+
+// 通知・表示
 show_startup_tips false
 show_release_notes false
