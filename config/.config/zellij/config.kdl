@@ -10,3 +10,10 @@ copy_command "pbcopy"
 // 通知・表示
 show_startup_tips false
 show_release_notes false
+
+// キーバインド
+keybinds {
+    shared_except "locked" {
+        bind "Ctrl Alt q" { Quit; }
+    }
+}
