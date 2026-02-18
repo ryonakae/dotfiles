@@ -1,5 +1,10 @@
 #!/bin/bash
 
+AUTO_YES=false
+if [ "$1" = "-y" ] || [ "$1" = "--yes" ]; then
+  AUTO_YES=true
+fi
+
 # 壊れたシンボリックリンクを見つける関数
 function find_broken_symlinks() {
   local search_dir="$1"
@@ -110,15 +115,24 @@ echo "----------------------------------------"
 echo ""
 
 # 削除確認
-read -p "Do you want to remove these symlinks? (y/N): " answer
-case "$answer" in
-  [yY]|[yY][eE][sS])
-    echo ""
-    remove_symlinks "${broken_links[@]}"
-    ;;
-  *)
-    echo "Cancelled."
-    ;;
-esac
+if [ "$AUTO_YES" = true ]; then
+  remove_symlinks "${broken_links[@]}"
+else
+  # Kittyキーボードプロトコル(VS Code等)を一時的に無効化し、
+  # readがEnterキーを正しく認識できるようにする
+  printf '\033[>0u'
+  printf 'Do you want to remove these symlinks? (y/N): '
+  read -r answer
+  printf '\033[<u'
+  case "$answer" in
+    [yY]|[yY][eE][sS])
+      echo ""
+      remove_symlinks "${broken_links[@]}"
+      ;;
+    *)
+      echo "Cancelled."
+      ;;
+  esac
+fi
 
 echo "Finding broken symlinks finished."
