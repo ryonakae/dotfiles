@@ -15,7 +15,9 @@
       "WebFetch",
       "WebSearch",
       "mcp__context7",
-      "mcp__gemini-cli"
+      "mcp__gemini-cli",
+      "Skill(ask-gemini)",
+      "Skill(auto-code-review)"
     ],
     "deny": [
       "Read(.env)",
@@ -45,7 +47,13 @@
   "hooks": {
     "Notification": [
       {
-        "hooks": []
+        "matcher": "permission_prompt|idle_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/.claude/hooks/notification.sh"
+          }
+        ]
       }
     ],
     "Stop": [
