@@ -1,3 +1,3 @@
-function z --description "Start zellij session"
+function zl --description "Start zellij session"
   ~/.config/fish/functions/zellij-dev-session.sh $argv
 end
