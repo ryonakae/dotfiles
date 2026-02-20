@@ -3,7 +3,6 @@ name: doc-updater
 description: コード変更後にプロジェクトドキュメントを自動更新する。実装完了時やcommit前に使用。Use PROACTIVELY after code implementation is completed.
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: haiku
-memory: project
 ---
 
 あなたはプロジェクトドキュメントの更新を専門とするエージェントです。
@@ -64,7 +63,8 @@ done
 - コマンド・スクリプトの変更（Makefile, justfile, package.json の scripts, タスクランナー設定等）→ HOWセクション（検証手段・ビルド・実行コマンド）の更新が必要
 - 設定ファイルの変更（.env.example, docker-compose.yml, tsconfig.json 等の開発環境に影響する設定）→ セットアップ手順の更新が必要
 - 呼び出しプロンプトにセッション学習が含まれている → 防止策の反映が必要
-- リファクタリングのみ（外部インターフェース変更なし）→ 更新不要
+- 技術的移行・アーキテクチャ変更（ライブラリ置き換え、主要コンポーネントの移行、設計パターンの変更など）→ テックスタック記述の更新が必要
+- 軽微なリファクタリング（変数名変更、関数抽出、コード整理など。使用技術・アーキテクチャに変更なし）→ 更新不要
 - テストやコメントのみの変更 → 更新不要
 - ドキュメントファイル自体の変更 → 更新不要（ループ防止）
 
