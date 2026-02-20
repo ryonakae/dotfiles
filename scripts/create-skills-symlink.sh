@@ -10,7 +10,6 @@ GLOBAL_SKILLS_SOURCE="$DOTFILES_DIR/config/.agents/skills"
 TARGET_DIRS=(
   "$HOME/.agents/skills"
   "$HOME/.claude/skills"
-  "$HOME/.gemini/skills"
 )
 
 # エージェント固有スキル（ソース相対パス:ターゲット絶対パス の1対1マッピング）
