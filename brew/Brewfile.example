@@ -14,6 +14,11 @@ brew 'gh'
 brew 'fish'
 brew 'fisher'
 brew 'fzf'
+brew 'jq'
+brew 'tree'
+brew 'vim'
+brew 'zellij'
+brew 'zoxide'
 
 # プログラミング言語
 # brew 'rust'
@@ -27,12 +32,6 @@ brew 'mise'
 brew 'ni'
 brew 'usage'
 brew 'uv'
-
-# エディタ
-brew 'jq'
-brew 'tree'
-brew 'vim'
-brew 'zellij'
 
 # 開発ツール
 # brew 'firebase-cli'
