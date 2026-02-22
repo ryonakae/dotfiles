@@ -1,0 +1,13 @@
+layout {
+    tab name="claude" focus=true {
+        pane stacked=true {
+            pane command="fish" expanded=true {
+                args "-c" "claude"
+            }
+            pane
+        }
+    }
+    tab name="terminal" {
+        pane
+    }
+}
