@@ -62,8 +62,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "【ルール】\n1. stop_hook_activeがtrueの場合: 必ず{\"ok\": true}を返してください（ループ防止）\n2. stop_hook_activeがfalseの場合のみ、last_assistant_messageを判定してください\n\n【判定基準】last_assistant_messageが、プロジェクト構成に影響する作業の完了報告かどうか。\n対象: コードファイル（.ts .tsx .js .jsx .py .swift .kt 等）の実装・修正・リファクタリング、依存関係ファイルの変更（package.json requirements.txt 等）、ファイルのリネームや削除、ビルド・スクリプトの変更（Makefile justfile 等）、開発環境設定の変更（docker-compose.yml tsconfig.json .env.example 等）\n非対象: 質問への回答、計画・設計の提示、調査報告、ドキュメントのみの変更、テストのみの実行、会話的なやり取り\n\n【応答】JSONのみで返してください:\n- 実装完了報告の場合: {\"ok\": false, \"reason\": \"実装完了を検出しました。停止前に以下を実行してください。\\n\\n1. セッション中の失敗・修正から学んだ防止策があれば整理する（なければスキップ）\\n2. このセッションで変更したファイル一覧と、防止策があればそれも合わせて doc-updater サブエージェントに渡して呼び出す\\n3. doc-updater の完了を待ってから停止すること\"}\n- それ以外: {\"ok\": true}",
-            "model": "haiku"
+            "prompt": "出力はJSONのみ。説明文やマークダウン記法は禁止。\n\n入力: $ARGUMENTS\n\n判定ルール:\n- stop_hook_active が true → {\"ok\": true}\n- last_assistant_message がコード実装の完了報告（コードファイル・依存関係・スクリプト・設定ファイルの変更）→ {\"ok\": false, \"reason\": \"実装完了を検出。停止前に以下を実行:\\n1. セッション中の失敗・修正から防止策があれば整理（なければスキップ）\\n2. 変更ファイル一覧と防止策を doc-updater サブエージェントに渡して呼び出す\\n3. doc-updater 完了を待ってから停止\"}\n- それ以外（質問回答・調査・計画・ドキュメントのみ・テストのみ・会話） → {\"ok\": true}"
           }
         ]
       }
