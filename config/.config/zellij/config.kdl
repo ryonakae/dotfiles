@@ -5,7 +5,7 @@ pane_frames false
 
 // 操作
 default_mode "locked"
-copy_command "pbcopy"
+// OSC 52 でクリップボードをコピーする（mosh/SSH 越しでも動作する）
 
 // 通知・表示
 show_startup_tips false
