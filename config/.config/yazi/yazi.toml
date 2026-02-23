@@ -1,0 +1,15 @@
+[mgr]
+# ディレクトリの表示比率
+ratio = [0, 1, 1]
+
+# 隠しファイルを表示
+show_hidden = true
+
+# ディレクトリを先に、ファイルを後に表示
+sort_dir_first = true
+
+# 自然順ソート（file1, file2, file10 の順になる）
+sort_by = "natural"
+
+# シンボリックリンクを表示
+show_symlink = true

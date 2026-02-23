@@ -108,6 +108,14 @@ $ vim hoge
 !q
 ```
 
+## ファイル管理ツール
+
+### Yazi の使用
+
+dev レイアウトでファイルマネージャーとして [yazi](https://yazi-rs.github.io/) を使用しています。Brewfile に記述されており、`brew bundle` でインストールされます。
+
+設定は `config/.config/yazi/` 以下にあります。
+
 ## Ruby、Node、Python とか設定する
 
 [mise](https://mise.jdx.dev/) を使う

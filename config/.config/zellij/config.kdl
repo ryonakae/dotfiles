@@ -13,6 +13,12 @@ show_release_notes false
 
 // キーバインド
 keybinds {
+    locked {
+        bind "Alt h" { MoveFocusOrTab "Left"; }
+        bind "Alt j" { MoveFocus "Down"; }
+        bind "Alt k" { MoveFocus "Up"; }
+        bind "Alt l" { MoveFocusOrTab "Right"; }
+    }
     shared_except "locked" {
         bind "Ctrl Alt q" { Quit; }
     }

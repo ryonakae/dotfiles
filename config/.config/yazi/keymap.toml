@@ -1,0 +1,5 @@
+# d→dでゴミ箱に移動
+[[mgr.prepend_keymap]]
+on   = ["d", "d"]
+run  = "remove"
+desc = "Move to trash"

@@ -13,6 +13,7 @@ layout {
             pane command="fish" expanded=true {
                 args "-c" "claude"
             }
+            pane command="yazi"
             pane command="keifu"
             pane
         }
