@@ -62,7 +62,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "出力はJSONのみ。説明文やマークダウン記法は禁止。\n\n入力: $ARGUMENTS\n\n判定ルール:\n- stop_hook_active が true → {\"ok\": true}\n- last_assistant_message がコード実装の完了報告（コードファイル・依存関係・スクリプト・設定ファイルの変更）→ {\"ok\": false, \"reason\": \"実装完了を検出。停止前に以下を実行:\\n1. セッション中の失敗・修正から防止策があれば整理（なければスキップ）\\n2. 変更ファイル一覧と防止策を doc-updater サブエージェントに渡して呼び出す\\n3. doc-updater 完了を待ってから停止\"}\n- それ以外（質問回答・調査・計画・ドキュメントのみ・テストのみ・会話） → {\"ok\": true}"
+            "prompt": "出力はJSONのみ。説明文やマークダウン記法は禁止。\n\n入力: $ARGUMENTS\n\n判定ルール:\n- stop_hook_active が true → {\"ok\": true}\n- last_assistant_message がコード実装の完了報告（コードファイル・依存関係・スクリプト・設定ファイルの変更）→ {\"ok\": false, \"reason\": \"doc-updater サブエージェントを実行し、変更ファイル一覧を渡す。セッション中の失敗・修正から防止策があればそれも含める\"}\n- それ以外（質問回答・調査・計画・ドキュメントのみ・テストのみ・会話） → {\"ok\": true}"
           }
         ]
       }
