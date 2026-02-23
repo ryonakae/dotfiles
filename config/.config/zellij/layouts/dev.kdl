@@ -11,7 +11,7 @@ layout {
     tab focus=true {
         pane stacked=true {
             pane command="fish" expanded=true {
-                args "-c" "claude"
+                args "-c" "claude --continue"
             }
             pane
         }
