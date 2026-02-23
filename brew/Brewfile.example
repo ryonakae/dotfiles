@@ -11,6 +11,7 @@ brew 'git-lfs'
 brew 'gh'
 
 # シェル
+brew 'fd'
 brew 'fish'
 brew 'fisher'
 brew 'fzf'
