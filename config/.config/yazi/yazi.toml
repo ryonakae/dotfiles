@@ -1,6 +1,6 @@
 [mgr]
 # ディレクトリの表示比率
-ratio = [0, 1, 1]
+ratio = [0, 1, 0]
 
 # 隠しファイルを表示
 show_hidden = true
