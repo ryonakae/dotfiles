@@ -1,4 +1,9 @@
 function zls -d "~/dev および ~/dotfiles のリポジトリを選択してZellijセッションを作成/アタッチ"
+    if not command -v fd &>/dev/null
+        echo "error: fd command not found. Install it with: brew install fd"
+        return 1
+    end
+
     set -l dev_dir $HOME/dev
     set -l history_file $HOME/.cache/zls_history
 
@@ -20,12 +25,7 @@ function zls -d "~/dev および ~/dotfiles のリポジトリを選択してZel
         set sorted_sessions $sessions
     end
 
-    # グロブで深度1〜3の.gitを直接マッチ（findより大幅に高速、OS依存なし）
-    # $HOME/ からの相対パスで統一することで ~/dotfiles 等の追加ディレクトリも同じ形式で扱える
-    set -l repos
-    for gitdir in $dev_dir/*/.git $dev_dir/*/*/.git $dev_dir/*/*/*/.git
-        test -d "$gitdir" && set repos $repos (string replace "$HOME/" "" (string replace "/.git" "" $gitdir))
-    end
+    set -l repos (fd -t d -H --no-ignore --min-depth 2 --max-depth 4 '^\.git$' $dev_dir | string replace -r '/\.git/?$' '' | string replace "$HOME/" '')
     test -d $HOME/dotfiles/.git && set repos $repos dotfiles
     set repos (printf '%s\n' $repos | sort | string replace -r '^' '+ ')
 
