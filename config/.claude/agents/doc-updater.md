@@ -1,6 +1,6 @@
 ---
 name: doc-updater
-description: コード変更後にプロジェクトドキュメントを自動更新する。実装完了時やcommit前に使用。Use PROACTIVELY after code implementation is completed.
+description: コード変更後にプロジェクトドキュメントを自動更新する。実装完了時やcommit前に使用。Use PROACTIVELY after code implementation is completed. MUST run in foreground (run_in_background=false), NOT in background.
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: haiku
 ---
