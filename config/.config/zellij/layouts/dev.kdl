@@ -14,7 +14,9 @@ layout {
                 args "-c" "claude"
             }
             pane command="yazi"
-            pane command="keifu"
+            pane command="fish" {
+                args "-c" "keifu-wrapper"
+            }
         }
     }
 }

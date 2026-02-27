@@ -1,7 +1,6 @@
 # --- 1. Interactive Session Settings ---
 if status is-interactive
     function fish_greeting
-        fish_logo
         echo ''
     end
 

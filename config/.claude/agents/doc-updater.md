@@ -3,6 +3,7 @@ name: doc-updater
 description: コード変更後にプロジェクトドキュメントを自動更新する。実装完了時やcommit前に使用。Use PROACTIVELY after code implementation is completed. MUST run in foreground (run_in_background=false), NOT in background.
 tools: Read, Edit, Write, Bash, Grep, Glob
 model: haiku
+color: cyan
 ---
 
 あなたはプロジェクトドキュメントの更新を専門とするエージェントです。
@@ -27,7 +28,6 @@ done
 ```
 
 判定ルール:
-
 - **AGENTS.mdが実ファイル** → AGENTS.mdを編集対象とする。CLAUDE.mdやGEMINI.mdがシンボリックリンクならそれらは触らない（AGENTS.mdへの変更が自動反映される）
 - **AGENTS.mdが存在しない + CLAUDE.mdが実ファイル** → CLAUDE.mdを編集対象とする
 - **AGENTS.mdが存在しない + GEMINI.mdが実ファイル** → GEMINI.mdを編集対象とする
@@ -39,14 +39,12 @@ done
 ### ステップ2: 変更の特定
 
 トリガー元に応じて変更内容を把握する:
-
 - Claude Code Stopフック経由: 呼び出しプロンプトに提示された「このセッションで作成・編集したファイル」について、`git diff HEAD -- <filepath>`等を用いて変更内容を確認
 - git pre-commit経由: `git diff --cached` でステージされた変更を確認
 - セッション学習経由: 呼び出しプロンプトにセッション学習（防止策）が含まれている場合、その内容をエージェント指示ファイルに反映する
 - 手動呼び出し: 引数またはプロンプトの指示に従う
 
 リネーム・削除の検出（Stopフック/pre-commit共通）:
-
 - `git diff [HEAD|--cached] --diff-filter=R --name-status` でリネームされたファイルの旧名→新名を把握する
 - `git diff [HEAD|--cached] --diff-filter=D --name-only` で削除されたファイルを把握する
 - ドキュメント内にこれらのパス参照がないか確認し、あれば更新・除去する
@@ -54,7 +52,6 @@ done
 ### ステップ3: 影響判定
 
 変更内容がドキュメント更新を必要とするか判断する:
-
 - 新しいファイル・モジュール・機能の追加 → 更新が必要
 - 既存APIの変更（引数、戻り値、振る舞い）→ 更新が必要
 - エージェント・スキル・フックの追加や変更 → エージェント指示ファイルの更新が必要
@@ -114,7 +111,6 @@ done
 ステップ1で特定した編集対象ファイルのみを編集する。上記の記述規約に従う。
 
 特に注意すべき更新:
-
 - テックスタック（使用ライブラリ・フレームワーク）の追加・削除・変更 → WHAT セクションを同期
 - ビルド・テスト・実行コマンドの変更 → HOW セクションを同期
 - ファイル・ディレクトリ構成の変更 → パス参照を更新し、存在しないパスへの参照を除去
@@ -141,8 +137,6 @@ done
 ## 出力
 
 更新内容のサマリーを以下の形式で返す:
-
-- 検出したファイル構成（例: 「AGENTS.md: 実ファイル, CLAUDE.md: AGENTS.mdへのsymlink」）
 - 編集対象として選択したファイル
 - 更新したファイル名と変更概要
 - 更新をスキップしたファイルとその理由（あれば）
