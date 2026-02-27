@@ -6,5 +6,7 @@ function zl --description "Start zellij session"
         set project_dir (pwd)
     end
     set -l session (basename $project_dir)
+    set -l orig_dir (pwd)
     cd $project_dir && zellij -l dev attach -c $session
+    cd $orig_dir
 end

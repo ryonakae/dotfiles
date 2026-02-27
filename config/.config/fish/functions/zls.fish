@@ -69,8 +69,10 @@ function zls -d "~/dev および ~/dotfiles のリポジトリを選択してZel
         end
         mkdir -p (dirname $history_file)
         echo $session >> $history_file
+        set -l orig_dir (pwd)
         cd "$HOME/$dir"
         zellij -l dev attach -c $session
+        cd $orig_dir
     else
         # 既存セッションにアタッチ
         mkdir -p (dirname $history_file)
