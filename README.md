@@ -108,30 +108,6 @@ $ vim hoge
 !q
 ```
 
-## 開発環境レイアウト（Zellij）
-
-dev レイアウト（`config/.config/zellij/layouts/dev.kdl`）では、複数の開発ツールをペイン分割で起動しています：
-
-- **claude**: Claude CLI による AI コーディング支援
-- **yazi**: ファイルマネージャー
-- **keifu**: Git リポジトリビューアー（ペインタイトルに Git ステータス表示付き）
-
-### Yazi の使用
-
-ファイルマネージャーとして [yazi](https://yazi-rs.github.io/) を使用しています。Brewfile に記述されており、`brew bundle` でインストールされます。
-
-設定は `config/.config/yazi/` 以下にあります。
-
-### Keifu のペインタイトル表示
-
-dev レイアウトの keifu ペインは、`keifu-wrapper` 関数経由で起動されます。この関数は以下の機能を提供します：
-
-- バックグラウンドで 5 秒ごとにペインタイトルを更新
-- ペインタイトルに現在のブランチ名を表示
-- 変更ファイル数と行数変化（+インサーション −デリーション）を表示
-
-実装は `config/.config/fish/functions/keifu-wrapper.fish` にあります。
-
 ## Ruby、Node、Python とか設定する
 
 [mise](https://mise.jdx.dev/) を使う

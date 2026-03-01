@@ -32,7 +32,6 @@ brew 'zoxide'
 # パッケージマネージャ
 brew 'mas'
 brew 'mise'
-brew 'ni'
 brew 'usage'
 brew 'uv'
 
@@ -176,9 +175,11 @@ cask 'zoom'
 # cask 'via'
 
 # AI
-# cask 'chatgpt'
+cask 'chatgpt'
 cask 'claude'
 cask 'claude-code'
+cask 'codex'
+cask 'codex-app'
 
 
 # MacAppStoreのアプリをインストール
