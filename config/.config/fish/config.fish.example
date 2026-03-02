@@ -19,6 +19,9 @@ if status is-interactive
 
     # FZF
     set -U FZF_LEGACY_KEYBINDINGS 0
+
+    # zoxide
+    zoxide init fish --cmd cd | source
 end
 
 # --- 2. Environment Variables ---
@@ -40,6 +43,8 @@ set -gx DISABLE_AUTOUPDATER 1
 # Homebrew
 if test -d /opt/homebrew
     eval (/opt/homebrew/bin/brew shellenv)
+else if test -x /usr/local/bin/brew
+    eval (/usr/local/bin/brew shellenv)
 end
 
 # Legacy support (Intel mac binaries running on Rosetta 2 etc)
@@ -54,6 +59,3 @@ fish_add_path "$HOME/.local/bin"
 
 # --- 4. Version Manager (Mise) ---
 mise activate --shims fish | source
-
-# --- 5. Tool Initialization ---
-zoxide init fish --cmd cd | source
