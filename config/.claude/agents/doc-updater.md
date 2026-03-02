@@ -2,7 +2,7 @@
 name: doc-updater
 description: コード変更後にプロジェクトドキュメントを自動更新する。実装完了時やcommit前に使用。Use PROACTIVELY after code implementation is completed. MUST run in foreground (run_in_background=false), NOT in background.
 tools: Read, Edit, Write, Bash, Grep, Glob
-model: haiku
+model: sonnet
 color: cyan
 ---
 
@@ -13,26 +13,13 @@ color: cyan
 
 ### ステップ1: エージェント指示ファイルの特定
 
-プロジェクトルートで以下のコマンドを実行し、編集対象を決定する:
+プロジェクトルートで以下のコマンドを実行し、実ファイルのみを取得する:
 
 ```bash
-for f in AGENTS.md CLAUDE.md GEMINI.md; do
-  if [ -L "$f" ]; then
-    echo "$f: symlink -> $(readlink "$f")"
-  elif [ -f "$f" ]; then
-    echo "$f: real file"
-  else
-    echo "$f: not found"
-  fi
-done
+find . -maxdepth 1 \( -name "AGENTS.md" -o -name "CLAUDE.md" -o -name "GEMINI.md" \) ! -type l
 ```
 
-判定ルール:
-- **AGENTS.mdが実ファイル** → AGENTS.mdを編集対象とする。CLAUDE.mdやGEMINI.mdがシンボリックリンクならそれらは触らない（AGENTS.mdへの変更が自動反映される）
-- **AGENTS.mdが存在しない + CLAUDE.mdが実ファイル** → CLAUDE.mdを編集対象とする
-- **AGENTS.mdが存在しない + GEMINI.mdが実ファイル** → GEMINI.mdを編集対象とする
-- **複数の実ファイルが存在**（例: CLAUDE.mdとGEMINI.mdが両方実ファイル）→ すべての実ファイルを編集対象とし、内容の同期に注意する
-- **いずれも存在しない** → エージェント指示ファイルの更新はスキップ。README.mdのみ確認する
+出力されたすべての実ファイルを編集対象とする。出力がなければエージェント指示ファイルの更新はスキップ（README.mdのみ確認）。複数ある場合（例: CLAUDE.mdとGEMINI.mdが両方実ファイル）は内容の同期に注意する。AGENTS.mdが含まれる場合、CLAUDE.mdやGEMINI.mdがシンボリックリンクであればそれらは触らない（AGENTS.mdへの変更が自動反映される）。
 
 シンボリックリンクは絶対に直接編集しない。
 
