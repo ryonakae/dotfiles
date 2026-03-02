@@ -19,9 +19,6 @@ if status is-interactive
 
     # FZF
     set -U FZF_LEGACY_KEYBINDINGS 0
-
-    # zoxide
-    zoxide init fish --cmd cd | source
 end
 
 # --- 2. Environment Variables ---
@@ -59,3 +56,9 @@ fish_add_path "$HOME/.local/bin"
 
 # --- 4. Version Manager (Mise) ---
 mise activate --shims fish | source
+
+# --- 5. Interactive Tools (require PATH to be set) ---
+if status is-interactive
+    # zoxide
+    zoxide init fish --cmd cd | source
+end
