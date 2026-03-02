@@ -53,7 +53,7 @@ notify() {
   fi
 
   if [ -n "$group" ] && [ -n "$activate_app" ]; then
-    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -group "$group" -activate "$activate_app"
+    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -group "$group" -sender "$activate_app" -activate "$activate_app"
     return 0
   fi
 
@@ -63,7 +63,7 @@ notify() {
   fi
 
   if [ -n "$activate_app" ]; then
-    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -activate "$activate_app"
+    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -sender "$activate_app" -activate "$activate_app"
     return 0
   fi
 
