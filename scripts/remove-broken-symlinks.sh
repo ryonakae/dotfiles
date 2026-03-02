@@ -1,32 +1,57 @@
 #!/bin/bash
 
+# sh 経由や bash の posix モードで実行された場合でも、通常の Bash で再実行する
+case ":${SHELLOPTS:-}:" in
+  *:posix:*)
+    exec bash "$0" "$@"
+    ;;
+esac
+
+if [ -z "${BASH_VERSION:-}" ]; then
+  exec bash "$0" "$@"
+fi
+
 AUTO_YES=false
 if [ "$1" = "-y" ] || [ "$1" = "--yes" ]; then
   AUTO_YES=true
 fi
 
-# 壊れたシンボリックリンクを見つける関数
-function find_broken_symlinks() {
-  local search_dir="$1"
-  local max_depth="$2"
+# 指定パス(自身を含む)配下のシンボリックリンクを列挙する関数
+function find_symlinks() {
+  local search_path="$1"
 
-  # ディレクトリが存在しない場合は終了
-  if [ ! -d "$search_dir" ]; then
+  if [ -L "$search_path" ]; then
+    echo "$search_path"
     return 0
   fi
 
-  # maxdepthオプションの設定
-  local depth_option=""
-  if [ -n "$max_depth" ]; then
-    depth_option="-maxdepth $max_depth"
+  if [ -d "$search_path" ]; then
+    find "$search_path" -type l 2>/dev/null
+  fi
+}
+
+# リンク先を絶対パスに解決する関数
+function resolve_target_path() {
+  local link="$1"
+  local target
+
+  target="$(readlink "$link")"
+  if [ -z "$target" ]; then
+    return 0
   fi
 
-  # シンボリックリンクを検索し、参照先が存在しないものを抽出
-  find "$search_dir" $depth_option -type l 2>/dev/null | while IFS= read -r link; do
-    if [ ! -e "$link" ]; then
-      echo "$link"
-    fi
-  done
+  if [[ "$target" == /* ]]; then
+    echo "$target"
+    return 0
+  fi
+
+  local link_dir
+  link_dir="$(cd "$(dirname "$link")" && pwd)"
+  if [ -z "$link_dir" ]; then
+    return 0
+  fi
+
+  echo "$link_dir/$target"
 }
 
 # シンボリックリンクを削除する関数
@@ -58,45 +83,44 @@ echo ""
 # 壊れたシンボリックリンクを収集
 broken_links=()
 
-echo "Searching in ~/ (direct children only)..."
-while IFS= read -r link; do
-  if [ -n "$link" ]; then
-    # リンク先のパスを取得（相対パスを絶対パスに解決）
-    target=$(readlink "$link")
-    # 相対パスの場合は絶対パスに変換
-    if [[ "$target" != /* ]]; then
-      target="$(cd "$(dirname "$link")" && cd "$(dirname "$target")" 2>/dev/null && pwd)/$(basename "$target")"
+search_roots=()
+while IFS= read -r -d '' config_item; do
+  config_name="$(basename "$config_item")"
+  # findの結果に . と .. は含まれないが、安全のため除外
+  if [ "$config_name" = "." ] || [ "$config_name" = ".." ]; then
+    continue
+  fi
+
+  home_candidate="$HOME/$config_name"
+  if [ -d "$home_candidate" ] || [ -L "$home_candidate" ]; then
+    search_roots+=("$home_candidate")
+  fi
+done < <(find "$CONFIG_DIR" -mindepth 1 -maxdepth 1 -print0 2>/dev/null)
+
+if [ ${#search_roots[@]} -eq 0 ]; then
+  echo "No matching search roots found under ~/ for $CONFIG_DIR"
+fi
+
+for search_root in "${search_roots[@]}"; do
+  display_root="${search_root/#$HOME/~}"
+  echo "Searching in $display_root ..."
+
+  while IFS= read -r link; do
+    if [ -z "$link" ]; then
+      continue
     fi
-    # CONFIG_DIR配下を指している場合のみ追加
-    if [[ "$target" == "$CONFIG_DIR"/* ]]; then
+
+    target="$(resolve_target_path "$link")"
+    if [ -z "$target" ]; then
+      continue
+    fi
+
+    # config配下を参照し、かつリンク先実体が存在しないリンクのみ対象にする
+    if [[ "$target" == "$CONFIG_DIR"/* ]] && [ ! -e "$target" ]; then
       broken_links+=("$link")
     fi
-  fi
-done << EOF
-$(find_broken_symlinks "$HOME" 1)
-EOF
-
-if [ -d "$HOME/.config" ]; then
-  echo "Searching in ~/.config (recursive)..."
-  while IFS= read -r link; do
-    if [ -n "$link" ]; then
-      # リンク先のパスを取得（相対パスを絶対パスに解決）
-      target=$(readlink "$link")
-      # 相対パスの場合は絶対パスに変換
-      if [[ "$target" != /* ]]; then
-        target="$(cd "$(dirname "$link")" && cd "$(dirname "$target")" 2>/dev/null && pwd)/$(basename "$target")"
-      fi
-      # CONFIG_DIR配下を指している場合のみ追加
-      if [[ "$target" == "$CONFIG_DIR"/* ]]; then
-        broken_links+=("$link")
-      fi
-    fi
-  done << EOF
-$(find_broken_symlinks "$HOME/.config" "")
-EOF
-else
-  echo "~/.config does not exist, skipping."
-fi
+  done < <(find_symlinks "$search_root")
+done
 
 # 結果の表示
 if [ ${#broken_links[@]} -eq 0 ]; then
