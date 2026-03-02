@@ -1,7 +1,7 @@
 ---
 name: commit-push
 description: Conventional Commits メッセージを自動生成し、doc-updater によるドキュメント自動更新を含めてコミット＆pushする。コミットしたい時、pushしたい時に使用する。
-model: claude-haiku-4-5
+model: sonnet
 disable-model-invocation: true
 allowed-tools: Bash(git:*), Task(doc-updater)
 ---
@@ -27,7 +27,7 @@ allowed-tools: Bash(git:*), Task(doc-updater)
 
 ### ステップ2: ドキュメント自動更新
 
-doc-updater サブエージェント（モデルは必ず haiku を使う）に以下を依頼する:
+doc-updater サブエージェント（モデルは必ず sonnet を使う）に以下を依頼する:
 
 「ステージ済みの変更（`git diff --cached`）を確認し、必要に応じてドキュメントを更新してください。」
 
