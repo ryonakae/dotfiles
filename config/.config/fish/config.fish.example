@@ -36,6 +36,9 @@ set -gx PGDATA /usr/local/var/postgres
 # Claude Code
 set -gx DISABLE_AUTOUPDATER 1
 
+# Codex
+set -gx CONTEXT7_API_KEY xxxxx
+
 # --- 3. PATH Configuration (Homebrew & Tools) ---
 # Homebrew
 if test -d /opt/homebrew
