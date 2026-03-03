@@ -64,8 +64,9 @@
         "hooks": [
           {
             "type": "agent",
-            "timeout": 180,
-            "model": "claude-sonnet-4-6"
+            "model": "claude-sonnet-4-6",
+            "prompt": "以下の入力を分析し、Claudeが停止してよいか判定してください。\n\n$ARGUMENTS\n\n判定手順:\n1. stop_hook_active が true → StructuredOutput で ok=true を返す\n2. last_assistant_message のみを確認する（transcript_path のファイルは大きすぎるため絶対に読まないこと）\n3. 以下の2条件を両方満たすか判定する:\n   a. 実装が完了している（コード変更を伴うタスクが完了し、成果を報告している）\n   b. コード変更を伴っている（ファイルの作成・編集・削除）\n\n   ※ 例外: last_assistant_message が以下のいずれかに該当する場合は、doc-updater が既に実行済みのため ok=true を返す:\n     - doc-updater サブエージェントの実行結果や完了報告を含む\n     - ドキュメント更新の結果報告を含む（更新した・更新不要だった等）\n     - AGENTS.md / CLAUDE.md / README.md 等のドキュメントファイルを編集した報告を含む\n     - /commit-push スキルの実行結果を含む（スキル内部で doc-updater が実行済みのため）\n     判定のコツ: 直前のメッセージが「実装の完了報告」ではなく「ドキュメント関連の作業報告」や「コミット&pushの完了報告」であれば実行済みと判断してよい\n\n   両方満たす場合（例外に該当しない）→ StructuredOutput で ok=false、reason に「Run the doc-updater sub-agent (model: sonnet) in the foreground, passing the changed files to request documentation updates. If there were failures or corrections during the session, include those as lessons learned.」を設定\n   それ以外 → StructuredOutput で ok=true を返す\n\n以下はすべて ok=true（発動しない）:\n- git操作の報告のみ（git add, commit, push等）\n- /commit-push スキルの完了報告（コミット&push完了。スキル内で doc-updater 実行済み）\n- 相談・調査・質問への回答・情報提供\n- 実装の途中経過（「次に〜します」等、作業が継続する）\n- コード変更を伴わないタスクの完了\n- 判断がつかない場合（誤発動防止を優先）\n\nメッセージ内容だけでコード変更の有無が判断できない場合は git diff HEAD --name-only で確認する。\n\n必ず StructuredOutput ツールを使って結果を返してください。",
+            "timeout": 180
           }
         ]
       }
@@ -76,10 +77,12 @@
     "command": "npx -y ccstatusline@latest",
     "padding": 0
   },
+  "enabledPlugins": {
+    "rust-analyzer-lsp@claude-plugins-official": true,
+    "typescript-lsp@claude-plugins-official": true,
+    "swift-lsp@claude-plugins-official": true
+  },
   "language": "日本語",
   "spinnerTipsEnabled": false,
-  "skipDangerousModePermissionPrompt": true,
-  "enabledPlugins": {
-    "rust-analyzer-lsp@claude-plugins-official": true
-  }
+  "skipDangerousModePermissionPrompt": true
 }
