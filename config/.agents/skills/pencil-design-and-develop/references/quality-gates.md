@@ -8,7 +8,7 @@ Applies to: `Design-only`, `Design->Code`, `Code->Design`
 
 Pass criteria:
 
-1. You ran a reusable-component discovery query before creating new UI primitives.
+1. Evidence exists that reusable components were discovered before creating new primitives (host-provided listing or tool query).
 2. Existing reusable components are instantiated via `ref` where applicable.
 3. New component creation is justified only when no equivalent exists.
 
@@ -18,7 +18,7 @@ Applies to: `Design-only`, `Design->Code`, `Code->Design`
 
 Pass criteria:
 
-1. You inspected variables before applying styles.
+1. Evidence exists that variable/token context was inspected before final styling decisions (host context or `get_variables`).
 2. Colors, spacing, typography, and radius use variables when available.
 3. Generated code uses semantic tokens/classes instead of arbitrary one-off values.
 
@@ -28,7 +28,7 @@ Applies to: `Design-only`, `Code->Design`
 
 Pass criteria:
 
-1. `snapshot_layout(problemsOnly=true)` is run after each logical section.
+1. Evidence exists that overflow/clipping checks were performed after each logical section (`snapshot_layout` or equivalent host-provided diagnostics).
 2. Reported clipping/overlap/overflow issues are fixed immediately.
 3. Text and container constraints are adjusted for target viewport widths.
 
@@ -38,7 +38,7 @@ Applies to: `Design-only`, `Code->Design`
 
 Pass criteria:
 
-1. A screenshot is captured after each completed section.
+1. Evidence exists that each completed section was visually verified (captured screenshot or equivalent host-provided visual check).
 2. Alignment, spacing, content integrity, and hierarchy are reviewed.
 3. A final full-screen screenshot is captured after all fixes.
 

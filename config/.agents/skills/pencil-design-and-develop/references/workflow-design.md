@@ -8,15 +8,18 @@ This workflow is the primary procedure for `Design-only` mode.
 
 Create or update `.pen` designs safely while preserving consistency with existing design systems.
 
+Runtime context handling and fallback policy are defined in `references/mcp-tool-rules.md`.
+
 ## Standard Sequence
 
-1. Call `get_editor_state(include_schema=false)`.
-2. Call `batch_get` for top-level frames and target regions.
-3. Call `batch_get(patterns: [{ reusable: true }])` to discover reusable components.
-4. Call `get_variables` to identify tokenized color/spacing/typography values.
-5. Build section by section using `batch_design` in small batches.
-6. After each section, run `get_screenshot` and `snapshot_layout(problemsOnly=true)`.
-7. Apply fixes immediately when overflow, clipping, or alignment issues appear.
+1. Resolve runtime context and initial evidence using `references/mcp-tool-rules.md`.
+2. Ensure editor state is available (host-provided context or `get_editor_state(include_schema=false)`).
+3. Ensure top-level and target-region structure is available (host context or `batch_get`).
+4. Discover reusable components with `batch_get(patterns: [{ reusable: true }])` when not already known.
+5. Read variables with `get_variables` when token context is missing.
+6. Build section by section using `batch_design` in small batches.
+7. After each section, run `get_screenshot` and `snapshot_layout(problemsOnly=true)`.
+8. Apply fixes immediately when overflow, clipping, or alignment issues appear.
 
 ## Existing Screen Edits
 
