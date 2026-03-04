@@ -12,16 +12,19 @@ Run one direction per request by default. Execute both directions only when the 
 2. Do not chain both directions automatically.
 3. If multi-direction execution is requested, state the order explicitly before running.
 
+Runtime context handling and fallback policy are defined in `references/mcp-tool-rules.md`.
+
 ## Design->Code Sequence
 
-1. Extract frame hierarchy and reusable components with `batch_get`.
-2. Extract tokens and theme axes with `get_variables`.
-3. Read instance-expanded structure (`resolveInstances=true`) only for unclear component internals.
-4. Split the design into implementation units (pages, sections, components).
-5. Map layout semantics (frame/layout/gap/padding) to CSS or framework layout primitives.
-6. Map design variables to semantic styling tokens in code.
-7. Apply responsive mapping rules from `responsive-breakpoints.md`.
-8. Emit code plus a mapping summary for traceability.
+1. Resolve runtime context and initial evidence using `references/mcp-tool-rules.md`.
+2. Ensure frame hierarchy and reusable component context is available (host context or `batch_get`).
+3. Ensure token/theme context is available (`get_variables`) when missing from host context.
+4. Read instance-expanded structure (`resolveInstances=true`) only for unclear component internals.
+5. Split the design into implementation units (pages, sections, components).
+6. Map layout semantics (frame/layout/gap/padding) to CSS or framework layout primitives.
+7. Map design variables to semantic styling tokens in code.
+8. Apply responsive mapping rules from `responsive-breakpoints.md`.
+9. Emit code plus a mapping summary for traceability.
 
 ## Code->Design Sequence
 

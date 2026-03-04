@@ -17,20 +17,42 @@ Use canonical operation names in reasoning, then map to runtime tool names.
 | `get_guidelines` | `mcp__pencil__get_guidelines`, `pencil_get_guidelines` |
 | `find_empty_space_on_canvas` | `mcp__pencil__find_empty_space_on_canvas`, `pencil_find_empty_space_on_canvas` |
 
+## Runtime Context Resolution (Single Source of Truth)
+
+1. Resolve runtime context in this order:
+   1. Explicit runtime metadata from host/session (if present).
+   2. Host-injected context markers (state summaries, prewired tool constraints).
+   3. Best-effort heuristic hints from prompt/session shape.
+2. If runtime cannot be resolved, default to `embedded-safe`.
+3. `embedded-safe` means:
+   1. Treat tool order guidance as advisory, not mandatory.
+   2. Reuse host-provided context first.
+   3. Add read calls only for missing evidence.
+   4. Do not override host-level tool filters, permission gates, or runtime policy decisions.
+4. `external` means:
+   1. Follow full read-before-mutate sequencing.
+   2. Keep the same mutation safety and quality checks.
+
+## Embedded Host Compatibility
+
+1. For `embedded` behavior, apply the `embedded-safe` policy defined in `Runtime Context Resolution`.
+2. Do not redefine embedded runtime rules in this section; keep this section as a pointer to the single source of truth.
+
 ## Read-only Implementation Loop (Design->Code)
 
-1. Read state with `get_editor_state`.
-2. Extract structure with `batch_get`.
-3. Extract variables with `get_variables`.
+1. Ensure state context is available via host-provided summary or `get_editor_state`.
+2. Ensure structure context is available with `batch_get` when host context is insufficient.
+3. Ensure token context is available with `get_variables` when required for mapping.
 4. Use `resolveInstances=true` only when instance internals are unclear.
 5. Generate mapping and implementation output without mutating `.pen` nodes.
 
 ## Design Mutation Loop (Design-only / Code->Design)
 
-1. Read current state (`get_editor_state`, `batch_get`).
+1. Confirm current structure from host context or fresh reads (`get_editor_state`, `batch_get`) as needed.
 2. Apply small mutation batches (`batch_design`).
 3. Verify visually (`get_screenshot`) and structurally (`snapshot_layout`).
 4. Repeat until required quality gates pass.
+5. Apply runtime branching from `Runtime Context Resolution`; add extra read calls only when missing evidence blocks safe progress.
 
 ## `batch_get` Rules
 
@@ -57,3 +79,4 @@ Use canonical operation names in reasoning, then map to runtime tool names.
 4. Applying hardcoded visual values when variables exist.
 5. Over-reading the file graph and losing focus.
 6. Mixing troubleshooting operations with active mutation loops.
+7. Forcing duplicated host-preprocessed reads without evidence they are missing.
