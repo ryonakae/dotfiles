@@ -46,8 +46,8 @@ doc-updater がファイルを変更した場合:
    - subject は短く要点のみ。末尾に句点は付けない
    - body は必要な場合のみ。変更理由・背景・注意点を書く（箇条書き可）
 2. 生成したコミットメッセージを使ってコミットし、現在のブランチを push する
-   - body がある場合: `git commit -m "<subject>" -m "<body>" -m "Co-Authored-By: Claude Code <noreply@anthropic.com>"`
-   - body が無い場合: `git commit -m "<subject>" -m "Co-Authored-By: Claude Code <noreply@anthropic.com>"`
+   - body がある場合: `SKIP_DOC_UPDATER=1 git commit -m "<subject>" -m "<body>" -m "Co-Authored-By: Claude Code <noreply@anthropic.com>"`
+   - body が無い場合: `SKIP_DOC_UPDATER=1 git commit -m "<subject>" -m "Co-Authored-By: Claude Code <noreply@anthropic.com>"`
    - `git push`
 
 ## 注意
