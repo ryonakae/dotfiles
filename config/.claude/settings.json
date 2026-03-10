@@ -15,11 +15,11 @@
       "WebFetch",
       "WebSearch",
       "mcp__context7",
+      "mcp__pencil",
       "Skill(ask-gemini)",
       "Skill(ask-codex)",
       "Skill(auto-code-review)",
-      "Skill(commit-push)",
-      "mcp__pencil"
+      "Skill(commit-push)"
     ],
     "deny": [
       "Read(.env)",

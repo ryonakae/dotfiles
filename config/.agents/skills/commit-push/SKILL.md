@@ -14,6 +14,8 @@ description: Conventional Commits メッセージを自動生成し、`git diff 
 - 返答とコミットメッセージは日本語
 - 敬語は使わない
 - Conventional Commits 形式にする
+- 実行主体が Codex ならコミットメッセージ本文の末尾に `Co-Authored-By: Codex <noreply@openai.com>` を追加する
+- 実行主体が Gemini CLI ならコミットメッセージ本文の末尾に `Co-Authored-By: Gemini CLI <gemini-cli@users.noreply.github.com>` を追加する
 
 ## 手順
 
@@ -40,10 +42,12 @@ description: Conventional Commits メッセージを自動生成し、`git diff 
    - scope は分かる場合のみ付ける。不明なら省略する
    - subject は短く要点のみ。末尾に句点は付けない
    - body は必要な場合のみ付ける
+   - 実行主体が Codex なら `Co-Authored-By: Codex <noreply@openai.com>` を本文末尾に付ける
+   - 実行主体が Gemini CLI なら `Co-Authored-By: Gemini CLI <gemini-cli@users.noreply.github.com>` を本文末尾に付ける
 2. `git diff --cached --name-only --diff-filter=ACMRD` を再確認し、差分が無ければ終了する
 3. 生成したメッセージでコミットし、現在のブランチを push する
-   - body がある場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<body>"`
-   - body が無い場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>"`
+   - body がある場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<body>" -m "<Co-Authored-By 行>"`
+   - body が無い場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<Co-Authored-By 行>"`
    - `git push`
 
 ## 注意
