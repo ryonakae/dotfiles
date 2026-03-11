@@ -1,10 +1,16 @@
-;; Local user overrides for Agent Safehouse.
-;; Loaded after generated policy so these rules act as final local exceptions/denies.
-;; Prefer --add-dirs-ro/--add-dirs for normal shared access and keep host-specific denies here.
+;; Agent Safehouse のローカルオーバーライド。
+;; 生成ポリシーの後に読み込まれるため、ここでの deny/allow が最終的な優先権を持つ。
+;; 通常の共有アクセスには --add-dirs-ro/--add-dirs を使い、ホスト固有のルールをここに書く。
 
-;; Deny generic secret-like filenames under any otherwise-allowed path.
-;; This keeps the rule independent of the current workdir or extra read-only grants.
+;; allow 済みパス（workdir, /tmp 等）内の機密ファイルをファイル名パターンで deny する。
+;; ~/.ssh/id_* 等は Safehouse の deny default で保護済みだが、workdir にコピーされた
+;; 機密ファイルはカバーされないため、ここで包括的に塞ぐ。
+;;
+;; スコープの使い分け:
+;;   .* (全パス)   — システムパスに同名ファイルが存在しないパターン
+;;   HOME_DIR 限定 — /opt/homebrew/etc 等のシステム SSL 証明書と衝突するパターン
 (deny file-read* file-write*
+    ;; 環境変数 / 設定ファイル
     (regex #".*/\.env$")
     (regex #".*/\.env\.local$")
     (regex #".*/\.env\.development$")
@@ -18,33 +24,41 @@
     (regex #".*/\.env\.test$")
     (regex #".*/\.env\.test\.local$")
     (regex #".*/\.envrc$")
+
+    ;; クラウド / サービス認証情報
     (regex #".*/credentials\.json$")
     (regex #".*/service-account[^/]*\.json$")
     (regex #".*/[^/]*-credentials\.json$")
     (regex #".*/firebase-adminsdk[^/]*\.json$")
+
+    ;; SSH 秘密鍵（workdir/tmp にコピーされたものを想定。~/.ssh は deny default で保護済み）
     (regex #".*/id_rsa$")
     (regex #".*/id_ed25519$")
     (regex #".*/id_ecdsa$")
     (regex #".*/id_dsa$")
+
+    ;; 証明書 / キーストア（HOME_DIR 限定: システム SSL 証明書との衝突を回避）
     (regex (string-append "^" HOME_DIR "/.*\\.pem$"))
     (regex (string-append "^" HOME_DIR "/.*\\.p8$"))
     (regex (string-append "^" HOME_DIR "/.*\\.p12$"))
     (regex (string-append "^" HOME_DIR "/.*\\.key$"))
     (regex (string-append "^" HOME_DIR "/.*\\.jks$"))
     (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
+
+    ;; シークレットディレクトリ
     (regex #".*/secrets(/.*)?$")
     (regex #".*/\.secrets(/.*)?$")
 )
 
-;; config.fish currently carries machine-local secrets under an ordinary filename.
-;; Deny both the live path and the ~/dotfiles source path even if shell-init is enabled later.
+;; config.fish にマシンローカルの機密情報が含まれているため、
+;; shell-init が有効化された場合でも読み書きを拒否する。
 (deny file-read* file-write*
     (home-literal "/.config/fish/config.fish")
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
 
-;; Allow runtime-managed state for npx-launched helpers that Safehouse does not
-;; know about statically. Keep this scoped to the exact package directories.
+;; npx 経由で起動されるヘルパーの実行時状態を許可する。
+;; Safehouse が静的に把握できないパッケージのため、ここで明示的に追加。
 (allow file-read* file-write*
     (home-subpath "/.config/ccstatusline")
     (home-subpath "/.cache/ccstatusline")
@@ -52,10 +66,8 @@
     (home-subpath "/Library/Preferences/notebooklm-mcp")
 )
 
-;; These ancestors are traversed before the package-specific directories above.
+;; 上記パスの親ディレクトリ走査に必要。~/Library 自体は keychain.sb で付与済み。
 (allow file-read-metadata
-    (home-literal "/Library")
     (home-literal "/Library/Application Support")
     (home-literal "/Library/Preferences")
 )
-
