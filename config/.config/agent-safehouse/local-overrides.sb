@@ -57,15 +57,19 @@
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
 
-;; notebooklm-mcp（MCP サーバー）の実行時状態を許可する。
-;; Safehouse が静的に把握できないパッケージのため、ここで明示的に追加。
+;; 読み込み/書き込みを許可するディレクトリ
 (allow file-read* file-write*
+    ;; ccstatusline
+    (home-subpath "/.config/ccstatusline")
+    (home-subpath "/.cache/ccstatusline")
+
+    ;; NotebookLM MCP
     (home-subpath "/Library/Application Support/notebooklm-mcp")
     (home-subpath "/Library/Preferences/notebooklm-mcp")
 )
 
-;; CleanShot のスクリーンショットを agent に添付できるよう、保存メディアだけ read-only で許可する。
-;; 画像本体は ~/Library/Application Support/CleanShot/media 以下に置かれる。
+;; 読み込みのみを許可するディレクトリ
 (allow file-read*
+    ;; CleanShot X
     (home-subpath "/Library/Application Support/CleanShot/media")
 )
