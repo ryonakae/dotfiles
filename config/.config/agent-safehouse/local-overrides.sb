@@ -37,6 +37,10 @@
     (regex #".*/id_ecdsa$")
     (regex #".*/id_dsa$")
 
+    ;; シークレットディレクトリ
+    (regex #".*/secrets(/.*)?$")
+    (regex #".*/\.secrets(/.*)?$")
+
     ;; 証明書 / キーストア（HOME_DIR 限定: システム SSL 証明書との衝突を回避）
     (regex (string-append "^" HOME_DIR "/.*\\.pem$"))
     (regex (string-append "^" HOME_DIR "/.*\\.p8$"))
@@ -44,10 +48,6 @@
     (regex (string-append "^" HOME_DIR "/.*\\.key$"))
     (regex (string-append "^" HOME_DIR "/.*\\.jks$"))
     (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
-
-    ;; シークレットディレクトリ
-    (regex #".*/secrets(/.*)?$")
-    (regex #".*/\.secrets(/.*)?$")
 )
 
 ;; config.fish にマシンローカルの機密情報が含まれているため、
@@ -57,17 +57,9 @@
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
 
-;; npx 経由で起動されるヘルパーの実行時状態を許可する。
+;; notebooklm-mcp（MCP サーバー）の実行時状態を許可する。
 ;; Safehouse が静的に把握できないパッケージのため、ここで明示的に追加。
 (allow file-read* file-write*
-    (home-subpath "/.config/ccstatusline")
-    (home-subpath "/.cache/ccstatusline")
     (home-subpath "/Library/Application Support/notebooklm-mcp")
     (home-subpath "/Library/Preferences/notebooklm-mcp")
-)
-
-;; 上記パスの親ディレクトリ走査に必要。~/Library 自体は keychain.sb で付与済み。
-(allow file-read-metadata
-    (home-literal "/Library/Application Support")
-    (home-literal "/Library/Preferences")
 )
