@@ -26,12 +26,12 @@
     (regex #".*/id_ed25519$")
     (regex #".*/id_ecdsa$")
     (regex #".*/id_dsa$")
-    (regex #".*/[^/]*\.pem$")
-    (regex #".*/[^/]*\.p8$")
-    (regex #".*/[^/]*\.p12$")
-    (regex #".*/[^/]*\.key$")
-    (regex #".*/[^/]*\.jks$")
-    (regex #".*/[^/]*\.keystore$")
+    (regex (string-append "^" HOME_DIR "/.*\\.pem$"))
+    (regex (string-append "^" HOME_DIR "/.*\\.p8$"))
+    (regex (string-append "^" HOME_DIR "/.*\\.p12$"))
+    (regex (string-append "^" HOME_DIR "/.*\\.key$"))
+    (regex (string-append "^" HOME_DIR "/.*\\.jks$"))
+    (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
     (regex #".*/secrets(/.*)?$")
     (regex #".*/\.secrets(/.*)?$")
 )
@@ -42,3 +42,20 @@
     (home-literal "/.config/fish/config.fish")
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
+
+;; Allow runtime-managed state for npx-launched helpers that Safehouse does not
+;; know about statically. Keep this scoped to the exact package directories.
+(allow file-read* file-write*
+    (home-subpath "/.config/ccstatusline")
+    (home-subpath "/.cache/ccstatusline")
+    (home-subpath "/Library/Application Support/notebooklm-mcp")
+    (home-subpath "/Library/Preferences/notebooklm-mcp")
+)
+
+;; These ancestors are traversed before the package-specific directories above.
+(allow file-read-metadata
+    (home-literal "/Library")
+    (home-literal "/Library/Application Support")
+    (home-literal "/Library/Preferences")
+)
+
