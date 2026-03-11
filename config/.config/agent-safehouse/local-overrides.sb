@@ -63,3 +63,9 @@
     (home-subpath "/Library/Application Support/notebooklm-mcp")
     (home-subpath "/Library/Preferences/notebooklm-mcp")
 )
+
+;; CleanShot のスクリーンショットを agent に添付できるよう、保存メディアだけ read-only で許可する。
+;; 画像本体は ~/Library/Application Support/CleanShot/media 以下に置かれる。
+(allow file-read*
+    (home-subpath "/Library/Application Support/CleanShot/media")
+)
