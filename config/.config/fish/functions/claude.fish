@@ -1,3 +1,3 @@
-function claude --description "Start claude with skip permissions"
-  command claude --dangerously-skip-permissions $argv
+function claude --description "Run Claude through Agent Safehouse"
+    safe claude --dangerously-skip-permissions $argv
 end

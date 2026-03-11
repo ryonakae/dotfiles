@@ -1,4 +1,4 @@
-function keifu-wrapper --description "keifuをgitステータス付きペインタイトルで起動"
+function keifu-wrapper --description "Run Keifu with a Git status pane title"
     # バックグラウンドでペインタイトルを5秒ごとに更新
     # OSC 0 でZellijがペインタイトルとして認識する
     fish -c '
