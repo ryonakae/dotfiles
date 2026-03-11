@@ -1,21 +1,25 @@
 #!/bin/bash
 
-# skills ディレクトリのパス
+# パス解決
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DOTFILES_DIR="$(dirname "$SCRIPT_DIR")"
 
-# グローバルスキル（全ターゲットに配布）
+# グローバルスキル（全エージェントに共通配布）
 GLOBAL_SKILLS_SOURCE="$DOTFILES_DIR/config/.agents/skills"
 
+# エージェント固有スキル（特定エージェントにのみ配布）
+# 形式: "ソース絶対パス:ターゲット絶対パス" の1対1マッピング
+# グローバルスキルと異なり、エージェント専用の機能を持つスキルを個別に配布する
+AGENT_SKILL_MAPPINGS=(
+  "$DOTFILES_DIR/config/.claude/skills:$HOME/.claude/skills"
+)
+
+# ターゲット: 各エージェントのスキル読み込みディレクトリ
+# ソース内の各スキルディレクトリが、以下すべてに symlink される
 TARGET_DIRS=(
   "$HOME/.agents/skills"
   "$HOME/.claude/skills"
-)
-
-# エージェント固有スキル（ソース相対パス:ターゲット絶対パス の1対1マッピング）
-AGENT_SKILL_MAPPINGS=(
-  ".claude/skills:$HOME/.claude/skills"
-  ".gemini/skills:$HOME/.gemini/skills"
+  "$HOME/.gemini/antigravity/skills"
 )
 
 # スキップするファイルのリスト
@@ -56,25 +60,10 @@ create_skill_symlink() {
   fi
 }
 
-# 第1段: グローバルスキルを全ターゲットに配布
-for target_dir in "${TARGET_DIRS[@]}"; do
-  echo "Processing target directory: $target_dir"
-
-  if [ ! -d "$target_dir" ]; then
-    mkdir -p "$target_dir"
-    echo "Created target directory: $target_dir"
-  fi
-
-  find "$GLOBAL_SKILLS_SOURCE" -maxdepth 1 -mindepth 1 -type d | while read -r skill_dir; do
-    create_skill_symlink "$skill_dir" "$target_dir"
-  done
-done
-
-# 第2段: エージェント固有スキルを対応するターゲットに配布
+# エージェント固有スキルを先に配布（同名スキルはこちらが優先される）
 for mapping in "${AGENT_SKILL_MAPPINGS[@]}"; do
-  source_rel="${mapping%%:*}"
+  source_dir="${mapping%%:*}"
   target_dir="${mapping##*:}"
-  source_dir="$DOTFILES_DIR/config/$source_rel"
 
   if [ ! -d "$source_dir" ]; then
     echo "Agent skills source does not exist, skipping: $source_dir"
@@ -89,6 +78,20 @@ for mapping in "${AGENT_SKILL_MAPPINGS[@]}"; do
   fi
 
   find "$source_dir" -maxdepth 1 -mindepth 1 -type d | while read -r skill_dir; do
+    create_skill_symlink "$skill_dir" "$target_dir"
+  done
+done
+
+# グローバルスキルを全ターゲットに配布（固有スキルで既にある場合はスキップ）
+for target_dir in "${TARGET_DIRS[@]}"; do
+  echo "Processing target directory: $target_dir"
+
+  if [ ! -d "$target_dir" ]; then
+    mkdir -p "$target_dir"
+    echo "Created target directory: $target_dir"
+  fi
+
+  find "$GLOBAL_SKILLS_SOURCE" -maxdepth 1 -mindepth 1 -type d | while read -r skill_dir; do
     create_skill_symlink "$skill_dir" "$target_dir"
   done
 done
