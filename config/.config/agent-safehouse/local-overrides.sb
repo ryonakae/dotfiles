@@ -1,0 +1,44 @@
+;; Local user overrides for Agent Safehouse.
+;; Loaded after generated policy so these rules act as final local exceptions/denies.
+;; Prefer --add-dirs-ro/--add-dirs for normal shared access and keep host-specific denies here.
+
+;; Deny generic secret-like filenames under any otherwise-allowed path.
+;; This keeps the rule independent of the current workdir or extra read-only grants.
+(deny file-read* file-write*
+    (regex #".*/\.env$")
+    (regex #".*/\.env\.local$")
+    (regex #".*/\.env\.development$")
+    (regex #".*/\.env\.development\.local$")
+    (regex #".*/\.env\.preview$")
+    (regex #".*/\.env\.preview\.local$")
+    (regex #".*/\.env\.staging$")
+    (regex #".*/\.env\.staging\.local$")
+    (regex #".*/\.env\.production$")
+    (regex #".*/\.env\.production\.local$")
+    (regex #".*/\.env\.test$")
+    (regex #".*/\.env\.test\.local$")
+    (regex #".*/\.envrc$")
+    (regex #".*/credentials\.json$")
+    (regex #".*/service-account[^/]*\.json$")
+    (regex #".*/[^/]*-credentials\.json$")
+    (regex #".*/firebase-adminsdk[^/]*\.json$")
+    (regex #".*/id_rsa$")
+    (regex #".*/id_ed25519$")
+    (regex #".*/id_ecdsa$")
+    (regex #".*/id_dsa$")
+    (regex #".*/[^/]*\.pem$")
+    (regex #".*/[^/]*\.p8$")
+    (regex #".*/[^/]*\.p12$")
+    (regex #".*/[^/]*\.key$")
+    (regex #".*/[^/]*\.jks$")
+    (regex #".*/[^/]*\.keystore$")
+    (regex #".*/secrets(/.*)?$")
+    (regex #".*/\.secrets(/.*)?$")
+)
+
+;; config.fish currently carries machine-local secrets under an ordinary filename.
+;; Deny both the live path and the ~/dotfiles source path even if shell-init is enabled later.
+(deny file-read* file-write*
+    (home-literal "/.config/fish/config.fish")
+    (home-literal "/dotfiles/config/.config/fish/config.fish")
+)

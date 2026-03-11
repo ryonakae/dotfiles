@@ -1,4 +1,4 @@
-function zl --description "Start zellij session"
+function zl --description "Open a Zellij session for a project"
     set -l project_dir
     if test (count $argv) -ge 1
         set project_dir (realpath $argv[1])

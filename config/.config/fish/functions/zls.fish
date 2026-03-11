@@ -1,4 +1,4 @@
-function zls -d "~/dev および ~/dotfiles のリポジトリを選択してZellijセッションを作成/アタッチ"
+function zls --description "Select a repository or session and open it in Zellij"
     if not command -v fd &>/dev/null
         echo "error: fd command not found. Install it with: brew install fd"
         return 1
