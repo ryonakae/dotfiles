@@ -7,6 +7,7 @@
     ]
   },
   "model": "opusplan",
+  "effortLevel": "high",
   "hooks": {
     "Notification": [
       {

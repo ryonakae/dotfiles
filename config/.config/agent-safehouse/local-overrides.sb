@@ -57,7 +57,7 @@
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
 
-;; 読み込み/書き込みを許可するディレクトリ
+;; 読み込み/書き込みを許可
 (allow file-read* file-write*
     ;; ccstatusline
     (home-subpath "/.config/ccstatusline")
@@ -68,8 +68,14 @@
     (home-subpath "/Library/Preferences/notebooklm-mcp")
 )
 
-;; 読み込みのみを許可するディレクトリ
+;; 読み込みのみを許可
 (allow file-read*
+    ;; Codex
+    (home-subpath "/.codex")
+
+    ;; Personal Agent Skills
+    (home-subpath "/Dev/private/agent-skills")
+
     ;; CleanShot X
-    (home-subpath "/Library/Application Support/CleanShot/media")
+    (home-subpath "/Library/Application Support/CleanShot")
 )

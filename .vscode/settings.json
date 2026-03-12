@@ -5,5 +5,8 @@
   "files.associations": {
     "Brewfile.example": "ruby",
     "config.fish.example": "fish",
+  },
+  "[markdown]": {
+    "editor.formatOnSave": false
   }
 }
