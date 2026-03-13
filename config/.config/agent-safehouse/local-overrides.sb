@@ -79,3 +79,12 @@
     ;; CleanShot X
     (home-subpath "/Library/Application Support/CleanShot")
 )
+
+;; terminal-notifier (macOS通知) が必要とする Mach サービスを許可。
+;; macos-gui では hiservices 等は許可されるが、UserNotifications フレームワーク
+;; が使う usernoted デーモンへの接続は含まれていないため、ここで補足する。
+(allow mach-lookup
+    (global-name "com.apple.usernoted.client")
+    (global-name "com.apple.usernoted.daemon_client")
+    (global-name "com.apple.usernotifications.usernotificationservice")
+)
