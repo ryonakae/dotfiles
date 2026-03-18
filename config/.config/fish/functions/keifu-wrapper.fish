@@ -35,9 +35,9 @@ function keifu-wrapper --description "Run Keifu with a Git status pane title"
             set -l files (count $all_files)
 
             if test $files -gt 0
-                printf "\e]0;keifu: %s | %s files changed | +%s -%s\a" $branch $files $ins $del
+                printf "\e]0;keifu: ⎇ %s (+%s,-%s)\a" $branch $ins $del
             else
-                printf "\e]0;keifu: %s\a" $branch
+                printf "\e]0;keifu: ⎇ %s\a" $branch
             end
 
             sleep 5
