@@ -13,3 +13,14 @@ sort_by = "natural"
 
 # シンボリックリンクを表示
 show_symlink = true
+
+# git.yazi
+[[plugin.prepend_fetchers]]
+id  = "git"
+url = "*"
+run = "git"
+
+[[plugin.prepend_fetchers]]
+id  = "git"
+url = "*/"
+run = "git"

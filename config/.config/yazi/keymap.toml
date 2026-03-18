@@ -3,3 +3,9 @@
 on   = ["d", "d"]
 run  = "remove"
 desc = "Move to trash"
+
+# plugins:smart-enter
+[[mgr.prepend_keymap]]
+on   = "<Enter>"
+run  = "plugin smart-enter"
+desc = "Enter the child directory, or open the file"
