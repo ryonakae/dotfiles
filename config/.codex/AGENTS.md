@@ -12,13 +12,12 @@
 
 ## Python 実行環境
 
-- Python のコードやツールを実行する際は `python3` や `pip install` を使わず、`uv` を使うこと
-- **CLIツールの実行**: `uvx <パッケージ名>` を使う（グローバルインストール不要で一時環境から実行される）
+- CLIツールの実行: `uvx <パッケージ名>` を使う（グローバルインストール不要で一時環境から実行される）
   - 例: `uvx ruff check .`、`uvx black .`、`uvx mypy .`
-- **スクリプトの実行**: `uv run` を使う
+- スクリプトの実行: `uv run` を使う
   - 例: `uv run script.py`、`uv run python script.py`
-- **パッケージの追加**: `uv add` / `uv pip install` を使い、`pip install` は使わない
+- パッケージの追加: `uv add` / `uv pip install` を使い、`pip install` は使わない
 
-## ライブラリ/APIのドキュメントを参照する場合
+## ライブラリ/API/SDKを利用する場合
 
-- ライブラリ/APIのドキュメントを参照する場合は `find-docs` スキルを呼び出し、 Context7 CLI を使う
+- `find-docs` スキルを呼び出し、 Context7 CLI (`ctx7`) を使う
