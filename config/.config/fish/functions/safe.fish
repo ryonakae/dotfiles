@@ -19,6 +19,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=CONTEXT7_API_KEY \
         --env-pass=DISABLE_AUTOUPDATER \
         --env-pass=NO_BROWSER \
+        --env-pass=TERM_PROGRAM \
         --enable=macos-gui
 
     # dotfiles 配下への symlink を他 repo からでも辿れるように、常時 read-only で足す。

@@ -33,6 +33,15 @@ detect_terminal_app() {
       echo "$bundle_id"
       return 0
     fi
+
+    # osascript が使えない環境（sandbox 等）向けフォールバック。
+    # lsappinfo はアプリ名の大文字小文字を区別するため、先頭を大文字に変換する。
+    capitalized=$(echo "$TERM_PROGRAM" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
+    bundle_id=$(lsappinfo info -only bundleID "$capitalized" 2>/dev/null | awk -F'"' '{print $4}')
+    if [ -n "$bundle_id" ]; then
+      echo "$bundle_id"
+      return 0
+    fi
   fi
 
   return 1
