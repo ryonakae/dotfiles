@@ -18,4 +18,12 @@ else
   echo "Homebrew is already installed."
 fi
 
+# yaziプラグインのインストール
+if command -v ya &> /dev/null; then
+  echo "Installing yazi plugins..."
+  ya pkg install
+else
+  echo "yazi not found. Skipping plugin installation."
+fi
+
 echo "Install finished."
