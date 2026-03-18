@@ -20,4 +20,4 @@
 
 ## ライブラリ/API/SDKを利用する場合
 
-- `find-docs` スキルを呼び出し、 Context7 CLI (`ctx7`) を使う
+- `find-docs` スキルを呼び出し、 Context7 CLI (`npx ctx7`) を使う
