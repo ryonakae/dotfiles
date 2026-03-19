@@ -1,21 +1,20 @@
 ---
 name: commit-push
-description: Conventional Commits メッセージを自動生成し、`git diff --cached` を元に doc-updater 手順を同一エージェントで実行してからコミットと push を行うスキル。コミットしたい時、pushしたい時、ドキュメント更新込みでコミットしたい時に使用する。
+description: Conventional Commits メッセージを自動生成し、doc-updater によるドキュメント自動更新を含めてコミットと push を行うスキル。コミットしたい時、pushしたい時、ドキュメント更新込みでコミットしたい時に使用する。
 ---
 
 # コミットメッセージ自動生成 & push
 
 ## 概要
 
-ステージング済みの変更から Conventional Commits メッセージを作り、必要ならドキュメントも更新してからコミットと push を行う。`doc-updater` はサブエージェントや外部 CLI として起動せず、同一エージェントが `references/doc-updater.md` の手順をそのまま実行する。
+ステージング済みの変更から Conventional Commits メッセージを作り、必要ならドキュメントも更新してからコミットと push を行う。
 
 ## 要件
 
 - 返答とコミットメッセージは日本語
 - 敬語は使わない
 - Conventional Commits 形式にする
-- 実行主体が Codex ならコミットメッセージ本文の末尾に `Co-Authored-By: Codex <noreply@openai.com>` を追加する
-- 実行主体が Gemini CLI ならコミットメッセージ本文の末尾に `Co-Authored-By: Gemini CLI <gemini-cli@users.noreply.github.com>` を追加する
+- コミットメッセージ本文の末尾に `Co-Authored-By: Codex <noreply@openai.com>` を追加する
 
 ## 手順
 
@@ -29,9 +28,12 @@ description: Conventional Commits メッセージを自動生成し、`git diff 
 
 ### ステップ2: ドキュメント自動更新
 
-1. このセッション内で既にドキュメント更新を行った、または更新不要と判断済みならこのステップをスキップする
-2. スキップしない場合は `references/doc-updater.md` を読んで、`git diff --cached` を基準に更新要否を判断する
-3. ドキュメントを変更した場合は、変更したファイルを `git add` でステージングに追加する
+1. このセッション内で既に `doc-updater` を実行した、または更新不要と判断済みならこのステップをスキップする
+2. スキップしない場合は `doc-updater` サブエージェントに以下を依頼する
+
+   「ステージ済みの変更（`git diff --cached`）を確認し、必要に応じてドキュメントを更新してください。」
+
+3. `doc-updater` がファイルを変更した場合は、変更したファイルを `git add` でステージングに追加する
 4. 更新不要なら「ドキュメント更新は不要」と判断して次に進む
 
 ### ステップ3: コミットメッセージ生成 & push
@@ -42,8 +44,7 @@ description: Conventional Commits メッセージを自動生成し、`git diff 
    - scope は分かる場合のみ付ける。不明なら省略する
    - subject は短く要点のみ。末尾に句点は付けない
    - body は必要な場合のみ付ける
-   - 実行主体が Codex なら `Co-Authored-By: Codex <noreply@openai.com>` を本文末尾に付ける
-   - 実行主体が Gemini CLI なら `Co-Authored-By: Gemini CLI <gemini-cli@users.noreply.github.com>` を本文末尾に付ける
+   - 本文末尾に `Co-Authored-By: Codex <noreply@openai.com>` を付ける
 2. `git diff --cached --name-only --diff-filter=ACMRD` を再確認し、差分が無ければ終了する
 3. 生成したメッセージでコミットし、現在のブランチを push する
    - body がある場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<body>" -m "<Co-Authored-By 行>"`
@@ -52,7 +53,8 @@ description: Conventional Commits メッセージを自動生成し、`git diff 
 
 ## 注意
 
-- `references/doc-updater.md` の処理は自分で実行する。別エージェントへの委譲や専用 CLI 呼び出しはしない
+- `doc-updater` サブエージェントは `.codex/agents/doc-updater.toml` で定義する
+- `doc-updater` サブエージェントが利用できない環境ではこのスキルを使わない
 - 承認フローがある環境では、`git add` `git commit` `git push` に必要な承認をその環境のルールに従って取得する
 - 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない
 - push が失敗したら、エラー要点と次のアクション候補だけを伝えて終了する
