@@ -53,8 +53,5 @@ description: Conventional Commits メッセージを自動生成し、doc-update
 
 ## 注意
 
-- `doc-updater` サブエージェントは `.codex/agents/doc-updater.toml` で定義する
-- `doc-updater` サブエージェントが利用できない環境ではこのスキルを使わない
-- 承認フローがある環境では、`git add` `git commit` `git push` に必要な承認をその環境のルールに従って取得する
 - 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない
 - push が失敗したら、エラー要点と次のアクション候補だけを伝えて終了する
