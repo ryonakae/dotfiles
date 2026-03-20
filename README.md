@@ -88,14 +88,6 @@ $ fisher update
 - https://github.com/settings/tokens にアクセスして、Homebrew 用のトークンを作成 (既にあれば Regenerate)
 - トークンを config.fish の HOMEBREW_GITHUB_API_TOKEN の箇所にコピペ
 
-### Agent Safehouse をインストール
-
-[Getting Started \| Agent Safehouse](https://agent-safehouse.dev/docs/getting-started.html) を参考にインストール
-
-- `safe` 関数から `safehouse` コマンドを呼ぶ前提
-- `claude` `codex` `gemini` は Agent Safehouse 経由で起動する
-- 機密ファイルの deny ルールは `config/.config/agent-safehouse/local-overrides.sb` に書く
-
 ## Vim の設定
 
 ### NeoBundle と VimProc のインストール

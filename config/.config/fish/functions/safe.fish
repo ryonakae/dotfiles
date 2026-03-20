@@ -20,7 +20,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=DISABLE_AUTOUPDATER \
         --env-pass=NO_BROWSER \
         --env-pass=TERM_PROGRAM \
-        --enable=macos-gui
+        --enable=macos-gui,ssh
 
     # dotfiles 配下への symlink を他 repo からでも辿れるように、常時 read-only で足す。
     if test -d "$dotfiles_dir"

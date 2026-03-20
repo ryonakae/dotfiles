@@ -41,8 +41,10 @@ brew 'uv'
 # brew 'heroku'
 
 # AI
+brew 'eugene1g/safehouse/agent-safehouse'
 brew 'codex'
 brew 'gemini-cli'
+brew 'anomalyco/tap/opencode'
 
 # その他
 brew 'ffmpeg'
