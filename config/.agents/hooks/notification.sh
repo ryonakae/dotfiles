@@ -48,7 +48,7 @@ detect_terminal_app() {
 }
 
 run_terminal_notifier() {
-  perl -e 'system { $ARGV[0] } @ARGV; exit 0;' "$@" >/dev/null 2>&1 || true
+  terminal-notifier "$@" >/dev/null 2>&1 || true
 }
 
 notify() {
@@ -62,7 +62,7 @@ notify() {
   fi
 
   if [ -n "$group" ] && [ -n "$activate_app" ]; then
-    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -group "$group" -sender "$activate_app" -activate "$activate_app"
+    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -group "$group" -activate "$activate_app"
     return 0
   fi
 
@@ -72,7 +72,7 @@ notify() {
   fi
 
   if [ -n "$activate_app" ]; then
-    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -sender "$activate_app" -activate "$activate_app"
+    run_terminal_notifier terminal-notifier -title "$title" -message "$message" -sound default -activate "$activate_app"
     return 0
   fi
 
