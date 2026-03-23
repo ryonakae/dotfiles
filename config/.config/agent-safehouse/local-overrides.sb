@@ -66,13 +66,19 @@
     ;; NotebookLM MCP
     (home-subpath "/Library/Application Support/notebooklm-mcp")
     (home-subpath "/Library/Preferences/notebooklm-mcp")
+
+    ;; Claude Code
+    (home-subpath "/.claude")
+
+    ;; Codex
+    (home-subpath "/.codex")
+
+    ;; Gemini CLI
+    (home-subpath "/.gemini")
 )
 
 ;; 読み込みのみを許可
 (allow file-read*
-    ;; Codex
-    (home-subpath "/.codex")
-
     ;; Personal Agent Skills
     (home-subpath "/Dev/private/agent-skills")
 
