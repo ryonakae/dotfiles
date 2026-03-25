@@ -1,16 +1,13 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
-    "defaultMode": "plan",
-    "allow": [
-      "mcp__pencil"
-    ]
+    "defaultMode": "plan"
   },
   "model": "opusplan",
   "env": {
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6[1m]"
   },
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "hooks": {
     "Notification": [
       {
@@ -44,7 +41,8 @@
   "enabledPlugins": {
     "rust-analyzer-lsp@claude-plugins-official": true,
     "typescript-lsp@claude-plugins-official": true,
-    "swift-lsp@claude-plugins-official": true
+    "swift-lsp@claude-plugins-official": true,
+    "figma@claude-plugins-official": true
   },
   "language": "日本語",
   "spinnerTipsEnabled": false,
