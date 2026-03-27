@@ -1,0 +1,49 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "when_closing_with_no_tabs": "platform_default",
+  "edit_predictions": {
+    "provider": "copilot",
+  },
+  "collaboration_panel": {
+    "button": false,
+  },
+  "terminal": {
+    "cursor_shape": "bar",
+    "dock": "right",
+    "option_as_meta": true,
+  },
+  "git_panel": {
+    "dock": "left",
+    "tree_view": true,
+  },
+  "sticky_scroll": {
+    "enabled": true,
+  },
+  "buffer_font_family": "SauceCodePro Nerd Font",
+  "telemetry": {
+    "diagnostics": false,
+    "metrics": false,
+  },
+  "icon_theme": "Symbols Icon Theme",
+  "ui_font_size": 15.0,
+  "buffer_font_size": 13.0,
+  "theme": "macOS Classic Dark",
+  "agent": {
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "claude-haiku-4.5",
+      "enable_thinking": true,
+    },
+    "commit_message_model": {
+      "provider": "copilot_chat",
+      "model": "claude-haiku-4.5",
+    },
+  },
+}

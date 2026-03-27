@@ -1,0 +1,28 @@
+{
+  "version": 3,
+  "skills": {
+    "agent-browser": {
+      "source": "vercel-labs/agent-browser",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
+      "skillPath": "skills/agent-browser/SKILL.md",
+      "skillFolderHash": "2406f5d1c14a6727a0b628bf84e7485e0f76f8de",
+      "pluginName": "agent-browser",
+      "installedAt": "2026-03-27T06:05:11.042Z",
+      "updatedAt": "2026-03-27T06:05:11.042Z"
+    },
+    "find-docs": {
+      "source": "upstash/context7",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/upstash/context7.git",
+      "skillPath": "skills/find-docs/SKILL.md",
+      "skillFolderHash": "27c57bbef24bccd1f46463b398785b7c599f96a9",
+      "installedAt": "2026-03-27T06:31:06.277Z",
+      "updatedAt": "2026-03-27T06:31:06.277Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": ["claude-code"]
+}
