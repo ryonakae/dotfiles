@@ -32,6 +32,7 @@ brew 'zoxide'
 # パッケージマネージャ
 brew 'mas'
 brew 'mise'
+brew 'ni'
 brew 'usage'
 brew 'uv'
 
@@ -41,6 +42,7 @@ brew 'uv'
 # brew 'heroku'
 
 # AI
+brew 'agent-browser'
 brew 'eugene1g/safehouse/agent-safehouse'
 brew 'codex'
 brew 'gemini-cli'
