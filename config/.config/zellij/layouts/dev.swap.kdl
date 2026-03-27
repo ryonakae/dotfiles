@@ -1,0 +1,17 @@
+tab_template name="ui" {
+    pane size=1 borderless=true {
+        plugin location="zellij:tab-bar"
+    }
+    children
+    pane size=1 borderless=true {
+        plugin location="zellij:status-bar"
+    }
+}
+
+swap_tiled_layout name="Mobile" {
+    ui exact_panes=3 {
+        pane stacked=true {
+            children
+        }
+    }
+}

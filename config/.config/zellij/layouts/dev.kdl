@@ -8,15 +8,13 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    tab focus=true {
-        pane stacked=true {
-            pane command="fish" expanded=true {
-                args "-c" "claude"
-            }
-            pane command="yazi"
-            pane command="fish" {
-                args "-c" "keifu-wrapper"
-            }
+    tab name="Shells" focus=true {
+        pane focus=true
+    }
+    tab name="Tools" split_direction="horizontal" {
+        pane command="yazi"
+        pane command="fish" {
+            args "-c" "keifu-wrapper"
         }
     }
 }
