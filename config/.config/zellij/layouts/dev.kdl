@@ -12,8 +12,8 @@ layout {
         pane focus=true
     }
     tab name="Tools" split_direction="horizontal" {
-        pane command="yazi"
-        pane command="fish" {
+        pane name="yazi" command="yazi"
+        pane name="keifu" command="fish" {
             args "-c" "keifu-wrapper"
         }
     }

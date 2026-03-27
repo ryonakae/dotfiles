@@ -1,0 +1,4 @@
+interface:
+  display_name: "Mobile UI Design"
+  short_description: "モバイルアプリUIの設計判断・改善・レビューを支援"
+  default_prompt: "$mobile-ui-design を使って、モバイルアプリUIの設計・改善・レビューを行ってください。"

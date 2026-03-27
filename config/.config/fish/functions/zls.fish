@@ -71,6 +71,8 @@ function zls --description "Select a repository or session and open it in Zellij
         echo $session >> $history_file
         set -l orig_dir (pwd)
         cd "$HOME/$dir"
+        __zellij_apply_dev_desktop "$session" >/dev/null 2>&1 &
+        disown
         zellij -l dev attach -c $session
         cd $orig_dir
     else

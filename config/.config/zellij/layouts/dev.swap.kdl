@@ -8,8 +8,28 @@ tab_template name="ui" {
     }
 }
 
+swap_tiled_layout name="Desktop" {
+    ui exact_panes=1 {
+        pane
+    }
+    ui min_panes=2 {
+        pane {
+            children
+        }
+    }
+}
+
 swap_tiled_layout name="Mobile" {
-    ui exact_panes=3 {
+    ui exact_panes=1 {
+        pane
+    }
+    ui exact_panes=2 {
+        pane stacked=true {
+            pane
+            pane expanded=true
+        }
+    }
+    ui min_panes=3 {
         pane stacked=true {
             children
         }

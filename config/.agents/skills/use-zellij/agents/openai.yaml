@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use Zellij"
+  short_description: "Zellij の CLI 制御と KDL 編集を支援"
+  default_prompt: "$use-zellij を使って、Zellij の CLI 制御と KDL レイアウト編集を進めてください。"
