@@ -8,12 +8,14 @@ function zl --description "Open a Zellij session for a project"
     set -l session (basename $project_dir)
     set -l orig_dir (pwd)
     set -l session_exists 0
-    if zellij list-sessions --short 2>/dev/null | string match -q -x -- $session
+    set -l sessions (zellij list-sessions --short 2>/dev/null)
+    if contains -- $session $sessions
         set session_exists 1
     end
 
     if test $session_exists -eq 0
-        __zellij_apply_dev_desktop "$session" >/dev/null 2>&1 &
+        set -l helper_cmd "__zellij_apply_dev_desktop "(string escape --style=script -- $session)
+        fish -c $helper_cmd >/dev/null 2>&1 &
         disown
     end
 

@@ -8,7 +8,7 @@ function __zellij_apply_dev_desktop --description "Apply Desktop swap layout to 
     set -l shells_done 0
     set -l tools_done 0
 
-    for _ in (seq 1 50)
+    for attempt in (seq 1 50)
         set -l tabs_json (zellij --session "$session" action list-tabs --json --all 2>/dev/null)
 
         if test $shells_done -eq 0

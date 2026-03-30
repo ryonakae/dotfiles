@@ -63,7 +63,7 @@ function zls --description "Select a repository or session and open it in Zellij
         set -l base (basename $dir)
         set -l session $base
         set -l i 2
-        while zellij list-sessions --short 2>/dev/null | string match -q $session
+        while contains -- $session (zellij list-sessions --short 2>/dev/null)
             set session "$base-$i"
             set i (math $i + 1)
         end
@@ -71,7 +71,8 @@ function zls --description "Select a repository or session and open it in Zellij
         echo $session >> $history_file
         set -l orig_dir (pwd)
         cd "$HOME/$dir"
-        __zellij_apply_dev_desktop "$session" >/dev/null 2>&1 &
+        set -l helper_cmd "__zellij_apply_dev_desktop "(string escape --style=script -- $session)
+        fish -c $helper_cmd >/dev/null 2>&1 &
         disown
         zellij -l dev attach -c $session
         cd $orig_dir
