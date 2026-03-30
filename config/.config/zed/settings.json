@@ -7,6 +7,15 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "project_panel": {
+    "git_status": true
+  },
+  "tabs": {
+    "git_status": true
+  },
+  "outline_panel": {
+    "button": false
+  },
   "when_closing_with_no_tabs": "platform_default",
   "edit_predictions": {
     "provider": "copilot",
@@ -20,6 +29,11 @@
     "option_as_meta": true,
   },
   "git_panel": {
+    "show_count_badge": false,
+    "file_icons": true,
+    "sort_by_path": false,
+    "collapse_untracked_diff": false,
+    "status_style": "label_color",
     "dock": "left",
     "tree_view": true,
   },
@@ -36,6 +50,7 @@
   "buffer_font_size": 13.0,
   "theme": "macOS Classic Dark",
   "agent": {
+    "button": false,
     "default_model": {
       "provider": "copilot_chat",
       "model": "claude-haiku-4.5",
