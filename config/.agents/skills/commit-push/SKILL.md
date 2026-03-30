@@ -1,6 +1,6 @@
 ---
 name: commit-push
-description: Conventional Commits メッセージを自動生成し、必要なら doc-updater skill を呼び出してからコミットと push を行うスキル。コミットしたい時、pushしたい時、ドキュメント更新込みでコミットしたい時に使用する。
+description: Conventional Commits メッセージを自動生成し、必要なら doc-updater skill を呼び出してからコミットと push を行うスキル。コミットしたい時、pushしたい時、ドキュメント更新込みでコミットしたい時に使用する。ユーザーが /commit-push と明示的に指示した場合を除き、自律的に起動しない。
 disable-model-invocation: true
 ---
 
