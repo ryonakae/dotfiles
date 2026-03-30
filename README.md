@@ -48,9 +48,15 @@ $ brew bundle -v
 
 ### Homebrew でインストールしたやつを優先的に利用する
 
-`/etc/paths`の順番を入れ替える
+fish を使うなら `config.fish` 内の `brew shellenv` と `fish_add_path --move` で Homebrew のパスが先頭側に来る。
+
+それでも GUI アプリや他の shell で `/usr/bin` が先に来る警告が出る場合は、`/etc/paths` の順番を入れ替える。
+
+- Apple Silicon: `/opt/homebrew/bin`
+- Intel Mac: `/usr/local/bin`
 
 ```
+/opt/homebrew/bin
 /usr/local/bin
 /usr/bin
 /bin
@@ -58,7 +64,7 @@ $ brew bundle -v
 /sbin
 ```
 
-`$ exec $SHELL`で反映される
+設定後に `exec fish` またはターミナル再起動で反映される
 
 ## fish の設定
 
