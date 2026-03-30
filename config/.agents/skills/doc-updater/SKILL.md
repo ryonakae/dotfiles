@@ -1,6 +1,6 @@
 ---
 name: doc-updater
-description: git diff --cached に含まれる変更が ドキュメントに与える影響を判断し、必要な更新だけを行うスキル。ドキュメント更新が必要な実装変更があったときや、commit-push 実行時、手動 commit 前の確認に使う。
+description: git diff --cached に含まれる変更がドキュメントに与える影響を判断し、必要な更新だけを行うスキル。commit-push スキルまたは stop hook から明示的に呼び出された場合にのみ実行する。ユーザーが /doc-updater と明示的に指示した場合を除き、自律的に起動しない。
 ---
 
 # doc-updater
