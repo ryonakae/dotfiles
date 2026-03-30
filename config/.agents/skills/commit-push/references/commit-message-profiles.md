@@ -40,6 +40,13 @@
 - subject/body 追加ルール: なし
 - 適用例: Codex から共通 skill を実行したとき
 
+## `github-copilot`
+
+- 適用条件: env marker では確定できないが、実行中エージェントが自分を GitHub Copilot と確信できる
+- commit trailer: `Co-authored-by: Copilot <198982749+Copilot@users.noreply.github.com>`
+- subject/body 追加ルール: なし
+- 適用例: GitHub Copilot Coding Agent から共通 skill を実行したとき
+
 ## `generic-fallback`
 
 - 適用条件: 他の profile に確信を持って一致できないとき
