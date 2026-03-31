@@ -126,6 +126,7 @@ cask 'smoothcsv'
 # cask 'visual-studio'
 cask 'visual-studio-code'
 # cask 'visual-studio-code@insiders'
+cask 'zed'
 
 # 業務ツール
 # cask 'notion'
