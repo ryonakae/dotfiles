@@ -24,11 +24,8 @@
   - 例: `uv run script.py`, `uv run python script.py`
 - パッケージの追加: `uv add` / `uv pip install` を使い、`pip install` は使わない
 
-## ライブラリ/API/SDKの利用
-
-- `find-docs` スキルを呼び出し、最新のドキュメントを取得する
-- 呼び出せない場合は Context7 MCP を使う
-
-## Webページの取得
+## Web検索・ライブラリ/API/SDKの利用
 
 - Webページの内容を取得する場合、コーディングエージェントに標準で内蔵されている `WebSearch`, `WebFetch` のようなツールだと `403` エラーで失敗する場合がある。その場合は `agent-browser` を使う
+- `find-docs` スキルを使い、最新のドキュメントを取得する
+- 一次情報（公式ドキュメント、APIリファレンス、SDKガイドなど）を優先して参照する
