@@ -102,7 +102,7 @@ cask 'google-drive'
 cask 'ghostty'
 
 # 開発ツール
-cask 'docker'
+cask 'docker-desktop'
 # cask 'github'
 cask 'gcloud-cli'
 # cask 'react-native-debugger'
