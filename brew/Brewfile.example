@@ -45,7 +45,6 @@ brew 'uv'
 # AI
 brew 'agent-browser'
 brew 'eugene1g/safehouse/agent-safehouse'
-brew 'codex'
 brew 'ctx7'
 brew 'gemini-cli'
 brew 'anomalyco/tap/opencode'
