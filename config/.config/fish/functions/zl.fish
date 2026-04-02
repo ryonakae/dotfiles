@@ -13,12 +13,6 @@ function zl --description "Open a Zellij session for a project"
         set session_exists 1
     end
 
-    if test $session_exists -eq 0
-        set -l helper_cmd "__zellij_apply_dev_desktop "(string escape --style=script -- $session)
-        fish -c $helper_cmd >/dev/null 2>&1 &
-        disown
-    end
-
     if test $session_exists -eq 1
         cd $project_dir && zellij attach "$session"
     else
