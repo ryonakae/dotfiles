@@ -1,0 +1,4 @@
+interface:
+  display_name: "AGENTS.md Generator"
+  short_description: "AGENTS.md の作成・整理・段階的分割を支援"
+  default_prompt: "$agents-md-generator を使って、このリポジトリ向けの短く実用的な AGENTS.md を作成してください。必要なら docs/agents/*.md に分割してください。"
