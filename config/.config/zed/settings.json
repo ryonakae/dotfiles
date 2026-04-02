@@ -8,13 +8,13 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "project_panel": {
-    "git_status": true
+    "git_status": true,
   },
   "tabs": {
-    "git_status": true
+    "git_status": true,
   },
   "outline_panel": {
-    "button": false
+    "button": false,
   },
   "when_closing_with_no_tabs": "platform_default",
   "edit_predictions": {

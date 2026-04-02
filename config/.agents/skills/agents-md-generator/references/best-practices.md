@@ -65,12 +65,34 @@
 - ルートの前半に最重要情報が集まっているか
 - 長い詳細をルートに残しすぎていないか
 
+## 生成後レビューの観点
+
+- 先頭 30-50 行で着手に必要な情報へ到達できるか
+- すべてのコマンドとパスが実在するか
+- ルートにある各項目が本当に高頻度で普遍的か
+- 既存 `README.md` や `docs/` の焼き直しが残っていないか
+- 長い詳細や低頻度手順をルートに残しすぎていないか
+- 壊れやすいファイル配置や古くなりやすい断定を書きすぎていないか
+- 特定ツールや特定モデルでしか意味を持たない癖を混ぜていないか
+- 読み手が「次に何を実行するか」を迷わない順序になっているか
+
+yes/no で一度通し、no が出た項目は原則その場で修正する。
+
+## 自己修正の優先順位
+
+- 事実誤認
+- ルートの過積載
+- 既存 docs との重複
+- 順序の悪さ
+- 文言の抽象度が高すぎる箇所
+
+迷ったら「足す」より「削る」「外へ逃がす」を優先する。
+
 ## 参考にした資料
 
 - `https://agents.md/`
+- `https://developers.openai.com/codex/guides/agents-md`
+- `https://code.claude.com/docs/en/memory`
+- `https://arxiv.org/abs/2602.11988`
 - `https://izanami.dev/post/47b08b5a-6e1c-4fb0-8342-06b8e627450a`
 - `https://www.humanlayer.dev/blog/writing-a-good-claude-md`
-- `https://www.aihero.dev/a-complete-guide-to-agents-md`
-- `https://qiita.com/dai_chi/items/61019c602c2c40dade07`
-- `https://gist.github.com/0xfauzi/7c8f65572930a21efa62623557d83f6e`
-- `https://github.com/MounirDhahri/skills/tree/main/skills/agentsmd-claudemd-generator`
