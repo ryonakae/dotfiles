@@ -81,9 +81,6 @@
 (allow file-read*
     ;; Personal Agent Skills
     (home-subpath "/Dev/private/agent-skills")
-
-    ;; CleanShot X
-    (home-subpath "/Library/Application Support/CleanShot")
 )
 
 ;; terminal-notifier (macOS通知) が必要とする Mach サービスを許可。
