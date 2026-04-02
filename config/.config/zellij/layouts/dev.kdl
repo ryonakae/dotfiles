@@ -8,7 +8,7 @@ layout {
             plugin location="zellij:status-bar"
         }
     }
-    tab name="Shell" focus=true {
+    tab focus=true {
         pane focus=true
     }
 }
