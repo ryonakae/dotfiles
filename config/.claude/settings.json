@@ -3,9 +3,6 @@
   "env": {
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6[1m]"
   },
-  "permissions": {
-    "defaultMode": "plan"
-  },
   "model": "opusplan",
   "hooks": {
     "Notification": [
@@ -40,6 +37,6 @@
   "enabledPlugins": {},
   "language": "日本語",
   "spinnerTipsEnabled": false,
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "skipDangerousModePermissionPrompt": true
 }
