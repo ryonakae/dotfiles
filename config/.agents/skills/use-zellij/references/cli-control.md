@@ -46,17 +46,20 @@ zellij action <subcommand> --help
 
 | コマンド | 主用途 | 補足 |
 | --- | --- | --- |
-| `attach` | セッションへ接続する | `--create`, `--create-background`, `--force-run-commands`, `--forget` が重要 |
+| `attach` | セッションへ接続する | `--create`, `--create-background`, `--force-run-commands`, `--forget`, `--index`, `--token` が重要 |
 | `action` | 実行中セッションへ操作を送る | Zellij の制御面の中心 |
 | `run` | 新しいペインでコマンドを直接実行する | `action new-pane -- <command>` の便利版 |
 | `edit` | 新しいペインでエディタを開く | `scrollback_editor` または `EDITOR`/`VISUAL` を使う |
 | `plugin` | プラグインペインを開く | `floating`, `in-place`, `configuration` を扱える |
 | `pipe` | プラグインにデータを送る | 対象プラグインが未起動なら起動できる |
-| `subscribe` | ペイン描画更新を購読する | `--format json` で機械処理向き |
+| `subscribe` | ペイン描画更新を購読する（**トップレベルコマンド**） | `zellij subscribe --pane-id <id> --format json` の形で使う |
 | `watch` | 読み取り専用でセッションを見る | セッション名だけで使える |
 | `list-sessions` | セッション一覧を取る | `--short`, `--no-formatting` が便利 |
+| `list-aliases` | プラグインエイリアス一覧を取る | スクリプトからエイリアス確認に使う |
 | `kill-session` | 実行中セッションを終了する | まず停止したいときに使う |
+| `kill-all-sessions` | 全セッションを一括終了する | クリーンアップに使う |
 | `delete-session` | 保存済みセッションを削除する | `--force` で実行中セッションも削除できる |
+| `delete-all-sessions` | 全保存済みセッションを削除する | `--force` で実行中も含む |
 | `options` | 起動時オプションを CLI から上書きする | `default_layout`, `mouse_mode`, `web_sharing` など |
 | `setup` | 既定設定やレイアウトをダンプする | `--dump-config`, `--dump-layout`, `--check` が重要 |
 | `web` | Web クライアント用サーバーを管理する | `--start`, `--stop`, `--status`, トークン生成を扱える |
@@ -91,6 +94,7 @@ zellij --session "$SESSION" action close-pane --pane-id "$PANE_ID"
 既存シェルへ入力注入が必要なときの例外:
 
 ```bash
+# paste: <CHARS> は位置引数。--pane-id は先に書く
 zellij --session "$SESSION" action paste --pane-id "$PANE_ID" "echo ready"
 zellij --session "$SESSION" action send-keys --pane-id "$PANE_ID" Enter
 ```
@@ -101,20 +105,23 @@ zellij --session "$SESSION" action send-keys --pane-id "$PANE_ID" Enter
 
 | 分類 | 主な action | 補足 |
 | --- | --- | --- |
-| 状態取得 | `list-panes`, `list-tabs`, `current-tab-info`, `list-clients`, `query-tab-names`, `dump-screen`, `dump-layout` | `list-panes --json`, `list-tabs --json`, `current-tab-info --json` を優先する |
+| 状態取得 | `list-panes`, `list-tabs`, `current-tab-info`, `list-clients`, `query-tab-names`, `dump-screen`, `dump-layout` | `list-panes --json -a`, `list-tabs --json -a`, `current-tab-info --json` を優先する |
 | ペイン/タブ/フローティング | `new-pane`, `new-tab`, `close-pane`, `close-tab`, `resize`, `toggle-pane-embed-or-floating`, `change-floating-pane-coordinates`, `override-layout` | 詳細は `references/panes-tabs-and-floating.md` を読む |
 | 入力注入 | `paste`, `write`, `write-chars`, `send-keys` | `paste` は bracketed paste mode を使うので複数行入力に向く |
-| 名前変更とセッション操作 | `rename-pane`, `undo-rename-pane`, `rename-tab`, `rename-tab-by-id`, `undo-rename-tab`, `rename-session`, `switch-session`, `save-session`, `detach` | `switch-session` は `--layout`, `--pane-id`, `--tab-position` を受ける |
+| バッファ操作 | `clear`, `edit-scrollback`, `scroll-to-bottom`, `scroll-to-top` | `clear` は出力を読む前のリセットに便利; スクロール系は観測前の位置合わせに使う |
+| 名前変更とセッション操作 | `rename-pane`, `undo-rename-pane`, `rename-tab`, `rename-tab-by-id`, `undo-rename-tab`, `rename-session`, `switch-session`, `save-session`, `detach` | `switch-session` は `--layout`, `--pane-id`, `--tab-position`, `--cwd`, `--layout-dir` を受ける |
+| swap layout 切り替え | `next-swap-layout`, `previous-swap-layout` | キーバインドなしで swap layout をスクリプトから切り替えられる |
+| 並列操作 | `toggle-active-sync-tab` | 有効時は現在タブの全ペインに同じ入力が送られる |
 | プラグイン | `launch-plugin`, `launch-or-focus-plugin`, `start-or-reload-plugin`, `pipe` | `launch-or-focus-plugin` は session-manager などの内蔵プラグイン起動にも便利 |
-| 観測 | `subscribe` | 長時間監視や NDJSON 取得に向く |
 
 よく使う細部:
 
-- `list-panes --json --all` で pane ID, state, geometry, tab 情報をまとめて取る。
-- `list-tabs --json --all` で tab ID, active state, floating visibility, swap layout 名を取る。
+- `list-panes --json -a` で pane ID, state, geometry, tab 情報を全フィールドまとめて取る（`-a`/`--all` は「全フィールドを含める」の意味であり「全セッション」ではない）。
+- `list-tabs --json -a` で tab ID, active state, floating visibility, swap layout 名を全フィールド取る。
 - `dump-screen --full --ansi` でフルスクロールバックと色を含めて保存できる。
 - `new-pane`, `new-tab`, `edit`, `launch-plugin`, `launch-or-focus-plugin` は作成した ID を stdout に返す。
 - 具体的な pane/tab/floating の使い分けは `references/panes-tabs-and-floating.md` を読む。
+- `subscribe` は **`action` のサブコマンドではない**。`zellij [--session <name>] subscribe --pane-id <id> --format json` の形で使うトップレベルコマンド。
 
 ## 観測と同期
 
@@ -123,7 +130,9 @@ zellij --session "$SESSION" action send-keys --pane-id "$PANE_ID" Enter
 | 方法 | 使いどころ | 主なオプション |
 | --- | --- | --- |
 | `action dump-screen` | 今の表示を一度だけ読みたい | `--pane-id`, `--full`, `--ansi`, `--path` |
-| `subscribe` | 描画更新を継続監視したい | `--pane-id`, `--format json`, `--scrollback`, `--ansi` |
+| `subscribe`（トップレベル） | 描画更新を継続監視したい | `--pane-id <id>...`, `--format json`, `--scrollback [N]`, `--ansi` |
+
+> **注意**: `subscribe` は `zellij action subscribe` ではなく `zellij subscribe` または `zellij --session <name> subscribe` で呼び出す。
 
 ブロッキング系フラグ:
 
@@ -137,6 +146,7 @@ zellij --session "$SESSION" action send-keys --pane-id "$PANE_ID" Enter
 
 ```bash
 PANE_ID=$(zellij --session "$SESSION" action new-pane --name "build" -- cargo build)
+# subscribe はトップレベルコマンドなので action 経由ではなく直接呼び出す
 zellij --session "$SESSION" subscribe --pane-id "$PANE_ID" --format json
 ```
 
@@ -174,7 +184,11 @@ zellij --session "$SESSION" subscribe --pane-id "$PANE_ID" --format json
 - `--create-background`: 端末へ attach せずバックグラウンド作成する
 - `--force-run-commands`: resurrect 時にコマンドを即実行する
 - `--forget`: 保存済みセッションを消してから接続する
-- `--remember`: Web 接続向け再認証情報を保存する
+- `--remember`: Web 接続向け再認証情報を保存する（4週間有効）
+- `--index <N>`: 作成日順 N 番目のセッションへ接続する
+- `--token <TOKEN>`: リモートセッションの認証トークン
+- `--ca-cert <FILE>`: リモート接続用カスタム CA 証明書（PEM）
+- `--insecure`: TLS 検証をスキップする（開発専用）
 
 ## 一次情報
 

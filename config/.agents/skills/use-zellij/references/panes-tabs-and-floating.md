@@ -36,7 +36,7 @@ zellij action change-floating-pane-coordinates --help
 
 | action | 用途 | よく使うオプション |
 | --- | --- | --- |
-| `new-pane` | 新しいペインを作る | `--name`, `--cwd`, `--floating`, `--stacked`, `--in-place`, `--close-on-exit` |
+| `new-pane` | 新しいペインを作る | `--name`, `--cwd`, `--floating`, `--stacked`, `--in-place`, `--close-on-exit`, `--x`, `--y`, `--width`, `--height`, `--pinned`, `--near-current-pane`, `--borderless` |
 | `close-pane` | 対象ペインを閉じる | `--pane-id` |
 | `rename-pane` | ペイン名を変える | `--pane-id` |
 | `undo-rename-pane` | ペイン名を戻す | `--pane-id` |
@@ -54,7 +54,8 @@ zellij action change-floating-pane-coordinates --help
 
 - シェルを経由せずに直接コマンドを起動したいときは `new-pane -- <command>` を使う。
 - ジョブ専用 pane には `--name` を付ける。
-- レイアウト破壊を避けたいときは先に `list-panes --json --all` で geometry を確認する。
+- フローティングペインを `new-pane` 時に直接座標指定したいときは `--floating --x 10% --y 10% --width 80% --height 60%` を使う（後から `change-floating-pane-coordinates` で変更も可能）。
+- レイアウト破壊を避けたいときは先に `list-panes --json -a` で geometry を確認する。
 
 ## タブ操作
 
@@ -62,7 +63,7 @@ zellij action change-floating-pane-coordinates --help
 
 | action | 用途 | よく使うオプション |
 | --- | --- | --- |
-| `new-tab` | 新しいタブを作る | `--name`, `--cwd`, `--layout` |
+| `new-tab` | 新しいタブを作る | `--name`, `--cwd`, `--layout`, `--layout-dir`, `-- <command>...` |
 | `close-tab` | 現在タブを閉じる | なし |
 | `close-tab-by-id` | ID 指定で閉じる | tab ID |
 | `rename-tab` | 現在タブ名を変える | なし |
@@ -73,13 +74,14 @@ zellij action change-floating-pane-coordinates --help
 | `go-to-tab-by-id` | ID で移動する | tab ID |
 | `go-to-tab-name` | 名前で移動する | `name` |
 | `go-to-next-tab` / `go-to-previous-tab` | 前後移動する | なし |
-| `switch-session` | 別セッションへ切り替える | `--layout`, `--pane-id`, `--tab-position` |
+| `switch-session` | 別セッションへ切り替える | `--layout`, `--pane-id`, `--tab-position`, `--cwd`, `--layout-dir` |
 
 実務メモ:
 
 - 新しい作業面を足すだけなら `new-tab --layout` を優先する。
+- 初期コマンドを実行したいときは `new-tab -- <command>` を使える（v0.44.0+）。
 - 今あるタブの再配置は `override-layout` を使い、タブ自体を増やすなら `new-tab` を使う。
-- 現在アクティブなタブに強く依存する action を使う前に `current-tab-info --json` か `list-tabs --json --all` で対象を確認する。
+- 現在アクティブなタブに強く依存する action を使う前に `current-tab-info --json` か `list-tabs --json -a` で対象を確認する。
 
 ## フローティングペイン操作
 
@@ -92,7 +94,7 @@ zellij action change-floating-pane-coordinates --help
 | `hide-floating-panes` | フローティング面を非表示にする | `--tab-id` |
 | `toggle-pane-embed-or-floating` | 埋め込みと floating を切り替える | `--pane-id` |
 | `toggle-pane-pinned` | always-on-top を切り替える | `--pane-id` |
-| `change-floating-pane-coordinates` | floating pane の位置とサイズを変える | `--pane-id`, `--x`, `--y`, `--width`, `--height`, `--pinned` |
+| `change-floating-pane-coordinates` | floating pane の位置とサイズを変える | `--pane-id`, `--x`, `--y`, `--width`, `--height`, `--pinned`, `--borderless` |
 
 覚えること:
 
@@ -104,10 +106,22 @@ zellij action change-floating-pane-coordinates --help
 
 | action | 出力 | 使いどころ |
 | --- | --- | --- |
-| `list-panes --json --all` | pane 一覧、state、geometry、tab 情報 | 変更前の現況確認 |
-| `list-tabs --json --all` | tab 一覧、state、layout 情報 | active tab や floating visibility の確認 |
+| `list-panes --json -a` | pane 一覧、state、geometry、tab 情報（全フィールド） | 変更前の現況確認 |
+| `list-tabs --json -a` | tab 一覧、state、layout 情報（全フィールド） | active tab や floating visibility の確認 |
 | `current-tab-info --json` | 現在タブの詳細 | 局所判断 |
 | `dump-layout` | 現在構造の KDL | 保存、比較、再利用 |
+
+`list-panes` の個別フラグ（`-a` の代わりに必要なものだけ指定可能）:
+- `-c`/`--command`: 実行中コマンド情報を含める
+- `-g`/`--geometry`: 位置・サイズ情報を含める
+- `-s`/`--state`: フォーカス状態・floating・exited などを含める
+- `-t`/`--tab`: タブ名・位置・ID を含める
+
+`list-tabs` の個別フラグ:
+- `-d`/`--dimensions`: viewport・表示領域サイズを含める
+- `-l`/`--layout`: swap layout 名と dirty 状態を含める
+- `-p`/`--panes`: pane 数を含める
+- `-s`/`--state`: active・fullscreen・sync・floating visibility を含める
 
 ## CLI recipe
 
