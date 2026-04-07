@@ -24,6 +24,7 @@
     "button": false,
   },
   "terminal": {
+    "flexible": false,
     "cursor_shape": "bar",
     "dock": "right",
     "option_as_meta": true,
