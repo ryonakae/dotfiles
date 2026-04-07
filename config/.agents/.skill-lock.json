@@ -28,10 +28,34 @@
       "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
       "installedAt": "2026-04-06T15:15:29.432Z",
       "updatedAt": "2026-04-06T15:15:29.432Z"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/anthropics/skills.git",
+      "ref": "main",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "skillFolderHash": "98a510d1cfef9f82c3b1eec200229ca68725e613",
+      "installedAt": "2026-04-07T01:42:41.462Z",
+      "updatedAt": "2026-04-07T01:42:41.462Z"
     }
   },
   "dismissed": {
     "findSkillsPrompt": true
   },
-  "lastSelectedAgents": ["claude-code"]
+  "lastSelectedAgents": [
+    "amp",
+    "antigravity",
+    "cline",
+    "codex",
+    "cursor",
+    "deepagents",
+    "firebender",
+    "gemini-cli",
+    "github-copilot",
+    "kimi-cli",
+    "opencode",
+    "warp",
+    "claude-code"
+  ]
 }
