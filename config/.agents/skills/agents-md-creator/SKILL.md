@@ -1,9 +1,9 @@
 ---
-name: agents-md-generator
+name: agents-md-creator
 description: リポジトリを調査し、短く実用的な AGENTS.md を作成・更新・整理し、生成後に客観レビューして改善点を自己修正するスキル。何を書くべきか / 書くべきでないかを整理したいとき、AGENTS.md を新規作成したいとき、長すぎる AGENTS.md を見直したいとき、生成済み AGENTS.md をレビューして磨きたいとき、AGENTS.md を分割したいときに使う。
 ---
 
-# AGENTS.md Generator
+# AGENTS.md Creator
 
 ## 概要
 
