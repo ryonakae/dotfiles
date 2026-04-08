@@ -49,7 +49,7 @@
   "icon_theme": "Symbols Icon Theme",
   "ui_font_size": 15.0,
   "buffer_font_size": 13.0,
-  "theme": "macOS Classic Dark",
+  "theme": "Ayu Dark",
   "agent": {
     "button": false,
     "default_model": {
