@@ -1,9 +1,5 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "env": {
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-6[1m]"
-  },
-  "model": "opusplan",
   "hooks": {
     "Notification": [
       {
@@ -37,6 +33,6 @@
   "enabledPlugins": {},
   "language": "日本語",
   "spinnerTipsEnabled": false,
-  "effortLevel": "high",
+  "effortLevel": "medium",
   "skipDangerousModePermissionPrompt": true
 }
