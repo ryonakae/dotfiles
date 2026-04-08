@@ -4,6 +4,27 @@ on   = ["d", "d"]
 run  = "remove"
 desc = "Move to trash"
 
+# plugins:smart-leave
+[[mgr.prepend_keymap]]
+on   = "h"
+run  = "plugin smart-leave"
+desc = "起動ディレクトリより上には行かない leave"
+
+[[mgr.prepend_keymap]]
+on   = "<Left>"
+run  = "plugin smart-leave"
+desc = "起動ディレクトリより上には行かない leave"
+
+[[mgr.prepend_keymap]]
+on   = "H"
+run  = "leave"
+desc = "強制的に上の階層へ移動"
+
+[[mgr.prepend_keymap]]
+on   = "<S-Left>"
+run  = "leave"
+desc = "強制的に上の階層へ移動"
+
 # plugins:smart-enter
 [[mgr.prepend_keymap]]
 on   = "<Enter>"
