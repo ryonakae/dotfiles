@@ -6,3 +6,6 @@ require("git"):setup {
 
 -- plugins:full-border
 require("full-border"):setup()
+
+-- plugins:smart-leave
+require("smart-leave"):setup()
