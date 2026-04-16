@@ -22,4 +22,12 @@ keybinds {
     shared_except "locked" {
         bind "Ctrl Alt q" { Quit; }
     }
+    shared {
+        bind "Alt a" {
+            LaunchOrFocusPlugin "file:~/Dev/private/zellij-agents-manager/target/wasm32-wasip1/release/zam.wasm" {
+                floating true
+                move_to_focused_tab true
+            }
+        }
+    }
 }
