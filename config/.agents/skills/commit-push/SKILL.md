@@ -8,59 +8,39 @@ disable-model-invocation: true
 
 ## 概要
 
-ステージング済みの変更から Conventional Commits メッセージを作り、必要ならドキュメントも更新してからコミットと push を行う。本文は orchestration だけを持ち、詳細ルールは必要なタイミングで supporting file を読む。
-
-## 要件
-
-- 返答とコミットメッセージは日本語
-- 敬語は使わない
-- Conventional Commits 形式にする
-- 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない
-
-## supporting files
-
-- コミットメッセージ profile 一覧: [`references/commit-message-profiles.md`](references/commit-message-profiles.md)
-- doc-updater 委譲の詳細: [`references/doc-updater-delegation.md`](references/doc-updater-delegation.md)
-- doc-updater skill 本体: [`../doc-updater/SKILL.md`](../doc-updater/SKILL.md)
+ステージング確認 → ドキュメント更新（doc-updater に委譲）→ コミット＆push を順に行う。コミットメッセージの runtime 別ルールは [`references/commit-message-profiles.md`](references/commit-message-profiles.md) に分離している。
 
 ## 手順
 
 ### ステップ1: ステージング確認
 
-1. `git diff --cached --name-only` でステージング済みファイルを確認する
-   - 1つもステージングされていない場合は `git add -A` ですべてステージングする
-   - 一部ステージング済みで一部未ステージングの場合は、ステージング済みの変更だけを対象にする
-2. `git diff --cached --name-only --diff-filter=ACMRD` で最終的な対象差分があるか確認する
-3. 変更が無い場合は、その旨を伝えて終了する
+1. ステージング済みファイルを確認する。何もなければ `git add -A` で全てステージングする。一部だけステージング済みなら、ステージング済みの変更だけを対象にする。
+2. 変更が無い場合は終了する。
 
 ### ステップ2: ドキュメント自動更新
 
-1. このセッション内で既にドキュメント更新を実行した、または更新不要と判断済みならこのステップをスキップする
-2. ドキュメントファイル（`AGENTS.md` `CLAUDE.md` `GEMINI.md` `README.md` `docs/**/*.md` など）がすでにステージされている場合は、今回の変更で追加の更新が必要かだけ確認し、不要ならこのステップをスキップする
-3. `git diff --cached --name-only --diff-filter=ACMRD` で staged file list を、`git diff --cached --diff-filter=R --name-status` と `git diff --cached --diff-filter=D --name-only` で rename/delete context を収集する
-4. [`references/doc-updater-delegation.md`](references/doc-updater-delegation.md) を読み、経路 A → B → C の優先順で `doc-updater` を実行する
-5. ドキュメントを更新した場合は `git add` でステージングし、更新不要なら「ドキュメント更新は不要」と判断して次に進む
+1. このセッション内で既にドキュメント更新済み、または更新不要と判断済みならスキップする
+2. ドキュメントファイルがすでにステージされていて追加更新が不要ならスキップする
+3. doc-updater をサブエージェントで実行する（可能なら軽量モデルを使う）。サブエージェントへの指示:
+   - doc-updater スキルを読んで従う
+   - 対象は staged change のみ
+   - commit/push は行わない
+   - 更新したら git add する
+   サブエージェントが使えない場合は doc-updater スキルを inline で実行する。
+4. 更新不要なら次に進む
 
 ### ステップ3: コミットメッセージ生成 & push
 
 1. [`references/commit-message-profiles.md`](references/commit-message-profiles.md) を読み、選択順に従って profile を 1 つ選ぶ
-2. `git diff --cached` で最終的なステージング済み差分を確認し、Conventional Commits のコミットメッセージを 1 つ作る
-   - 形式: `<type>(<scope>): <subject>`
-   - type は `feat|fix|docs|refactor|perf|test|build|ci|chore` から選ぶ
-   - scope は分かる場合のみ付ける。不明なら省略する
-   - subject は短く要点のみ。末尾に句点は付けない
-   - body は必要な場合のみ付ける
-   - 選んだ profile の `commit trailer` が `なし` なら trailer を付けない
-   - 選んだ profile に `subject/body 追加ルール` があればそれに従う
-3. `git diff --cached --name-only --diff-filter=ACMRD` を再確認し、差分が無ければ終了する
-4. 生成したメッセージでコミットし、現在のブランチを push する
-   - body と trailer がある場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<body>" -m "<trailer>"`
-   - trailer だけある場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<trailer>"`
-   - trailer がなく body だけある場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>" -m "<body>"`
-   - trailer も body も無い場合: `SKIP_DOC_UPDATER=1 git commit -m "<type>(<scope>): <subject>"`
-   - `git push`
+2. `git diff --cached` で差分を確認し、コミットメッセージを作る
+   - Conventional Commits 形式（`<type>(<scope>): <subject>`）
+   - type: `feat|fix|docs|refactor|perf|test|build|ci|chore`
+   - scope は分かる場合のみ。subject の末尾に句点は付けない
+   - body は必要な場合のみ
+   - profile の trailer・追加ルールに従う
+3. `git commit -m "..."` でコミットする。body や trailer がある場合は別の `-m` で渡す。
+4. `git push` する。失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
 
 ## 注意
 
-- unknown runtime では、コミットメッセージに実行環境の固有名詞を勝手に入れない
-- push が失敗したら、エラー要点と次のアクション候補だけを伝えて終了する
+- 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない
