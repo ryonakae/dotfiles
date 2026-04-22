@@ -46,7 +46,11 @@
     (regex #".*/\.secrets(/.*)?$")
 
     ;; 証明書 / キーストア（HOME_DIR 限定: システム SSL 証明書との衝突を回避）
-    (regex (string-append "^" HOME_DIR "/.*\\.pem$"))
+    ;; certifi の CA バンドルは秘密鍵ではなく HTTPS 通信に必須なため除外
+    (require-all
+        (regex (string-append "^" HOME_DIR "/.*\\.pem$"))
+        (require-not (regex #".*/certifi/cacert\.pem$"))
+    )
     (regex (string-append "^" HOME_DIR "/.*\\.p8$"))
     (regex (string-append "^" HOME_DIR "/.*\\.p12$"))
     (regex (string-append "^" HOME_DIR "/.*\\.key$"))
