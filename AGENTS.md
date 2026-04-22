@@ -63,15 +63,41 @@ dotfiles/
 
 ```
 config/
-├── .agents/        # 全エージェント共通（AGENTS.md、グローバルスキル、通知フック）
-├── .claude/        # Claude Code 固有設定（settings.json、スキル、フック）
-├── .codex/         # Codex 固有設定
-└── .gemini/        # Gemini CLI 固有設定
+├── .agents/                    # 全エージェント共通（AGENTS.md、グローバルスキル、通知フック）
+├── .claude/                    # Claude Code 固有設定（settings.json、スキル、フック）
+├── .codex/                     # Codex 固有設定
+├── .gemini/                    # Gemini CLI 固有設定
+└── .config/agent-safehouse/    # agent-safehouse のサンドボックスポリシー
 ```
 
 - `config/.agents/AGENTS.md` は全エージェントの共通指示書（言語・Python実行・Web検索のルールなど）
 - グローバルスキルは `config/.agents/skills/`、Claude 固有スキルは `config/.claude/skills/`
 - スキルのシンボリックリンクは `scripts/create-skills-symlink.sh` で管理
+- エージェントは fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` 等）経由で agent-safehouse のサンドボックス内で実行される。共通引数は `__safehouse_args.fish`、機密ファイルの deny ルールは `local-overrides.sb` で管理
+
+### Hermes Gateway（launchd 自動起動）
+
+hermes gateway を safehouse 経由で常駐させるには、launchd plist を safehouse ラッパーに差し替える。
+
+```sh
+# 1. hermes インストール（初回のみ）
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+
+# 2. plist を生成
+hermes gateway install
+
+# 3. plist の ProgramArguments を safehouse ラッパーに差し替え
+#    ProgramArguments を以下に書き換える:
+#      <array>
+#        <string>/Users/ryo.nakae/.config/agent-safehouse/safe-hermes-gateway.sh</string>
+#      </array>
+vim ~/Library/LaunchAgents/ai.hermes.gateway.plist
+
+# 4. サービスをロード（RunAtLoad=true で即起動）
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.hermes.gateway.plist
+```
+
+ラッパースクリプトは `config/.config/agent-safehouse/safe-hermes-gateway.sh`。`hermes gateway install --force` で plist が上書きされるため、再実行時はステップ 3 をやり直す。
 
 ## 検証
 
