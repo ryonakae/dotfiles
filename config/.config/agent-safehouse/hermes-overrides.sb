@@ -1,0 +1,24 @@
+;; Hermes Agent 専用オーバーライド。
+;; gateway で自律動作するため、不要なディレクトリへのアクセスを遮断する。
+
+;; パーソナルディレクトリ — Hermes が触る理由がない
+(deny file-read* file-write*
+    (home-subpath "/Desktop")
+    (home-subpath "/Downloads")
+    (home-subpath "/Documents")
+    (home-subpath "/Pictures")
+    (home-subpath "/Music")
+    (home-subpath "/Movies")
+)
+
+;; ~/Library — Hermes が触る理由がない
+(deny file-read* file-write*
+    (home-subpath "/Library")
+)
+
+;; 他エージェントの設定 — 参照のみ許可、書き換えは禁止
+(deny file-write*
+    (home-subpath "/.claude")
+    (home-subpath "/.codex")
+    (home-subpath "/.gemini")
+)
