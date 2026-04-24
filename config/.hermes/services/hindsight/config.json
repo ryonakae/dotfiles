@@ -1,0 +1,6 @@
+{
+  "mode": "local_external",
+  "api_url": "http://localhost:8888",
+  "bank_id": "hermes",
+  "recall_budget": "mid"
+}
