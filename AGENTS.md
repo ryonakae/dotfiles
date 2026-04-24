@@ -74,6 +74,8 @@ config/
 - グローバルスキルは `config/.agents/skills/`、Claude 固有スキルは `config/.claude/skills/`
 - スキルのシンボリックリンクは `scripts/create-skills-symlink.sh` で管理
 - エージェントは fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` 等）経由で agent-safehouse のサンドボックス内で実行される。共通引数は `__safehouse_args.fish`、機密ファイルの deny ルールは `local-overrides.sb` で管理
+- Hermes 専用の deny ルールは `hermes-overrides.sb` で管理（パーソナルディレクトリ遮断、Library 遮断、他エージェント設定の write deny）
+- `hermes.fish` と `safe-hermes-gateway.sh` は同じ safehouse 引数を持つ（fish/bash の重複）。片方を変更したら必ず他方も同期する
 
 ### Hermes Gateway（launchd 自動起動）
 
