@@ -152,6 +152,48 @@ $ brew doctor
 
 ---
 
+## Hermes Agent Gateway（launchd 自動起動）
+
+hermes gateway を agent-safehouse 経由で常駐させるには、launchd plist を safehouse ラッパーに差し替える。
+
+### セットアップ
+
+```sh
+# 1. hermes インストール（初回のみ）
+curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+
+# 2. plist を生成（fish の hermes 関数は safehouse ラッパーなので command で迂回）
+command hermes gateway install
+
+# 3. plist の ProgramArguments を safehouse ラッパーに差し替え
+#    ProgramArguments を以下に書き換える:
+#      <array>
+#        <string>/Users/ryo.nakae/.config/agent-safehouse/safe-hermes-gateway.sh</string>
+#      </array>
+vim ~/Library/LaunchAgents/ai.hermes.gateway.plist
+
+# 4. サービスをロード（RunAtLoad=true で即起動）
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.hermes.gateway.plist
+```
+
+ラッパースクリプトは `config/.config/agent-safehouse/safe-hermes-gateway.sh`。`hermes gateway install --force` で plist が上書きされるため、再実行時はステップ 3 をやり直す。
+
+### 停止・再起動
+
+```sh
+# gateway を停止（plist はアンロードされる）
+launchctl bootout gui/$(id -u)/ai.hermes.gateway
+
+# gateway を再起動（停止 → 起動）
+launchctl bootout gui/$(id -u)/ai.hermes.gateway
+launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/ai.hermes.gateway.plist
+
+# 稼働確認
+curl -sf http://localhost:8642/health
+```
+
+---
+
 ## その他
 
 ### 各 App の設定

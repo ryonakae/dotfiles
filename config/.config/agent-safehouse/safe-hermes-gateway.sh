@@ -15,7 +15,7 @@ args=(
   --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard
 )
 
-# dotfiles を read-write で許可（__safehouse_args では ro だが Hermes は rw）
+# dotfiles を read-write で許可（__safehouse_args では ro だが Hermes Agent は rw）
 if [ -d "$DOTFILES_DIR" ]; then
   args+=(--add-dirs="$DOTFILES_DIR")
 fi
@@ -37,7 +37,7 @@ args+=(
   --add-dirs-ro="/Applications/Docker.app"
 )
 
-# Hermes 専用 deny ルール
+# Hermes Agent 専用 deny ルール
 [ -f "$HERMES_OVERRIDES" ] && args+=(--append-profile="$HERMES_OVERRIDES")
 
 exec safehouse "${args[@]}" -- hermes gateway run

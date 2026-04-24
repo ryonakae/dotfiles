@@ -1,7 +1,7 @@
 ;; Hermes Agent 専用オーバーライド。
 ;; gateway で自律動作するため、不要なディレクトリへのアクセスを遮断する。
 
-;; パーソナルディレクトリ — Hermes が触る理由がない
+;; パーソナルディレクトリ — Hermes Agent が触る理由がない
 (deny file-read* file-write*
     (home-subpath "/Desktop")
     (home-subpath "/Downloads")
@@ -11,7 +11,7 @@
     (home-subpath "/Movies")
 )
 
-;; ~/Library — Hermes が触る理由がない
+;; ~/Library — Hermes Agent が触る理由がない
 (deny file-read* file-write*
     (home-subpath "/Library")
 )
@@ -21,4 +21,10 @@
     (home-subpath "/.claude")
     (home-subpath "/.codex")
     (home-subpath "/.gemini")
+)
+
+;; local-overrides.sb で一律 deny された Hermes Agent 固有パスを再許可
+(allow file-read*
+    (home-literal "/.hermes/.env")
+    (home-subpath "/.hermes/secrets")
 )

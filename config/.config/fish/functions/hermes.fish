@@ -1,4 +1,4 @@
-function hermes --description "Run Hermes through Agent Safehouse"
+function hermes --description "Run Hermes Agent through Agent Safehouse"
     if not command -q safehouse
         echo "error: safehouse command not found." >&2
         return 127
@@ -17,7 +17,7 @@ function hermes --description "Run Hermes through Agent Safehouse"
     set -a safehouse_args --add-dirs-ro=/usr/local/bin
     set -a safehouse_args --add-dirs-ro="/Applications/Docker.app"
 
-    # Hermes 専用 deny ルール
+    # Hermes Agent 専用 deny ルール
     set -l hermes_overrides "$HOME/.config/agent-safehouse/hermes-overrides.sb"
     if test -f "$hermes_overrides"
         set -a safehouse_args --append-profile="$hermes_overrides"
