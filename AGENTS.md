@@ -1,101 +1,61 @@
 # dotfiles
 
-macOS 向け設定ファイル管理リポジトリ。`config/` 配下のファイルを `$HOME` にシンボリックリンクして展開する。
+macOS 向け設定ファイル管理リポジトリ。`config/` 配下を `$HOME` にシンボリックリンクして展開する。新規マシンのセットアップ手順と Hermes Agent の運用詳細は `README.md` を参照。
 
-## セットアップ
+## 編集の基本
 
-新規マシンへの適用は以下の順で実行する。
+- **`config/` 配下のファイルを直接編集する**（`$HOME` の symlink 先は編集しない）
+- `config/<path>` が `~/<path>` にそのまま対応する。例:
+  - `config/.config/fish/functions/dc.fish` → `~/.config/fish/functions/dc.fish`
+  - `config/.claude/settings.json` → `~/.claude/settings.json`
+- `*.example` パターン: マシン固有・機密を含むファイルは `.example` をリポジトリ管理し、実ファイルは `.gitignore` で除外（`brew/Brewfile`, `config/.config/fish/config.fish`, `~/.hermes/services/.env` など）
+- 機密情報（API キー、トークン等）を `*.example` に含めない
+- EditorConfig: スペース 2、LF、UTF-8
 
-```sh
-# 1. Xcode CLI Tools と Homebrew のインストール
-sh scripts/install.sh
+## scripts/
 
-# 2. *.example ファイルを実ファイルとしてコピー（機密情報を記入する）
-sh scripts/copy.sh
+- `scripts/copy.sh` — `*.example` を実ファイルへコピー（既存はスキップ）
+- `scripts/create-symlink.sh` — `config/` を `$HOME` に symlink（`.DS_Store`, `*.example`, `skills/` はスキップ）
+- `scripts/create-skills-symlink.sh` — スキルを各エージェントの `skills/` 配下へ配布
+- `scripts/remove-broken-symlinks.sh` — 壊れた symlink を対話的に削除（`-y` で自動）
+- `scripts/install.sh` — Xcode CLI Tools と Homebrew（新規マシン向け、初回のみ）
 
-# 3. config/ 配下を $HOME にシンボリックリンク
-sh scripts/create-symlink.sh
-
-# 4. AI エージェントのスキルをシンボリックリンク
-sh scripts/create-skills-symlink.sh
-
-# 5. Homebrew パッケージの一括インストール
-cd brew && brew bundle -v
-```
-
-## ディレクトリ構造
-
-```
-dotfiles/
-├── brew/                   # Homebrew パッケージ管理
-│   ├── Brewfile            # 実ファイル（.gitignore で除外）
-│   └── Brewfile.example    # テンプレート
-├── config/                 # $HOME のミラー構造（後述）
-├── scripts/                # セットアップ・管理スクリプト
-└── AGENTS.md               # このファイル
-```
-
-### config/ の配置規則
-
-`config/` 配下のパス構造が `$HOME` の構造をそのまま反映する。
-
-- `config/.config/fish/functions/dc.fish` → `~/.config/fish/functions/dc.fish`
-- `config/.claude/settings.json` → `~/.claude/settings.json`
-
-**シンボリックリンクのスキップ対象**: `.DS_Store`、`*.example`、`skills/`（スキルは `create-skills-symlink.sh` で個別管理）
-
-### .example パターン
-
-マシン固有の情報や機密情報を含むファイルは `.example` 付きでリポジトリ管理し、実ファイルは `.gitignore` で除外する。
-
-- `brew/Brewfile.example` → `brew/Brewfile`（実体、gitignore 済み）
-- `config/.config/fish/config.fish.example` → `config/.config/fish/config.fish`（実体、gitignore 済み）
-
-`copy.sh` は `*.example` → 同名ファイルのコピーを自動化する（既存ファイルはスキップ）。
-
-## 設定ファイルの編集
-
-- **`config/` 配下のファイルを直接編集する**（作業場所を `dotfiles/` に統一する）
-- EditorConfig: インデントはスペース2、改行は LF、文字コードは UTF-8
-- 機密情報（APIキー、トークンなど）を `*.example` ファイルに含めない
-
-## AI エージェント設定
+## エージェント設定
 
 ```
 config/
 ├── .agents/                    # 全エージェント共通（AGENTS.md、グローバルスキル、通知フック）
-├── .claude/                    # Claude Code 固有設定（settings.json、スキル、フック）
-├── .codex/                     # Codex 固有設定
-├── .gemini/                    # Gemini CLI 固有設定
-├── .hermes/                    # Hermes Agent 固有設定（SOUL.md、Docker compose）
-└── .config/agent-safehouse/    # agent-safehouse のサンドボックスポリシー
+├── .claude/                    # Claude Code 固有（settings.json、フック、Claude 専用スキル）
+├── .codex/                     # Codex 固有
+├── .gemini/                    # Gemini CLI 固有
+├── .hermes/                    # Hermes Agent 固有（SOUL.md、Docker compose）
+└── .config/agent-safehouse/    # sandbox-exec ポリシー
 ```
 
-- `config/.agents/AGENTS.md` は全エージェントの共通指示書（言語・Python実行・Web検索のルールなど）
-- グローバルスキルは `config/.agents/skills/`、Claude 固有スキルは `config/.claude/skills/`
-- スキルのシンボリックリンクは `scripts/create-skills-symlink.sh` で管理
-- エージェントは fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` 等）経由で agent-safehouse のサンドボックス内で実行される。共通引数は `__safehouse_args.fish`、機密ファイルの deny ルールは `local-overrides.sb` で管理
-- hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status}` で統一（`bootout` / `bootstrap` の直叩きはしない）
-- Hermes Agent 専用の deny ルールは `hermes-overrides.sb` で管理（パーソナルディレクトリ遮断、Library 遮断、他エージェント設定の write deny）
-- `hermes.fish` と `safe-hermes-gateway.sh` は同じ safehouse 引数を持つ（fish/bash の重複）。片方を変更したら必ず他方も同期する
+- 共通指示書は `config/.agents/AGENTS.md`（言語・Python 実行・Web 検索ルール等）。`.claude/CLAUDE.md` と `.codex/AGENTS.md` から symlink されている。`.gemini/GEMINI.md` は別実体なので、共通ルール変更時は個別に同期する
+- スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が各エージェントの `skills/` ディレクトリへ symlink する
+- エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
+- 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`
+- 機密ファイルの deny ルールは `config/.config/agent-safehouse/local-overrides.sb`
+- Hermes Agent 専用の deny ルールは `hermes-overrides.sb`（パーソナルディレクトリ・Library 遮断、他エージェント設定の write deny）
+- **`hermes.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` は同じ safehouse 引数を持つ。片方を変更したら必ず他方も同期する**
+- Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 
-### Hermes Agent
+## Hermes Agent 固有メモ
 
-gateway はホスト (launchd + safehouse)、hindsight / dashboard / open-webui は Docker (`~/.hermes/services/docker-compose.yml`) で運用する。ブラウザチャット UI は [Open WebUI](https://github.com/open-webui/open-webui) を採用。hermes-webui はコンテナ内で agent を独自起動して safehouse を迂回するため不採用。
+運用・セットアップ・トラブルシュートは `README.md` の「Hermes Agent」節を参照。
 
-`config/.hermes/` で dotfiles 管理するのは `SOUL.md`, `services/docker-compose.yml`, `services/.env.example`, `services/hindsight/config.json`, `services/hindsight/.env.example` の 5 ファイル（`.env` 実体は gitignore、`copy.sh` で展開）。`config.yaml`（クレデンシャル含む）や memory / session / 自己改善で書き換わる `hooks/` `cron/` `automations/` は対象外。
-
-`hermes gateway install --force` / `hermes gateway start` / `hermes gateway setup` の一部分岐で plist が再生成されるため、再実行時は ProgramArguments を safehouse ラッパーに差し替え直す必要がある。詳細な手順は README.md を参照。
+- dotfiles で管理するのは 5 ファイルのみ: `SOUL.md`, `services/docker-compose.yml`, `services/.env.example`, `services/hindsight/config.json`, `services/hindsight/.env.example`
+- 管理対象外: `config.yaml`（クレデンシャル）、`hooks/` / `cron/` / `automations/` / `skills/hermes-custom/`（自己改善で書き換わる）、memory / session / 認証系全般
+- `hermes gateway install --force` / `start` / `setup` の一部分岐は plist を再生成するため、実行後は README 「Hermes Agent › セットアップ」ステップ 3 で ProgramArguments を safehouse ラッパーに差し替え直す
 
 ## 検証
 
-シンボリックリンクが正しく張られているか確認する。
-
 ```sh
-# 壊れたシンボリックリンクを対話的に削除（-y で自動削除）
+# 壊れた symlink を検出・削除（-y で自動）
 sh scripts/remove-broken-symlinks.sh
 
-# 特定リンクを手動確認
+# 個別リンクの確認例
 ls -la ~/.config/fish/config.fish
 ls -la ~/.claude/settings.json
 ```
