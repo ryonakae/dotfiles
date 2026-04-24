@@ -39,3 +39,27 @@ hermes plugins remove <name>     # プラグイン削除
 hermes plugins enable <name>     # 有効化
 hermes plugins disable <name>    # 無効化
 ```
+
+## v0.11.0 で大幅拡張された Plugin Surface
+
+プラグインから利用できる API が大幅に増えた。Python プラグインで実装する。
+
+| API | 用途 |
+|-----|------|
+| `register_command(name, handler)` | スラッシュコマンドを動的に追加（gateway 上のメッセージング全プラットフォームに自動公開） |
+| `dispatch_tool(name, args)` | プラグインコードから既存ツールを直接呼び出す |
+| `pre_tool_call` フックで veto | ツール呼び出しを実行前にブロック可能 |
+| `transform_tool_result(name, result)` | ツール結果を汎用的に書き換える |
+| `transform_terminal_output(output)` | terminal ツール出力を加工する |
+| `image_gen` バックエンド登録 | 独自画像生成プロバイダーを差し込める（OpenAI Codex 経由 gpt-image-2 など） |
+| ダッシュボードカスタムタブ | Web ダッシュボードに独自タブを追加 |
+| 名前空間化スキル登録 | プラグインがバンドルしたスキルを独自名前空間で登録 |
+| Shell hooks | Python なしで shell スクリプトをライフサイクルフックとして登録 |
+
+### 組み込み参考プラグイン
+
+`disk-cleanup` プラグインがバンドル済み（opt-in、デフォルト無効）。プラグイン記述のリファレンス実装として参照可能。
+
+### Project-local プラグイン
+
+`HERMES_ENABLE_PROJECT_PLUGINS=1` でプロジェクト内 `./hermes-plugins/` を読み込める。

@@ -38,6 +38,26 @@ async def handle(event, context):
 | `error` | エラー発生時 |
 | `cron_trigger` | cron タスク発火時 |
 
+## Shell hooks (v0.11.0)
+
+Python プラグインを書かなくても、シェルスクリプトを直接ライフサイクルフックとして登録できる。
+
+```yaml
+# ~/.hermes/config.yaml
+hooks:
+  shell:
+    - event: pre_tool_call
+      command: "/usr/local/bin/audit-tool.sh"
+      env:
+        - HERMES_TOOL_NAME      # フック側に渡される環境変数
+    - event: post_tool_call
+      command: "logger -t hermes 'tool finished'"
+    - event: on_session_start
+      command: "~/scripts/notify-session.sh"
+```
+
+スクリプトは標準入出力で JSON を授受する。非ゼロ終了で `pre_tool_call` を veto できる。
+
 ## プラグインフック
 
 ```python
