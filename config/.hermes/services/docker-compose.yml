@@ -1,0 +1,65 @@
+services:
+  hindsight:
+    image: ghcr.io/vectorize-io/hindsight:latest
+    container_name: hindsight
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8888:8888"
+      - "127.0.0.1:9999:9999"
+    env_file:
+      - ./hindsight/.env
+    environment:
+      HINDSIGHT_API_DB_POOL_MAX_SIZE: "30"
+      HINDSIGHT_API_WORKER_MAX_SLOTS: "8"
+      HINDSIGHT_API_LLM_MAX_CONCURRENT: "16"
+    volumes:
+      - ./hindsight/data:/home/hindsight/.pg0
+      - ./hindsight/codex-auth:/home/hindsight/.codex
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+
+  dashboard:
+    image: nousresearch/hermes-agent:latest
+    container_name: hermes-dashboard
+    restart: unless-stopped
+    entrypoint: ["/opt/hermes/docker/entrypoint.sh"]
+    command: ["dashboard", "--host", "0.0.0.0", "--insecure", "--no-open"]
+    ports:
+      - "127.0.0.1:9119:9119"
+    volumes:
+      - $HOME/.hermes:/opt/data
+    environment:
+      GATEWAY_HEALTH_URL: http://host.docker.internal:8642
+    depends_on:
+      hindsight:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: open-webui
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8787:8080"
+    volumes:
+      - open-webui:/app/backend/data
+    environment:
+      OPENAI_API_BASE_URL: http://host.docker.internal:8642/v1
+      OPENAI_API_KEY: ${API_SERVER_KEY:-not-needed}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  open-webui:

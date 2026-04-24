@@ -67,6 +67,7 @@ config/
 ├── .claude/                    # Claude Code 固有設定（settings.json、スキル、フック）
 ├── .codex/                     # Codex 固有設定
 ├── .gemini/                    # Gemini CLI 固有設定
+├── .hermes/                    # Hermes Agent 固有設定（SOUL.md、Docker compose）
 └── .config/agent-safehouse/    # agent-safehouse のサンドボックスポリシー
 ```
 
@@ -74,12 +75,17 @@ config/
 - グローバルスキルは `config/.agents/skills/`、Claude 固有スキルは `config/.claude/skills/`
 - スキルのシンボリックリンクは `scripts/create-skills-symlink.sh` で管理
 - エージェントは fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` 等）経由で agent-safehouse のサンドボックス内で実行される。共通引数は `__safehouse_args.fish`、機密ファイルの deny ルールは `local-overrides.sb` で管理
+- hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status}` で統一（`bootout` / `bootstrap` の直叩きはしない）
 - Hermes Agent 専用の deny ルールは `hermes-overrides.sb` で管理（パーソナルディレクトリ遮断、Library 遮断、他エージェント設定の write deny）
 - `hermes.fish` と `safe-hermes-gateway.sh` は同じ safehouse 引数を持つ（fish/bash の重複）。片方を変更したら必ず他方も同期する
 
-### Hermes Agent Gateway
+### Hermes Agent
 
-`hermes gateway install --force` で plist が上書きされるため、再実行時は plist の ProgramArguments を safehouse ラッパーに差し替え直す必要がある。手順は README.md を参照。
+gateway はホスト (launchd + safehouse)、hindsight / dashboard / open-webui は Docker (`~/.hermes/services/docker-compose.yml`) で運用する。ブラウザチャット UI は [Open WebUI](https://github.com/open-webui/open-webui) を採用。hermes-webui はコンテナ内で agent を独自起動して safehouse を迂回するため不採用。
+
+`config/.hermes/` で dotfiles 管理するのは `SOUL.md`, `services/docker-compose.yml`, `services/.env.example`, `services/hindsight/config.json`, `services/hindsight/.env.example` の 5 ファイル（`.env` 実体は gitignore、`copy.sh` で展開）。`config.yaml`（クレデンシャル含む）や memory / session / 自己改善で書き換わる `hooks/` `cron/` `automations/` は対象外。
+
+`hermes gateway install --force` / `hermes gateway start` / `hermes gateway setup` の一部分岐で plist が再生成されるため、再実行時は ProgramArguments を safehouse ラッパーに差し替え直す必要がある。詳細な手順は README.md を参照。
 
 ## 検証
 

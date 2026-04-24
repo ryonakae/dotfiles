@@ -4,7 +4,6 @@
     "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1"
   },
-  "effortLevel": "high",
   "hooks": {
     "Notification": [
       {
@@ -37,6 +36,7 @@
   },
   "language": "日本語",
   "spinnerTipsEnabled": false,
+  "effortLevel": "high",
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true
 }
