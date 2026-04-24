@@ -11,11 +11,7 @@
 ;;   HOME_DIR 限定 — /opt/homebrew/etc 等のシステム SSL 証明書と衝突するパターン
 (deny file-read* file-write*
     ;; 環境変数 / 設定ファイル
-    ;; ~/.hermes/.env は Hermes が API キーの読み込みに使うため除外
-    (require-all
-        (regex #".*/\.env$")
-        (require-not (home-literal "/.hermes/.env"))
-    )
+    (regex #".*/\.env$")
     (regex #".*/\.env\.local$")
     (regex #".*/\.env\.development$")
     (regex #".*/\.env\.development\.local$")
