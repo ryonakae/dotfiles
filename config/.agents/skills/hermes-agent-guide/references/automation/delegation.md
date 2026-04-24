@@ -50,6 +50,22 @@ agent:
   max_delegation_depth: 2
 ```
 
+## Orchestrator role と spawn depth (v0.11.0)
+
+サブエージェントに明示的な `orchestrator` ロールを付与すると、自身の worker をさらに spawn できる。`max_spawn_depth` で深さを制御（デフォルト flat = サブエージェントから再委譲不可）。
+
+```python
+delegate_task(
+    task="複雑なリサーチを 3 段階で分解して並列実行",
+    role="orchestrator",
+    max_spawn_depth=2,
+)
+```
+
+## Cross-agent file state coordination (v0.11.0)
+
+並列実行中のサブエージェントがファイル編集で衝突しないよう、ファイル協調レイヤーが自動で稼働する。同時編集を検出して直列化し、互いの編集を上書きしない。
+
 ## モデルオーバーライド
 
 ```python

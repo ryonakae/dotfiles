@@ -24,12 +24,15 @@
 ## CLI 管理
 
 ```bash
-hermes cron list
-hermes cron add "daily-report" --schedule "0 9 * * *" --prompt "日次レポートを作成"
-hermes cron remove "daily-report"
-hermes cron run "daily-report"     # 手動実行
-hermes cron enable "daily-report"
-hermes cron disable "daily-report"
+hermes cron list                                    # ジョブ一覧
+hermes cron create                                  # インタラクティブ作成ウィザード
+hermes cron edit "daily-report"                     # ジョブ編集
+hermes cron remove "daily-report"                   # 削除
+hermes cron run "daily-report"                      # 手動実行
+hermes cron pause "daily-report"                    # 一時停止
+hermes cron resume "daily-report"                   # 再開
+hermes cron status                                  # スケジューラ状態
+hermes cron tick                                    # 手動で 1 サイクル実行（デバッグ用）
 ```
 
 ## スキルの添付
@@ -49,6 +52,30 @@ delivery:
 ## [SILENT] 抑制
 
 プロンプトに `[SILENT]` を含めると、タスク実行結果をプラットフォームに送信しない。内部処理やファイル更新のみ行うタスクに有用。
+
+## wakeAgent ゲート (v0.11.0)
+
+ジョブに事前実行スクリプトを付け、その exit code でエージェントを起動するかどうかを判断できる。条件付き発火に有効（コスト削減）。
+
+```yaml
+name: alert-on-error
+schedule: "*/5 * * * *"
+pre_script: "~/scripts/check-errors.sh"     # exit 0 = wake agent / 非ゼロ = skip
+prompt: "直近 5 分間のエラーを要約してください"
+```
+
+`HERMES_CRON_SCRIPT_TIMEOUT` でスクリプトタイムアウト秒を制御（デフォルト 120）。
+
+## per-job enabled_toolsets (v0.11.0)
+
+ジョブ単位でツールセットを限定し、トークン消費を抑える。
+
+```yaml
+name: pricing-update
+schedule: "@daily"
+prompt: "競合の価格を取得して pricing.csv を更新"
+enabled_toolsets: [web, file]                # terminal, browser 等は無効化
+```
 
 ## プログラマティック管理
 

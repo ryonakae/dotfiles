@@ -15,7 +15,7 @@
 | Kimi / Moonshot China | 中国地域 | `KIMI_CN_API_KEY` |
 | Arcee AI | Trinity モデル | `ARCEEAI_API_KEY` |
 | Xiaomi MiMo | MiMo モデル | `XIAOMI_API_KEY` |
-| AWS Bedrock | Claude, Nova 等 | boto3 認証 |
+| AWS Bedrock | Claude, Nova 等（v0.11.0 で Converse API ネイティブ対応） | boto3 認証 (`AWS_REGION`, `AWS_PROFILE`) |
 | Qwen Portal | Qwen 3.5 / Coder | `hermes model` で OAuth |
 | MiniMax | 国際版 | `MINIMAX_API_KEY` |
 | MiniMax China | 中国版 | `MINIMAX_CN_API_KEY` |
@@ -31,7 +31,7 @@
 | xAI (Grok) | Grok 4 | `XAI_API_KEY` |
 | GitHub Copilot | GPT-5.x, Claude 等 | OAuth / `COPILOT_GITHUB_TOKEN` |
 | GitHub Copilot ACP | ACP agent backend | `hermes model` |
-| Vercel AI Gateway | AI Gateway | `AI_GATEWAY_API_KEY` |
+| Vercel AI Gateway | AI Gateway（v0.11.0、価格・属性・動的ディスカバリ対応） | `AI_GATEWAY_API_KEY` |
 | Custom Endpoint | VLLM, SGLang, Ollama 等 | ベース URL + API キー |
 
 **要件**: 最低 64,000 トークンのコンテキストウィンドウが必要
