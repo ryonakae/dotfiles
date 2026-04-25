@@ -4,12 +4,27 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
 
     switch $argv[1]
         case start
-            launchctl bootstrap $domain $plist
+            if launchctl bootstrap $domain $plist
+                set_color green; echo "hermes-gateway: started"; set_color normal
+            else
+                set_color red; echo "hermes-gateway: start failed" >&2; set_color normal
+                return 1
+            end
         case stop
-            launchctl bootout $domain/ai.hermes.gateway
+            if launchctl bootout $domain/ai.hermes.gateway
+                set_color green; echo "hermes-gateway: stopped"; set_color normal
+            else
+                set_color red; echo "hermes-gateway: stop failed" >&2; set_color normal
+                return 1
+            end
         case restart
             launchctl bootout $domain/ai.hermes.gateway 2>/dev/null
-            launchctl bootstrap $domain $plist
+            if launchctl bootstrap $domain $plist
+                set_color green; echo "hermes-gateway: restarted"; set_color normal
+            else
+                set_color red; echo "hermes-gateway: restart failed" >&2; set_color normal
+                return 1
+            end
         case status
             launchctl print $domain/ai.hermes.gateway
         case '' '*'
