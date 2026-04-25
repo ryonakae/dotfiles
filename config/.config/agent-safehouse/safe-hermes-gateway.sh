@@ -13,6 +13,7 @@ args=(
   --env-pass=NO_BROWSER
   --env-pass=TERM_PROGRAM
   --env-pass=AGENT_BROWSER_ARGS
+  --env-pass=AGENT_BROWSER_PROFILE
   --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard
 )
 
@@ -44,7 +45,9 @@ args+=(
 
 # agent-safehouse 内で Chrome の内側 sandbox 初期化が失敗するため、
 # Hermes から呼ぶ agent-browser にだけ Chrome 起動引数を渡す。
-# 実 Chrome プロファイル (cookie / 履歴 / 保存パスワード) と分離するため user-data-dir を強制する。
-export AGENT_BROWSER_ARGS="--no-sandbox,--disable-gpu,--disable-dev-shm-usage,--user-data-dir=$HOME/.hermes/chrome-profile"
+# 実 Chrome プロファイル (cookie / 履歴 / 保存パスワード) と分離するため、
+# agent-browser の正規オプションで専用 profile directory を指定する。
+export AGENT_BROWSER_ARGS="--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
+export AGENT_BROWSER_PROFILE="$HOME/.hermes/chrome-profile"
 
 exec safehouse "${args[@]}" -- hermes gateway run
