@@ -10,6 +10,7 @@ macOS 向け設定ファイル管理リポジトリ。`config/` 配下を `$HOME
   - `config/.claude/settings.json` → `~/.claude/settings.json`
 - `*.example` パターン: マシン固有・機密を含むファイルは `.example` をリポジトリ管理し、実ファイルは `.gitignore` で除外（`brew/Brewfile`, `config/.config/fish/config.fish`, `~/.hermes/services/.env` など）
 - 機密情報（API キー、トークン等）を `*.example` に含めない
+- env 変数の置き場: マシン非依存の設計定数は wrapper（fish 関数 / shell スクリプト）に直書き、機密・マシン固有値は `.env`（実体は `.gitignore`）に分離する
 - EditorConfig: スペース 2、LF、UTF-8
 
 ## scripts/
