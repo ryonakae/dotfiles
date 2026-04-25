@@ -67,10 +67,6 @@
     (home-subpath "/.config/ccstatusline")
     (home-subpath "/.cache/ccstatusline")
 
-    ;; NotebookLM MCP
-    (home-subpath "/Library/Application Support/notebooklm-mcp")
-    (home-subpath "/Library/Preferences/notebooklm-mcp")
-
     ;; Claude Code
     (home-subpath "/.claude")
 

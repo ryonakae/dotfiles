@@ -11,16 +11,30 @@
     (home-subpath "/Movies")
 )
 
-;; ~/Library — Hermes Agent が触る理由がない
+;; ~/Library — 既定で全遮断し、必要なサブパスだけ後勝ちで read を再許可する
 (deny file-read* file-write*
     (home-subpath "/Library")
 )
 
-;; 他エージェントの設定 — 参照のみ許可、書き換えは禁止
+;; CleanShot のスクリーンショット添付、macos-gui (CFPrefs/通知センター) が読む最小領域
+(allow file-read*
+    (home-subpath "/Library/Application Support/CleanShot/media")
+    (home-literal "/Library/Preferences/.GlobalPreferences.plist")
+    (home-subpath "/Library/Preferences/ByHost")
+)
+
+;; 他エージェントの設定 — multi-agent-transcript-sync が transcript を read するため read は許可、write は禁止
 (deny file-write*
     (home-subpath "/.claude")
     (home-subpath "/.codex")
     (home-subpath "/.gemini")
+)
+
+;; 他エージェントの認証トークン — transcript パスとは別系統なので read も含めて明示 deny
+(deny file-read* file-write*
+    (home-literal "/.claude/.credentials.json")
+    (home-literal "/.codex/auth.json")
+    (home-literal "/.gemini/oauth_creds.json")
 )
 
 ;; local-overrides.sb で一律 deny された Hermes Agent 固有パスを再許可
