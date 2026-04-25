@@ -8,6 +8,7 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "project_panel": {
+    "dock": "left",
     "git_status": true,
   },
   "tabs": {
@@ -51,6 +52,7 @@
   "buffer_font_size": 13.0,
   "theme": "Ayu Dark",
   "agent": {
+    "dock": "right",
     "button": true,
     "default_model": {
       "provider": "copilot_chat",
