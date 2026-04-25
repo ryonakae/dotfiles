@@ -28,3 +28,10 @@
     (home-literal "/.hermes/.env")
     (home-subpath "/.hermes/secrets")
 )
+
+;; Google Workspace CLI の credential store (readonly スコープ専用)。
+;; gws が credentials.json / .encryption_key 等を書き込むため、
+;; local-overrides.sb の機密パターン deny を上書きして rw を再付与する。
+(allow file-read* file-write*
+    (home-subpath "/.hermes/gws")
+)
