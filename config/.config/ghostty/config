@@ -34,5 +34,6 @@ desktop-notifications = true
 
 # macOS固有
 macos-titlebar-style = tabs
-macos-option-as-alt = true
+# 左 Option は Zellij 操作用の Alt、右 Option は macOS の文字入力用に残す
+macos-option-as-alt = left
 macos-icon = retro
