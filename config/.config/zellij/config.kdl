@@ -18,6 +18,10 @@ keybinds {
         bind "Alt k" { MoveFocus "Up"; }
         bind "Alt l" { MoveFocusOrTab "Right"; }
         bind "Alt f" { ToggleFloatingPanes; }
+        bind "Alt p" { SwitchToMode "Pane"; }
+        bind "Alt t" { SwitchToMode "Tab"; }
+        bind "Alt o" { SwitchToMode "Session"; }
+        bind "Alt n" { SwitchToMode "Resize"; }
     }
     shared_except "locked" {
         bind "Ctrl Alt q" { Quit; }
