@@ -29,7 +29,9 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     # 実 Chrome プロファイル (cookie / 履歴 / 保存パスワード) と分離するため user-data-dir を強制する。
     set -fx AGENT_BROWSER_ARGS "--no-sandbox,--disable-gpu,--disable-dev-shm-usage,--user-data-dir=$HOME/.hermes/chrome-profile"
 
+    # safehouse は既定で env を sanitize するため、TUI 起動フラグは --env-pass で明示的に通す。
     if test (count $argv) -eq 0
+        set -a safehouse_args --env-pass=HERMES_TUI
         set -fx HERMES_TUI 1
     end
 
