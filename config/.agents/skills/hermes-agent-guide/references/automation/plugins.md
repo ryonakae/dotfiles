@@ -4,10 +4,13 @@
 
 ## ディレクトリ構造
 
+現行実装（v0.11.0 / `hermes_cli/plugins.py`）では、directory plugin は **`plugin.yaml` と `__init__.py` の `register(ctx)` 関数**で検出・ロードされる。
+
 ```
 ~/.hermes/plugins/
 └── my_plugin/
-    ├── plugin.py               # エントリポイント（HermesPlugin 継承クラス）
+    ├── plugin.yaml             # manifest。name/version/description/provides_hooks など
+    ├── __init__.py             # エントリポイント。register(ctx) を定義
     ├── requirements.txt        # Python 依存関係（オプション）
     └── config.yaml             # プラグイン設定（オプション）
 ```
@@ -15,20 +18,34 @@
 ## register パターン
 
 ```python
-from hermes.plugin import HermesPlugin, register
+# ~/.hermes/plugins/my_plugin/__init__.py
 
-@register
-class MyPlugin(HermesPlugin):
-    name = "my_plugin"
-    version = "1.0.0"
-    description = "プラグインの説明"
+def register(ctx):
+    ctx.register_hook("pre_llm_call", inject_context)
+
+
+def inject_context(session_id: str, user_message: str, is_first_turn: bool, **kwargs):
+    return {"context": "追加コンテクスト"}
 ```
+
+`plugin.yaml` 例:
+
+```yaml
+name: my_plugin
+version: 1.0.0
+description: プラグインの説明
+provides_hooks:
+  - pre_llm_call
+```
+
+ユーザーインストール plugin は opt-in。`config.yaml` の `plugins.enabled` に plugin key/name を入れるか、`hermes plugins enable <name>` で有効化する。`plugins.disabled` にある name/key は常にロードされない。
 
 ## プラグイン検出パス
 
-1. `~/.hermes/plugins/`
-2. `config.yaml` の `plugins.paths` で指定されたディレクトリ
-3. pip インストール済みの `hermes-plugin-*` パッケージ
+1. bundled plugins: `<repo>/plugins/<name>/`（一部 category backend を含む）
+2. user plugins: `~/.hermes/plugins/<name>/`
+3. project plugins: `./.hermes/plugins/<name>/`（`HERMES_ENABLE_PROJECT_PLUGINS` が true の場合のみ）
+4. pip entry point: `hermes_agent.plugins`
 
 ## CLI コマンド
 

@@ -135,6 +135,46 @@ CLI 側:
 - localhost 以外で待ち受けるなら certificate と key を必ず用意する。
 - 監視専用なら read-only token を優先する。
 
+## macOS / Ghostty で locked-first 運用を軽くする
+
+ユーザーが `default_mode "locked"` を使い、Pane/Tab/Session/Resize 操作のたびに `Ctrl g` で Normal へ戻すのを面倒に感じている場合は、`zellij-autolock` よりも Locked mode から直接 Zellij の各モードへ入れる keybind を検討する。
+
+判断の軸:
+
+- `zellij-autolock` は、フォーカス中 pane のプロセスを見て Normal/Locked を自動切替する plugin。Vim/fzf などを開いたとき自動で Locked にしたい用途には合う。
+- 「普段は Locked のまま、必要なときだけ Pane/Tab/Session/Resize に入りたい」悩みには、Locked mode の keybind 追加の方が素直。
+- `Ctrl p` / `Ctrl t` / `Ctrl o` / `Ctrl n` を Locked mode で奪うと、Neovim、shell、fzf などの入力と衝突しやすい。macOS では `Alt` / Option に逃がす案を優先して検討する。
+
+Ghostty で左 Option だけ Alt として送る例:
+
+```text
+# 左 Option は Zellij 操作用の Alt、右 Option は macOS の文字入力用に残す
+macos-option-as-alt = left
+```
+
+Ghostty の `macos-option-as-alt` は `true` / `false` だけでなく、`left` / `right` も使える。`true` は両 Option を Alt 化するため、Option+p の `π` など macOS の特殊文字入力を失いやすい。`left` にすると、左 Option は Zellij 操作用、右 Option は文字入力用に分けられる。
+
+Zellij の Locked mode から各モードへ入る例:
+
+```kdl
+keybinds {
+    locked {
+        bind "Alt p" { SwitchToMode "Pane"; }
+        bind "Alt t" { SwitchToMode "Tab"; }
+        bind "Alt o" { SwitchToMode "Session"; }
+        bind "Alt n" { SwitchToMode "Resize"; }
+    }
+}
+```
+
+既存 config を編集するときは、dotfiles 管理下なら `~/.config/...` の symlink 先ではなく repo 側の `config/.config/zellij/config.kdl` や `config/.config/ghostty/config` を編集する。Zellij 設定の検証は、ホーム側が sandbox などで見えない場合でも repo 側を明示して確認できる。
+
+```bash
+zellij --config-dir "$PWD/config/.config/zellij" setup --check
+```
+
+`[CONFIG FILE]: Well defined.` が出れば KDL としては読めている。通常起動で反映されていない場合は、ホーム側への symlink 状態や dotfiles の `scripts/create-symlink.sh` 実行有無を確認する。
+
 ## 一次情報
 
 - https://zellij.dev/documentation/configuration.html
