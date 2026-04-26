@@ -21,6 +21,7 @@
     (home-subpath "/Library/Application Support/CleanShot/media")
     (home-literal "/Library/Preferences/.GlobalPreferences.plist")
     (home-subpath "/Library/Preferences/ByHost")
+    (home-literal "/Library/LaunchAgents/ai.hermes.gateway.plist")
 )
 
 ;; 他エージェントの設定 — multi-agent-transcript-sync が transcript を read するため read は許可、write は禁止

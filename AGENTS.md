@@ -39,7 +39,7 @@ config/
 - 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`
 - 機密ファイルの deny ルールは `config/.config/agent-safehouse/local-overrides.sb`
 - Hermes Agent 専用の deny ルールは `hermes-overrides.sb`（パーソナルディレクトリ・Library 遮断、他エージェント設定の write deny）
-- **`hermes.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` は同じ safehouse 引数を持つ。片方を変更したら必ず他方も同期する**
+- **`hermes.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` の safehouse 引数は原則同期する**。ただし gateway は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
 - Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 
 ## Hermes Agent 固有メモ

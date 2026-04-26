@@ -14,7 +14,7 @@ args=(
   --env-pass=TERM_PROGRAM
   --env-pass=AGENT_BROWSER_ARGS
   --env-pass=AGENT_BROWSER_PROFILE
-  --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard
+  --enable=macos-gui,ssh,agent-browser,docker
 )
 
 # dotfiles を read-write で許可（__safehouse_args では ro だが Hermes Agent は rw）
