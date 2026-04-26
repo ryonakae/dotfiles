@@ -252,6 +252,8 @@ hermes-gateway stop
 cd ~/.hermes/services && docker compose down
 ```
 
+**重要**: `hermes-gateway stop` / `restart` は、launchd の `bootout` を実行する前に `hermes gateway stop` で正規シャットダウンを通します。これは hindsight の vector DB 破損を防ぐためのものです（launchd の SIGTERM/SIGKILL だけではクリーンアップが不完全になる可能性があるため）。
+
 ### Open WebUI の初期設定
 
 初回 `http://localhost:8787` にアクセスすると admin アカウント作成を求められる（1 人目のユーザーが admin になる）。ログイン後、モデルドロップダウンに **hermes-agent** が出れば疎通 OK。

@@ -11,6 +11,8 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
                 return 1
             end
         case stop
+            # bootout の SIGTERM/SIGKILL で DB が壊れないよう、先に正規シャットダウンを通す
+            hermes gateway stop
             if launchctl bootout $domain/ai.hermes.gateway
                 set_color green; echo "hermes-gateway: stopped"; set_color normal
             else
@@ -18,6 +20,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
                 return 1
             end
         case restart
+            hermes gateway stop 2>/dev/null
             launchctl bootout $domain/ai.hermes.gateway 2>/dev/null
             if launchctl bootstrap $domain $plist
                 set_color green; echo "hermes-gateway: restarted"; set_color normal
