@@ -18,7 +18,7 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     set -a safehouse_args --add-dirs-ro="/Applications/Docker.app"
     set -a safehouse_args --add-dirs-ro="$HOME/.local/share/opencode"
 
-    # Hermes Agent 専用 deny ルール
+    # Hermes Agent 専用オーバーライド
     set -l hermes_overrides "$HOME/.config/agent-safehouse/hermes-overrides.sb"
     if test -f "$hermes_overrides"
         set -a safehouse_args --append-profile="$hermes_overrides"

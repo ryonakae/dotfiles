@@ -41,7 +41,7 @@ args+=(
   --add-dirs-ro="$HOME/.local/share/opencode"
 )
 
-# Hermes Agent 専用 deny ルール
+# Hermes Agent 専用オーバーライド
 [ -f "$HERMES_OVERRIDES" ] && args+=(--append-profile="$HERMES_OVERRIDES")
 
 # agent-safehouse 内で Chrome の内側 sandbox 初期化が失敗するため、
