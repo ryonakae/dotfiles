@@ -43,15 +43,9 @@
     (home-literal "/.gemini/oauth_creds.json")
 )
 
-;; local-overrides.sb で一律 deny された Hermes Agent 固有パスを再許可
-(allow file-read*
-    (home-literal "/.hermes/.env")
-    (home-subpath "/.hermes/secrets")
-)
-
-;; Google Workspace CLI の credential store (readonly スコープ専用)。
-;; gws が credentials.json / .encryption_key 等を書き込むため、
-;; local-overrides.sb の機密パターン deny を上書きして rw を再付与する。
+;; Hermes Agent は自己改善で hooks/cron/automations/skills を書き換える設計のため、
+;; ~/.hermes 配下は local-overrides.sb の汎用 deny（.env / secrets / credentials.json 等）を
+;; 上書きして rw を全面許可する。信頼境界は ~/.hermes の内側に閉じる前提。
 (allow file-read* file-write*
-    (home-subpath "/.hermes/gws")
+    (home-subpath "/.hermes")
 )
