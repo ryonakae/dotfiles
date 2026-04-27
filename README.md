@@ -222,7 +222,7 @@ open http://localhost:8787  # open-webui（初回は admin アカウント作成
 hermes memory status        # Provider: hindsight / Status: available
 ```
 
-ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh`。
+ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh`。hermes-gateway が git push などで SSH 秘密鍵を使うため、safehouse ポリシーを通じて SSH_AUTH_SOCK 環境変数を引き継いでいる。
 
 ### アップデート
 

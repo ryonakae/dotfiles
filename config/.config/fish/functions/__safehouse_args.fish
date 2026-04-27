@@ -13,6 +13,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
     set -l overrides "$HOME/.config/agent-safehouse/local-overrides.sb"
 
     # shell で export 済みの値は既定では落ちるので、必要な秘密と非機密の挙動制御だけを明示的に通す。
+    # SSH_AUTH_SOCK は git push 等で ssh-agent (Keychain 経由) を使うために必要。
     # terminal-notifier（Cocoa アプリ）が macOS 通知センターと通信するための Mach サービスを許可。
     set -l args \
         --workdir="$workdir" \
@@ -22,6 +23,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=TERM_PROGRAM \
         --env-pass=AGENT_BROWSER_ARGS \
         --env-pass=AGENT_BROWSER_PROFILE \
+        --env-pass=SSH_AUTH_SOCK \
         --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard
 
     # dotfiles 配下への symlink を他 repo からでも辿れるように、常時 read-only で足す。

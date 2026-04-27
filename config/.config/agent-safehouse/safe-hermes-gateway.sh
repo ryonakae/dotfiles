@@ -14,6 +14,7 @@ args=(
   --env-pass=TERM_PROGRAM
   --env-pass=AGENT_BROWSER_ARGS
   --env-pass=AGENT_BROWSER_PROFILE
+  --env-pass=SSH_AUTH_SOCK
   --enable=macos-gui,ssh,agent-browser,docker
 )
 
