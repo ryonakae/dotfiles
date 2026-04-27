@@ -24,6 +24,11 @@
     (home-literal "/Library/LaunchAgents/ai.hermes.gateway.plist")
 )
 
+;; mise がツール検出キャッシュを書き込むため rw を再許可（WARN ノイズ抑制）
+(allow file-read* file-write*
+    (home-subpath "/Library/Caches/mise")
+)
+
 ;; 他エージェントの設定 — multi-agent-transcript-sync が transcript を read するため read は許可、write は禁止
 (deny file-write*
     (home-subpath "/.claude")
