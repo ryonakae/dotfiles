@@ -31,12 +31,6 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     set -fx AGENT_BROWSER_ARGS "--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
     set -fx AGENT_BROWSER_PROFILE "$HOME/.hermes/chrome-profile"
 
-    # safehouse は既定で env を sanitize するため、TUI 起動フラグは --env-pass で明示的に通す。
-    if test (count $argv) -eq 0
-        set -a safehouse_args --env-pass=HERMES_TUI
-        set -fx HERMES_TUI 1
-    end
-
     command safehouse $safehouse_args -- hermes $argv
     return $status
 end
