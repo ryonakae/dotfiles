@@ -16,6 +16,9 @@ args=(
   --env-pass=AGENT_BROWSER_PROFILE
   --env-pass=UV_CACHE_DIR
   --env-pass=PIP_CACHE_DIR
+  --env-pass=GOOGLE_WORKSPACE_CLI_CONFIG_DIR
+  --env-pass=GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND
+  --env-pass=SSL_CERT_FILE
   --env-pass=SSH_AUTH_SOCK
   --enable=macos-gui,ssh,agent-browser,docker
 )
@@ -57,5 +60,10 @@ export AGENT_BROWSER_PROFILE="$HOME/.hermes/chrome-profile"
 # rw 全面許可されている ~/.hermes 配下に隔離する。
 export UV_CACHE_DIR="$HOME/.hermes/cache/uv"
 export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"
+
+# Google Workspace CLI (gws) — 自律エージェント用 credential store を ~/.config/gws と分離する。
+export GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws"
+export GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file
+export SSL_CERT_FILE=/etc/ssl/cert.pem
 
 exec safehouse "${args[@]}" -- hermes gateway run

@@ -37,6 +37,12 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     set -fx PIP_CACHE_DIR "$HOME/.hermes/cache/pip"
     set -a safehouse_args --env-pass=UV_CACHE_DIR --env-pass=PIP_CACHE_DIR
 
+    # Google Workspace CLI (gws) — 自律エージェント用 credential store を ~/.config/gws と分離する。
+    set -fx GOOGLE_WORKSPACE_CLI_CONFIG_DIR "$HOME/.hermes/gws"
+    set -fx GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND file
+    set -fx SSL_CERT_FILE /etc/ssl/cert.pem
+    set -a safehouse_args --env-pass=GOOGLE_WORKSPACE_CLI_CONFIG_DIR --env-pass=GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND --env-pass=SSL_CERT_FILE
+
     command safehouse $safehouse_args -- hermes $argv
     return $status
 end

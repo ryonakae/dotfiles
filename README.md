@@ -296,28 +296,11 @@ cd ~/.hermes/services && docker compose up -d --force-recreate open-webui
 
 Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.config/gws`) とは別の credential store (`~/.hermes/gws`) を発行する。自律エージェントに人間と同等の権限を渡さないための分離。
 
+`GOOGLE_WORKSPACE_CLI_CONFIG_DIR` / `GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND` / `SSL_CERT_FILE` は `hermes.fish` と `safe-hermes-gateway.sh` で sandbox 内側に渡しているので、マシン側の作業は初回ログインだけ。
+
 セットアップ（マシンごとに 1 回）:
 
-1. `~/.hermes/.env` に以下を追記。
-
-   ```sh
-   # Google Workspace CLI (gws)
-   GOOGLE_WORKSPACE_CLI_CONFIG_DIR=${HOME}/.hermes/gws
-   GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file
-   SSL_CERT_FILE=/etc/ssl/cert.pem
-   ```
-
-2. `~/.hermes/config.yaml` の `terminal.env_passthrough` に上記 3 変数を追加。
-
-   ```yaml
-   terminal:
-     env_passthrough:
-       - GOOGLE_WORKSPACE_CLI_CONFIG_DIR
-       - GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND
-       - SSL_CERT_FILE
-   ```
-
-3. 初回ログインは sandbox 外の素のターミナルで人間が実行する。
+1. 初回ログインは sandbox 外の素のターミナルで人間が実行する。
 
    ```sh
    env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
@@ -325,7 +308,7 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
        gws auth login
    ```
 
-4. `hermes-gateway restart` で反映。
+2. `hermes-gateway restart` で反映。
 
 以降の token refresh は Hermes 内で完結する。人間が `gws` を直接叩く場合は env を付けずに実行すれば `~/.config/gws/` のフルスコープ credential を使う。
 
