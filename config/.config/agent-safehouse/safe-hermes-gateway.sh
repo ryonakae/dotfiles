@@ -14,6 +14,8 @@ args=(
   --env-pass=TERM_PROGRAM
   --env-pass=AGENT_BROWSER_ARGS
   --env-pass=AGENT_BROWSER_PROFILE
+  --env-pass=UV_CACHE_DIR
+  --env-pass=PIP_CACHE_DIR
   --env-pass=SSH_AUTH_SOCK
   --enable=macos-gui,ssh,agent-browser,docker
 )
@@ -50,5 +52,10 @@ args+=(
 # agent-browser の正規オプションで専用 profile directory を指定する。
 export AGENT_BROWSER_ARGS="--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
 export AGENT_BROWSER_PROFILE="$HOME/.hermes/chrome-profile"
+
+# uv/pip の既定 cache (~/.cache 配下) は sandbox の write deny に引っ掛かるため、
+# rw 全面許可されている ~/.hermes 配下に隔離する。
+export UV_CACHE_DIR="$HOME/.hermes/cache/uv"
+export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"
 
 exec safehouse "${args[@]}" -- hermes gateway run
