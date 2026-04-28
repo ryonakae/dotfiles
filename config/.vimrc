@@ -108,8 +108,7 @@ set nowritebackup
 set nobackup
 
 " OSのクリップボードを使う
-set clipboard+=unnamed
-set clipboard=unnamed
+set clipboard=unnamedplus,unnamed
 
 " ペースト時にインデントさせない
 " set paste
