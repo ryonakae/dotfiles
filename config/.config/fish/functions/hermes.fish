@@ -31,6 +31,12 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     set -fx AGENT_BROWSER_ARGS "--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
     set -fx AGENT_BROWSER_PROFILE "$HOME/.hermes/chrome-profile"
 
+    # uv/pip の既定 cache (~/.cache 配下) は sandbox の write deny に引っ掛かるため、
+    # rw 全面許可されている ~/.hermes 配下に隔離する。
+    set -fx UV_CACHE_DIR "$HOME/.hermes/cache/uv"
+    set -fx PIP_CACHE_DIR "$HOME/.hermes/cache/pip"
+    set -a safehouse_args --env-pass=UV_CACHE_DIR --env-pass=PIP_CACHE_DIR
+
     command safehouse $safehouse_args -- hermes $argv
     return $status
 end
