@@ -43,6 +43,11 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     set -fx SSL_CERT_FILE /etc/ssl/cert.pem
     set -a safehouse_args --env-pass=GOOGLE_WORKSPACE_CLI_CONFIG_DIR --env-pass=GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND --env-pass=SSL_CERT_FILE
 
+    # Hermes 公式に runtime 識別 marker が無いため、skill (commit-push など) が
+    # 「Hermes セッション内」と判別できるよう独自 marker を子プロセスへ伝搬する。
+    set -fx HERMES_AGENT 1
+    set -a safehouse_args --env-pass=HERMES_AGENT
+
     command safehouse $safehouse_args -- hermes $argv
     return $status
 end

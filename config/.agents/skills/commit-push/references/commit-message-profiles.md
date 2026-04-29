@@ -33,6 +33,13 @@
 - subject/body 追加ルール: なし
 - 適用例: Gemini CLI から共通 skill 相当の workflow を実行したとき
 
+## `hermes`
+
+- 適用条件: 環境変数 `HERMES_AGENT=1` が設定されている
+- commit trailer: なし
+- subject/body 追加ルール: なし
+- 適用例: Hermes Agent のセッション中に `/commit-push` を実行したとき
+
 ## `codex`
 
 - 適用条件: env marker では確定できないが、実行中エージェントが自分を Codex と確信できる

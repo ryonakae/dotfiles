@@ -20,6 +20,7 @@ args=(
   --env-pass=GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND
   --env-pass=SSL_CERT_FILE
   --env-pass=SSH_AUTH_SOCK
+  --env-pass=HERMES_AGENT
   --enable=macos-gui,ssh,agent-browser,docker
 )
 
@@ -65,5 +66,9 @@ export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"
 export GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws"
 export GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file
 export SSL_CERT_FILE=/etc/ssl/cert.pem
+
+# Hermes 公式に runtime 識別 marker が無いため、skill (commit-push など) が
+# 「Hermes セッション内」と判別できるよう独自 marker を子プロセスへ伝搬する。
+export HERMES_AGENT=1
 
 exec safehouse "${args[@]}" -- hermes gateway run
