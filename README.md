@@ -226,12 +226,13 @@ hermes memory status        # Provider: hindsight / Status: available
 
 ### アップデート
 
-`hermes update` は内部で git ssh を使うため agent-safehouse にブロックされる。safehouse を迂回する `command` 経由で実行する。
+`hermes update` は内部で git ssh を使うため agent-safehouse にブロックされる。`hermes-gateway update` でこれを透過的に処理し、gateway の停止・再起動も含めて一括実行される。
 
 ```sh
-command hermes update
-hermes-gateway restart
+hermes-gateway update
 ```
+
+複数の引数がある場合は末尾へ渡す（例：`hermes-gateway update --check`）。
 
 ### 再実行時の注意
 
@@ -243,9 +244,9 @@ hermes-gateway restart
 `hermes-gateway` 関数（`config/.config/fish/functions/hermes-gateway.fish`）で gateway を、`docker compose` で Docker サービスを操作する。
 
 ```sh
-hermes-gateway {start|stop|restart|status}      # gateway
+hermes-gateway {start|stop|restart|status|update}  # gateway
 
-cd ~/.hermes/services && docker compose restart # Docker サービスまとめて再起動
+cd ~/.hermes/services && docker compose restart    # Docker サービスまとめて再起動
 
 # 全部停止
 hermes-gateway stop
