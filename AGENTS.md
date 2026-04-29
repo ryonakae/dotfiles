@@ -40,7 +40,7 @@ config/
 - 機密ファイルの deny ルールは `config/.config/agent-safehouse/local-overrides.sb`
 - Hermes Agent 専用のオーバーライドは `hermes-overrides.sb`（パーソナルディレクトリ・Library 遮断、他エージェント設定の write deny、`~/.hermes` 配下は自己改善のため rw 全面許可）
 - **`hermes.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` の safehouse 引数は原則同期する**。ただし gateway は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
-- Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
+- Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status|update}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 
 ## Hermes Agent 固有メモ
 

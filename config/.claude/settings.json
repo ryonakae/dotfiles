@@ -38,5 +38,6 @@
   "spinnerTipsEnabled": false,
   "effortLevel": "high",
   "showThinkingSummaries": true,
-  "skipDangerousModePermissionPrompt": true
+  "skipDangerousModePermissionPrompt": true,
+  "skipAutoPermissionPrompt": true
 }
