@@ -154,7 +154,7 @@ $ brew doctor
 
 ## Hermes Agent
 
-gateway はホスト（launchd + agent-safehouse）で動かし、hindsight / dashboard / open-webui は `~/.hermes/services/docker-compose.yml` で一括管理する。
+gateway はホスト（launchd + agent-safehouse）で動かし、hindsight / dashboard は `~/.hermes/services/docker-compose.yml` で一括管理する。`~/.hermes/hindsight/` は Hermes 本体と Docker の双方が読み書きする共有領域。
 
 ### 構成
 
@@ -163,21 +163,16 @@ gateway はホスト（launchd + agent-safehouse）で動かし、hindsight / da
 | gateway | ホスト (launchd + safehouse) | 8642 | Slack / cron / API server |
 | hindsight | Docker | 8888 | memory provider (vector DB) |
 | dashboard | Docker | 9119 | gateway モニタリング |
-| open-webui | Docker | 8787 | ブラウザチャット UI |
-
-open-webui は `/v1/chat/completions` 経由でホスト gateway を叩くので、agent 実行は safehouse 配下に収まる。[hermes-webui](https://github.com/nesquena/hermes-webui) を使わないのは、コンテナ内で agent を独自起動して safehouse の deny ルールを迂回してしまうため。UI として採用しているのは [Open WebUI](https://github.com/open-webui/open-webui)。
 
 ### dotfiles で管理するファイル
 
 `config/.hermes/` 以下を `create-symlink.sh` で `~/.hermes/` に配置する。
 
 - `SOUL.md` — エージェント人格定義
-- `services/docker-compose.yml` — Docker サービス構成
-- `services/.env.example` — docker compose 用 env テンプレート（`API_SERVER_KEY` 等）
-- `services/hindsight/config.json` — hindsight クライアント設定
-- `services/hindsight/.env.example` — hindsight LLM 設定テンプレート
+- `services/docker-compose.yml` — Docker サービス構成（hindsight + dashboard）
+- `hindsight/.env.example` — hindsight LLM 設定テンプレート
 
-`.env` 実体は `copy.sh` で `.env.example` から生成し、`.gitignore` 対象。編集は dotfiles 側で行う。
+`.env` 実体は `copy.sh` で `.env.example` から生成し、`.gitignore` 対象。編集は dotfiles 側で行う。`~/.hermes/hindsight/config.json` は `hermes memory setup` が自動生成するので dotfiles では管理しない。
 
 ### セットアップ
 
@@ -216,9 +211,7 @@ hermes-gateway start
 sleep 30
 curl -sf http://localhost:8642/health && echo "gateway OK"
 curl -sf http://localhost:8888/health && echo "hindsight OK"
-curl -sf http://localhost:8787/ > /dev/null && echo "open-webui OK"
 open http://localhost:9119  # dashboard
-open http://localhost:8787  # open-webui（初回は admin アカウント作成）
 hermes memory status        # Provider: hindsight / Status: available
 ```
 
@@ -255,42 +248,17 @@ cd ~/.hermes/services && docker compose down
 
 **重要**: `hermes-gateway stop` / `restart` は、launchd の `bootout` を実行する前に `hermes gateway stop` で正規シャットダウンを通します。これは hindsight の vector DB 破損を防ぐためのものです（launchd の SIGTERM/SIGKILL だけではクリーンアップが不完全になる可能性があるため）。
 
-### Open WebUI の初期設定
-
-初回 `http://localhost:8787` にアクセスすると admin アカウント作成を求められる（1 人目のユーザーが admin になる）。ログイン後、モデルドロップダウンに **hermes-agent** が出れば疎通 OK。
-
-接続先は起動時の環境変数 `OPENAI_API_BASE_URL=http://host.docker.internal:8642/v1` で自動設定されるため、Admin Settings での手動設定は不要。変更したい場合は Admin UI か、volume 削除（`docker volume rm services_open-webui`）で初期化する。
-
 ### Tailscale serve で外部公開
 
 | サービス | ローカル port |
 |---|---|
-| open-webui | 8787 |
 | dashboard | 9119 |
 | hindsight dashboard | 9999 |
 
 ```sh
-tailscale serve --bg --https=8787 http://127.0.0.1:8787
 tailscale serve --bg --https=9119 http://127.0.0.1:9119
 tailscale serve --bg --https=9999 http://127.0.0.1:9999
 tailscale serve status
-```
-
-### Bearer 認証キー（任意）
-
-gateway API を `127.0.0.1` bind だけで使うなら不要。tailscale serve 越しのアクセスに対する多層防御として Bearer key を設定できる。
-
-```sh
-# 1. キー生成
-openssl rand -hex 32
-
-# 2. 両方の .env に同じ値を書く
-#    ~/.hermes/.env               → API_SERVER_KEY=<値>（hermes 側で受理）
-#    ~/.hermes/services/.env      → 同じ値（open-webui から送る）
-
-# 3. 反映
-hermes-gateway restart
-cd ~/.hermes/services && docker compose up -d --force-recreate open-webui
 ```
 
 ### Google Workspace CLI (`gws`) 連携
