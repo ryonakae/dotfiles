@@ -8,7 +8,7 @@ macOS 向け設定ファイル管理リポジトリ。`config/` 配下を `$HOME
 - `config/<path>` が `~/<path>` にそのまま対応する。例:
   - `config/.config/fish/functions/dc.fish` → `~/.config/fish/functions/dc.fish`
   - `config/.claude/settings.json` → `~/.claude/settings.json`
-- `*.example` パターン: マシン固有・機密を含むファイルは `.example` をリポジトリ管理し、実ファイルは `.gitignore` で除外（`brew/Brewfile`, `config/.config/fish/config.fish`, `~/.hermes/services/.env` など）
+- `*.example` パターン: マシン固有・機密を含むファイルは `.example` をリポジトリ管理し、実ファイルは `.gitignore` で除外（`brew/Brewfile`, `config/.config/fish/config.fish`, `~/.hermes/hindsight/.env` など）
 - 機密情報（API キー、トークン等）を `*.example` に含めない
 - env 変数の置き場: マシン非依存の設計定数は wrapper（fish 関数 / shell スクリプト）に直書き、機密・マシン固有値は `.env`（実体は `.gitignore`）に分離する
 - EditorConfig: スペース 2、LF、UTF-8
@@ -46,7 +46,7 @@ config/
 
 運用・セットアップ・トラブルシュートは `README.md` の「Hermes Agent」節を参照。
 
-- dotfiles で管理するのは 5 ファイルのみ: `SOUL.md`, `services/docker-compose.yml`, `services/.env.example`, `services/hindsight/config.json`, `services/hindsight/.env.example`
+- dotfiles で管理するのは 3 ファイルのみ: `SOUL.md`, `services/docker-compose.yml`, `hindsight/.env.example`
 - 管理対象外: `config.yaml`（クレデンシャル）、`hooks/` / `cron/` / `automations/` / `skills/hermes-custom/`（自己改善で書き換わる）、memory / session / 認証系全般
 - `hermes gateway install --force` / `start` / `setup` の一部分岐は plist を再生成するため、実行後は README 「Hermes Agent › セットアップ」ステップ 3 で ProgramArguments を safehouse ラッパーに差し替え直す
 

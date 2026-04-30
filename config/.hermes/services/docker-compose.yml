@@ -7,14 +7,14 @@ services:
       - "127.0.0.1:8888:8888"
       - "127.0.0.1:9999:9999"
     env_file:
-      - ./hindsight/.env
+      - $HOME/.hermes/hindsight/.env
     environment:
       HINDSIGHT_API_DB_POOL_MAX_SIZE: "30"
       HINDSIGHT_API_WORKER_MAX_SLOTS: "8"
       HINDSIGHT_API_LLM_MAX_CONCURRENT: "16"
     volumes:
-      - ./hindsight/data:/home/hindsight/.pg0
-      - ./hindsight/codex-auth:/home/hindsight/.codex
+      - $HOME/.hermes/hindsight/data:/home/hindsight/.pg0
+      - $HOME/.hermes/hindsight/codex-auth:/home/hindsight/.codex
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8888/health"]
       interval: 30s
@@ -36,6 +36,9 @@ services:
       - "127.0.0.1:9119:9119"
     volumes:
       - $HOME/.hermes:/opt/data
+      # SOUL.md は dotfiles から symlink されているが、コンテナ内では target が
+      # 解決できず dangling 判定される。実体ファイルを直接 bind mount して回避する。
+      - $HOME/dotfiles/config/.hermes/SOUL.md:/opt/data/SOUL.md:ro
     environment:
       GATEWAY_HEALTH_URL: http://host.docker.internal:8642
     depends_on:
@@ -46,20 +49,3 @@ services:
         limits:
           memory: 512M
           cpus: "0.5"
-
-  open-webui:
-    image: ghcr.io/open-webui/open-webui:main
-    container_name: open-webui
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:8787:8080"
-    volumes:
-      - open-webui:/app/backend/data
-    environment:
-      OPENAI_API_BASE_URL: http://host.docker.internal:8642/v1
-      OPENAI_API_KEY: ${API_SERVER_KEY:-not-needed}
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
-volumes:
-  open-webui:
