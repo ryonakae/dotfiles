@@ -29,14 +29,10 @@
     (home-subpath "/Library/Caches/mise")
 )
 
-;; 他エージェントの設定 — multi-agent-transcript-sync が transcript を read するため read は許可、write は禁止
-(deny file-write*
-    (home-subpath "/.claude")
-    (home-subpath "/.codex")
-    (home-subpath "/.gemini")
-)
+;; 他エージェントの設定 — Hermes が skills 配布などで書き込む必要があるため rw 許可
+;; （認証トークンは下の deny で個別に保護する）
 
-;; 他エージェントの認証トークン — transcript パスとは別系統なので read も含めて明示 deny
+;; 他エージェントの認証トークン — credentials は Hermes から触らせない
 (deny file-read* file-write*
     (home-literal "/.claude/.credentials.json")
     (home-literal "/.codex/auth.json")
