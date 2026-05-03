@@ -24,7 +24,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=AGENT_BROWSER_ARGS \
         --env-pass=AGENT_BROWSER_PROFILE \
         --env-pass=SSH_AUTH_SOCK \
-        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard
+        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents
 
     # dotfiles 配下への symlink を他 repo からでも辿れるように、常時 read-only で足す。
     if test -d "$dotfiles_dir"

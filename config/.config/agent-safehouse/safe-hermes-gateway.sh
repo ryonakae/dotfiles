@@ -21,7 +21,7 @@ args=(
   --env-pass=SSL_CERT_FILE
   --env-pass=SSH_AUTH_SOCK
   --env-pass=HERMES_AGENT
-  --enable=macos-gui,ssh,agent-browser,docker
+  --enable=macos-gui,ssh,agent-browser,docker,all-agents
 )
 
 # dotfiles を read-write で許可（__safehouse_args では ro だが Hermes Agent は rw）
