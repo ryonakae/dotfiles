@@ -29,15 +29,9 @@
     (home-subpath "/Library/Caches/mise")
 )
 
-;; 他エージェントの設定 — Hermes が skills 配布などで書き込む必要があるため rw 許可
-;; （認証トークンは下の deny で個別に保護する）
-
-;; 他エージェントの認証トークン — credentials は Hermes から触らせない
-(deny file-read* file-write*
-    (home-literal "/.claude/.credentials.json")
-    (home-literal "/.codex/auth.json")
-    (home-literal "/.gemini/oauth_creds.json")
-)
+;; 他エージェントの設定・認証トークンは --enable=all-agents 側で rw 許可される。
+;; cross-agent 実行（Hermes が claude / codex / gemini を呼ぶ等）で credential が
+;; 必要になるため、ここでは追加の deny を置かない。
 
 ;; Hermes Agent は自己改善で hooks/cron/automations/skills を書き換える設計のため、
 ;; ~/.hermes 配下は local-overrides.sb の汎用 deny（.env / secrets / credentials.json 等）を

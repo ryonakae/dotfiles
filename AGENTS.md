@@ -36,9 +36,9 @@ config/
 - 共通指示書は `config/.agents/AGENTS.md`（言語・Python 実行・Web 検索ルール等）。`.claude/CLAUDE.md` と `.codex/AGENTS.md` から symlink されている。`.gemini/GEMINI.md` は別実体なので、共通ルール変更時は個別に同期する
 - スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が各エージェントの `skills/` ディレクトリへ symlink する
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
-- 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`
+- 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--enable=all-agents` で他エージェントの設定ディレクトリ（`~/.claude`, `~/.claude.json`, `~/.codex`, `~/.gemini` など）への rw を一括許可している（claude→codex のような cross-agent 実行を想定）
 - 機密ファイルの deny ルールは `config/.config/agent-safehouse/local-overrides.sb`
-- Hermes Agent 専用のオーバーライドは `hermes-overrides.sb`（パーソナルディレクトリ・Library 遮断、他エージェント設定は読み書き許可ただし認証トークンのみ deny、`~/.hermes` 配下は自己改善のため rw 全面許可）
+- Hermes Agent 専用のオーバーライドは `hermes-overrides.sb`（パーソナルディレクトリ・Library 遮断、`~/.hermes` 配下は自己改善のため rw 全面許可）
 - **`hermes.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` の safehouse 引数は原則同期する**。ただし gateway は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
 - Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status|update}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 

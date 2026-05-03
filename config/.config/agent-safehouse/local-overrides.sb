@@ -62,19 +62,13 @@
 )
 
 ;; 読み込み/書き込みを許可
+;; 各エージェントの設定ディレクトリ（~/.claude, ~/.codex, ~/.gemini など）は
+;; --enable=all-agents 経由の 60-agents/*.sb で rw 許可されるため、ここでは
+;; safehouse 同梱プロファイルが扱わないものだけを書く。
 (allow file-read* file-write*
     ;; ccstatusline
     (home-subpath "/.config/ccstatusline")
     (home-subpath "/.cache/ccstatusline")
-
-    ;; Claude Code
-    (home-subpath "/.claude")
-
-    ;; Codex
-    (home-subpath "/.codex")
-
-    ;; Gemini CLI
-    (home-subpath "/.gemini")
 )
 
 ;; 読み込みのみを許可
