@@ -29,6 +29,15 @@
     (home-subpath "/Library/Caches/mise")
 )
 
+;; agent-browser が Playwright の chromium build を検出・自動更新するため。
+;; ここを開けないと tools/browser_tool.py::_chromium_installed() が False になり、
+;; browser_* tool schema がモデルに露出しない。
+;; 実 Chrome は使わず Chrome for Testing 経由にすることで、ユーザーの Chrome
+;; プロファイル（~/Library/Application Support/Google/Chrome）とは分離したまま。
+(allow file-read* file-write*
+    (home-subpath "/Library/Caches/ms-playwright")
+)
+
 ;; 他エージェントの設定・認証トークンは --enable=all-agents 側で rw 許可される。
 ;; cross-agent 実行（Hermes が claude / codex / gemini を呼ぶ等）で credential が
 ;; 必要になるため、ここでは追加の deny を置かない。
