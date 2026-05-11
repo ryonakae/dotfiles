@@ -11,4 +11,4 @@
 - ライブラリ/API のドキュメント参照は `find-docs` スキルを使う
 - Web 検索時は一次情報（公式ドキュメント、API リファレンス）を優先する
 - Web ページ取得が 403 で失敗したら `agent-browser` を使う
-  - Chrome がサンドボックス制限（`CDP response channel closed`）で起動失敗する場合は `--args "--no-sandbox"` を付ける
+- `gws` CLI は人間の Google アカウントを共有する。Gmail / Calendar / Drive の削除など破壊的操作は実行前にユーザー確認を取る

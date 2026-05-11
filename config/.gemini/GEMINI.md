@@ -27,6 +27,10 @@
 
 - Webページの内容を取得する場合、コーディングエージェントに標準で内蔵されている `WebSearch`, `WebFetch` のようなツールだと `403` エラーで失敗する場合がある。その場合は `agent-browser` を使う
 
+## Google Workspace CLI (gws)
+
+- `gws` CLI は人間の Google アカウントを共有する。Gmail / Calendar / Drive の削除など破壊的操作は実行前にユーザー確認を取る
+
 ## コミットメッセージの生成
 
 - 返答・コミットメッセージは日本語
