@@ -25,9 +25,9 @@ disable-model-invocation: true
    - doc-updater スキルを読んで従う
    - 対象は staged change のみ
    - commit/push は行わない
-   - 更新したら git add する
+   - `git add` は行わず、更新したファイルのパス一覧を返す
    サブエージェントが使えない場合は doc-updater スキルを inline で実行する。
-4. 更新不要なら次に進む
+4. doc-updater が更新したファイルがあれば `git add <file...>` でステージングに追加する。更新不要なら次に進む
 
 ### ステップ3: コミットメッセージ生成 & push
 
