@@ -9,12 +9,14 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         set workdir (pwd -P)
     end
 
-    set -l dotfiles_dir "$HOME/dotfiles"
     set -l overrides "$HOME/.config/agent-safehouse/local-overrides.sb"
+
+    # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
+    set -fx HISTFILE /dev/null
 
     # shell で export 済みの値は既定では落ちるので、必要な秘密と非機密の挙動制御だけを明示的に通す。
     # SSH_AUTH_SOCK は git push 等で ssh-agent (Keychain 経由) を使うために必要。
-    # terminal-notifier（Cocoa アプリ）が macOS 通知センターと通信するための Mach サービスを許可。
+    # terminal-notifier (Cocoa アプリ) が macOS 通知センターと通信するための Mach サービスを許可。
     set -l args \
         --workdir="$workdir" \
         --env-pass=CONTEXT7_API_KEY \
@@ -24,11 +26,27 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=AGENT_BROWSER_ARGS \
         --env-pass=AGENT_BROWSER_PROFILE \
         --env-pass=SSH_AUTH_SOCK \
-        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents
+        --env-pass=HISTFILE \
+        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents,wide-read,keychain
 
-    # dotfiles 配下への symlink を他 repo からでも辿れるように、常時 read-only で足す。
-    if test -d "$dotfiles_dir"
-        set -a args --add-dirs-ro="$dotfiles_dir"
+    # cwd 外の頻出 path を rw で開ける。--add-dirs=$HOME だと safehouse 既定の
+    # ~/.ssh deny 等を後勝ちで上書きしてしまうので、top-level ごとに列挙する。
+    # safehouse の 30-toolchains / all-agents で既に rw されている path (~/.bun, ~/.claude 等) は重複指定しない。
+    for dir in \
+        "$HOME/.config" \
+        "$HOME/.local" \
+        "$HOME/.cache" \
+        "$HOME/Library" \
+        "$HOME/dotfiles" \
+        "$HOME/.hermes"
+        if test -d "$dir"
+            set -a args --add-dirs="$dir"
+        end
+    end
+
+    # 作業 repo 親 dir はマシンによって無い場合がある。
+    if test -d "$HOME/Dev"
+        set -a args --add-dirs="$HOME/Dev"
     end
 
     # 機密 deny は固定ルールとして .sb 側に寄せ、wrapper では読み込み順だけを管理する。

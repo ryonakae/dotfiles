@@ -61,6 +61,31 @@
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
 
+;; 個人ユーザーデータ — エージェントが触る理由がない。
+;; --add-dirs=$HOME 直接指定はしていないが、Library 等を rw 開放しているのと
+;; 対称性を保つため、HOME 直下の personal directory はここで明示的に deny する。
+(deny file-read* file-write*
+    (home-subpath "/Desktop")
+    (home-subpath "/Downloads")
+    (home-subpath "/Documents")
+    (home-subpath "/Pictures")
+    (home-subpath "/Music")
+    (home-subpath "/Movies")
+)
+
+;; ホスト上の各種クレデンシャル。wide-read で / 全 read 開放しているため、
+;; 列挙ベースで個別に塞ぐ。~/.ssh は safehouse default で deny 済みなので含めない。
+(deny file-read* file-write*
+    (home-subpath "/.gnupg")
+    (home-literal "/.aws/credentials")
+    (home-literal "/.aws/config")
+    (home-literal "/.netrc")
+    (home-literal "/.git-credentials")
+    (home-literal "/.config/gh/hosts.yml")
+    (home-literal "/.kube/config")
+    (home-literal "/.docker/config.json")
+)
+
 ;; 読み込み/書き込みを許可
 ;; 各エージェントの設定ディレクトリ（~/.claude, ~/.codex, ~/.gemini など）は
 ;; --enable=all-agents 経由の 60-agents/*.sb で rw 許可されるため、ここでは

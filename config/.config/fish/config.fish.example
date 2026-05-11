@@ -39,6 +39,12 @@ set -gx DISABLE_AUTOUPDATER 1
 # Codex
 set -gx CONTEXT7_API_KEY xxxxx
 
+# Agent Safehouse 内で Chrome の内側 sandbox 初期化が失敗するため、
+# agent-browser 経由の Chrome には毎回 --no-sandbox 系を渡す。
+# 全エージェントで 1 つのプロファイルを共有して、人間 Chrome とは分離する。
+set -gx AGENT_BROWSER_ARGS "--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
+set -gx AGENT_BROWSER_PROFILE $HOME/.config/agent-browser/profile
+
 # --- 3. PATH Configuration (Homebrew & Tools) ---
 # Homebrew
 if test -d /opt/homebrew
