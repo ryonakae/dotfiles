@@ -37,9 +37,8 @@ config/
 - スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が各エージェントの `skills/` ディレクトリへ symlink する
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
 - 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--enable=all-agents` で他エージェントの設定ディレクトリ（`~/.claude`, `~/.claude.json`, `~/.codex`, `~/.gemini` など）への rw を一括許可している（claude→codex のような cross-agent 実行を想定）
-- 機密ファイルの deny ルールは `config/.config/agent-safehouse/local-overrides.sb`
-- Hermes Agent 専用のオーバーライドは `hermes-overrides.sb`（パーソナルディレクトリ・Library 遮断、`~/.hermes` 配下は自己改善のため rw 全面許可）
-- **`hermes.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` の safehouse 引数は原則同期する**。ただし gateway は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
+- 機密ファイルの deny ルールと `~/.hermes` の allow は `config/.config/agent-safehouse/local-overrides.sb` に集約。`~/.hermes` は Hermes Agent の workdir かつ信頼境界として、汎用 deny（`.env` 等）を後勝ちで貫通させる
+- **`__safehouse_args.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` の `--add-dirs` / `--enable` リストは原則同期する**。ただし gateway は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
 - Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status|update}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 
 ## Hermes Agent 固有メモ
