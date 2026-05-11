@@ -15,6 +15,7 @@
     "git_status": true,
   },
   "outline_panel": {
+    "dock": "right",
     "button": false,
   },
   "when_closing_with_no_tabs": "platform_default",
@@ -22,6 +23,7 @@
     "provider": "copilot",
   },
   "collaboration_panel": {
+    "dock": "right",
     "button": false,
   },
   "terminal": {
@@ -52,6 +54,7 @@
   "buffer_font_size": 13.0,
   "theme": "Ayu Dark",
   "agent": {
+    "sidebar_side": "left",
     "dock": "right",
     "button": true,
     "default_model": {
