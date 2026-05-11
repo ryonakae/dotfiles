@@ -11,6 +11,12 @@ export HISTFILE=/dev/null
 # 「Hermes セッション内」と判別できるよう独自 marker を子プロセスへ伝搬する。
 export HERMES_AGENT=1
 
+# launchd 起動は fish の config.fish を経由しないため、対話 fish セッションで
+# global export している agent-browser 系の env をここでも明示的に export する。
+# agent-safehouse 内で Chrome の内側 sandbox 初期化が失敗するため --no-sandbox 系を渡す。
+export AGENT_BROWSER_ARGS="--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
+export AGENT_BROWSER_PROFILE="$HOME/.config/agent-browser/profile"
+
 args=(
   --workdir="$HOME/.hermes"
   --env-pass=CONTEXT7_API_KEY
