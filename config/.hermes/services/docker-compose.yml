@@ -9,9 +9,9 @@ services:
     env_file:
       - $HOME/.hermes/hindsight/.env
     environment:
-      HINDSIGHT_API_DB_POOL_MAX_SIZE: "30"
-      HINDSIGHT_API_WORKER_MAX_SLOTS: "8"
-      HINDSIGHT_API_LLM_MAX_CONCURRENT: "16"
+      HINDSIGHT_API_DB_POOL_MAX_SIZE: "20"
+      HINDSIGHT_API_WORKER_MAX_SLOTS: "4"
+      HINDSIGHT_API_LLM_MAX_CONCURRENT: "8"
     volumes:
       - $HOME/.hermes/hindsight/data:/home/hindsight/.pg0
       - $HOME/.hermes/hindsight/codex-auth:/home/hindsight/.codex
