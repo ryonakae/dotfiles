@@ -21,7 +21,7 @@
         "hooks": [
           {
             "type": "agent",
-            "prompt": "コード変更があったのに doc-updater が未実行なら、実行を促してください。\n\n$ARGUMENTS\n\n以下のいずれかなら `{\"ok\": true}`:\n- `stop_hook_active` が true\n- 直前のメッセージが /commit-push の完了報告\n- 直前のメッセージが doc 更新の作業報告\n- コード変更が無い\n- 判断がつかない\n\nそれ以外で「コード変更を伴うタスクが完了し成果を報告している」なら `{\"ok\": false, \"reason\": \"Run the doc-updater skill.\"}`。\n\n制約: 文脈は `last_assistant_message` のみ参照（`transcript_path` は読まない）。コード変更の有無が不明なら `git diff HEAD --name-only` で確認。`StructuredOutput` ツールで返す。",
+            "prompt": "以下のいずれかなら `{\"ok\": true}`:\n- `stop_hook_active` が true\n- 直前のメッセージが /commit-push の完了報告\n- 直前のメッセージが doc 更新の作業報告\n- コード変更が無い\n- 全変更ファイルが *.md またはテストファイル\n- 判断がつかない\n\nそれ以外で「コード変更を伴うタスクが完了し成果を報告している」なら `{\"ok\": false, \"reason\": \"Run the doc-updater skill.\"}`。\n\n制約: 文脈は `last_assistant_message` のみ参照（`transcript_path` は読まない）。判断材料が不足する場合のみ `git diff HEAD --name-only` を実行。`StructuredOutput` ツールで返す。",
             "timeout": 60,
             "model": "claude-sonnet-4-6"
           }
