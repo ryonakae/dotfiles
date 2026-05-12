@@ -7,6 +7,13 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "agent_servers": {},
+  "language_models": {
+    "opencode": {
+      "show_free_models": true,
+      "show_zen_models": false,
+    },
+  },
   "project_panel": {
     "dock": "left",
     "git_status": true,
@@ -20,6 +27,12 @@
   },
   "when_closing_with_no_tabs": "platform_default",
   "edit_predictions": {
+    "allow_data_collection": "no",
+    "open_ai_compatible_api": {
+      "prompt_format": "deepseek_coder",
+      "model": "deepseek-v4-flash",
+      "api_url": "https://opencode.ai/zen/go/v1/chat/completions",
+    },
     "provider": "copilot",
   },
   "collaboration_panel": {
@@ -54,17 +67,23 @@
   "buffer_font_size": 13.0,
   "theme": "Ayu Dark",
   "agent": {
+    "inline_assistant_model": {
+      "provider": "opencode",
+      "model": "go/deepseek-v4-flash",
+      "enable_thinking": false,
+    },
     "sidebar_side": "left",
     "dock": "right",
     "button": true,
     "default_model": {
-      "provider": "copilot_chat",
-      "model": "claude-haiku-4.5",
+      "effort": "high",
+      "provider": "opencode",
+      "model": "go/deepseek-v4-pro",
       "enable_thinking": true,
     },
     "commit_message_model": {
-      "provider": "copilot_chat",
-      "model": "claude-haiku-4.5",
+      "provider": "opencode",
+      "model": "go/deepseek-v4-flash",
     },
   },
 }
