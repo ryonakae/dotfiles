@@ -78,12 +78,9 @@
 (deny file-read* file-write*
     (home-subpath "/.gnupg")
     (home-literal "/.aws/credentials")
-    (home-literal "/.aws/config")
     (home-literal "/.netrc")
     (home-literal "/.git-credentials")
-    (home-literal "/.config/gh/hosts.yml")
     (home-literal "/.kube/config")
-    (home-literal "/.docker/config.json")
 )
 
 ;; ~/.hermes は Hermes Agent の workdir かつ信頼境界。
