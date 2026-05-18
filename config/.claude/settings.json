@@ -39,5 +39,6 @@
   "effortLevel": "high",
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "feedbackSurveyRate": 0
 }
