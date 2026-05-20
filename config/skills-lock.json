@@ -4,58 +4,33 @@
     "agent-browser": {
       "source": "vercel-labs/agent-browser",
       "sourceType": "github",
-      "sourceUrl": "https://github.com/vercel-labs/agent-browser.git",
       "skillPath": "skills/agent-browser/SKILL.md",
-      "skillFolderHash": "2406f5d1c14a6727a0b628bf84e7485e0f76f8de",
-      "pluginName": "agent-browser",
-      "installedAt": "2026-03-27T06:05:11.042Z",
-      "updatedAt": "2026-03-27T06:05:11.042Z"
+      "computedHash": "228f87d57035100d9dc6efcfc05aafd4b6e3962adacaa04b8217ab2fadb15dc8"
     },
     "find-docs": {
       "source": "upstash/context7",
       "sourceType": "github",
-      "sourceUrl": "https://github.com/upstash/context7.git",
       "skillPath": "skills/find-docs/SKILL.md",
-      "skillFolderHash": "27c57bbef24bccd1f46463b398785b7c599f96a9",
-      "installedAt": "2026-03-27T06:31:06.277Z",
-      "updatedAt": "2026-03-27T06:31:06.277Z"
+      "computedHash": "0210767e57873317edc8b91783a2f1b74eb9bbdd2139bd14e9129e9a0bbc2dd6"
     },
     "grill-me": {
       "source": "mattpocock/skills",
       "sourceType": "github",
-      "sourceUrl": "https://github.com/mattpocock/skills.git",
-      "skillPath": "grill-me/SKILL.md",
-      "skillFolderHash": "2a1ad17028306ebe45f0e49703fa28b9b2e7f499",
-      "installedAt": "2026-04-06T15:15:29.432Z",
-      "updatedAt": "2026-04-06T15:15:29.432Z"
+      "skillPath": "skills/productivity/grill-me/SKILL.md",
+      "computedHash": "784f0dbb7403b0f00324bce9a112f715342777a0daee7bbb7385f9c6f0a170ea"
     },
     "skill-creator": {
       "source": "anthropics/skills",
-      "sourceType": "github",
-      "sourceUrl": "https://github.com/anthropics/skills.git",
       "ref": "main",
+      "sourceType": "github",
       "skillPath": "skills/skill-creator/SKILL.md",
-      "skillFolderHash": "98a510d1cfef9f82c3b1eec200229ca68725e613",
-      "installedAt": "2026-04-07T01:42:41.462Z",
-      "updatedAt": "2026-04-07T01:42:41.462Z"
+      "computedHash": "5ea13a6d9f0d4bb694405d79acd00cadec0d21bb138c4dd10fcf3c500cb835c2"
+    },
+    "stop-slop": {
+      "source": "hardikpandya/stop-slop",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "617bf97d33162a6bd0da4f40a97aac589de58e5a6c9cf011ed6108992210e7cb"
     }
-  },
-  "dismissed": {
-    "findSkillsPrompt": true
-  },
-  "lastSelectedAgents": [
-    "amp",
-    "antigravity",
-    "cline",
-    "codex",
-    "cursor",
-    "deepagents",
-    "firebender",
-    "gemini-cli",
-    "github-copilot",
-    "kimi-cli",
-    "opencode",
-    "warp",
-    "claude-code"
-  ]
+  }
 }
