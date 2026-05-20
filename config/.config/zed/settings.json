@@ -10,7 +10,7 @@
   "agent_servers": {},
   "language_models": {
     "opencode": {
-      "show_free_models": true,
+      "show_free_models": false,
       "show_zen_models": false,
     },
   },
@@ -68,8 +68,8 @@
   "theme": "Ayu Dark",
   "agent": {
     "inline_assistant_model": {
-      "provider": "opencode",
-      "model": "go/deepseek-v4-flash",
+      "provider": "copilot_chat",
+      "model": "claude-haiku-4.5",
       "enable_thinking": false,
     },
     "sidebar_side": "left",
@@ -77,13 +77,13 @@
     "button": true,
     "default_model": {
       "effort": "high",
-      "provider": "opencode",
-      "model": "go/deepseek-v4-pro",
+      "provider": "copilot_chat",
+      "model": "claude-haiku-4.5",
       "enable_thinking": true,
     },
     "commit_message_model": {
-      "provider": "opencode",
-      "model": "go/deepseek-v4-flash",
+      "provider": "copilot_chat",
+      "model": "claude-haiku-4.5",
     },
   },
 }
