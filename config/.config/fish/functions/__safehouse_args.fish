@@ -34,6 +34,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
     # safehouse の 30-toolchains / all-agents で既に rw されている path (~/.bun, ~/.claude 等) は重複指定しない。
     # ~/.hermes は信頼境界として deny を貫通させるため local-overrides.sb の allow 側に書く。
     for dir in \
+        "$HOME/.com.moomoo.OpenD" \
         "$HOME/.config" \
         "$HOME/.local" \
         "$HOME/.cache" \

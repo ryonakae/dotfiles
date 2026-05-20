@@ -34,6 +34,7 @@ args=(
 # cwd 外の頻出 path を rw で開ける (__safehouse_args.fish と同期)。
 # ~/.hermes は信頼境界として deny を貫通させるため local-overrides.sb の allow 側に書く。
 for dir in \
+  "$HOME/.com.moomoo.OpenD" \
   "$HOME/.config" \
   "$HOME/.local" \
   "$HOME/.cache" \

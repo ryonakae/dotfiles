@@ -52,8 +52,10 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             set -l bootout_status $status
             if test $bootout_status -eq 0
                 set_color green; echo "✓ gateway stopped"; set_color normal
+            else if test $bootout_status -eq 3; or test $bootout_status -eq 113; or string match -q '*No such process*' -- "$bootout_out"; or string match -q '*Could not find service*' -- "$bootout_out"
+                set_color blue; echo "• launchd service was already unloaded"; set_color normal
             else
-                set_color blue; echo "• launchd unload skipped or service was already stopped"; set_color normal
+                set_color yellow; echo "! launchd unload returned rc=$bootout_status" >&2; set_color normal
                 test -n "$bootout_out"; and printf '%s\n' $bootout_out | string replace -r '^' '  '
             end
 
@@ -109,10 +111,12 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             set state_line (printf '%s\n' $out | grep -E '^\s*state = ' | head -n 1 | string trim)
             set pid_line (printf '%s\n' $out | grep -E '^\s*pid = ' | head -n 1 | string trim)
             set exit_line (printf '%s\n' $out | grep -E '^\s*last exit code = ' | head -n 1 | string trim)
+            set program_line (printf '%s\n' $out | grep -E '^\s*program = ' | head -n 1 | string trim)
 
             set state_value (string replace -r '^state =\s*' '' -- "$state_line")
             set pid_value (string replace -r '^pid =\s*' '' -- "$pid_line")
             set exit_value (string replace -r '^last exit code =\s*' '' -- "$exit_line")
+            set program_value (string replace -r '^program =\s*' '' -- "$program_line")
 
             set_color blue; echo "• launchd"; set_color normal
             if test "$state_value" = running
@@ -123,41 +127,55 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
                 set_color yellow; echo "! state: unknown" >&2; set_color normal
             end
 
-            test -n "$pid_value"; and begin; set_color blue; echo "• pid: $pid_value"; set_color normal; end
+            test -n "$pid_value"; and begin; set_color blue; echo "• launchd pid: $pid_value"; set_color normal; end
+            if test -n "$program_value"
+                if string match -q '*/safe-hermes-gateway.sh' -- "$program_value"
+                    set_color green; echo "✓ wrapper: $program_value"; set_color normal
+                else
+                    set_color yellow; echo "! wrapper: $program_value" >&2; set_color normal
+                end
+            end
             if test -n "$exit_value"
                 if test "$exit_value" = 0; or test "$exit_value" = "(never exited)"
-                    set_color blue; echo "• last exit code: $exit_value"; set_color normal
+                    set_color blue; echo "• last exit: $exit_value"; set_color normal
+                else if string match -q '75:*' -- "$exit_value"
+                    set_color blue; echo "• last exit: $exit_value (restart requested)"; set_color normal
                 else
-                    set_color yellow; echo "! last exit code: $exit_value" >&2; set_color normal
+                    set_color yellow; echo "! last exit: $exit_value" >&2; set_color normal
                 end
             end
 
-            echo
-            # safehouse 経由だと sandbox 由来で not loaded を誤検知するため command で迂回。
-            # stale 警告は wrapper 置換構成のため恒久的に出るので、警告文は落として対処コマンドだけ残す。
-            set status_out (command hermes gateway status 2>&1)
-            set status_rc $status
-            if test -n "$status_out"
-                printf '%s\n' $status_out | while read -l line
-                    set -l trimmed (string trim -- $line)
-                    switch $trimmed
-                        case '⚠ Service definition is stale relative to the current Hermes install'
-                            continue
-                        case 'Run:*'
-                            printf '%s\n' $trimmed
-                        case '✓*'
-                            set_color green; printf '%s\n' $trimmed; set_color normal
-                        case '⚠*'
-                            set_color yellow; printf '%s\n' $trimmed; set_color normal
-                        case '✗*' 'Error*' 'error*'
-                            set_color red; printf '%s\n' $trimmed; set_color normal
-                        case '*'
-                            printf '%s\n' $line
+            set -l runtime_out (python3 -c 'import json, pathlib
+p = pathlib.Path.home() / ".hermes/gateway_state.json"
+try:
+    data = json.loads(p.read_text())
+except Exception:
+    raise SystemExit(0)
+state = data.get("gateway_state") or "unknown"
+pid = data.get("pid")
+platforms = data.get("platforms") or {}
+connected = [name for name, info in sorted(platforms.items()) if isinstance(info, dict) and info.get("state") == "connected"]
+print(f"runtime_state={state}")
+if pid:
+    print(f"runtime_pid={pid}")
+if connected:
+    print("connected=" + ", ".join(connected))
+' 2>/dev/null)
+            if test -n "$runtime_out"
+                echo
+                set_color blue; echo "• hermes runtime"; set_color normal
+                printf '%s\n' $runtime_out | while read -l line
+                    switch $line
+                        case 'runtime_state=running'
+                            set_color green; echo "✓ state: running"; set_color normal
+                        case 'runtime_state=*'
+                            set_color yellow; echo "! state: "(string replace 'runtime_state=' '' -- $line) >&2; set_color normal
+                        case 'runtime_pid=*'
+                            set_color blue; echo "• gateway pid: "(string replace 'runtime_pid=' '' -- $line); set_color normal
+                        case 'connected=*'
+                            set_color blue; echo "• connected: "(string replace 'connected=' '' -- $line); set_color normal
                     end
                 end
-            end
-            if test $status_rc -ne 0
-                set_color yellow; echo "! hermes gateway status returned rc=$status_rc" >&2; set_color normal
             end
         case '' '*'
             echo "Usage: hermes-gateway {start|stop|restart|status|update [hermes-update-args...]}"
