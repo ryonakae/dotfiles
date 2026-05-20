@@ -3,15 +3,33 @@ services:
     image: ghcr.io/vectorize-io/hindsight:latest
     container_name: hindsight
     restart: unless-stopped
+    stop_grace_period: 2m
     ports:
       - "127.0.0.1:8888:8888"
       - "127.0.0.1:9999:9999"
     env_file:
       - $HOME/.hermes/hindsight/.env
     environment:
-      HINDSIGHT_API_DB_POOL_MAX_SIZE: "20"
-      HINDSIGHT_API_WORKER_MAX_SLOTS: "4"
-      HINDSIGHT_API_LLM_MAX_CONCURRENT: "8"
+      HINDSIGHT_API_LLM_PROVIDER: "openai-codex"
+      HINDSIGHT_API_LLM_MODEL: "gpt-5.4-mini"
+      HINDSIGHT_API_LLM_TIMEOUT: "300"
+      # OpenCode Go / DeepSeek fallback profile. Uncomment as a set if switching back.
+      # HINDSIGHT_API_LLM_PROVIDER: "openai"
+      # HINDSIGHT_API_LLM_BASE_URL: "https://opencode.ai/zen/go/v1"
+      # HINDSIGHT_API_LLM_MODEL: "deepseek-v4-flash"
+      # HINDSIGHT_API_LLM_TIMEOUT: "300"
+      # Keep worker identity stable across container recreates so in-flight
+      # operations can be recovered instead of becoming zombie/stale tasks.
+      HINDSIGHT_API_WORKER_ID: "hindsight-local"
+      HINDSIGHT_API_DB_POOL_MAX_SIZE: "30"
+      HINDSIGHT_API_WORKER_MAX_SLOTS: "8"
+      HINDSIGHT_API_LLM_MAX_CONCURRENT: "16"
+      HINDSIGHT_API_RETAIN_LLM_MAX_CONCURRENT: "4"
+      HINDSIGHT_API_CONSOLIDATION_LLM_MAX_CONCURRENT: "2"
+      HINDSIGHT_API_CONSOLIDATION_LLM_TIMEOUT: "300"
+      HINDSIGHT_API_CONSOLIDATION_MAX_ATTEMPTS: "2"
+      HINDSIGHT_API_CONSOLIDATION_LLM_BATCH_SIZE: "8"
+      HINDSIGHT_API_CONSOLIDATION_SOURCE_FACTS_MAX_TOKENS: "4096"
     volumes:
       - $HOME/.hermes/hindsight/data:/home/hindsight/.pg0
       - $HOME/.hermes/hindsight/codex-auth:/home/hindsight/.codex
