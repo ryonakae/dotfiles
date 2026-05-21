@@ -154,23 +154,27 @@ $ brew doctor
 
 ## Hermes Agent
 
-gateway はホスト（launchd + agent-safehouse）で動かし、hindsight / dashboard は `~/.hermes/services/docker-compose.yml` で一括管理する。`~/.hermes/hindsight/` は Hermes 本体と Docker の双方が読み書きする共有領域。
+gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hindsight は `~/.hermes/services/docker-compose.yml` で Docker 管理する。Dashboard は Docker で `~/.hermes` を bind mount しない。`~/.hermes/hindsight/` は Hermes 本体と Docker の双方が読み書きする共有領域。
 
 ### 構成
 
 | コンポーネント | 動作場所 | port | 役割 |
 |---|---|---|---|
 | gateway | ホスト (launchd + safehouse) | 8642 | Slack / cron / API server |
-| hindsight | Docker | 8888 | memory provider (vector DB) |
-| dashboard | Docker | 9119 | gateway モニタリング |
+| hindsight | Docker | 8888 / 9999 | memory provider (vector DB) |
+| dashboard | ホスト (launchd + safehouse) | 9119 | gateway モニタリング |
 
 ### dotfiles で管理するファイル
 
-`config/.hermes/` 以下を `create-symlink.sh` で `~/.hermes/` に配置する。
+`config/.hermes/` を `~/.hermes/` に、`config/.config/` を `~/.config/` に `create-symlink.sh` で配置する。
 
-- `SOUL.md` — エージェント人格定義
-- `services/docker-compose.yml` — Docker サービス構成（hindsight + dashboard）
-- `hindsight/.env.example` — hindsight LLM 設定テンプレート
+- `config/.hermes/SOUL.md` — エージェント人格定義
+- `config/.hermes/services/docker-compose.yml` — Docker サービス構成（hindsight）
+- `config/.hermes/hindsight/.env.example` — hindsight LLM 設定テンプレート
+- `config/.config/agent-safehouse/safe-hermes-gateway.sh` — gateway launchd 用 safehouse ラッパー
+- `config/.config/agent-safehouse/safe-hermes-dashboard.sh` — dashboard launchd 用 safehouse ラッパー
+- `config/.config/fish/functions/hermes-gateway.fish` — gateway 管理コマンド
+- `config/.config/fish/functions/hermes-dashboard.fish` — dashboard 管理コマンド
 
 `.env` 実体は `copy.sh` で `.env.example` から生成し、`.gitignore` 対象。編集は dotfiles 側で行う。`~/.hermes/hindsight/config.json` は `hermes memory setup` が自動生成するので dotfiles では管理しない。
 
@@ -198,24 +202,28 @@ echo 'API_SERVER_ENABLED=true' >> ~/.hermes/.env
 sh scripts/copy.sh
 sh scripts/create-symlink.sh
 
-# 6. Docker サービス一括起動
-cd ~/.hermes/services && docker compose up -d
+# 6. Docker は hindsight のみ起動
+cd ~/.hermes/services && docker compose up -d hindsight
 
 # 7. memory provider を hindsight に設定（プロンプトは全て Enter でデフォルト採用）
 hermes memory setup
 
 # 8. launchd サービスをロード
 hermes-gateway start
+plutil -lint ~/Library/LaunchAgents/ai.hermes.dashboard.plist
+hermes-dashboard start
 
 # 9. 稼働確認
 sleep 30
 curl -sf http://localhost:8642/health && echo "gateway OK"
 curl -sf http://localhost:8888/health && echo "hindsight OK"
-open http://localhost:9119  # dashboard
+curl -sf http://127.0.0.1:9119/api/status >/dev/null && echo "dashboard OK"
 hermes memory status        # Provider: hindsight / Status: available
 ```
 
-ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh`。hermes-gateway が git push などで SSH 秘密鍵を使うため、safehouse ポリシーを通じて SSH_AUTH_SOCK 環境変数を引き継いでいる。
+ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh` と `config/.config/agent-safehouse/safe-hermes-dashboard.sh`。hermes-gateway が git push などで SSH 秘密鍵を使うため、safehouse ポリシーを通じて SSH_AUTH_SOCK 環境変数を引き継いでいる。Dashboard の runtime plist はマシン固有なので tracked file にはせず、`~/Library/LaunchAgents/ai.hermes.dashboard.plist` に配置する。
+
+Dashboard plist は `Label` を `ai.hermes.dashboard`、`ProgramArguments` を `/Users/ryo.nakae/.config/agent-safehouse/safe-hermes-dashboard.sh` の 1 要素、`WorkingDirectory` を `/Users/ryo.nakae/.hermes/hermes-agent` にする。`EnvironmentVariables` は gateway plist と同じ `PATH` / `VIRTUAL_ENV` / `HERMES_HOME` を使う。
 
 ### アップデート
 
@@ -234,17 +242,21 @@ hermes-gateway update
 
 ### 停止・再起動
 
-`hermes-gateway` 関数（`config/.config/fish/functions/hermes-gateway.fish`）で gateway を、`docker compose` で Docker サービスを操作する。
+`hermes-gateway` / `hermes-dashboard` 関数で host launchd サービスを、`docker compose` で hindsight を操作する。
 
 ```sh
 hermes-gateway {start|stop|restart|status|update}  # gateway
+hermes-dashboard {start|stop|restart|status|open}  # dashboard
 
-cd ~/.hermes/services && docker compose restart    # Docker サービスまとめて再起動
+cd ~/.hermes/services && docker compose restart hindsight
 
 # 全部停止
+hermes-dashboard stop
 hermes-gateway stop
 cd ~/.hermes/services && docker compose down
 ```
+
+Dashboard は初期 rollout では `--tui` を付けない。host gateway が動いている間に、同じ `~/.hermes` を bind mount する Docker Dashboard は起動しない。
 
 **重要**: `hermes-gateway stop` / `restart` は、launchd の `bootout` を実行する前に `hermes gateway stop` で正規シャットダウンを通します。これは hindsight の vector DB 破損を防ぐためのものです（launchd の SIGTERM/SIGKILL だけではクリーンアップが不完全になる可能性があるため）。
 
