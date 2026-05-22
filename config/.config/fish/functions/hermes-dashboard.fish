@@ -3,7 +3,7 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
     set label ai.hermes.dashboard
     set plist ~/Library/LaunchAgents/ai.hermes.dashboard.plist
     set dashboard_host 0.0.0.0
-    set dashboard_port 9119
+    set dashboard_port 9120
     set url https://ryo-mac-mini.tail818984.ts.net:9119
     set local_url http://127.0.0.1:$dashboard_port
 
@@ -31,7 +31,7 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             set_color cyan; echo "→ waiting for dashboard port to close"; set_color normal
             set -l deadline (math (date +%s) + 30)
             while test (date +%s) -lt $deadline
-                if not lsof -nP -iTCP:9119 -sTCP:LISTEN >/dev/null 2>&1
+                if not lsof -nP -iTCP:$dashboard_port -sTCP:LISTEN >/dev/null 2>&1
                     break
                 end
                 sleep 0.5
@@ -61,7 +61,7 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             set_color cyan; echo "→ waiting for dashboard port to close"; set_color normal
             set -l deadline (math (date +%s) + 30)
             while test (date +%s) -lt $deadline
-                if not lsof -nP -iTCP:9119 -sTCP:LISTEN >/dev/null 2>&1
+                if not lsof -nP -iTCP:$dashboard_port -sTCP:LISTEN >/dev/null 2>&1
                     break
                 end
                 sleep 0.5

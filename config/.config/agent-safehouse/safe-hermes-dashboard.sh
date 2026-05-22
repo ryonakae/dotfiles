@@ -18,7 +18,7 @@ export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"
 # Docker 時代と同じく Dashboard は全インターフェースで待ち受ける。
 # Mac mini は LAN 内に閉じ、iPhone からは Tailscale Serve 経由で見る。
 export HERMES_DASHBOARD_HOST="${HERMES_DASHBOARD_HOST:-0.0.0.0}"
-export HERMES_DASHBOARD_PORT="${HERMES_DASHBOARD_PORT:-9119}"
+export HERMES_DASHBOARD_PORT="${HERMES_DASHBOARD_PORT:-9120}"
 
 args=(
   --workdir="$HOME/.hermes"

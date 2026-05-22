@@ -217,7 +217,7 @@ hermes-dashboard start
 sleep 30
 curl -sf http://localhost:8642/health && echo "gateway OK"
 curl -sf http://localhost:8888/health && echo "hindsight OK"
-curl -sf http://127.0.0.1:9119/api/status >/dev/null && echo "dashboard OK"
+curl -sf http://127.0.0.1:9120/api/status >/dev/null && echo "dashboard OK"
 hermes memory status        # Provider: hindsight / Status: available
 ```
 
@@ -256,13 +256,13 @@ hermes-gateway stop
 cd ~/.hermes/services && docker compose down
 ```
 
-Dashboard は初期 rollout では `--tui` を付けない。iPhone から見るため、Dashboard は Docker 時代に近い `0.0.0.0:9119 --insecure` で bind し、Tailscale Serve は `127.0.0.1:9119` に向ける。host gateway が動いている間に、同じ `~/.hermes` を bind mount する Docker Dashboard は起動しない。
+Dashboard は初期 rollout では `--tui` を付けない。iPhone から見るため、Dashboard は Docker 時代に近い `0.0.0.0:9120 --insecure` で bind し、Tailscale Serve は外向き `:9119` から `127.0.0.1:9120` に向ける。host gateway が動いている間に、同じ `~/.hermes` を bind mount する Docker Dashboard は起動しない。
 
 **重要**: `hermes-gateway stop` / `restart` は、launchd の `bootout` を実行する前に `hermes gateway stop` で正規シャットダウンを通します。これは hindsight の vector DB 破損を防ぐためのものです（launchd の SIGTERM/SIGKILL だけではクリーンアップが不完全になる可能性があるため）。
 
 ### Tailscale で外部公開
 
-Dashboard は `0.0.0.0:9119 --insecure` で bind する。iPhone からは Tailscale Serve 経由で次を開く。
+Dashboard は `0.0.0.0:9120 --insecure` で bind する。iPhone からは Tailscale Serve 経由で次を開く。
 
 ```text
 https://ryo-mac-mini.tail818984.ts.net:9119
@@ -271,7 +271,7 @@ https://ryo-mac-mini.tail818984.ts.net:9119
 Dashboard と hindsight dashboard を Tailscale Serve で公開する。
 
 ```sh
-tailscale serve --bg --https=9119 http://127.0.0.1:9119
+tailscale serve --bg --https=9119 http://127.0.0.1:9120
 tailscale serve --bg --https=9999 http://127.0.0.1:9999
 tailscale serve status
 ```
