@@ -15,6 +15,11 @@ export HERMES_AGENT=1
 export UV_CACHE_DIR="$HOME/.hermes/cache/uv"
 export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"
 
+# iPhone/Tailscale から見るときは bound host と HTTP Host header を一致させる。
+# launchctl setenv で上書きできるが、通常はこの Tailnet hostname を使う。
+export HERMES_DASHBOARD_HOST="${HERMES_DASHBOARD_HOST:-ryo-mac-mini.tail818984.ts.net}"
+export HERMES_DASHBOARD_PORT="${HERMES_DASHBOARD_PORT:-9119}"
+
 args=(
   --workdir="$HOME/.hermes"
   --env-pass=DISABLE_AUTOUPDATER
@@ -25,6 +30,8 @@ args=(
   --env-pass=HERMES_AGENT
   --env-pass=UV_CACHE_DIR
   --env-pass=PIP_CACHE_DIR
+  --env-pass=HERMES_DASHBOARD_HOST
+  --env-pass=HERMES_DASHBOARD_PORT
   --enable=ssh,docker,all-agents,wide-read,keychain
 )
 
@@ -42,4 +49,8 @@ done
 [ -d "$HOME/Dev" ] && args+=(--add-dirs="$HOME/Dev")
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
-exec safehouse "${args[@]}" -- hermes dashboard --host 127.0.0.1 --port 9119 --no-open
+exec safehouse "${args[@]}" -- hermes dashboard \
+  --host "$HERMES_DASHBOARD_HOST" \
+  --port "$HERMES_DASHBOARD_PORT" \
+  --no-open \
+  --insecure

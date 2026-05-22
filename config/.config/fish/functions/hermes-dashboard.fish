@@ -2,10 +2,15 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
     set domain gui/(id -u)
     set label ai.hermes.dashboard
     set plist ~/Library/LaunchAgents/ai.hermes.dashboard.plist
-    set url http://127.0.0.1:9119
+    set dashboard_host ryo-mac-mini.tail818984.ts.net
+    set dashboard_port 9119
+    set url http://$dashboard_host:$dashboard_port
 
     switch $argv[1]
         case start
+            set_color cyan; echo "→ configuring dashboard host: $dashboard_host:$dashboard_port"; set_color normal
+            launchctl setenv HERMES_DASHBOARD_HOST $dashboard_host
+            launchctl setenv HERMES_DASHBOARD_PORT $dashboard_port
             set_color cyan; echo "→ starting launchd service"; set_color normal
             if launchctl bootstrap $domain $plist
                 set_color green; echo "✓ dashboard started"; set_color normal
@@ -74,6 +79,9 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
                 return 1
             end
 
+            set_color cyan; echo "→ configuring dashboard host: $dashboard_host:$dashboard_port"; set_color normal
+            launchctl setenv HERMES_DASHBOARD_HOST $dashboard_host
+            launchctl setenv HERMES_DASHBOARD_PORT $dashboard_port
             set_color cyan; echo "→ starting launchd service"; set_color normal
             if launchctl bootstrap $domain $plist
                 set_color green; echo "✓ dashboard started"; set_color normal
@@ -102,6 +110,7 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
                 set runs_value (string replace -r '^runs =\s*' '' -- "$runs_line")
 
                 set_color blue; echo "• launchd"; set_color normal
+                set_color blue; echo "• url: $url"; set_color normal
                 if test "$state_value" = running
                     set_color green; echo "✓ state: $state_value"; set_color normal
                 else if test -n "$state_value"
