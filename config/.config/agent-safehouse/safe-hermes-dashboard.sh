@@ -15,10 +15,15 @@ export HERMES_AGENT=1
 export UV_CACHE_DIR="$HOME/.hermes/cache/uv"
 export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"
 
-# iPhone/Tailscale から見るときは bound host と HTTP Host header を一致させる。
-# launchctl setenv で上書きできるが、通常はこの Tailnet hostname を使う。
-export HERMES_DASHBOARD_HOST="${HERMES_DASHBOARD_HOST:-ryo-mac-mini.tail818984.ts.net}"
+# Dashboard 本体は localhost-only のままにし、iPhone/Tailscale からは
+# 下の Host rewrite proxy 経由で見る。DB と secrets を扱うため、本体を
+# Tailnet/LAN に直接 bind しない。
+export HERMES_DASHBOARD_HOST="${HERMES_DASHBOARD_HOST:-127.0.0.1}"
 export HERMES_DASHBOARD_PORT="${HERMES_DASHBOARD_PORT:-9119}"
+export HERMES_DASHBOARD_PROXY_HOST="${HERMES_DASHBOARD_PROXY_HOST:-127.0.0.1}"
+export HERMES_DASHBOARD_PROXY_PORT="${HERMES_DASHBOARD_PROXY_PORT:-9120}"
+export HERMES_DASHBOARD_UPSTREAM_HOST="$HERMES_DASHBOARD_HOST"
+export HERMES_DASHBOARD_UPSTREAM_PORT="$HERMES_DASHBOARD_PORT"
 
 args=(
   --workdir="$HOME/.hermes"
@@ -32,6 +37,10 @@ args=(
   --env-pass=PIP_CACHE_DIR
   --env-pass=HERMES_DASHBOARD_HOST
   --env-pass=HERMES_DASHBOARD_PORT
+  --env-pass=HERMES_DASHBOARD_PROXY_HOST
+  --env-pass=HERMES_DASHBOARD_PROXY_PORT
+  --env-pass=HERMES_DASHBOARD_UPSTREAM_HOST
+  --env-pass=HERMES_DASHBOARD_UPSTREAM_PORT
   --enable=ssh,docker,all-agents,wide-read,keychain
 )
 
@@ -49,8 +58,20 @@ done
 [ -d "$HOME/Dev" ] && args+=(--add-dirs="$HOME/Dev")
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
-exec safehouse "${args[@]}" -- hermes dashboard \
+exec safehouse "${args[@]}" -- bash -lc '
+proxy_pid=""
+cleanup() {
+  if [ -n "$proxy_pid" ]; then
+    kill "$proxy_pid" 2>/dev/null || true
+  fi
+}
+trap cleanup EXIT INT TERM
+
+python3 "$HOME/.config/agent-safehouse/hermes-dashboard-host-proxy.py" &
+proxy_pid=$!
+
+hermes dashboard \
   --host "$HERMES_DASHBOARD_HOST" \
   --port "$HERMES_DASHBOARD_PORT" \
-  --no-open \
-  --insecure
+  --no-open
+'
