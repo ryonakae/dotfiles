@@ -2,15 +2,21 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
     set domain gui/(id -u)
     set label ai.hermes.dashboard
     set plist ~/Library/LaunchAgents/ai.hermes.dashboard.plist
-    set dashboard_host ryo-mac-mini.tail818984.ts.net
+    set dashboard_host 127.0.0.1
     set dashboard_port 9119
-    set url http://$dashboard_host:$dashboard_port
+    set proxy_host 127.0.0.1
+    set proxy_port 9120
+    set url https://ryo-mac-mini.tail818984.ts.net:9119
+    set local_url http://$dashboard_host:$dashboard_port
+    set proxy_url http://$proxy_host:$proxy_port
 
     switch $argv[1]
         case start
-            set_color cyan; echo "→ configuring dashboard host: $dashboard_host:$dashboard_port"; set_color normal
+            set_color cyan; echo "→ configuring dashboard: $local_url, proxy: $proxy_url"; set_color normal
             launchctl setenv HERMES_DASHBOARD_HOST $dashboard_host
             launchctl setenv HERMES_DASHBOARD_PORT $dashboard_port
+            launchctl setenv HERMES_DASHBOARD_PROXY_HOST $proxy_host
+            launchctl setenv HERMES_DASHBOARD_PROXY_PORT $proxy_port
             set_color cyan; echo "→ starting launchd service"; set_color normal
             if launchctl bootstrap $domain $plist
                 set_color green; echo "✓ dashboard started"; set_color normal
@@ -79,9 +85,11 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
                 return 1
             end
 
-            set_color cyan; echo "→ configuring dashboard host: $dashboard_host:$dashboard_port"; set_color normal
+            set_color cyan; echo "→ configuring dashboard: $local_url, proxy: $proxy_url"; set_color normal
             launchctl setenv HERMES_DASHBOARD_HOST $dashboard_host
             launchctl setenv HERMES_DASHBOARD_PORT $dashboard_port
+            launchctl setenv HERMES_DASHBOARD_PROXY_HOST $proxy_host
+            launchctl setenv HERMES_DASHBOARD_PROXY_PORT $proxy_port
             set_color cyan; echo "→ starting launchd service"; set_color normal
             if launchctl bootstrap $domain $plist
                 set_color green; echo "✓ dashboard started"; set_color normal
@@ -111,6 +119,8 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
 
                 set_color blue; echo "• launchd"; set_color normal
                 set_color blue; echo "• url: $url"; set_color normal
+                set_color blue; echo "• local dashboard: $local_url"; set_color normal
+                set_color blue; echo "• local proxy: $proxy_url"; set_color normal
                 if test "$state_value" = running
                     set_color green; echo "✓ state: $state_value"; set_color normal
                 else if test -n "$state_value"
@@ -141,10 +151,16 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             set_color blue; echo "• hermes dashboard"; set_color normal
             command hermes dashboard --status 2>&1 | string replace -r '^' '  '
 
-            if curl -fsS --max-time 3 $url/api/status >/dev/null 2>&1
-                set_color green; echo "✓ HTTP: $url/api/status"; set_color normal
+            if curl -fsS --max-time 3 $local_url/api/status >/dev/null 2>&1
+                set_color green; echo "✓ local dashboard: $local_url/api/status"; set_color normal
             else
-                set_color yellow; echo "! HTTP not reachable: $url" >&2; set_color normal
+                set_color yellow; echo "! local dashboard not reachable: $local_url" >&2; set_color normal
+            end
+
+            if curl -fsS --max-time 3 $proxy_url/api/status >/dev/null 2>&1
+                set_color green; echo "✓ local proxy: $proxy_url/api/status"; set_color normal
+            else
+                set_color yellow; echo "! local proxy not reachable: $proxy_url" >&2; set_color normal
             end
         case open
             open $url
