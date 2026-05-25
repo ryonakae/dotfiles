@@ -67,12 +67,13 @@
   "buffer_font_size": 13.0,
   "theme": "Ayu Dark",
   "agent": {
+    "flexible": false,
     "inline_assistant_model": {
       "provider": "copilot_chat",
       "model": "claude-haiku-4.5",
       "enable_thinking": false,
     },
-    "sidebar_side": "left",
+    "sidebar_side": "right",
     "dock": "right",
     "button": true,
     "default_model": {
