@@ -54,6 +54,13 @@
     (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
 )
 
+;; Flutter SDK / pub cache / analysis server の状態は同じワークフローで必要になる。
+(allow file-read* file-write*
+    (home-subpath "/.local/share/mise/installs/flutter")
+    (home-subpath "/.pub-cache")
+    (home-subpath "/.dart-tool")
+)
+
 ;; config.fish にマシンローカルの機密情報が含まれているため、
 ;; shell-init が有効化された場合でも読み書きを拒否する。
 (deny file-read* file-write*
