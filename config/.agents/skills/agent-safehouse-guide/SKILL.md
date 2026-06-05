@@ -29,6 +29,44 @@ Agent Safehouse は macOS ネイティブの `sandbox-exec` を利用した、LL
 2. **`safehouse --stdout <command>`** — 生成されたポリシー全体を出力して内容を確認
 3. **`/usr/bin/log stream`** — deny ログをリアルタイムで監視し、拒否されたパス・操作を特定
 
+### pytest が tmp 配下に `.env` / `.envrc` を作って落ちる場合
+
+Ryo 環境では `local-overrides.sb` で `.env` / `.envrc` を全パス deny し、後段で `~/.hermes` だけ allow している。Hermes 本体の `~/.hermes/.env` は読み書きできるが、pytest の `tmp_path` は通常 `/var/folders/.../T/pytest-*` や `/tmp` 配下なので、テストが `tmp_path / ".env"` を作ると `Operation not permitted` で失敗する。
+
+元コードを変えずに検証する場合は、pytest の一時ディレクトリを `~/.hermes` 配下へ移す：
+
+```bash
+mkdir -p ~/.hermes/tmp
+uv run --with '.[all]' python -m pytest \
+  tests/agent/test_codex_ttfb_watchdog.py \
+  --basetemp "$HOME/.hermes/tmp/pytest-hermes-agent" \
+  -q
+```
+
+`--basetemp` は指定先が存在すると pytest が削除して作り直すため、`~/.hermes` 直下や重要ディレクトリは指定しない。必要なら毎回ユニークにする：
+
+```bash
+--basetemp "$HOME/.hermes/tmp/pytest-hermes-agent-$(date +%s)"
+```
+
+切り分けには、まず小さい再現で確認する：
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+for base in [Path('/tmp/safehouse-env-test'), Path.home()/'.hermes/tmp/safehouse-env-test']:
+    base.mkdir(parents=True, exist_ok=True)
+    for name in ['normal.txt', '.env', '.envrc']:
+        try:
+            (base / name).write_text('x')
+            print('OK', base / name)
+        except Exception as e:
+            print('FAIL', base / name, type(e).__name__, e)
+PY
+```
+
+判断基準：`/tmp/.../.env` が落ち、`~/.hermes/tmp/.../.env` が通るなら Safehouse 設計通り。Safehouse を緩めず、pytest 実行時に `--basetemp ~/.hermes/tmp/...` を付ける。
+
 ## 設計哲学
 
 - **deny-first**: デフォルトで全アクセスを拒否し、必要なものだけ明示的に許可する
