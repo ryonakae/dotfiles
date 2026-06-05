@@ -59,6 +59,7 @@
     (home-subpath "/.local/share/mise/installs/flutter")
     (home-subpath "/.pub-cache")
     (home-subpath "/.dart-tool")
+    (home-subpath "/.dartServer")
 )
 
 ;; config.fish にマシンローカルの機密情報が含まれているため、
