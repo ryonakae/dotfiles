@@ -54,12 +54,13 @@
     (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
 )
 
-;; Flutter SDK / pub cache / analysis server の状態は同じワークフローで必要になる。
+;; Flutter SDK / pub cache / analysis server / Android SDK manager の状態は同じワークフローで必要になる。
 (allow file-read* file-write*
     (home-subpath "/.local/share/mise/installs/flutter")
     (home-subpath "/.pub-cache")
     (home-subpath "/.dart-tool")
     (home-subpath "/.dartServer")
+    (home-subpath "/.android/cache")
 )
 
 ;; config.fish にマシンローカルの機密情報が含まれているため、
