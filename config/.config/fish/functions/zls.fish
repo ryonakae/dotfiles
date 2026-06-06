@@ -69,14 +69,23 @@ function zls --description "Select a repository or session and open it in Zellij
         end
         mkdir -p (dirname $history_file)
         echo $session >> $history_file
-        set -l orig_dir (pwd)
-        cd "$HOME/$dir"
-        zellij -l dev attach -c $session
-        cd $orig_dir
+        if set -q ZELLIJ
+            # zellij セッション内: 二重起動を避けて切り替える
+            zellij action switch-session -l dev -c "$HOME/$dir" $session
+        else
+            set -l orig_dir (pwd)
+            cd "$HOME/$dir"
+            zellij -l dev attach -c $session
+            cd $orig_dir
+        end
     else
         # 既存セッションにアタッチ
         mkdir -p (dirname $history_file)
         echo $selected >> $history_file
-        zellij attach "$selected"
+        if set -q ZELLIJ
+            zellij action switch-session $selected
+        else
+            zellij attach "$selected"
+        end
     end
 end
