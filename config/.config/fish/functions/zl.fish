@@ -13,10 +13,19 @@ function zl --description "Open a Zellij session for a project"
         set session_exists 1
     end
 
-    if test $session_exists -eq 1
-        cd $project_dir && zellij attach "$session"
+    if set -q ZELLIJ
+        # zellij セッション内: 二重起動を避けて切り替える
+        if test $session_exists -eq 1
+            zellij action switch-session $session
+        else
+            zellij action switch-session -l dev -c $project_dir $session
+        end
     else
-        cd $project_dir && zellij -l dev attach -c $session
+        if test $session_exists -eq 1
+            cd $project_dir && zellij attach "$session"
+        else
+            cd $project_dir && zellij -l dev attach -c $session
+        end
+        cd $orig_dir
     end
-    cd $orig_dir
 end
