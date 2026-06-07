@@ -1,0 +1,96 @@
+# サブエージェント委譲
+
+> 参照元: https://hermes-agent.nousresearch.com/docs/user-guide/features/delegation
+
+## 単一タスク委譲
+
+```python
+delegate_task(
+    task="このプロジェクトのテストを全て実行し、失敗があれば原因を分析",
+    context="Python 3.11 プロジェクト、pytest 使用",
+    toolsets=["terminal", "file", "web"]    # 使用許可するツールセット
+)
+```
+
+## 並列タスク
+
+最大 3 つの並列サブエージェントを起動可能:
+
+```python
+delegate_task(
+    tasks=[
+        {"task": "フロントエンドのテスト実行", "toolsets": ["terminal", "file"]},
+        {"task": "バックエンドのテスト実行", "toolsets": ["terminal", "file"]},
+        {"task": "依存関係の脆弱性チェック", "toolsets": ["terminal", "web"]}
+    ]
+)
+```
+
+## コンテキストルール
+
+- サブエージェントは親の会話履歴を引き継がない
+- `context` パラメータで必要な情報を明示的に渡す
+- サブエージェントは完了後に結果を親に返す
+- サブエージェントの出力はトークン制限あり
+
+## ブロック対象ツールセット
+
+サブエージェントでは以下のツールセットが使用不可:
+
+- `delegation` (再帰的委譲の防止)
+- `clarify` (ユーザーに質問不可)
+- `moa` (メッセージ送信不可)
+
+## 深度制限
+
+デフォルトの最大委譲深度は 1（サブエージェントからさらに委譲不可）。`config.yaml` で変更可能:
+
+```yaml
+agent:
+  max_delegation_depth: 2
+```
+
+## Orchestrator role と spawn depth (v0.11.0)
+
+サブエージェントに明示的な `orchestrator` ロールを付与すると、自身の worker をさらに spawn できる。`max_spawn_depth` で深さを制御（v0.16.0 で上限撤廃）。
+
+```python
+delegate_task(
+    task="複雑なリサーチを 3 段階で分解して並列実行",
+    role="orchestrator",
+    max_spawn_depth=2,
+)
+```
+
+## child_timeout_seconds（v0.12.0）
+
+```yaml
+delegation:
+  child_timeout_seconds: 600   # デフォルト 600 秒
+```
+
+## `/agents` で dashboard 誘導（v0.16.0）
+
+delegation 開始時に `/agents` で web ダッシュボードに移動して並列実行を可視化できる。
+
+## Cross-agent file state coordination (v0.11.0)
+
+並列実行中のサブエージェントがファイル編集で衝突しないよう、ファイル協調レイヤーが自動で稼働する。同時編集を検出して直列化し、互いの編集を上書きしない。
+
+## モデルオーバーライド
+
+```python
+delegate_task(
+    task="コスト効率の良いモデルで簡単なタスクを処理",
+    model="anthropic/claude-sonnet-4-20250514"     # サブエージェント用モデル指定
+)
+```
+
+## delegate_task vs execute_code
+
+| 用途 | 推奨ツール |
+|------|-----------|
+| 調査・分析・複数ステップの判断が必要 | `delegate_task` |
+| 定型処理・データ変換・計算 | `execute_code` |
+| ファイル操作を伴う作業 | `delegate_task` |
+| 外部 API 呼び出しのみ | `execute_code` |
