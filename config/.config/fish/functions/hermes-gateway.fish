@@ -146,7 +146,15 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             end
 
             set -l runtime_out (python3 -c 'import json, pathlib
-p = pathlib.Path.home() / ".hermes/gateway_state.json"
+home = pathlib.Path.home()
+active = home / ".hermes/active_profile"
+try:
+    profile = active.read_text().strip()
+except Exception:
+    raise SystemExit(0)
+if not profile:
+    raise SystemExit(0)
+p = home / f".hermes/profiles/{profile}/gateway_state.json"
 try:
     data = json.loads(p.read_text())
 except Exception:
@@ -155,6 +163,7 @@ state = data.get("gateway_state") or "unknown"
 pid = data.get("pid")
 platforms = data.get("platforms") or {}
 connected = [name for name, info in sorted(platforms.items()) if isinstance(info, dict) and info.get("state") == "connected"]
+print(f"runtime_profile={profile}")
 print(f"runtime_state={state}")
 if pid:
     print(f"runtime_pid={pid}")
@@ -166,6 +175,8 @@ if connected:
                 set_color blue; echo "• hermes runtime"; set_color normal
                 printf '%s\n' $runtime_out | while read -l line
                     switch $line
+                        case 'runtime_profile=*'
+                            set_color blue; echo "• profile: "(string replace 'runtime_profile=' '' -- $line); set_color normal
                         case 'runtime_state=running'
                             set_color green; echo "✓ state: running"; set_color normal
                         case 'runtime_state=*'
