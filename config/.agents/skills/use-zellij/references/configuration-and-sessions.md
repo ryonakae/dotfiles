@@ -65,6 +65,8 @@ zellij setup --dump-config > ~/.config/zellij/config.kdl
 | --- | --- | --- |
 | `pane_frames` | pane frame 表示 | コンパクトさと視認性のトレードオフ |
 | `stacked_resize` | stack を考慮したリサイズ挙動 | stacked panes を多用するなら重要 |
+| `theme` | 通常時に使うテーマ名 | これまで通りの単一テーマ指定 |
+| `theme_dark` / `theme_light` | dark/light 切替時に使うテーマ名 | CSI 2031 や `set-dark-theme`/`set-light-theme`/`toggle-theme` で切り替えたときに使われる（0.44.2 以降）。端末側が CSI 2031 をサポートすれば自動で追従する |
 | `copy_command` | 独自コピーコマンド | macOS なら `pbcopy` が代表例 |
 | `copy_clipboard` | `system` / `primary` | Wayland/X11 で primary を使うとき |
 | `copy_on_select` | 選択時に自動コピー | 誤コピーを避けたいなら `false` |

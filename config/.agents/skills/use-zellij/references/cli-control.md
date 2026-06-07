@@ -111,6 +111,7 @@ zellij --session "$SESSION" action send-keys --pane-id "$PANE_ID" Enter
 | バッファ操作 | `clear`, `edit-scrollback`, `scroll-to-bottom`, `scroll-to-top` | `clear` は出力を読む前のリセットに便利; スクロール系は観測前の位置合わせに使う |
 | 名前変更とセッション操作 | `rename-pane`, `undo-rename-pane`, `rename-tab`, `rename-tab-by-id`, `undo-rename-tab`, `rename-session`, `switch-session`, `save-session`, `detach` | `switch-session` は `--layout`, `--pane-id`, `--tab-position`, `--cwd`, `--layout-dir` を受ける |
 | swap layout 切り替え | `next-swap-layout`, `previous-swap-layout` | キーバインドなしで swap layout をスクリプトから切り替えられる |
+| テーマ切り替え | `set-light-theme`, `set-dark-theme`, `toggle-theme` | `theme_light` / `theme_dark` を手動で切り替える（0.44.2 以降）。CSI 2031 を要求した内側の端末アプリにも切替指示が転送される |
 | 並列操作 | `toggle-active-sync-tab` | 有効時は現在タブの全ペインに同じ入力が送られる |
 | プラグイン | `launch-plugin`, `launch-or-focus-plugin`, `start-or-reload-plugin`, `pipe` | `launch-or-focus-plugin` は session-manager などの内蔵プラグイン起動にも便利 |
 
