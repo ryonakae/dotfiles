@@ -151,10 +151,11 @@ active = home / ".hermes/active_profile"
 try:
     profile = active.read_text().strip()
 except Exception:
-    raise SystemExit(0)
-if not profile:
-    raise SystemExit(0)
-p = home / f".hermes/profiles/{profile}/gateway_state.json"
+    profile = ""
+if profile:
+    p = home / f".hermes/profiles/{profile}/gateway_state.json"
+else:
+    p = home / ".hermes/gateway_state.json"
 try:
     data = json.loads(p.read_text())
 except Exception:
@@ -163,7 +164,8 @@ state = data.get("gateway_state") or "unknown"
 pid = data.get("pid")
 platforms = data.get("platforms") or {}
 connected = [name for name, info in sorted(platforms.items()) if isinstance(info, dict) and info.get("state") == "connected"]
-print(f"runtime_profile={profile}")
+if profile:
+    print(f"runtime_profile={profile}")
 print(f"runtime_state={state}")
 if pid:
     print(f"runtime_pid={pid}")
