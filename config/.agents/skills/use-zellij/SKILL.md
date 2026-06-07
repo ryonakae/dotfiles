@@ -5,6 +5,10 @@ description: Zellij の CLI 制御とセッション運用を行うスキル。`
 
 # Use Zellij
 
+> 最終更新: 2026-06-07 / 対応 Zellij バージョン: 0.44.3
+>
+> 更新時はこのバージョンを起点に [CHANGELOG](https://github.com/zellij-org/zellij/blob/main/CHANGELOG.md) の差分を確認し、CLI / KDL に関わる変更を各 reference へ反映してから、この行を書き換える。
+
 ## Overview
 
 Zellij を主に CLI 制御と KDL 編集から扱う。セッション、タブ、ペイン、フローティングペイン、レイアウト、設定を分けて考え、必要な参照だけ読んで作業する。
