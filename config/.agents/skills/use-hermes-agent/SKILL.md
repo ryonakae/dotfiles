@@ -2,7 +2,8 @@
 name: use-hermes-agent
 description: |
   Hermes Agent（Nous Research の AI CLI / TUI / Desktop エージェント）をセットアップ・設定・運用・トラブルシュートするためのスキル。
-  ユーザーが hermes / hermes agent / ハーメス / Hermes Desktop を使うとき、config.yaml / .env / SOUL.md / MEMORY.md を編集するとき、gateway / hermes doctor / hermes config / hermes model / hermes tools / hermes profile / hermes cron / hermes plugins / hermes acp / hermes dashboard / hermes mcp / hermes curator / hermes kanban / hermes proxy / hermes send / hermes audit / hermes portal について質問したとき、MCP サーバー追加・スキル管理（hermes skills）・スキル自動メンテナンス（curator）・マルチエージェント Kanban（kanban swarm）・`/goal` `/subgoal` `/undo` `/handoff` `/steer`・ボイスモード / TTS / STT・cron タスク・Telegram / Discord / Slack / WhatsApp / Signal / Matrix / Mattermost / Email / SMS / Microsoft Teams / Google Chat / LINE / SimpleX / ntfy / Tencent 元宝（Yuanbao）/ WeCom / Feishu / QQBot 等 23 メッセージングプラットフォーム・LLM プロバイダー切替・Bedrock / OpenRouter / Codex OAuth / Gemini OAuth / SuperGrok OAuth / Nous Portal OAuth・OpenAI 互換ローカルプロキシ（hermes proxy）・プラグイン開発・Shell hook・TUI / Hermes Desktop App / プロファイル管理・Bitwarden Secrets Manager に関する作業のときに使う。
+  ユーザーが hermes / hermes agent / ハーメス / Hermes Desktop を使うとき、config.yaml / .env / SOUL.md / MEMORY.md を編集するとき、gateway / doctor / config / model / tools / profile / cron / plugins / acp / dashboard / mcp / curator / kanban / proxy / send / audit / portal について質問したときに使う。
+  MCP サーバー追加、hermes skills、curator、Kanban swarm、`/goal` `/subgoal` `/undo`、ボイスモード、TTS / STT、cron、メッセージング連携、LLM プロバイダー切替、OAuth、プラグイン開発、Shell hook、プロファイル管理、Bitwarden Secrets Manager に関する作業でも使う。
   MCP や gateway が Hermes Agent 以外の文脈で使われているときや、関係ない話題のときは使わない。
 ---
 
