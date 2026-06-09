@@ -5,11 +5,6 @@
   "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
-  "packages": [
-    "npm:@juicesharp/rpiv-btw",
-    "npm:@juicesharp/rpiv-todo",
-    "npm:pi-footer",
-    "npm:pi-mcp-adapter"
-  ],
+  "packages": ["npm:@narumitw/pi-btw", "npm:pi-footer", "npm:pi-mcp-adapter"],
   "quietStartup": true
 }
