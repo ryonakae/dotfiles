@@ -37,6 +37,7 @@ config/
 - 共通指示書の正本は `config/.agents/AGENTS.md`（言語・Python 実行・Web 検索ルール等）。`.claude/CLAUDE.md`、`.codex/AGENTS.md`、`.gemini/GEMINI.md`、`.pi/agent/AGENTS.md` はすべてこのファイルへの symlink にする
 - スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が各エージェントの `skills/` ディレクトリへ symlink する
 - 無効化したグローバルスキルは `config/.agents/skills/.disabled/` に移動する。ドットで始まるディレクトリは `create-skills-symlink.sh` の配布対象外
+- Pi の `pi-hooks` 設定は `config/.pi/agent/hooks.json`、実行スクリプトは `config/.pi/agent/scripts/` に置く。`hooks/` というディレクトリ名は Pi extension として自動読み込みされるため使わない
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
 - 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--enable=all-agents` で他エージェントの設定ディレクトリ（`~/.claude`, `~/.claude.json`, `~/.codex`, `~/.gemini` など）への rw を一括許可している（claude→codex のような cross-agent 実行を想定）
 - 機密ファイルの deny ルールと `~/.hermes` の allow は `config/.config/agent-safehouse/local-overrides.sb` に集約。`~/.hermes` は Hermes Agent の workdir かつ信頼境界として、汎用 deny（`.env` 等）を後勝ちで貫通させる

@@ -1,9 +1,10 @@
 #!/bin/sh
 
-# Claude Code / Codex 共通通知フック
+# Claude Code / Codex / Pi 共通通知フック
 # - Claude Code: stdin で JSON を受け取る
 # - Codex: argv[1] で JSON を受け取り、agent-turn-complete のみ通知する
 # - Gemini CLI: stdin で JSON を受け取る（Notification フック）
+# - Pi Coding Agent: pi-hooks の agent_end から呼ばれ、応答完了を通知する
 
 find_app_from_pid() {
   pid="$1"
@@ -137,6 +138,10 @@ case "$source" in
     fi
 
     message=$(echo "$input" | jq -r '.message // "Gemini CLI notification"' 2>/dev/null)
+    ;;
+  pi)
+    title="Pi"
+    message="Turn complete"
     ;;
   *)
     exit 0

@@ -5,6 +5,11 @@
   "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
-  "packages": ["npm:@narumitw/pi-btw", "npm:pi-footer", "npm:pi-mcp-adapter"],
+  "packages": [
+    "npm:@narumitw/pi-btw",
+    "npm:pi-footer",
+    "npm:pi-mcp-adapter",
+    "npm:@vahor/pi-hooks"
+  ],
   "quietStartup": true
 }

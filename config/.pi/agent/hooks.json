@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Vahor/pi-extensions/main/packages/pi-hooks/schemas/hooks.schema.json",
+  "hooks": {
+    "agent_end": [
+      {
+        "command": "$HOME/.pi/agent/scripts/notification.sh",
+        "timeout": 5000,
+        "print": false
+      }
+    ]
+  }
+}
