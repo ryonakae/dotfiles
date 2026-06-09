@@ -7,9 +7,6 @@ OVERRIDES="$HOME/.config/agent-safehouse/local-overrides.sb"
 # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
 export HISTFILE=/dev/null
 
-# Hermes セッション内 marker。子プロセスが Hermes runtime 由来だと判別できるようにする。
-export HERMES_AGENT=1
-
 # launchd 起動は fish の config.fish を経由しないため、Hermes runtime に必要な
 # cache/env を明示する。機密ではない実行環境値は .env ではなく wrapper に置く。
 export UV_CACHE_DIR="$HOME/.hermes/cache/uv"
@@ -27,7 +24,6 @@ args=(
   --env-pass=TERM_PROGRAM
   --env-pass=SSH_AUTH_SOCK
   --env-pass=HISTFILE
-  --env-pass=HERMES_AGENT
   --env-pass=UV_CACHE_DIR
   --env-pass=PIP_CACHE_DIR
   --env-pass=HERMES_DASHBOARD_HOST

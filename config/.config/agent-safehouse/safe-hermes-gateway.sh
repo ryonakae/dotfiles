@@ -7,10 +7,6 @@ OVERRIDES="$HOME/.config/agent-safehouse/local-overrides.sb"
 # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
 export HISTFILE=/dev/null
 
-# Hermes 公式に runtime 識別 marker が無いため、skill (commit-push など) が
-# 「Hermes セッション内」と判別できるよう独自 marker を子プロセスへ伝搬する。
-export HERMES_AGENT=1
-
 # launchd 起動は fish の config.fish を経由しないため、対話 fish セッションで
 # global export している agent-browser 系の env をここでも明示的に export する。
 # agent-safehouse 内で Chrome の内側 sandbox 初期化が失敗するため --no-sandbox 系を渡す。
@@ -27,7 +23,6 @@ args=(
   --env-pass=AGENT_BROWSER_PROFILE
   --env-pass=SSH_AUTH_SOCK
   --env-pass=HISTFILE
-  --env-pass=HERMES_AGENT
   --enable=macos-gui,ssh,agent-browser,docker,all-agents,wide-read,keychain
 )
 
