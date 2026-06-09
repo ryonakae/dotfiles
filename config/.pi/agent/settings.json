@@ -9,6 +9,7 @@
     "npm:@gotgenes/pi-subagents",
     "npm:pi-mcp-adapter",
     "npm:@juicesharp/rpiv-todo",
-    "npm:@juicesharp/rpiv-btw"
+    "npm:@juicesharp/rpiv-btw",
+    "npm:pi-footer"
   ]
 }
