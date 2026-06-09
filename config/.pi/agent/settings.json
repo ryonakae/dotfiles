@@ -1,7 +1,14 @@
 {
-  "lastChangelogVersion": "0.74.0",
+  "lastChangelogVersion": "0.79.0",
   "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-5.3-codex-spark",
+  "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "medium",
-  "enableInstallTelemetry": false
+  "enableInstallTelemetry": false,
+  "collapseChangelog": true,
+  "packages": [
+    "npm:@gotgenes/pi-subagents",
+    "npm:pi-mcp-adapter",
+    "npm:@juicesharp/rpiv-todo",
+    "npm:@juicesharp/rpiv-btw"
+  ]
 }

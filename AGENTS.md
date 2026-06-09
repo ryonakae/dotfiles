@@ -30,10 +30,11 @@ config/
 ├── .codex/                     # Codex 固有
 ├── .gemini/                    # Gemini CLI 固有
 ├── .hermes/                    # Hermes Agent 固有（SOUL.md、Docker compose）
+├── .pi/agent/                  # Pi Coding Agent 固有
 └── .config/agent-safehouse/    # sandbox-exec ポリシー
 ```
 
-- 共通指示書は `config/.agents/AGENTS.md`（言語・Python 実行・Web 検索ルール等）。`.claude/CLAUDE.md` と `.codex/AGENTS.md` から symlink されている。`.gemini/GEMINI.md` は別実体なので、共通ルール変更時は個別に同期する
+- 共通指示書の正本は `config/.agents/AGENTS.md`（言語・Python 実行・Web 検索ルール等）。`.claude/CLAUDE.md`、`.codex/AGENTS.md`、`.gemini/GEMINI.md`、`.pi/agent/AGENTS.md` はすべてこのファイルへの symlink にする
 - スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が各エージェントの `skills/` ディレクトリへ symlink する
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
 - 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--enable=all-agents` で他エージェントの設定ディレクトリ（`~/.claude`, `~/.claude.json`, `~/.codex`, `~/.gemini` など）への rw を一括許可している（claude→codex のような cross-agent 実行を想定）
