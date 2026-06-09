@@ -76,9 +76,9 @@ create_skill_symlink() (
   skill_name=$(basename "$skill_dir")
   target_path="$target_dir/$skill_name"
 
-  # スキップファイルのチェック
+  # 無効化したスキル置き場など、ドットで始まるディレクトリは配布しない
   case "$skill_name" in
-    .DS_Store)
+    .*|.DS_Store)
       return
       ;;
   esac
