@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "enabled": true,
+  "preset": "pi-footer",
+  "lines": [
+    [
+      {
+        "id": "model-provider-mq60b9a3-eqewla",
+        "type": "model-provider",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "icon": "",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false
+        }
+      },
+      {
+        "id": "thinking-level-mq60bsxa-l1x1md",
+        "type": "thinking-level",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "hideWhenEmpty": true,
+          "icon": "",
+          "text": "",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false
+        }
+      },
+      {
+        "id": "flex-separator-mq60bnka-8w7oy1",
+        "type": "flex-separator",
+        "enabled": true,
+        "options": {
+          "fg": "default",
+          "bg": "default",
+          "bold": false,
+          "hideWhenEmpty": true
+        }
+      },
+      {
+        "id": "context-mq60daet-ihxr1v",
+        "type": "context",
+        "enabled": true,
+        "options": {
+          "raw": false,
+          "icon": "Ctx: ",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false,
+          "contextConditionalColors": true,
+          "contextWarningPercent": 70,
+          "contextDangerPercent": 90,
+          "warningFg": "yellow",
+          "warningBg": "default",
+          "dangerFg": "red",
+          "dangerBg": "default"
+        }
+      }
+    ],
+    [
+      {
+        "id": "cwd-mq60u3cy-upp6g2",
+        "type": "cwd",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "icon": "",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false,
+          "cwdDisplayStyle": "fish",
+          "segments": 2
+        }
+      },
+      {
+        "id": "git-branch-mq60fe0j-3stjwf",
+        "type": "git-branch",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "hideWhenEmpty": true,
+          "icon": "",
+          "text": "",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false,
+          "gitBranchDisplayStyle": "default",
+          "surroundLeft": "",
+          "surroundRight": ""
+        }
+      },
+      {
+        "id": "flex-separator-mq60fkqf-eonu3r",
+        "type": "flex-separator",
+        "enabled": true,
+        "options": {
+          "fg": "default",
+          "bg": "default",
+          "bold": false,
+          "hideWhenEmpty": true
+        }
+      },
+      {
+        "id": "git-diff-mq60fmkh-ml64hm",
+        "type": "git-diff",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "hideWhenEmpty": true,
+          "icon": "",
+          "text": "",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false,
+          "gitDiffMode": "plain"
+        }
+      }
+    ]
+  ],
+  "separator": "space",
+  "separatorFg": "default",
+  "separatorBg": "default",
+  "iconMode": "nerd",
+  "minimalist": false,
+  "terminal": {
+    "widthMode": "full",
+    "colorLevel": "ansi256"
+  },
+  "extensionStatusRow": {
+    "hiddenKeys": [],
+    "knownKeys": []
+  }
+}
