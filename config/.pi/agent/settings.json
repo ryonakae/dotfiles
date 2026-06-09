@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.79.0",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
-  "defaultThinkingLevel": "medium",
+  "defaultThinkingLevel": "high",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
   "packages": [
@@ -11,5 +11,6 @@
     "npm:pi-mcp-adapter",
     "npm:@vahor/pi-hooks"
   ],
-  "quietStartup": true
+  "quietStartup": true,
+  "theme": "dark"
 }
