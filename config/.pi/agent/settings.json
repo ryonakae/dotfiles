@@ -11,5 +11,6 @@
     "npm:@juicesharp/rpiv-todo",
     "npm:@juicesharp/rpiv-btw",
     "npm:pi-footer"
-  ]
+  ],
+  "quietStartup": true
 }
