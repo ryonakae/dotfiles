@@ -100,14 +100,26 @@
     (home-subpath "/Movies")
 )
 
-;; ホスト上の各種クレデンシャル。--add-dirs=$HOME で safehouse default の
-;; deny が上書きされるため、ここで明示的に再宣言する。
-;; ~/.ssh は known_hosts / config / *.pub の read が git push 等に必要なため
-;; read は通し、authorized_keys 注入防止のため write のみ deny する。
-;; 秘密鍵 (id_rsa 等) は冒頭の汎用 deny block で read/write 両方塞がれている。
+;; ~/.ssh: 命名規則を問わず秘密鍵を read deny する。
+;; id_* 等の標準命名は冒頭の regex deny でも塞がれるが、非標準命名
+;; (例: ghe.mng.nintendo.net) を catch するため ~/.ssh 配下全体を deny し、
+;; git push / ssh 動作に必要な known_hosts / config / *.pub / authorized_keys
+;; のみホワイトリストで除外する。write は authorized_keys 注入防止のため一律 deny。
+(deny file-read*
+    (require-all
+        (regex (string-append "^" HOME_DIR "/\\.ssh/.*"))
+        (require-not (regex #".*\.pub$"))
+        (require-not (regex #".*/known_hosts(\.old)?$"))
+        (require-not (regex #".*/config$"))
+        (require-not (regex #".*/authorized_keys$"))
+    )
+)
 (deny file-write*
     (home-subpath "/.ssh")
 )
+
+;; ホスト上のその他クレデンシャル。--add-dirs=$HOME で safehouse default の
+;; deny が上書きされるため、ここで明示的に再宣言する。
 (deny file-read* file-write*
     (home-subpath "/.gnupg")
     (home-literal "/.aws/credentials")
