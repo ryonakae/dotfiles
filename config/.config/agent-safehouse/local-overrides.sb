@@ -101,9 +101,14 @@
 )
 
 ;; ホスト上の各種クレデンシャル。--add-dirs=$HOME で safehouse default の
-;; ~/.ssh deny が上書きされるため、ここで明示的に再宣言する。
-(deny file-read* file-write*
+;; deny が上書きされるため、ここで明示的に再宣言する。
+;; ~/.ssh は known_hosts / config / *.pub の read が git push 等に必要なため
+;; read は通し、authorized_keys 注入防止のため write のみ deny する。
+;; 秘密鍵 (id_rsa 等) は冒頭の汎用 deny block で read/write 両方塞がれている。
+(deny file-write*
     (home-subpath "/.ssh")
+)
+(deny file-read* file-write*
     (home-subpath "/.gnupg")
     (home-literal "/.aws/credentials")
     (home-literal "/.netrc")
