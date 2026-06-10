@@ -28,21 +28,13 @@ args=(
   --env-pass=PIP_CACHE_DIR
   --env-pass=HERMES_DASHBOARD_HOST
   --env-pass=HERMES_DASHBOARD_PORT
-  --enable=ssh,docker,all-agents,wide-read,keychain
+  --enable=ssh,docker,wide-read,keychain
 )
 
-# cwd 外の頻出 path を rw で開ける。dashboard は config/env/session/log へアクセスする。
+# HOME 全体を rw (__safehouse_args.fish と同期、denylist 型)。
+# 機密 / 個人 dir / Library 配下 credential は local-overrides.sb で後勝ち deny。
 # ~/.hermes は local-overrides.sb 側で信頼境界として allow されている前提。
-for dir in \
-  "$HOME/.config" \
-  "$HOME/.local" \
-  "$HOME/.cache" \
-  "$HOME/Library" \
-  "$HOME/dotfiles"; do
-  [ -d "$dir" ] && args+=(--add-dirs="$dir")
-done
-
-[ -d "$HOME/Dev" ] && args+=(--add-dirs="$HOME/Dev")
+args+=(--add-dirs="$HOME")
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
 exec safehouse "${args[@]}" -- hermes dashboard \

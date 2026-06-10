@@ -39,9 +39,9 @@ config/
 - 無効化したグローバルスキルは `config/.agents/skills/.disabled/` に移動する。ドットで始まるディレクトリは `create-skills-symlink.sh` の配布対象外
 - Pi の `pi-hooks` 設定は `config/.pi/agent/hooks.json`、実行スクリプトは `config/.pi/agent/scripts/` に置く。`hooks/` というディレクトリ名は Pi extension として自動読み込みされるため使わない
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
-- 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--enable=all-agents` で他エージェントの設定ディレクトリ（`~/.claude`, `~/.claude.json`, `~/.codex`, `~/.gemini` など）への rw を一括許可している（claude→codex のような cross-agent 実行を想定）
-- 機密ファイルの deny ルールと `~/.hermes` の allow は `config/.config/agent-safehouse/local-overrides.sb` に集約。`~/.hermes` は Hermes Agent の workdir かつ信頼境界として、汎用 deny（`.env` 等）を後勝ちで貫通させる
-- **`__safehouse_args.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` の `--add-dirs` / `--enable` リストは原則同期する**。ただし gateway は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
+- 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--add-dirs=$HOME` で HOME 全体を rw 開放する denylist 型ポリシーで、機密ファイル / 個人 dir / Library 配下の credential store だけを `local-overrides.sb` で後勝ち deny する
+- 機密ファイルの deny ルール、vendor 配下の例外 allow、`~/.hermes` の信頼境界 allow は `config/.config/agent-safehouse/local-overrides.sb` に集約。`~/.hermes` は Hermes Agent の workdir かつ信頼境界として、汎用 deny（`.env` 等）を後勝ちで貫通させる
+- **`__safehouse_args.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の `--add-dirs` / `--enable` リストは原則同期する**。ただし gateway / dashboard は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
 - Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status|update}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 
 ## Hermes Agent 固有メモ

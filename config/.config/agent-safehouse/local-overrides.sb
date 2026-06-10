@@ -54,13 +54,32 @@
     (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
 )
 
-;; Flutter SDK / pub cache / analysis server / Android SDK manager の状態は同じワークフローで必要になる。
+;; サードパーティ依存ディレクトリ配下に紛れる .env / 鍵 / pem は agent 個人の機密ではなく、
+;; git clone / ビルドで読み書きが必要。上記の汎用 deny を後勝ち allow で例外化する。
+;; これが無いと vendor/libghostty-vt/.envrc の checkout が deny されて clone が失敗する。
 (allow file-read* file-write*
-    (home-subpath "/.local/share/mise/installs/flutter")
-    (home-subpath "/.pub-cache")
-    (home-subpath "/.dart-tool")
-    (home-subpath "/.dartServer")
-    (home-subpath "/.android/cache")
+    (regex #".*/(vendor|node_modules|third_party)/.*/\.env[^/]*$")
+    (regex #".*/(vendor|node_modules|third_party)/.*/\.envrc$")
+    (regex #".*/(vendor|node_modules|third_party)/.*/id_(rsa|dsa|ecdsa|ed25519)$")
+    (regex #".*/(vendor|node_modules|third_party)/.*\.pem$")
+    (regex #".*/(vendor|node_modules|third_party)/.*\.p(8|12)$")
+    (regex #".*/(vendor|node_modules|third_party)/.*\.(key|jks|keystore)$")
+    ;; Cargo registry の test fixture (libnghttp2-sys 等)
+    (regex (string-append "^" HOME_DIR "/\\.cargo/registry/.*\\.pem$"))
+)
+
+;; --enable=xcode の標準プロファイルは macOS 26 / Xcode 26 系の Simulator runtime に
+;; 必要な mach service / fsctl をカバーしていないため、ここで補う。
+;; これが無いと simctl が "liblaunch_sim.dylib could not be opened" /
+;; "iOS-26-X Unavailable" で booted な Simulator を認識できない。
+(allow mach-lookup
+    (global-name "com.apple.CoreSimulator.simdiskimaged")
+    (global-name "com.apple.CoreSimulator.SimLaunchHost-arm64")
+)
+
+;; DMG / cryptex マウントの読み書きで simctl が発行する fsctl ioctl。
+(allow system-fsctl
+    (fsctl-command (_IO "J" 32))
 )
 
 ;; config.fish にマシンローカルの機密情報が含まれているため、
@@ -71,8 +90,7 @@
 )
 
 ;; 個人ユーザーデータ — エージェントが触る理由がない。
-;; --add-dirs=$HOME 直接指定はしていないが、Library 等を rw 開放しているのと
-;; 対称性を保つため、HOME 直下の personal directory はここで明示的に deny する。
+;; --add-dirs=$HOME で HOME 全体を rw 開放しているため、明示的に deny する必要がある。
 (deny file-read* file-write*
     (home-subpath "/Desktop")
     (home-subpath "/Downloads")
@@ -82,14 +100,26 @@
     (home-subpath "/Movies")
 )
 
-;; ホスト上の各種クレデンシャル。wide-read で / 全 read 開放しているため、
-;; 列挙ベースで個別に塞ぐ。~/.ssh は safehouse default で deny 済みなので含めない。
+;; ホスト上の各種クレデンシャル。--add-dirs=$HOME で safehouse default の
+;; ~/.ssh deny が上書きされるため、ここで明示的に再宣言する。
 (deny file-read* file-write*
+    (home-subpath "/.ssh")
     (home-subpath "/.gnupg")
     (home-literal "/.aws/credentials")
     (home-literal "/.netrc")
     (home-literal "/.git-credentials")
     (home-literal "/.kube/config")
+)
+
+;; Library 配下の macOS 機密ストア。HOME 全 rw 化で露出するため明示 deny する。
+;; Keychain DB、ブラウザ Cookie、Mail / Messages の本体ファイル。
+(deny file-read* file-write*
+    (home-subpath "/Library/Keychains")
+    (home-subpath "/Library/Cookies")
+    (home-subpath "/Library/Mail")
+    (home-subpath "/Library/Messages")
+    (home-subpath "/Library/Application Support/Google/Chrome")
+    (home-subpath "/Library/Application Support/Firefox")
 )
 
 ;; ~/.hermes は Hermes Agent の workdir かつ信頼境界。
