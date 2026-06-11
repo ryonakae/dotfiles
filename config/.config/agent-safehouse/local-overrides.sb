@@ -2,7 +2,7 @@
 ;; 生成ポリシーの後に読み込まれるため、ここでの deny/allow が最終的な優先権を持つ。
 ;; 通常の共有アクセスには --add-dirs-ro/--add-dirs を使い、ホスト固有のルールをここに書く。
 
-;; allow 済みパス（workdir, /tmp 等）内の機密ファイルをファイル名パターンで deny する。
+;; allow 済みパス（workdir, --add-dirs 列挙先, /tmp 等）内の機密ファイルをファイル名パターンで deny する。
 ;; ~/.ssh/id_* 等は Safehouse の deny default で保護済みだが、workdir にコピーされた
 ;; 機密ファイルはカバーされないため、ここで包括的に塞ぐ。
 ;;
@@ -68,6 +68,16 @@
     (regex (string-append "^" HOME_DIR "/\\.cargo/registry/.*\\.pem$"))
 )
 
+;; Flutter SDK / pub cache / analysis server / Android SDK manager の状態は同じワークフローで必要になる。
+;; いずれも wrapper の --add-dirs top-level 列挙の外なので、ここで明示 allow する。
+(allow file-read* file-write*
+    (home-subpath "/.local/share/mise/installs/flutter")
+    (home-subpath "/.pub-cache")
+    (home-subpath "/.dart-tool")
+    (home-subpath "/.dartServer")
+    (home-subpath "/.android/cache")
+)
+
 ;; --enable=xcode の標準プロファイルは macOS 26 / Xcode 26 系の Simulator runtime に
 ;; 必要な mach service / fsctl をカバーしていないため、ここで補う。
 ;; これが無いと simctl が "liblaunch_sim.dylib could not be opened" /
@@ -89,55 +99,14 @@
     (home-literal "/dotfiles/config/.config/fish/config.fish")
 )
 
-;; 個人ユーザーデータ — エージェントが触る理由がない。
-;; --add-dirs=$HOME で HOME 全体を rw 開放しているため、明示的に deny する必要がある。
-(deny file-read* file-write*
-    (home-subpath "/Desktop")
-    (home-subpath "/Downloads")
-    (home-subpath "/Documents")
-    (home-subpath "/Pictures")
-    (home-subpath "/Music")
-    (home-subpath "/Movies")
-)
-
-;; ~/.ssh: 命名規則を問わず秘密鍵を read deny する。
-;; id_* 等の標準命名は冒頭の regex deny でも塞がれるが、非標準命名
-;; (例: ghe.mng.nintendo.net) を catch するため ~/.ssh 配下全体を deny し、
-;; git push / ssh 動作に必要な known_hosts / config / *.pub / authorized_keys
-;; のみホワイトリストで除外する。write は authorized_keys 注入防止のため一律 deny。
-(deny file-read*
-    (require-all
-        (regex (string-append "^" HOME_DIR "/\\.ssh/.*"))
-        (require-not (regex #".*\.pub$"))
-        (require-not (regex #".*/known_hosts(\.old)?$"))
-        (require-not (regex #".*/config$"))
-        (require-not (regex #".*/authorized_keys$"))
-    )
-)
-(deny file-write*
-    (home-subpath "/.ssh")
-)
-
-;; ホスト上のその他クレデンシャル。--add-dirs=$HOME で safehouse default の
-;; deny が上書きされるため、ここで明示的に再宣言する。
+;; ホスト上の各種クレデンシャル。wide-read で / 全 read 開放しているため、
+;; 列挙ベースで個別に塞ぐ。~/.ssh は safehouse default で deny 済みなので含めない。
 (deny file-read* file-write*
     (home-subpath "/.gnupg")
     (home-literal "/.aws/credentials")
     (home-literal "/.netrc")
     (home-literal "/.git-credentials")
     (home-literal "/.kube/config")
-)
-
-;; Library 配下の macOS 機密ストア。HOME 全 rw 化で露出するため明示 deny する。
-;; ブラウザ Cookie、Mail / Messages の本体ファイル。
-;; Keychain は --enable=keychain で意図的に開けているため、ここでは deny しない
-;; (gh / git credential helper が認証情報を取得できなくなるため)。
-(deny file-read* file-write*
-    (home-subpath "/Library/Cookies")
-    (home-subpath "/Library/Mail")
-    (home-subpath "/Library/Messages")
-    (home-subpath "/Library/Application Support/Google/Chrome")
-    (home-subpath "/Library/Application Support/Firefox")
 )
 
 ;; ~/.hermes は Hermes Agent の workdir かつ信頼境界。

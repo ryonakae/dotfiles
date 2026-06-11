@@ -27,13 +27,30 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=AGENT_BROWSER_PROFILE \
         --env-pass=SSH_AUTH_SOCK \
         --env-pass=HISTFILE \
-        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,wide-read,keychain,xcode
+        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents,wide-read,keychain,xcode
 
-    # HOME 全体を rw 開放する denylist 型ポリシー。
-    # 機密ファイル / 個人 dir / Library 配下の credential store は local-overrides.sb で
-    # 後勝ち deny する。新ツール導入毎の --add-dirs 追加が不要になる。
+    # cwd 外の頻出 path を rw で開ける。--add-dirs=$HOME だと safehouse 既定の
+    # ~/.ssh deny 等を後勝ちで上書きしてしまうので、top-level ごとに列挙する。
+    # safehouse の 30-toolchains / all-agents で既に rw されている path (~/.bun, ~/.claude 等) は重複指定しない。
+    # ~/Library は丸ごと開けると Cookies / Mail / Messages / ブラウザ profile が露出するため、
+    # ~/Library/Caches だけ開けて他は default-deny に任せる。
     # ~/.hermes は信頼境界として deny を貫通させるため local-overrides.sb の allow 側に書く。
-    set -a args --add-dirs="$HOME"
+    for dir in \
+        "$HOME/.com.moomoo.OpenD" \
+        "$HOME/.config" \
+        "$HOME/.local" \
+        "$HOME/.cache" \
+        "$HOME/Library/Caches" \
+        "$HOME/dotfiles"
+        if test -d "$dir"
+            set -a args --add-dirs="$dir"
+        end
+    end
+
+    # 作業 repo 親 dir はマシンによって無い場合がある。
+    if test -d "$HOME/Dev"
+        set -a args --add-dirs="$HOME/Dev"
+    end
 
     # 機密 deny は固定ルールとして .sb 側に寄せ、wrapper では読み込み順だけを管理する。
     if test -f "$overrides"

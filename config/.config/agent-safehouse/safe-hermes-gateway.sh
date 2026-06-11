@@ -23,13 +23,22 @@ args=(
   --env-pass=AGENT_BROWSER_PROFILE
   --env-pass=SSH_AUTH_SOCK
   --env-pass=HISTFILE
-  --enable=macos-gui,ssh,agent-browser,docker,wide-read,keychain
+  --enable=macos-gui,ssh,agent-browser,docker,all-agents,wide-read,keychain
 )
 
-# HOME 全体を rw (__safehouse_args.fish と同期、denylist 型)。
-# 機密 / 個人 dir / Library 配下 credential は local-overrides.sb で後勝ち deny。
+# cwd 外の頻出 path を rw で開ける (__safehouse_args.fish と同期、allowlist 型)。
+# top-level ごとに列挙し、safehouse 既定の ~/.ssh deny 等を保つ。
 # ~/.hermes は信頼境界として deny を貫通させるため local-overrides.sb の allow 側に書く。
-args+=(--add-dirs="$HOME")
+for dir in \
+  "$HOME/.com.moomoo.OpenD" \
+  "$HOME/.config" \
+  "$HOME/.local" \
+  "$HOME/.cache" \
+  "$HOME/Library/Caches" \
+  "$HOME/dotfiles"; do
+  [ -d "$dir" ] && args+=(--add-dirs="$dir")
+done
+[ -d "$HOME/Dev" ] && args+=(--add-dirs="$HOME/Dev")
 
 # 機密ファイルの deny ルール
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
