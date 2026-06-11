@@ -129,9 +129,10 @@
 )
 
 ;; Library 配下の macOS 機密ストア。HOME 全 rw 化で露出するため明示 deny する。
-;; Keychain DB、ブラウザ Cookie、Mail / Messages の本体ファイル。
+;; ブラウザ Cookie、Mail / Messages の本体ファイル。
+;; Keychain は --enable=keychain で意図的に開けているため、ここでは deny しない
+;; (gh / git credential helper が認証情報を取得できなくなるため)。
 (deny file-read* file-write*
-    (home-subpath "/Library/Keychains")
     (home-subpath "/Library/Cookies")
     (home-subpath "/Library/Mail")
     (home-subpath "/Library/Messages")
