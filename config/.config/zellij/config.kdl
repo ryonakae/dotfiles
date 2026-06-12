@@ -28,23 +28,23 @@ keybinds {
     }
     shared {
         bind "Alt a" {
-            // ZAM 本体の floating pane サイズは env で wrapper に渡す。
+            LaunchOrFocusPlugin "file:~/.config/zellij/plugins/zam.wasm" {
+                floating true
+                move_to_focused_tab true
+            }
+        }
+        bind "Alt Shift a" {
+            // sidebar は Zellij CLI の生成後に左へ移動する。
             Run \
                 "env" \
-                "ZAM_FLOAT_X=5%" \
-                "ZAM_FLOAT_Y=5%" \
-                "ZAM_FLOAT_WIDTH=90%" \
-                "ZAM_FLOAT_HEIGHT=90%" \
+                "ZAM_SIDEBAR_WIDTH=32" \
+                "ZAM_SIDEBAR_IN_PLACE=1" \
                 "sh" \
                 "-c" \
-                "exec \"$HOME/.config/zellij/scripts/open-zam-floating.sh\"" {
+                "exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
+                name "zam-sidebar-launcher"
                 close_on_exit true
-                floating true
-                x "0%"
-                y "0%"
-                width "1"
-                height "1"
-                borderless true
+                direction "Right"
             }
         }
     }
