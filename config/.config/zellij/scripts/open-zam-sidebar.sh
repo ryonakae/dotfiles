@@ -5,6 +5,17 @@ zam_url="${ZAM_PLUGIN_URL:-file:$HOME/.config/zellij/plugins/zam.wasm}"
 sidebar_width="${ZAM_SIDEBAR_WIDTH:-32}"
 sidebar_title="${ZAM_SIDEBAR_TITLE:-ZAM Sidebar}"
 in_place="${ZAM_SIDEBAR_IN_PLACE:-0}"
+mode="${ZAM_SIDEBAR_MODE:-wrapper}"
+
+if [ "$mode" = "wrapper" ]; then
+  script_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+  wrapper="$script_dir/open-zam-sidebar-wrapper.sh"
+  if [ -x "$wrapper" ]; then
+    exec "$wrapper"
+  fi
+  echo "open-zam-sidebar-wrapper.sh is not executable: $wrapper" >&2
+  exit 1
+fi
 
 shell_quote() {
   printf "'%s'" "$(printf "%s" "$1" | sed "s/'/'\\\\''/g")"
