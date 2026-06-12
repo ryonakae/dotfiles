@@ -28,17 +28,6 @@ keybinds {
                 move_to_focused_tab true
             }
         }
-        bind "Alt Shift a" {
-            Run \
-                "sh" \
-                "-lc" \
-                "ZAM_SIDEBAR_WIDTH=20% ZAM_SIDEBAR_IN_PLACE=1 exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
-                name "zam-sidebar-launcher"
-                close_on_exit true
-                start_suspended false
-                direction "Right"
-            }
-        }
     }
     shared_except "locked" {
         bind "Ctrl Alt q" { Quit; }
@@ -48,17 +37,6 @@ keybinds {
             LaunchOrFocusPlugin "file:~/.config/zellij/plugins/zam.wasm" {
                 floating true
                 move_to_focused_tab true
-            }
-        }
-        bind "Alt Shift a" {
-            Run \
-                "sh" \
-                "-lc" \
-                "ZAM_SIDEBAR_WIDTH=20% ZAM_SIDEBAR_IN_PLACE=1 exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
-                name "zam-sidebar-launcher"
-                close_on_exit true
-                start_suspended false
-                direction "Right"
             }
         }
     }
