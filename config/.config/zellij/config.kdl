@@ -30,19 +30,13 @@ keybinds {
         }
         bind "Alt Shift a" {
             Run \
-                "env" \
-                "ZAM_SIDEBAR_WIDTH=20%" \
                 "sh" \
-                "-c" \
-                "exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
+                "-lc" \
+                "ZAM_SIDEBAR_WIDTH=20% ZAM_SIDEBAR_IN_PLACE=1 exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
                 name "zam-sidebar-launcher"
                 close_on_exit true
-                floating true
-                x "0%"
-                y "0%"
-                width "1"
-                height "1"
-                borderless true
+                start_suspended false
+                direction "Right"
             }
         }
     }
@@ -58,19 +52,13 @@ keybinds {
         }
         bind "Alt Shift a" {
             Run \
-                "env" \
-                "ZAM_SIDEBAR_WIDTH=20%" \
                 "sh" \
-                "-c" \
-                "exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
+                "-lc" \
+                "ZAM_SIDEBAR_WIDTH=20% ZAM_SIDEBAR_IN_PLACE=1 exec \"$HOME/.config/zellij/scripts/open-zam-sidebar.sh\"" {
                 name "zam-sidebar-launcher"
                 close_on_exit true
-                floating true
-                x "0%"
-                y "0%"
-                width "1"
-                height "1"
-                borderless true
+                start_suspended false
+                direction "Right"
             }
         }
     }
