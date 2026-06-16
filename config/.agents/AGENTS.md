@@ -11,5 +11,4 @@
 - `Operation not permitted` は agent-safehouse の制限。回避策を試みずユーザーに報告する
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - ライブラリ/API のドキュメント参照は `find-docs` スキルを使う
-- Web search は一次情報（公式ドキュメント、API リファレンス）を優先する
-- Web fetch が 403 で失敗したら `agent-browser` を使う
+- Web検索・ページ取得は一次情報（公式ドキュメント、API リファレンス）を優先し、検索/取得ツールの失敗時・未提供時や 403 では `agent-browser` をフォールバックに使う
