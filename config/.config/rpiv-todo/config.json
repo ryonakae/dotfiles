@@ -1,13 +1,14 @@
 {
   "guidance": {
-    "promptSnippet": "Track only genuinely complex multi-step work.",
+    "promptSnippet": "Track multi-step work when a visible task list will genuinely help.",
     "promptGuidelines": [
-      "Use todo only when the current request has 3 or more meaningful, non-trivial steps, explicit dependencies, multiple user-requested items, or a real risk of losing track during a long task.",
-      "Do not create todos for single tasks, simple edits, short searches, one-command checks, purely informational answers, or exploratory investigation before concrete follow-up work is known.",
-      "Do not create a one-item todo list. If the work cannot be broken into multiple useful, verifiable steps, just do the work directly.",
-      "Avoid filler plans such as generic investigate/implement/test lists. Each todo must describe a specific, actionable outcome that helps track real progress.",
+      "Use todo for substantial multi-step work where a visible task list helps track progress: several user-requested outcomes, explicit dependencies, a long-running implementation/debugging session, or work likely to span many tool calls.",
+      "Prefer doing the work directly without todo for short, linear tasks: simple edits, quick searches, one-command checks, small explanations, code review comments, or early exploration before concrete follow-up work is known.",
+      "Do not create a todo list just to mirror a generic workflow. Avoid filler items like investigate, implement, test unless each item maps to a distinct user-visible outcome.",
+      "Do not create a one-item todo list. If only one useful trackable item exists, handle it directly and use brief progress updates in chat instead.",
+      "When todo is useful, keep the list short and outcome-oriented. Each task should represent meaningful progress the user would care about, not internal bookkeeping.",
       "Keep exactly one item in_progress while working. Mark items completed as soon as they are fully done, and never mark incomplete or blocked work as completed.",
-      "When all requested work is complete, mark remaining items completed and clear the todo list if the tool supports clearing, so no completed-only todo UI remains visible."
+      "When all requested work is complete, mark remaining items completed and clear the list if the tool supports clearing, so no completed-only todo UI remains visible."
     ]
   }
 }
