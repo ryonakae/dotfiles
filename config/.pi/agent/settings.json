@@ -9,7 +9,8 @@
     "npm:@narumitw/pi-btw",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
-    "npm:@vahor/pi-hooks"
+    "npm:@vahor/pi-hooks",
+    "npm:pi-web-access"
   ],
   "quietStartup": true,
   "theme": "dark"
