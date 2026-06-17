@@ -13,6 +13,7 @@ disable-model-invocation: true
 ## トリガー方針
 
 - commit + push として使う: `/commit-push`、`commit-push`、`コミットプッシュして`、`コミットして push して`、`コミットしてプッシュまでやって` のように、commit と push を一連の操作として明示している場合。
+- 明示呼び出しとして使う: `/skill:commit-push` など、このスキルが直接呼び出され、追加の依頼文が無い場合は commit + push として扱う。追加の依頼文がある場合は、その文面で判定する。
 - commit-only として使う: `コミットして`、`commitして`、`コミット`、`commit`、`commit-push のコミット部分だけ` のように、commit だけを求めている場合。この場合は push しない。
 - 使わない: `プッシュして`、`pushして` のように、push だけを求めている場合。通常の push 手段で対応する。
 
