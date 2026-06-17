@@ -12,7 +12,8 @@
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:@vahor/pi-hooks",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:pi-rtk-optimizer"
   ],
   "quietStartup": true,
   "theme": "dark"
