@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.79.3",
+  "lastChangelogVersion": "0.79.4",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "high",
@@ -9,9 +9,7 @@
     "npm:@narumitw/pi-btw",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
-    "npm:@vahor/pi-hooks",
-    "npm:pi-web-access",
-    "npm:@gotgenes/pi-subagents"
+    "npm:@vahor/pi-hooks"
   ],
   "quietStartup": true,
   "theme": "dark"
