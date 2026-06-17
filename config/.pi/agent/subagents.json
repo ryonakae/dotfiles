@@ -1,0 +1,5 @@
+{
+  "disableDefaultAgents": true,
+  "schedulingEnabled": false,
+  "toolDescriptionMode": "compact"
+}
