@@ -1,6 +1,6 @@
 ---
 name: commit-push
-description: Conventional Commits メッセージを自動生成し、必要なら doc-updater skill を呼び出してからコミットと push を行うスキル。コミットしたい時、pushしたい時、ドキュメント更新込みでコミットしたい時に使用する。ユーザーが /commit-push と明示的に指示した場合を除き、自律的に起動しない。
+description: 安全なステージング、作業テーマ単位のコミット分割、Conventional Commits メッセージ生成、doc-updater、必要に応じた push までを行うスキル。`/commit-push`、`commit-push`、`コミットプッシュして`、`コミットして push して` など commit と push を一連で求められたとき、または `コミットして` / `commit` など commit だけを求められたときに使う。push は明示された場合だけ実行し、commit-only では push せず止まる。`pushして`、`プッシュして` など push だけの指示では使わない。
 disable-model-invocation: true
 ---
 
@@ -8,39 +8,118 @@ disable-model-invocation: true
 
 ## 概要
 
-ステージング確認 → ドキュメント更新（doc-updater に委譲）→ コミット＆push を順に行う。コミットメッセージの runtime 別ルールは [`references/commit-message-profiles.md`](references/commit-message-profiles.md) に分離している。
+コミット対象の決定 → 必要な単位への分割 → ドキュメント更新（doc-updater に委譲）→ コミット群の作成 → 必要なら push を順に行う。push はユーザーが明示した場合だけ実行する。コミットメッセージの runtime 別ルールは [`references/commit-message-profiles.md`](references/commit-message-profiles.md) に分離している。
+
+## トリガー方針
+
+- commit + push として使う: `/commit-push`、`commit-push`、`コミットプッシュして`、`コミットして push して`、`コミットしてプッシュまでやって` のように、commit と push を一連の操作として明示している場合。
+- commit-only として使う: `コミットして`、`commitして`、`コミット`、`commit`、`commit-push のコミット部分だけ` のように、commit だけを求めている場合。この場合は push しない。
+- 使わない: `プッシュして`、`pushして` のように、push だけを求めている場合。通常の push 手段で対応する。
+
+## 基本方針
+
+- まずセッション内で作成・編集・削除したファイルを優先する。ユーザーや別プロセスの変更を巻き込まないため、セッション変更セットがある場合はそれだけを扱う。
+- このスキルを実行するためだけに新規セッションが立ち上がることもある。セッション変更セットが空の場合は、リポジトリ上の変更を commit-push 対象として扱う。ただし staged と unstaged が混在していて意図が曖昧な場合は確認する。
+- コミット粒度は作業テーマ単位の atomic commit を基本にする。同じテーマの完了に必要な実装・テスト・docs・設定はまとめ、同じセッション内でも A/B のように別テーマの変更は分ける。
 
 ## 手順
 
-### ステップ1: ステージング確認
+`git add` は、対象決定・混在リスク確認・コミット計画が終わってから実行する。先に仮 stage してから検査する運用にはしない。
 
-1. ステージング済みファイルを確認する。何もなければ `git add -A` で全てステージングする。一部だけステージング済みなら、ステージング済みの変更だけを対象にする。
-2. 変更が無い場合は終了する。
+### フェーズ1: 計画
 
-### ステップ2: ドキュメント自動更新
+#### ステップ1: 状態と差分を把握する
 
-1. このセッション内で既にドキュメント更新済み、または更新不要と判断済みならスキップする
-2. ドキュメントファイルがすでにステージされていて追加更新が不要ならスキップする
+1. `git status --short` で worktree と index の状態を確認する。変更が無ければ終了する。
+2. `git diff --cached` と `git diff` の両方を確認する。staged / unstaged / untracked のどこに変更があるかを把握してから対象を決める。untracked が対象候補になる場合は、必要に応じてファイル本文も確認する。
+3. 会話とツール履歴から、このセッション内で作成・編集・削除したファイルの集合（以降「セッション変更セット」）を特定する。自分が実際に変更したパスだけを含め、読んだだけのファイルや変更した事実を確認できないパスは含めない。
+
+#### ステップ2: commit-push 対象を決める
+
+1. セッション変更セットがある場合は、それだけを今回の対象候補にする。セッション変更セット外の staged 変更がある場合は、staged にはユーザーの意図がある可能性が高いため、勝手に unstage せず確認して停止する。
+2. セッション変更セットが空の場合は、commit-push 専用セッションとして扱う。staged と unstaged が混在している場合は、既存 staged の意図がある可能性があるため、全変更を対象にするか staged のみを対象にするか確認して停止する。
+3. セッション変更セットが空で、staged / unstaged の混在が無い場合は、リポジトリ上の変更を今回の対象候補にする。staged のみなら staged 変更、unstaged / untracked のみならそれら全てを対象候補にする。
+4. 同一ファイル内に対象外変更と対象候補の変更が混在する可能性がある場合は、path 単位で staging しない。hunk 単位の自動 staging も行わず、対象ファイル・混在リスク・推奨案を提示して確認して停止する。
+
+#### ステップ3: コミット計画を作る
+
+1. staged diff / unstaged diff / 会話の流れを読み、対象候補を作業テーマ単位へ分ける。判断基準:
+   - 同じユーザー依頼・同じ作業目的・同じ会話上の区切りに属するか
+   - そのテーマの完了に実装・テスト・docs・設定変更がまとめて必要か
+   - 片方だけを review / revert しても意味が壊れない別テーマか
+   - commit message の subject が自然に 1 つで表現できるか
+2. 同じテーマの完了に必要な変更は、ファイル種別や commit type だけで細かく分けない。A の機能改修に必要な実装・テスト・docs は A の 1 コミットにまとめる。
+3. 同じセッション内でも A と B のように別テーマの変更、無関係な修正、独立して revert できる準備作業は分ける。明らかに独立している場合だけ自動で複数コミットにし、迷う場合は分割案・対象ファイル・迷っている理由を提示して確認して停止する。
+4. 各コミット単位について、stage する path を決める。hunk 単位の分割が必要な場合は自動 staging せず確認して停止する。
+
+### フェーズ2: 実行
+
+#### ステップ4: コミット単位ごとに stage する
+
+1. コミット計画の順に、次に作る 1 コミット分だけを stage する。index に既に今回対象候補の staged 変更がある場合は、対象候補の範囲だけを `git restore --staged -- <target-paths...>` でいったん外し、次のコミット単位だけを `git add -A -- <commit-paths...>` で stage する。
+2. 最終安全確認として、対象外 staged 変更が残っていないか確認する。対象外 staged 変更はユーザーの意図がある可能性が高いため勝手に unstage しない。残ったままでは commit に混入するため、見つけたら commit せず確認して停止する。
+3. stage 後に `git diff --cached --name-only` と `git diff --cached` を確認し、index に次の 1 コミット分だけが入っていることを確認する。
+4. 意図したテーマ外のファイル、同一ファイル内の対象外変更混入が見えた場合は、commit せず確認して停止する。
+
+#### ステップ5: ドキュメント自動更新
+
+各コミット単位で、対象差分だけを staged にした状態で実行する。ドキュメント更新も作業テーマの一部として扱い、A の変更に必要な docs は A のコミットへ含める。
+
+1. このセッション内で同じ対象について既にドキュメント更新済み、または更新不要と判断済みならスキップする。
+2. ドキュメントファイルがすでに staged diff に含まれていて追加更新が不要ならスキップする。
 3. doc-updater をサブエージェントで実行する（可能なら軽量モデルを使う）。サブエージェントへの指示:
    - doc-updater スキルを読んで従う
    - 対象は staged change のみ
    - commit/push は行わない
    - `git add` は行わず、更新したファイルのパス一覧を返す
    サブエージェントが使えない場合は doc-updater スキルを inline で実行する。
-4. doc-updater が更新したファイルがあれば `git add <file...>` でステージングに追加する。更新不要なら次に進む
+4. doc-updater が更新したファイルがあれば、返された出力から `(unstaged)` などの注記を除いたファイルパスだけを取り出し、`git add <file...>` で stage する。更新不要なら次に進む。
+5. doc-updater 後に `git diff --cached --name-only` と `git diff --cached` を確認する。対象外 staged、意図したテーマ外のファイル、doc-updater による想定外に広い更新が見えた場合だけ、commit せず確認して停止する。docs の文面や細かな粒度の好みでは止めない。
 
-### ステップ3: コミットメッセージ生成 & push
+#### ステップ6: コミットメッセージ生成と commit
 
-1. [`references/commit-message-profiles.md`](references/commit-message-profiles.md) を読み、選択順に従って profile を 1 つ選ぶ
-2. `git diff --cached` で差分を確認し、コミットメッセージを作る
+1. [`references/commit-message-profiles.md`](references/commit-message-profiles.md) を読み、選択順に従って profile を 1 つ選ぶ。
+2. コミット単位ごとに `git diff --cached` で最終差分を確認し、コミットメッセージを作る。
    - Conventional Commits 形式（`<type>(<scope>): <subject>`）
    - type: `feat|fix|docs|refactor|perf|test|build|ci|chore`
    - scope は分かる場合のみ。subject の末尾に句点は付けない
    - body は必要な場合のみ
    - profile の trailer・追加ルールに従う
 3. `git commit -m "..."` でコミットする。body や trailer がある場合は別の `-m` で渡す。
-4. `git push` する。失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
+4. コミット後に `git status --short` を確認し、次のコミット単位に進める状態か確認する。複数コミットの場合は、次のコミット単位についてステップ4〜6を繰り返す。
+
+#### ステップ7: push
+
+1. ユーザーが commit + push を一連の操作として明示している場合だけ `git push` する。
+2. commit-only の指示なら push せず、作成したコミットと「push は未実行」であることを伝えて終了する。
+3. push に失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
+
+## 代表ケース
+
+- `コミットして` / `commit`: commit-only として実行し、push せず終了する。
+- `コミットプッシュして` / `commit-push`: commit + push として実行する。
+- `pushして`: このスキルは原則使わず、通常の push 手段で対応する。
+- セッション変更セットあり + 無関係な unstaged 変更あり: セッション変更セットだけを対象にする。
+- セッション変更セットあり + 対象外 staged 変更あり: staged の意図を尊重し、勝手に unstage せず確認して停止する。
+- セッション変更セットなし + staged/unstaged 混在: commit-push 専用セッションでも確認して停止する。
+- A の実装・テスト・docs・設定変更: A の 1 コミットにまとめる。
+- 同じセッションで A と B の別テーマを変更: A / B の 2 コミットに分ける。
+- 同一ファイル内に対象外変更と対象変更が混在: path 単位で stage せず確認して停止する。
+- doc-updater が返したファイル: 自動で stage し、commit 前の最終 diff で対象外混入や想定外に広い更新だけ確認する。
 
 ## 注意
 
-- 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない
+- 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない。
+- ユーザーや別プロセスの変更を巻き込まないことを優先する。対象外の変更がある場合は、コミットせず残す。
+- 対象外の既存 staged 変更はユーザーの意図がある可能性を尊重し、勝手に unstage しない。commit-push 対象に含めると決めた staged 変更だけは、コミット分割のために対象範囲内で unstage / restage してよい。
+- hunk 単位の staging が必要な場面では、patch を推測で作らずユーザー確認を待つ。
+- 対話プロンプトで止まるコマンドは避け、必要な確認はユーザーに質問してから非対話コマンドで進める。
+
+## ユーザー確認が必要な場合の出力
+
+曖昧なまま commit / push しない。確認が必要な場合は、次を簡潔に提示して停止する。
+
+- 確認が必要な理由
+- 対象ファイル
+- 推奨する扱い（例: 全変更を対象 / staged のみ / A と B に分割 / 1 コミットにまとめる / staged を維持して停止）
+- 代替案
