@@ -1,0 +1,13 @@
+{
+  "guidance": {
+    "promptSnippet": "Track only genuinely complex multi-step work.",
+    "promptGuidelines": [
+      "Use todo only when the current request has 3 or more meaningful, non-trivial steps, explicit dependencies, multiple user-requested items, or a real risk of losing track during a long task.",
+      "Do not create todos for single tasks, simple edits, short searches, one-command checks, purely informational answers, or exploratory investigation before concrete follow-up work is known.",
+      "Do not create a one-item todo list. If the work cannot be broken into multiple useful, verifiable steps, just do the work directly.",
+      "Avoid filler plans such as generic investigate/implement/test lists. Each todo must describe a specific, actionable outcome that helps track real progress.",
+      "Keep exactly one item in_progress while working. Mark items completed as soon as they are fully done, and never mark incomplete or blocked work as completed.",
+      "When all requested work is complete, mark remaining items completed and clear the todo list if the tool supports clearing, so no completed-only todo UI remains visible."
+    ]
+  }
+}
