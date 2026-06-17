@@ -152,6 +152,50 @@ $ brew doctor
 
 ---
 
+## 外部スキル（npx skills）
+
+各種 AI エージェント（Claude Code, Codex, Gemini CLI 等）で共有するグローバルスキルは [`npx skills`](https://skills.sh/) で管理する。lock ファイルは dotfiles で管理し、symlink でホームに展開する。
+
+### 構成
+
+- 実体スキル: `~/.agents/skills/<skill-name>/`
+- 各エージェント側からは `~/.claude/skills/<skill-name>` → `~/.agents/skills/<skill-name>` の symlink で参照
+- lock ファイル: `config/skills-lock.json`（dotfiles 管理）。`~/skills-lock.json` がここへの symlink
+- `config/.agents/skills/` 配下の自作スキルは dotfiles 管理。`npx skills` の管理対象外
+
+### 実行ディレクトリ
+
+**`npx skills` コマンドは必ず `cd ~`（ホーム）で実行する**。`experimental_install` / `add` は cwd の `skills-lock.json` を読み、cwd 配下の `.agents/skills/` に展開する仕様なので、他の場所で実行するとそこに `skills-lock.json` と `.agents/skills/` が作られてしまう。
+
+### 基本コマンド
+
+```sh
+# lock に書かれているスキルを ~/.agents/skills/ に展開（新規マシン・復元）
+cd ~ && npx skills experimental_install
+
+# スキルを追加（lock にも自動追記される）
+cd ~ && npx skills add <owner>/<repo> -y                   # 全 skill
+cd ~ && npx skills add <owner>/<repo> -s <skill-name> -y   # 個別 skill
+
+# スキルを削除
+cd ~ && npx skills remove -s <skill-name> -y
+
+# 一覧・更新・検索
+cd ~ && npx skills list
+cd ~ && npx skills update
+cd ~ && npx skills find
+```
+
+`-g` フラグは使わない（user スコープの別ディレクトリに入ってしまい、現状の運用と整合しない）。
+
+### スキル追加後の手順
+
+1. `cd ~ && npx skills add ...` で `~/.agents/skills/` に展開＆ `~/skills-lock.json`（= dotfiles の `config/skills-lock.json`）が自動更新される
+2. `~/.claude/skills/<skill-name>` から `../../.agents/skills/<skill-name>` への symlink を貼る（他エージェントの `skills/` も同様）
+3. dotfiles の `config/skills-lock.json` の差分をコミット
+
+---
+
 ## Hermes Agent
 
 gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hindsight は `~/.hermes/services/docker-compose.yml` で Docker 管理する。Dashboard は Docker で `~/.hermes` を bind mount しない。`~/.hermes/hindsight/` は Hermes 本体と Docker の双方が読み書きする共有領域。
