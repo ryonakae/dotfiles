@@ -8,6 +8,7 @@
   "packages": [
     "npm:@narumitw/pi-btw",
     "npm:@tintinweb/pi-subagents",
+    "npm:@juicesharp/rpiv-todo",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:@vahor/pi-hooks",
