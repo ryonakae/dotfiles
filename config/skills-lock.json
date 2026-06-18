@@ -37,6 +37,12 @@
       "skillPath": "SKILL.md",
       "computedHash": "617bf97d33162a6bd0da4f40a97aac589de58e5a6c9cf011ed6108992210e7cb"
     },
+    "stop-slop-ja": {
+      "source": "kyaukyuai/stop-slop-ja",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "55b42694bb7aafed5d867f9b450490024d086f1f873408313c773c4b7f5e9d56"
+    },
     "tdd": {
       "source": "mattpocock/skills",
       "sourceType": "github",
