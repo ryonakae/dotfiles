@@ -2,7 +2,7 @@
   "enabled": true,
   "mode": "rewrite",
   "guardWhenRtkMissing": true,
-  "showRewriteNotifications": true,
+  "showRewriteNotifications": false,
   "outputCompaction": {
     "enabled": true,
     "stripAnsi": true,
@@ -22,7 +22,7 @@
     },
     "aggregateTestOutput": true,
     "filterBuildOutput": true,
-    "compactGitOutput": true,
+    "compactGitOutput": false,
     "aggregateLinterOutput": true,
     "groupSearchOutput": true,
     "trackSavings": true
