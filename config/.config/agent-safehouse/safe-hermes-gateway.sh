@@ -43,4 +43,4 @@ done
 # 機密ファイルの deny ルール
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
-exec safehouse "${args[@]}" -- hermes gateway run
+exec safehouse "${args[@]}" -- hermes --profile default gateway run
