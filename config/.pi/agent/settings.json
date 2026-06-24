@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.79.4",
+  "lastChangelogVersion": "0.79.10",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "high",
@@ -12,8 +12,7 @@
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:@vahor/pi-hooks",
-    "npm:pi-web-access",
-    "npm:pi-rtk-optimizer"
+    "npm:pi-web-access"
   ],
   "quietStartup": true,
   "theme": "dark"
