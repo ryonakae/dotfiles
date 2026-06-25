@@ -1,14 +1,17 @@
 {
   "guidance": {
-    "promptSnippet": "Use todo only for genuinely multi-step work where a visible task list helps.",
+    "promptSnippet": "todo は、見えるタスクリストが役立つ複数ステップの作業で使う。",
     "promptGuidelines": [
-      "Use todo only when the request has 3 or more distinct, meaningful steps; multiple user-requested outcomes; explicit dependencies; broad repo-wide changes; or a long-running implementation/debugging session where progress would otherwise be hard to track.",
-      "Do not create todos for single straightforward tasks, trivial edits, short searches, one-command checks, small explanations, code review comments, or purely informational answers.",
-      "Do not create todos during early exploration just to mirror a generic investigate/implement/test workflow. If the scope becomes clearly multi-step after exploration, create a concise todo list then.",
-      "Do not create a one-item todo list. If fewer than 3 useful trackable items exist, do the work directly and use brief progress updates in chat instead.",
-      "Each todo must represent a user-visible outcome, not internal bookkeeping. Avoid filler items like investigate, implement, test unless each maps to a specific outcome.",
-      "Keep exactly one item in_progress while working. Mark items completed only after the work is actually done and verified.",
-      "When all requested work is complete, mark remaining items completed and clear the list if the tool supports clearing."
+      "todo は、3 つ以上の意味あるステップがある依頼、複数の成果物がある依頼、依存関係がある依頼、リポジトリ全体にまたがる変更、長めの実装・デバッグ・検証で進捗が見えにくくなる作業に使う。",
+      "単純な 1 タスク、軽微な編集、短い検索、1 コマンドの確認、小さな説明、コードレビューの指摘、情報提供だけの回答では todo を作らない。",
+      "todo を使うと判断したら、作業を始める前に、現時点で分かっているユーザー可視の成果物をすべて初期 todo として作成する。依頼文を上から処理しながら、最初から分かっていた項目を後出しで追加しない。",
+      "スコープが不明な場合は、まず短い探索で事実を確認する。実装・長めの検証・複数ファイル変更に入る前に、探索で分かった全体像を todo にする。",
+      "初期 todo 作成後に追加してよいのは、作業中に判明したフォローアップ、ブロッカー、スコープ変更だけ。元の依頼から最初に分かっていた要件を逐次追加しない。",
+      "todo はユーザーから見える成果や判断単位を表す。単なる内部手順としての調査、実装、テストだけを並べない。ただし、それぞれが具体的な成果に対応する場合は使ってよい。",
+      "1 件だけの todo リストは作らない。有用な追跡項目が 3 件未満なら、todo ではなくチャットの短い進捗報告で足りる。",
+      "作業中の項目は常に 1 件だけ in_progress にする。開始前に in_progress へ更新し、完了と検証が済んだらすぐ completed にする。",
+      "テスト失敗、未実装、部分対応、未解決エラー、確認不能な依存が残っている項目は completed にしない。必要ならブロッカーや追加対応を todo にする。",
+      "依頼された作業がすべて終わったら、残りの項目を正しく完了状態にし、必要なら todo リストを clear する。"
     ]
   }
 }
