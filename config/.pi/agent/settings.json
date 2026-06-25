@@ -5,6 +5,7 @@
   "defaultThinkingLevel": "high",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
+  "enableSkillCommands": false,
   "packages": [
     "npm:@narumitw/pi-btw",
     "npm:@tintinweb/pi-subagents",
@@ -14,7 +15,8 @@
     "npm:@vahor/pi-hooks",
     "npm:pi-web-access",
     "npm:@narumitw/pi-goal",
-    "npm:pi-inline-skill-autocomplete"
+    "npm:@tifan/pi-inline-skills",
+    "npm:@tifan/pi-fixed-editor"
   ],
   "quietStartup": true,
   "theme": "dark"
