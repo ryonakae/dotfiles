@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.79.10",
+  "lastChangelogVersion": "0.80.2",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.5",
   "defaultThinkingLevel": "high",
@@ -14,7 +14,7 @@
     "npm:@vahor/pi-hooks",
     "npm:pi-web-access",
     "npm:@narumitw/pi-goal",
-    "npm:@tifan/pi-inline-skills"
+    "npm:pi-inline-skill-autocomplete"
   ],
   "quietStartup": true,
   "theme": "dark"
