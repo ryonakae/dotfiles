@@ -12,7 +12,9 @@
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:@vahor/pi-hooks",
-    "npm:pi-web-access"
+    "npm:pi-web-access",
+    "npm:@narumitw/pi-goal",
+    "npm:@tifan/pi-inline-skills"
   ],
   "quietStartup": true,
   "theme": "dark"
