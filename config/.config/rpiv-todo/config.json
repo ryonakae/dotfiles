@@ -1,14 +1,14 @@
 {
   "guidance": {
-    "promptSnippet": "Track multi-step work when a visible task list will genuinely help.",
+    "promptSnippet": "Use todo only for genuinely multi-step work where a visible task list helps.",
     "promptGuidelines": [
-      "Use todo for substantial multi-step work where a visible task list helps track progress: several user-requested outcomes, explicit dependencies, a long-running implementation/debugging session, or work likely to span many tool calls.",
-      "Prefer doing the work directly without todo for short, linear tasks: simple edits, quick searches, one-command checks, small explanations, code review comments, or early exploration before concrete follow-up work is known.",
-      "Do not create a todo list just to mirror a generic workflow. Avoid filler items like investigate, implement, test unless each item maps to a distinct user-visible outcome.",
-      "Do not create a one-item todo list. If only one useful trackable item exists, handle it directly and use brief progress updates in chat instead.",
-      "When todo is useful, keep the list short and outcome-oriented. Each task should represent meaningful progress the user would care about, not internal bookkeeping.",
-      "Keep exactly one item in_progress while working. Mark items completed as soon as they are fully done, and never mark incomplete or blocked work as completed.",
-      "When all requested work is complete, mark remaining items completed and clear the list if the tool supports clearing, so no completed-only todo UI remains visible."
+      "Use todo only when the request has 3 or more distinct, meaningful steps; multiple user-requested outcomes; explicit dependencies; broad repo-wide changes; or a long-running implementation/debugging session where progress would otherwise be hard to track.",
+      "Do not create todos for single straightforward tasks, trivial edits, short searches, one-command checks, small explanations, code review comments, or purely informational answers.",
+      "Do not create todos during early exploration just to mirror a generic investigate/implement/test workflow. If the scope becomes clearly multi-step after exploration, create a concise todo list then.",
+      "Do not create a one-item todo list. If fewer than 3 useful trackable items exist, do the work directly and use brief progress updates in chat instead.",
+      "Each todo must represent a user-visible outcome, not internal bookkeeping. Avoid filler items like investigate, implement, test unless each maps to a specific outcome.",
+      "Keep exactly one item in_progress while working. Mark items completed only after the work is actually done and verified.",
+      "When all requested work is complete, mark remaining items completed and clear the list if the tool supports clearing."
     ]
   }
 }
