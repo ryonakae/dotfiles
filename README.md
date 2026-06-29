@@ -217,6 +217,7 @@ gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hi
 - `config/.hermes/hindsight/.env.example` — hindsight LLM 設定テンプレート
 - `config/.config/agent-safehouse/safe-hermes-gateway.sh` — gateway launchd 用 safehouse ラッパー
 - `config/.config/agent-safehouse/safe-hermes-dashboard.sh` — dashboard launchd 用 safehouse ラッパー
+- `config/.config/fish/functions/__safehouse_args.fish` — 共通 safehouse 引数。`~/.config`, `~/.local`, `~/.cache`, `~/Library/Caches`, `~/dotfiles`, `~/Dev`, `~/.shepherd` を allowlist に含める
 - `config/.config/fish/functions/hermes-gateway.fish` — gateway 管理コマンド
 - `config/.config/fish/functions/hermes-dashboard.fish` — dashboard 管理コマンド
 
