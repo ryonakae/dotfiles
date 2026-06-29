@@ -40,6 +40,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         "$HOME/.config" \
         "$HOME/.local" \
         "$HOME/.cache" \
+        "$HOME/.shepherd" \
         "$HOME/Library/Caches" \
         "$HOME/dotfiles"
         if test -d "$dir"

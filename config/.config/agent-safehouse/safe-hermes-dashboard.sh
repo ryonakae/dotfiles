@@ -39,6 +39,7 @@ for dir in \
   "$HOME/.config" \
   "$HOME/.local" \
   "$HOME/.cache" \
+  "$HOME/.shepherd" \
   "$HOME/Library/Caches" \
   "$HOME/dotfiles"; do
   [ -d "$dir" ] && args+=(--add-dirs="$dir")
