@@ -24,6 +24,10 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=NO_BROWSER \
         --env-pass=TERM_PROGRAM \
         --env-pass=HERDR_ENV \
+        --env-pass=HERDR_SOCKET_PATH \
+        --env-pass=HERDR_WORKSPACE_ID \
+        --env-pass=HERDR_TAB_ID \
+        --env-pass=HERDR_PANE_ID \
         --env-pass=AGENT_BROWSER_ARGS \
         --env-pass=AGENT_BROWSER_PROFILE \
         --env-pass=SSH_AUTH_SOCK \
