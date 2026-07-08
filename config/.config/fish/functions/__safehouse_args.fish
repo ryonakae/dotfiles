@@ -23,6 +23,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env-pass=DISABLE_AUTOUPDATER \
         --env-pass=NO_BROWSER \
         --env-pass=TERM_PROGRAM \
+        --env-pass=HERDR_ENV \
         --env-pass=AGENT_BROWSER_ARGS \
         --env-pass=AGENT_BROWSER_PROFILE \
         --env-pass=SSH_AUTH_SOCK \
