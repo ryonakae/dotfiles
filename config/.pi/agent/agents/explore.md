@@ -2,7 +2,8 @@
 display_name: Explore
 description: Deeply analyzes existing codebase features by tracing execution paths, mapping architecture layers, understanding patterns and abstractions, and documenting dependencies to inform new development.
 tools: read, grep, find, ls, bash
-model: openai-codex/gpt-5.4-mini
+model: openai-codex/gpt-5.6-terra
+thinking: medium
 prompt_mode: replace
 ---
 
