@@ -11,8 +11,9 @@
   "agent_servers": {},
   "language_models": {
     "opencode": {
+      "show_go_models": false,
       "show_free_models": false,
-      "show_zen_models": false,
+      "show_zen_models": true,
     },
   },
   "project_panel": {
@@ -32,9 +33,9 @@
     "open_ai_compatible_api": {
       "prompt_format": "deepseek_coder",
       "model": "deepseek-v4-flash",
-      "api_url": "https://opencode.ai/zen/go/v1/chat/completions",
+      "api_url": "https://opencode.ai/zen/v1/chat/completions",
     },
-    "provider": "copilot",
+    "provider": "open_ai_compatible_api",
   },
   "collaboration_panel": {
     "dock": "right",
@@ -78,14 +79,14 @@
     "dock": "right",
     "button": true,
     "default_model": {
-      "effort": "high",
-      "provider": "copilot_chat",
-      "model": "claude-haiku-4.5",
+      "effort": "medium",
+      "provider": "opencode",
+      "model": "zen/deepseek-v4-flash",
       "enable_thinking": true,
     },
     "commit_message_model": {
-      "provider": "copilot_chat",
-      "model": "claude-haiku-4.5",
+      "provider": "opencode",
+      "model": "zen/deepseek-v4-flash",
     },
   },
 }
