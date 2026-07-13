@@ -50,7 +50,7 @@
   "git_panel": {
     "show_count_badge": false,
     "file_icons": true,
-    "sort_by_path": false,
+    "sort_by": "name",
     "collapse_untracked_diff": false,
     "status_style": "label_color",
     "dock": "left",
