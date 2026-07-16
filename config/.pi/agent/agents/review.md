@@ -2,8 +2,8 @@
 display_name: Review
 description: Reviews code changes for correctness, regressions, security, specification compliance, and test gaps without modifying files. Use for task-level, staged, commit-range, or final branch reviews.
 tools: read, grep, find, ls, bash
-model: openai-codex/gpt-5.6-sol
-thinking: medium
+model: openai-codex/gpt-5.6-terra
+thinking: high
 prompt_mode: replace
 isolated: true
 ---
