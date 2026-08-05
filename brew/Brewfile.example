@@ -33,7 +33,6 @@ brew 'zoxide'
 # パッケージマネージャ
 brew 'mas'
 brew 'mise'
-brew 'ni'
 brew 'usage'
 brew 'uv'
 
