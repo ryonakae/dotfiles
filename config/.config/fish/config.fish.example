@@ -67,7 +67,11 @@ fish_add_path $HOME/Library/Android/sdk/platform-tools
 fish_add_path "$HOME/.local/bin"
 
 # --- 4. Version Manager (Mise) ---
-mise activate --shims fish | source
+if status is-interactive
+    mise activate fish | source
+else
+    mise activate --shims fish | source
+end
 
 # --- 5. Interactive Tools (require PATH to be set) ---
 if status is-interactive
