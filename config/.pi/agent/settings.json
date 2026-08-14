@@ -2,7 +2,7 @@
   "lastChangelogVersion": "0.83.0",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",
-  "defaultThinkingLevel": "xhigh",
+  "defaultThinkingLevel": "high",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
   "enableSkillCommands": false,
@@ -14,7 +14,6 @@
     "npm:pi-mcp-adapter",
     "npm:@vahor/pi-hooks",
     "npm:pi-web-access",
-    "npm:@narumitw/pi-goal",
     "npm:@tifan/pi-inline-skills"
   ],
   "quietStartup": true,
