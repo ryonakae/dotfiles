@@ -48,6 +48,12 @@
       "sourceType": "github",
       "skillPath": "skills/engineering/tdd/SKILL.md",
       "computedHash": "15a7b5e36383ebadb2dec5e586679e55e9663d292da418926b8da6fc0ef27d84"
+    },
+    "worktrunk": {
+      "source": "max-sixty/worktrunk",
+      "sourceType": "github",
+      "skillPath": "skills/worktrunk/SKILL.md",
+      "computedHash": "7ff58182030eda7c198c3fa47c56f63d343ce3007f0316d51423795e05f10bdf"
     }
   }
 }

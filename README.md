@@ -161,7 +161,7 @@ $ brew doctor
 - 実体スキル: `~/.agents/skills/<skill-name>/`
 - 各エージェント側からは `~/.claude/skills/<skill-name>` → `~/.agents/skills/<skill-name>` の symlink で参照
 - lock ファイル: `config/skills-lock.json`（dotfiles 管理）。`~/skills-lock.json` がここへの symlink
-- `config/.agents/skills/` 配下の自作スキルは dotfiles 管理。`npx skills` の管理対象外
+- `config/.agents/skills/` 配下の自作スキルは dotfiles 管理。`npx skills` の管理対象外。追加後は `sh scripts/create-skills-symlink.sh` で各エージェントへ配布する
 
 ### 実行ディレクトリ
 

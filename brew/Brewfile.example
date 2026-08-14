@@ -9,6 +9,7 @@ cask_args appdir: '/Applications'
 brew 'git'
 brew 'git-lfs'
 brew 'gh'
+brew 'worktrunk'
 
 # シェル
 brew 'fd'
