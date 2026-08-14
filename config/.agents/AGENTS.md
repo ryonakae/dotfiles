@@ -19,6 +19,7 @@
 
 ## ツール・環境
 
+- シェル関連は原則 `fish`。明示要件・既存規約を優先する
 - `Operation not permitted` は agent-safehouse の制限。回避策を試みずユーザーに報告する
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - ライブラリ/API のドキュメント参照は `find-docs` スキルを使う
