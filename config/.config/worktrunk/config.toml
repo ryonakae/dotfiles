@@ -1,0 +1,2 @@
+[projects."github.com/ryonakae/dotfiles"]
+worktree-path = "~/Dev/.worktrees/dotfiles/{{ branch | sanitize }}"
