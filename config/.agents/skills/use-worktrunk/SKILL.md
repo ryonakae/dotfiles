@@ -55,6 +55,21 @@ raw JSONを確認し、返されたworktree pathが絶対pathであることを�
 
 ユーザーが`--execute`、terminal multiplexer、またはsub-agentへのhandoffを明示した場合はこの通常switch規則を適用せず、公式Skillのhandoff workflowへ委譲する。公式workflowが別プロセスを対象worktreeで開始するため、親Agentのcwd問題とは分けて扱う。
 
+通常switchで新しいworktreeを作成した場合、現在のセッションは並行開発のcoordinatorとして元のworktreeに残し、会話を独立workerへforkする次の手順を案内する。fork commandは自動実行しない。
+
+現在のclientとsession IDは、ユーザーが明示した値、system context、または信頼できるruntime metadataから特定し、検証済み絶対pathとともにshell-safeにquoteして対応する形を報告する。
+
+```text
+Pi:          cd <worktree-path> && pi --fork <session-id>
+Claude Code: cd <worktree-path> && claude --resume <session-id> --fork-session
+Codex:       codex fork -C <worktree-path> <session-id>
+OpenCode:    opencode <worktree-path> --session <session-id> --fork
+```
+
+Claude Codeのin-session `/fork`や`--worktree`はClaude独自のworktreeを作り得るため使わない。並行workerには、Codexの`resume -C`、OpenCodeのplain `--session` resumeやsession moveではなく、表の独立forkを使う。
+
+clientを確実に特定できなければ推測せず、4 commandをclient label付きで全て示す。session IDはユーザーが明示した場合、または信頼できるruntime metadataにある場合だけ具体値を使う。取得できなければ`<session-id>`を残して置換が必要だと説明し、session store、transcript、credential、Safehouseのdeny対象を探らない。
+
 ## 5. ignored fileをコピーする
 
 Agent Safehouse内では、policyがdenyするpathを直接probe、read、copy、create、edit、removeしない。読んでよいのはSafehouse policy、`.worktreeinclude`、WorktrunkのJSON planなど、deny対象ではない設定・metadataだけである。
@@ -85,6 +100,7 @@ Safehouse設定またはWorktrunk user configの変更が必要なら、理由�
 
 - Worktrunk commandの結果
 - worktreeを作成・選択した場合は検証済みの絶対path
+- 通常switchで新規作成した場合は、creatorを残す理由とclient別の独立fork command（選択のみ、または明示的handoffなら不要）
 - Agent側で扱わなかったdeny対象またはrecursive entryと、必要な通常shell操作
 - 新しいAgentセッションが必要か
 
