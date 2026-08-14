@@ -28,6 +28,7 @@ Check the plan against these criteria:
 - Progress and final-validation checklists can reflect the actual implementation state without duplicating every coding step.
 - The plan tells implementers to record minor implementation differences in the relevant task.
 - The plan requires user confirmation before changing requirements, Out of Scope, or public contracts.
+- The plan moves to `docs/plans/archived/` without renaming only after every final-validation item succeeds.
 
 4. Contracts and testing
 - Public interfaces, types, data formats, invariants, and compatibility constraints are explicit where needed.

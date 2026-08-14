@@ -43,6 +43,7 @@ docs/plans/YYYY-MM-DD-<slug>.md
 ```
 
 `<slug>` は計画対象を短く表す英数字とハイフンの名前にする。既存ファイルを上書きしない。
+実装が完了し、Final Validation のすべての項目が成功したら、計画ファイルを同名のまま `docs/plans/archived/` へ移す。検証が未完了または失敗している計画は移さない。
 
 ## 作成手順
 
@@ -175,6 +176,7 @@ docs/plans/YYYY-MM-DD-<slug>.md
 - [ ] [必要な手動確認または `N/A` と理由]
 - [ ] Requirement Coverage に未対応項目がない
 - [ ] 計画と実際の変更内容が整合している
+- [ ] 上記のすべてが成功した後、計画を同名のまま `docs/plans/archived/` へ移した
 
 ## Risks and Open Questions
 
@@ -232,6 +234,7 @@ docs/plans/YYYY-MM-DD-<slug>.md
 - 実装中に判明した軽微なファイル変更や実装上の差異は、該当タスクへ反映して続行する。
 - 要件、Out of Scope、公開コントラクトを変える必要が生じた場合は、計画を勝手に書き換えて進めずユーザーへ確認する。
 - 実装後に計画と実際の変更内容が食い違ったまま残らないよう、Final Validation で確認する。
+- Final Validation のすべてが成功してから、完了した計画を同名のまま `docs/plans/archived/` へ移す。
 
 ## 書かないもの
 
@@ -261,5 +264,6 @@ docs/plans/YYYY-MM-DD-<slug>.md
 8. **事実と仮定:** 確認済みの事実、計画上の仮定、未解決事項が混同されていないか。
 9. **仮定の境界:** 公開挙動、契約、データ形式、永続性、並行性、エラー形式、時刻境界に関する未確定事項を Assumptions で補っていないか。
 10. **進捗管理:** Progress と Final Validation が、実装中に更新できる粒度になっているか。
+11. **アーカイブ:** すべての Final Validation 成功後に、計画を同名のまま `docs/plans/archived/` へ移す指示があるか。
 
 保存後は、保存パスと計画の要点だけを短く伝える。

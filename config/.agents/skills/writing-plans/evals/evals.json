@@ -5,7 +5,7 @@
       "id": 1,
       "name": "session-expiry-boundary",
       "prompt": "`{{FIXTURE_REPO}}` のセッション期限判定を修正する実装計画を作ってください。現在時刻より前だけでなく `expiresAt === now` も期限切れです。既存の `Clock` 注入と `validateSession` の公開シグネチャ、invalid-signature を先に返す優先順位は維持し、新しい日時ライブラリは追加しません。refresh token対応は対象外です。計画だけを `{{OUTPUT_PLAN}}` に保存し、実装はしないでください。",
-      "expected_output": "境界条件、互換性、対象外、既存パターンを要件・決定事項として保持し、成果物単位の進捗、テストケース、正確な検証コマンド、Requirement/Decision→Task→Verification対応を持つ計画。完成した実装・テストコードは含めない。",
+      "expected_output": "境界条件、互換性、対象外、既存パターンを要件・決定事項として保持し、成果物単位の進捗、テストケース、正確な検証コマンド、Requirement/Decision→Task→Verification対応、全検証成功後のアーカイブ指示を持つ計画。完成した実装・テストコードは含めない。",
       "files": [
         "evals/files/session-expiry/package.json",
         "evals/files/session-expiry/src/session.ts",
@@ -19,7 +19,8 @@
         "The plan includes the fixture's exact focused test, full test, typecheck, and lint commands with expected results.",
         "A coverage table maps every requirement and material decision to a task and verification method.",
         "The plan contains no complete implementation body or complete test body; any code is limited to a short contract representation.",
-        "The generated plan instructs implementers to record minor implementation differences and seek user confirmation before changing requirements, Out of Scope, or public contracts."
+        "The generated plan instructs implementers to record minor implementation differences and seek user confirmation before changing requirements, Out of Scope, or public contracts.",
+        "The generated plan instructs implementers to move the completed plan to docs/plans/archived/ without renaming only after every Final Validation item succeeds."
       ]
     },
     {
