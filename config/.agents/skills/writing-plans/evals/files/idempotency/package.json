@@ -1,0 +1,9 @@
+{
+  "name": "idempotency-fixture",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:http": "vitest run tests/payments-http.test.ts",
+    "typecheck": "tsc --noEmit"
+  }
+}

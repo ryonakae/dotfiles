@@ -1,0 +1,92 @@
+{
+  "skill_name": "writing-plans",
+  "evals": [
+    {
+      "id": 1,
+      "name": "session-expiry-boundary",
+      "prompt": "`{{FIXTURE_REPO}}` のセッション期限判定を修正する実装計画を作ってください。現在時刻より前だけでなく `expiresAt === now` も期限切れです。既存の `Clock` 注入と `validateSession` の公開シグネチャ、invalid-signature を先に返す優先順位は維持し、新しい日時ライブラリは追加しません。refresh token対応は対象外です。計画だけを `{{OUTPUT_PLAN}}` に保存し、実装はしないでください。",
+      "expected_output": "境界条件、互換性、対象外、既存パターンを要件・決定事項として保持し、成果物単位の進捗、テストケース、正確な検証コマンド、Requirement/Decision→Task→Verification対応を持つ計画。完成した実装・テストコードは含めない。",
+      "files": [
+        "evals/files/session-expiry/package.json",
+        "evals/files/session-expiry/src/session.ts",
+        "evals/files/session-expiry/tests/session.test.ts"
+      ],
+      "expectations": [
+        "The plan preserves all four material constraints: expiresAt equal to now is expired, the public validateSession signature and injected Clock remain unchanged, invalid-signature retains precedence, and no date library is added.",
+        "Refresh-token work is explicitly listed as out of scope.",
+        "Progress is tracked at reviewable task/deliverable granularity and completion is gated on validation, without checkbox steps for writing tests, implementation, or commits.",
+        "The plan defines concrete before/equal/after boundary test cases plus the invalid-signature precedence regression case with expected behavior.",
+        "The plan includes the fixture's exact focused test, full test, typecheck, and lint commands with expected results.",
+        "A coverage table maps every requirement and material decision to a task and verification method.",
+        "The plan contains no complete implementation body or complete test body; any code is limited to a short contract representation.",
+        "The generated plan instructs implementers to record minor implementation differences and seek user confirmation before changing requirements, Out of Scope, or public contracts."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "operational-allowlist-sync",
+      "prompt": "`{{FIXTURE_REPO}}` で `$HOME/.shepherd` を許可ディレクトリへ追加する実装計画を作ってください。`config/allowed-dirs.txt` と gateway/dashboard の2つの起動スクリプトは同期が必須です。権限範囲をそれ以外へ広げること、サービス本体の変更、CI導入は対象外です。このfixtureにはテストランナー、typecheck、lintがありません。計画だけを `{{OUTPUT_PLAN}}` に保存し、変更やコマンド実行はしないでください。",
+      "expected_output": "3ファイルの責務と同期制約、対象外、shell syntaxと3リスト一致の検証、適用不能チェックのN/A理由、成果物単位の進捗、カバレッジを持つ計画。架空のテスト基盤や完成スクリプトは書かない。",
+      "files": [
+        "evals/files/ops-sync/README.md",
+        "evals/files/ops-sync/config/allowed-dirs.txt",
+        "evals/files/ops-sync/scripts/start-gateway.sh",
+        "evals/files/ops-sync/scripts/start-dashboard.sh"
+      ],
+      "expectations": [
+        "The plan covers all three synchronized files and states each file's implementation or verification responsibility.",
+        "The plan explicitly limits the allowlist change to $HOME/.shepherd and lists broader permission widening, service changes, and CI introduction as out of scope.",
+        "The plan does not invent a test runner, typechecker, linter, or CI workflow.",
+        "Validation includes exact shell-syntax commands for both scripts and a concrete command or procedure that verifies all three allowlists are identical, with expected results.",
+        "Inapplicable standard checks are marked N/A with reasons rather than silently omitted or fabricated.",
+        "Progress uses reviewable deliverable-level tasks, with completion only after validation and no 2–5-minute coding-step checklist.",
+        "A coverage table maps synchronization, scope limits, and validation requirements to tasks and verification.",
+        "The plan contains no complete replacement script bodies or other copy-pasteable implementation patches."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "idempotency-api-contract",
+      "prompt": "`{{FIXTURE_REPO}}` の `POST /payments` に idempotency key を追加する実装計画を作ってください。ヘッダー名は `Idempotency-Key`、値はASCII英数字と `-`/`_` の8〜64文字です。同一key・同一payloadの最初の201完了から24時間未満の再送は最初のレスポンスを再利用し、ちょうど24時間で期限切れにします。payloadはJSON objectのkey順を無視して比較します。同一key・異なるpayloadは409 `{\"error\":\"idempotency_conflict\"}`、欠落または不正なkeyは400 `{\"error\":\"invalid_idempotency_key\"}` にします。同時の同一payloadは最初の処理を共有し、異なるpayloadは409、失敗した作成は保存しません。既存の `PaymentService.create` は変更せず、永続ストアや複数プロセス対応は対象外です。HTTP handlerをテスト境界にし、計画だけを `{{OUTPUT_PLAN}}` に保存してください。実装はしないでください。",
+      "expected_output": "確定済みのHTTP契約、validation、replay/conflict/concurrency semantics、24時間境界、既存サービス非変更、対象外、テスト境界を保持し、必要なら短いschema/signatureだけを使う計画。成果物単位の進捗、正確な検証、カバレッジを持ち、完成コードや未指定の公開契約を追加しない。",
+      "files": [
+        "evals/files/idempotency/package.json",
+        "evals/files/idempotency/src/payments.ts",
+        "evals/files/idempotency/src/http.ts",
+        "evals/files/idempotency/openapi.yaml",
+        "evals/files/idempotency/tests/payments-http.test.ts"
+      ],
+      "expectations": [
+        "The plan preserves the exact Idempotency-Key syntax and length contract, 24-hour replay semantics, 409 conflict behavior, and 400 missing/invalid behavior.",
+        "The existing PaymentService.create contract is explicitly preserved, while persistent storage and multi-process support are explicitly out of scope.",
+        "Testing decisions use the HTTP handler as the test seam and cover first request, same-key same-payload replay, same-key different-payload conflict, missing key, invalid charset, and length boundaries.",
+        "The file map assigns clear responsibilities to the handler, API specification, tests, and any newly proposed in-memory idempotency component.",
+        "Progress is task-level and validation-gated, and the plan includes implementation-time change-control instructions.",
+        "The plan includes exact focused/final validation commands with expected results and a complete Requirement/Decision→Task→Verification coverage table.",
+        "The plan's current-context claims, file paths, and validation commands match the fixture's actual files and package scripts.",
+        "The plan contains no complete handler, idempotency-store implementation, or full test bodies.",
+        "The plan does not place externally observable contract choices in Assumptions or invent material behavior beyond the prompt."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "material-ambiguity-gate",
+      "prompt": "`{{FIXTURE_REPO}}` の `POST /payments` に idempotency key を追加する実装計画を作ってください。同じkeyの再送で重複作成を防ぎたいですが、保持期間、同一payloadの定義、異なるpayloadや同時リクエストの応答はまだ決めていません。計画は `{{OUTPUT_PLAN}}` に保存してください。実装はしないでください。",
+      "expected_output": "外部挙動を左右する未確定事項をAssumptionsで補わず、計画ファイルを作成する前に、依存関係上もっとも上流の論点を推奨案付きで一つだけ確認する。",
+      "files": [
+        "evals/files/idempotency/package.json",
+        "evals/files/idempotency/src/payments.ts",
+        "evals/files/idempotency/src/http.ts",
+        "evals/files/idempotency/openapi.yaml",
+        "evals/files/idempotency/tests/payments-http.test.ts"
+      ],
+      "expectations": [
+        "No implementation plan is saved before the material public-contract questions are resolved.",
+        "The response asks exactly one blocking decision question rather than presenting a batch questionnaire.",
+        "The question addresses a prerequisite public behavior such as retention, payload equivalence, conflict handling, or concurrency and includes a recommended answer with rationale.",
+        "The response does not silently choose values or behavior for retention, payload equivalence, conflict responses, or concurrent requests.",
+        "The response does not redirect to or require any named upstream planning skill."
+      ]
+    }
+  ]
+}
