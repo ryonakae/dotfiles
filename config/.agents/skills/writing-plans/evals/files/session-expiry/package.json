@@ -1,0 +1,10 @@
+{
+  "name": "session-expiry-fixture",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:session": "vitest run tests/session.test.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  }
+}

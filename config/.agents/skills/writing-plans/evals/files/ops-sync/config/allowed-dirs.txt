@@ -1,0 +1,3 @@
+$HOME/.config
+$HOME/.cache
+$HOME/Dev

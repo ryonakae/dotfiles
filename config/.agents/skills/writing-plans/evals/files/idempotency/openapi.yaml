@@ -1,0 +1,13 @@
+openapi: 3.1.0
+info:
+  title: Payments API
+  version: 1.0.0
+paths:
+  /payments:
+    post:
+      operationId: createPayment
+      responses:
+        "201":
+          description: Payment created
+        "400":
+          description: Invalid request
