@@ -11,7 +11,8 @@ services:
       - $HOME/.hermes/hindsight/.env
     environment:
       HINDSIGHT_API_LLM_PROVIDER: "openai-codex"
-      HINDSIGHT_API_LLM_MODEL: "gpt-5.4-mini"
+      HINDSIGHT_API_LLM_MODEL: "gpt-5.6-luna"
+      HINDSIGHT_API_LLM_REASONING_EFFORT: "high"
       HINDSIGHT_API_LLM_TIMEOUT: "300"
       # OpenCode Go / DeepSeek fallback profile. Uncomment as a set if switching back.
       # HINDSIGHT_API_LLM_PROVIDER: "openai"
