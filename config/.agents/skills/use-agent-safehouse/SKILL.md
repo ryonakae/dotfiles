@@ -67,6 +67,33 @@ PY
 
 判断基準：`/tmp/.../.env` が落ち、`~/.hermes/tmp/.../.env` が通るなら Safehouse 設計通り。Safehouse を緩めず、pytest 実行時に `--basetemp ~/.hermes/tmp/...` を付ける。
 
+### Hermes の parallel test runner と kanban write guard を併用する場合
+
+`scripts/run_tests_parallel.py` は test file ごとに pytest subprocess を起動する。全 subprocess へ同じ `PYTEST_ADDOPTS=--basetemp=...` を渡すと、各 pytest が同じ directory を削除・再作成してraceするため、共有 `--basetemp` は使わない。
+
+また、`TMPDIR=~/.hermes/...` だけでは `tests/conftest.py` の kanban write guard が一時DBを実 `~/.hermes` 配下と判定して拒否する。短いTMPDIR、Safehouseの `.env` 許可、kanban guardを同時に満たすには、pre-sandboxのcustom homeとkanban deny sentinelを兄弟pathへ分ける：
+
+```bash
+mkdir -p "$HOME/.hermes/t/home"
+HERMES_HOME="$HOME/.hermes/t/home" \
+HERMES_KANBAN_HOME="$HOME/.hermes/t/deny" \
+TMPDIR="$HOME/.hermes/t" \
+PYTEST_ADDOPTS='' \
+HERMES_TEST_WORKERS=8 \
+python scripts/run_tests_parallel.py
+```
+
+`tests/conftest.py` は `HERMES_KANBAN_HOME` をimport時にdeny rootとしてcaptureし、各test開始時には環境から消す。そのため実test DBはTMPDIRへ書ける一方、deny sentinel配下への誤書込みは拒否される。`TMPDIR`を短くすることでmacOSのAF_UNIX socket path上限も回避できる。
+
+full suite前に、`.env`作成・kanban DB・UNIX socketを使う代表testを同じ環境で通す：
+
+```bash
+python -m pytest -q \
+  tests/agent/test_codex_stream_activity_watchdog.py \
+  tests/gateway/test_kanban_notifier_zero_sub_gate.py \
+  tests/gateway/test_scale_to_zero.py
+```
+
 ## 設計哲学
 
 - **deny-first**: デフォルトで全アクセスを拒否し、必要なものだけ明示的に許可する
