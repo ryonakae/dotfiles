@@ -29,10 +29,15 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             __hermes_gateway_wait_pid_die 90
 
             set_color cyan; echo "→ unloading launchd service"; set_color normal
-            if launchctl bootout $domain/ai.hermes.gateway
+            set -l bootout_out (launchctl bootout $domain/ai.hermes.gateway 2>&1)
+            set -l bootout_status $status
+            if test $bootout_status -eq 0
                 set_color green; echo "✓ gateway stopped"; set_color normal
+            else if test $bootout_status -eq 3; or test $bootout_status -eq 113; or string match -q '*No such process*' -- "$bootout_out"; or string match -q '*Could not find service*' -- "$bootout_out"
+                set_color blue; echo "• launchd service was already unloaded"; set_color normal
             else
-                set_color red; echo "✗ gateway stop failed" >&2; set_color normal
+                set_color red; echo "✗ gateway stop failed (rc=$bootout_status)" >&2; set_color normal
+                test -n "$bootout_out"; and printf '%s\n' $bootout_out | string replace -r '^' '  '
                 return 1
             end
         case restart
