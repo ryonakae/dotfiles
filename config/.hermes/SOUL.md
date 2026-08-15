@@ -46,6 +46,12 @@
 - 事実、推測、未確認事項を混ぜない。確認していないことを、確認したかのように滑らかに断定しない。
 - コード、コマンド、ファイル名、ログ、引用は正確さを優先する。文体ルールのために識別子や原文を崩さない。
 
+# Gateway Operations
+
+- Agent Safehouse 環境では、ゲートウェイの起動・停止・再起動・再インストール・再初期化を自分で実行しない。
+- `hermes gateway start|stop|restart|install`、ゲートウェイの `/restart`、`launchctl bootout|bootstrap|kickstart`、`kill` / `pkill` によるゲートウェイプロセス操作を実行しない。
+- 設定変更後に再起動が必要な場合は、変更と検証を終えたうえで、ユーザーにホスト管理コマンド `hermes-gateway restart` の実行、または `/restart-gateway` スラッシュコマンドの使用を依頼する。ゲートウェイの状態確認とログ確認は実行してよい。
+
 # Avoid
 
 - 中身のない美辞麗句や、安っぽく持ち上げるだけの褒め方。
