@@ -17,7 +17,7 @@ macOS 向け設定ファイル管理リポジトリ。`config/` 配下を `$HOME
 
 - `scripts/copy.sh` — `*.example` を実ファイルへコピー（既存はスキップ）
 - `scripts/create-symlink.sh` — `config/` を `$HOME` に symlink（`.DS_Store`, `*.example`, `skills/` はスキップ）
-- `scripts/create-skills-symlink.sh` — スキルを各エージェントの `skills/` 配下へ配布
+- `scripts/create-skills-symlink.sh` — スキルを `~/.agents/skills/` と `~/.claude/skills/` へ配布
 - `scripts/remove-broken-symlinks.sh` — 壊れた symlink を対話的に削除（`-y` で自動）
 - `scripts/install.sh` — Xcode CLI Tools と Homebrew（新規マシン向け、初回のみ）
 
@@ -35,7 +35,7 @@ config/
 ```
 
 - 共通指示書の正本は `config/.agents/AGENTS.md`（言語・Python 実行・Web 検索ルール等）。`.claude/CLAUDE.md`、`.codex/AGENTS.md`、`.gemini/GEMINI.md`、`.pi/agent/AGENTS.md` はすべてこのファイルへの symlink にする
-- スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が各エージェントの `skills/` ディレクトリへ symlink する
+- スキル配布: `config/.agents/skills/` がグローバル、`config/.claude/skills/` が Claude 専用。`create-skills-symlink.sh` が `~/.agents/skills/` と `~/.claude/skills/` へ symlink する。この 2 か所以外にはスキルを配らない（`~/.hermes/skills`、`~/.pi/skills`、`~/.gemini/**` は対象外）
 - 無効化したグローバルスキルは `config/.agents/skills/.disabled/` に移動する。ドットで始まるディレクトリは `create-skills-symlink.sh` の配布対象外
 - `config/.agents/skills/` には自作スキルのみを置く。外部スキル（`npx skills` で取得するもの）は `~/.agents/skills/` 配下に実体として展開され、`config/skills-lock.json`（`~/skills-lock.json` の symlink 元）で管理する。詳細な運用は `README.md` の「外部スキル（npx skills）」節を参照
 - Pi の extension 一覧は `config/.pi/agent/settings.json`、extension 個別設定は `config/.pi/agent/extensions/<extension-name>/`、subagent 定義は `config/.pi/agent/agents/*.md`、`pi-hooks` 設定は `config/.pi/agent/hooks.json`、実行スクリプトは `config/.pi/agent/scripts/` に置く。`hooks/` というディレクトリ名は Pi extension として自動読み込みされるため使わない

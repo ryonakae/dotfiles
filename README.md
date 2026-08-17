@@ -154,14 +154,16 @@ $ brew doctor
 
 ## 外部スキル（npx skills）
 
-各種 AI エージェント（Claude Code, Codex, Gemini CLI 等）で共有するグローバルスキルは [`npx skills`](https://skills.sh/) で管理する。lock ファイルは dotfiles で管理し、symlink でホームに展開する。
+外部リポジトリのスキルは [`npx skills`](https://skills.sh/) で管理する。lock ファイルは dotfiles で管理し、symlink でホームに展開する。
 
 ### 構成
 
 - 実体スキル: `~/.agents/skills/<skill-name>/`
-- 各エージェント側からは `~/.claude/skills/<skill-name>` → `~/.agents/skills/<skill-name>` の symlink で参照
+- 参照は `~/.claude/skills/<skill-name>` → `~/.agents/skills/<skill-name>` の symlink
 - lock ファイル: `config/skills-lock.json`（dotfiles 管理）。`~/skills-lock.json` がここへの symlink
-- `config/.agents/skills/` 配下の自作スキルは dotfiles 管理。`npx skills` の管理対象外。追加後は `sh scripts/create-skills-symlink.sh` で各エージェントへ配布する
+- `config/.agents/skills/` 配下の自作スキルは dotfiles 管理。`npx skills` の管理対象外。追加後は `sh scripts/create-skills-symlink.sh` で配布する
+
+**配布先は `~/.agents/skills`（実体）と `~/.claude/skills`（symlink）の 2 つだけ**。`npx skills` はホームを走査して検出したエージェント全部に symlink を貼るため、放置すると `~/.hermes/skills`、`~/.pi/skills`、`~/.pi/agent/skills` などに使わないリンクが増える。`add` / `experimental_install` では必ず `-a claude-code` で配布先を絞る。
 
 ### 実行ディレクトリ
 
@@ -171,11 +173,11 @@ $ brew doctor
 
 ```sh
 # lock に書かれているスキルを ~/.agents/skills/ に展開（新規マシン・復元）
-cd ~ && npx skills experimental_install
+cd ~ && npx skills experimental_install -a claude-code
 
 # スキルを追加（lock にも自動追記される）
-cd ~ && npx skills add <owner>/<repo> -y                   # 全 skill
-cd ~ && npx skills add <owner>/<repo> -s <skill-name> -y   # 個別 skill
+cd ~ && npx skills add <owner>/<repo> -a claude-code -y                   # 全 skill
+cd ~ && npx skills add <owner>/<repo> -s <skill-name> -a claude-code -y   # 個別 skill
 
 # スキルを削除
 cd ~ && npx skills remove -s <skill-name> -y
@@ -188,11 +190,14 @@ cd ~ && npx skills find
 
 `-g` フラグは使わない（user スコープの別ディレクトリに入ってしまい、現状の運用と整合しない）。
 
+`experimental_install` は lock に記録された版を再現するのではなく、記載された全スキルを取得元の最新版で取り直す。実行すると `computedHash` が更新されるので、復元目的以外では使わない。
+
 ### スキル追加後の手順
 
-1. `cd ~ && npx skills add ...` で `~/.agents/skills/` に展開＆ `~/skills-lock.json`（= dotfiles の `config/skills-lock.json`）が自動更新される
-2. `~/.claude/skills/<skill-name>` から `../../.agents/skills/<skill-name>` への symlink を貼る（他エージェントの `skills/` も同様）
-3. dotfiles の `config/skills-lock.json` の差分をコミット
+1. `cd ~ && npx skills add <owner>/<repo> -s <skill-name> -a claude-code -y` で `~/.agents/skills/` に展開＆ `~/skills-lock.json`（= dotfiles の `config/skills-lock.json`）が自動更新される
+2. `~/.claude/skills/<skill-name>` → `../../.agents/skills/<skill-name>` の symlink が貼られたことを確認する
+3. `~/.hermes/skills` など他エージェント側にリンクが作られていないか確認し、あれば削除する
+4. dotfiles の `config/skills-lock.json` の差分をコミット
 
 ---
 

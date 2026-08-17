@@ -9,7 +9,7 @@ esac
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd)
 DOTFILES_DIR=$(dirname "$SCRIPT_DIR")
 
-# グローバルスキル（全エージェントに共通配布）
+# グローバルスキル（エージェント非依存の共通置き場から配布）
 GLOBAL_SKILLS_SOURCE="$DOTFILES_DIR/config/.agents/skills"
 
 # エージェント固有スキル（特定エージェントにのみ配布）
@@ -20,12 +20,11 @@ $DOTFILES_DIR/config/.claude/skills:$HOME/.claude/skills
 EOF
 )
 
-# ターゲット: 各エージェントのスキル読み込みディレクトリ
+# ターゲット: スキル読み込みディレクトリ
 # ソース内の各スキルディレクトリが、以下すべてに symlink される
 TARGET_DIRS=$(cat <<EOF
 $HOME/.agents/skills
 $HOME/.claude/skills
-$HOME/.gemini/antigravity/skills
 EOF
 )
 
