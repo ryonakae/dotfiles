@@ -9,6 +9,17 @@ pane_scrollbars = false
 enabled = false
 
 [keys]
+# 左 Option でペインを移動し、Shift 併用でタブとワークスペースを移動する
+focus_pane_left = "alt+h"
+focus_pane_down = "alt+j"
+focus_pane_up = "alt+k"
+focus_pane_right = "alt+l"
+previous_tab = "alt+shift+h"
+next_tab = "alt+shift+l"
+previous_workspace = "alt+shift+k"
+next_workspace = "alt+shift+j"
+switch_workspace = "prefix+shift+1..9"
+
 # worktree は worktrunk プラグイン経由で作る（本体の worktree は ~/.herdr/worktrees に
 # フラット配置され、worktree-path テンプレートも hooks も効かない）。デフォルトの
 # prefix+shift+g をプラグインへ明け渡すため、本体側を空にして無効化する。

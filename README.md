@@ -381,6 +381,18 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 
 `create-symlink.sh` はファイル単位で symlink するため、socket や log が同居する `~/.config/herdr/` に置いても安全。
 
+### キーバインド
+
+左 Option はペイン移動、Shift 併用はタブまたはワークスペース移動に使う。`prefix` は `Ctrl+b`。
+
+| キー | 動作 |
+|---|---|
+| `option+h/j/k/l` | ペインを左/下/上/右へ移動 |
+| `option+shift+h/l` | 前/次のタブへ移動 |
+| `option+shift+k/j` | 前/次のワークスペースへ移動 |
+| `prefix+1..9` | タブを直接選択 |
+| `prefix+shift+1..9` | ワークスペースを直接選択 |
+
 ### プラグイン
 
 新規マシンでは lock ファイルが無いので、手動で入れ直す。
