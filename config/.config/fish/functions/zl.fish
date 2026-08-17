@@ -2,6 +2,27 @@ function __zl_session_names
     command zellij list-sessions --short 2>/dev/null
 end
 
+function __zl_list
+    set -l sessions (command zellij list-sessions --no-formatting); or return
+    set -l tab (printf '\t')
+    set -l running_status running
+    set -l stopped_status stopped
+    if test -t 1
+        set running_status (printf '%s%s%s' (set_color green) running (set_color normal))
+        set stopped_status (printf '%s%s%s' (set_color red) stopped (set_color normal))
+    end
+    set -l rows
+
+    for session in $sessions
+        set -l name (string replace -r ' \[Created .*$' '' -- "$session")
+        set -l session_status $running_status
+        string match -q '* (EXITED -*' -- "$session"; and set session_status $stopped_status
+        set -a rows (string join "$tab" "$name" "$session_status")
+    end
+
+    printf '%s\n' (string join "$tab" name status) $rows | command column -t -s "$tab"
+end
+
 function __zl_attach --argument-names session
     if set -q ZELLIJ
         command zellij action switch-session -- "$session"
@@ -224,7 +245,7 @@ function zl --description "Manage project sessions in Zellij"
                 echo "Usage: zl list"
                 return 2
             end
-            command zellij list-sessions
+            __zl_list
         case stop
             __zl_stop $argv
         case delete rm
