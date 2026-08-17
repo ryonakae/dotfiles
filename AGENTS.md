@@ -57,7 +57,7 @@ config/
 
 運用は `README.md` の「Herdr」節を参照。
 
-- dotfiles で管理するのは `config/.config/herdr/config.toml` とプラグイン設定 `config/.config/herdr/plugins/config/<plugin_id>/config.toml` のみ
+- dotfiles で管理するのは `config/.config/herdr/config.toml`、補助スクリプト `config/.config/herdr/scripts/*`、プラグイン設定 `config/.config/herdr/plugins/config/<plugin_id>/config.toml`
 - 管理対象外: `plugins.json`（絶対パスと commit hash を含む）、`plugins/` の実体、session / log / socket
 - プラグインは lock で復元できない。追加・削除したら README の一覧表を更新する
 
