@@ -7,6 +7,12 @@ agent_panel_sort = "spaces"
 [ui.sound]
 enabled = false
 
+[keys]
+# worktree は worktrunk プラグイン経由で作る（本体の worktree は ~/.herdr/worktrees に
+# フラット配置され、worktree-path テンプレートも hooks も効かない）。デフォルトの
+# prefix+shift+g をプラグインへ明け渡すため、本体側を空にして無効化する。
+new_worktree = ""
+
 [[keys.command]]
 key = "prefix+shift+g"
 type = "plugin_action"
@@ -19,8 +25,9 @@ type = "plugin_action"
 command = "worktrunk.open-current"
 description = "Worktree: switch / create from current branch"
 
+# prefix+shift+d は本体の close_workspace なので避ける
 [[keys.command]]
-key = "prefix+shift+d"
+key = "prefix+shift+k"
 type = "plugin_action"
 command = "worktrunk.remove"
 description = "Worktree: remove"

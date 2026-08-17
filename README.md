@@ -383,7 +383,19 @@ herdr plugin config-dir <plugin_id>
 | `shepherd.observability` | `ryonakae/shepherd/packages/shepherd-herdr-plugin` | Shepherd の worker 監視 |
 | `worktrunk` | `devashish2203/herdr-worktrunk` | `wt` による worktree の切替・作成・削除 |
 
-`worktrunk` プラグインは `wt` >= 0.60.0、`fzf`、`jq` に依存する。キーバインドは `config.toml` の `[[keys.command]]` で `prefix+shift+g`（default ブランチから switch/create）、`prefix+shift+c`（現在ブランチから）、`prefix+shift+d`（remove）に割り当てている。
+`worktrunk` プラグインは `wt` >= 0.60.0、`fzf`、`jq` に依存する。キーバインドは `config.toml` の `[[keys.command]]` で割り当てている。
+
+| キー | 動作 |
+|---|---|
+| `prefix+shift+g` | default ブランチから switch / create |
+| `prefix+shift+c` | 現在ブランチから switch / create |
+| `prefix+shift+k` | remove |
+
+### worktree は本体機能ではなくプラグインを使う
+
+herdr 本体にも `[worktrees]` と `herdr worktree` があるが、こちらは使わない。本体は `~/.herdr/worktrees` へフラットに配置し（テンプレート変数なし）、worktrunk の `worktree-path`・hooks・ignored ファイルのコピーがどれも効かない。`~/.herdr` は safehouse の allowlist 外でもある。
+
+そのため `keys.new_worktree = ""` で本体のデフォルト（`prefix+shift+g`）を無効化し、同じキーをプラグインへ渡している。`prefix+shift+k` を remove に使うのは、プラグイン README 推奨の `prefix+shift+d` が本体の `close_workspace` と衝突するため。
 
 設定変更後は `herdr server reload-config` で反映する（サーバー未起動なら次回起動時に読まれる）。
 
