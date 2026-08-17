@@ -89,6 +89,26 @@ Shell を再起動で fish がデフォルトになる
 $ fisher update
 ```
 
+### プロジェクトセッションを開く
+
+`zl` は Zellij、`hdr` は Herdr のプロジェクトセッションを操作する。引数なしではカレントディレクトリ名、パス指定時はそのディレクトリ名をセッション名として開く。
+
+```sh
+zl [PATH]
+hdr [PATH]
+
+zl pick                 # session / repository を選択
+hdr pick
+zl list                 # session 一覧
+hdr list
+zl stop [SESSION...]    # 実行中 session を停止
+hdr stop [SESSION...]
+zl delete [SESSION...]  # 保存済み session を削除
+hdr delete [SESSION...]
+```
+
+`open [PATH]` で起動操作を明示でき、`-h` または `--help` でヘルプを表示する。`hdr` の起動、選択、停止、削除は Herdr を detach してから実行する。
+
 ### HOMEBREW_GITHUB_API_TOKEN の設定
 
 - https://github.com/settings/tokens にアクセスして、Homebrew 用のトークンを作成 (既にあれば Regenerate)
