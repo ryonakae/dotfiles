@@ -375,6 +375,7 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 ### dotfiles で管理するファイル
 
 - `config/.config/herdr/config.toml` — UI 設定とキーバインド
+- `config/.config/herdr/scripts/focus-pane-or-tab.sh` — ペイン端でタブ移動へ切り替えるスクリプト
 - `config/.config/herdr/plugins/config/<plugin_id>/config.toml` — プラグイン個別設定
 
 管理対象外: `plugins.json`（絶対パスと commit hash を含む）、`plugins/`（実体は `herdr plugin install` で再取得）、`session.json` / `sessions/` / `*.log` / `*.sock` / `release-notes.json`（実行時の状態）。
@@ -387,7 +388,8 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 
 | キー | 動作 |
 |---|---|
-| `option+h/j/k/l` | ペインを左/下/上/右へ移動 |
+| `option+h/l` | 左/右のペインへ移動。端なら前/次のタブへ移動 |
+| `option+j/k` | 下/上のペインへ移動 |
 | `option+shift+h/l` | 前/次のタブへ移動 |
 | `option+shift+k/j` | 前/次のワークスペースへ移動 |
 | `prefix+1..9` | タブを直接選択 |
