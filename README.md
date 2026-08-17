@@ -348,6 +348,47 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 
 ---
 
+## Herdr
+
+コーディングエージェント向けのターミナルマルチプレクサ。本体は Homebrew、設定は `~/.config/herdr/` に置かれる。
+
+### dotfiles で管理するファイル
+
+- `config/.config/herdr/config.toml` — UI 設定とキーバインド
+- `config/.config/herdr/plugins/config/<plugin_id>/config.toml` — プラグイン個別設定
+
+管理対象外: `plugins.json`（絶対パスと commit hash を含む）、`plugins/`（実体は `herdr plugin install` で再取得）、`session.json` / `sessions/` / `*.log` / `*.sock` / `release-notes.json`（実行時の状態）。
+
+`create-symlink.sh` はファイル単位で symlink するため、socket や log が同居する `~/.config/herdr/` に置いても安全。
+
+### プラグイン
+
+新規マシンでは lock ファイルが無いので、手動で入れ直す。
+
+```sh
+# 導入済み一覧
+herdr plugin list
+
+# インストール
+herdr plugin install <owner>/<repo>[/subdir] --yes
+
+# 設定ディレクトリの場所を確認
+herdr plugin config-dir <plugin_id>
+```
+
+現在の構成:
+
+| plugin_id | source | 用途 |
+|---|---|---|
+| `shepherd.observability` | `ryonakae/shepherd/packages/shepherd-herdr-plugin` | Shepherd の worker 監視 |
+| `worktrunk` | `devashish2203/herdr-worktrunk` | `wt` による worktree の切替・作成・削除 |
+
+`worktrunk` プラグインは `wt` >= 0.60.0、`fzf`、`jq` に依存する。キーバインドは `config.toml` の `[[keys.command]]` で `prefix+shift+g`（default ブランチから switch/create）、`prefix+shift+c`（現在ブランチから）、`prefix+shift+d`（remove）に割り当てている。
+
+設定変更後は `herdr server reload-config` で反映する（サーバー未起動なら次回起動時に読まれる）。
+
+---
+
 ## その他
 
 ### 各 App の設定

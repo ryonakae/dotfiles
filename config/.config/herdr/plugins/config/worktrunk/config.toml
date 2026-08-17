@@ -1,0 +1,5 @@
+# worktree はサイドバーのネストした workspace として開く（tab にすると現 workspace の tab になる）
+open_mode = "workspace"
+
+# picker に remote 追跡ブランチを含めない
+show_remote_branches = false

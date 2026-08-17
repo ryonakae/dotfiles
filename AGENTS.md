@@ -53,6 +53,14 @@ config/
 - 管理対象外: `config.yaml`（クレデンシャル）、`hooks/` / `cron/` / `automations/` / `skills/hermes-custom/`（自己改善で書き換わる）、memory / session / 認証系全般
 - `hermes gateway install --force` / `start` / `setup` の一部分岐は plist を再生成するため、実行後は README 「Hermes Agent › セットアップ」ステップ 3 で ProgramArguments を safehouse ラッパーに差し替え直す
 
+## Herdr 固有メモ
+
+運用は `README.md` の「Herdr」節を参照。
+
+- dotfiles で管理するのは `config/.config/herdr/config.toml` とプラグイン設定 `config/.config/herdr/plugins/config/<plugin_id>/config.toml` のみ
+- 管理対象外: `plugins.json`（絶対パスと commit hash を含む）、`plugins/` の実体、session / log / socket
+- プラグインは lock で復元できない。追加・削除したら README の一覧表を更新する
+
 ## 検証
 
 ```sh
