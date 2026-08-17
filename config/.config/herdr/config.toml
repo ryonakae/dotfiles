@@ -2,6 +2,8 @@ onboarding = false
 
 [ui]
 agent_panel_sort = "spaces"
+pane_gaps = false
+pane_scrollbars = false
 
 [ui.sound]
 enabled = false
