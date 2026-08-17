@@ -399,6 +399,8 @@ herdr 本体にも `[worktrees]` と `herdr worktree` があるが、こちら�
 
 設定変更後は `herdr server reload-config` で反映する（サーバー未起動なら次回起動時に読まれる）。
 
+本体のバージョンを上げると config キーが廃止されることがある。`herdr config check` で `unknown config key ...` が出たら、CHANGELOG で後継キーの有無を確認してから該当行を消す。
+
 ---
 
 ## その他
