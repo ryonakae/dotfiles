@@ -2,6 +2,27 @@ function __hdr_session_names
     command herdr session list --json 2>/dev/null | command jq -r '.sessions[].name'
 end
 
+function __hdr_list
+    if not command -q jq
+        echo "error: jq command not found. Install it with: brew install jq"
+        return 127
+    end
+
+    set -l sessions_json (command herdr session list --json); or return
+    set -l running_status running
+    set -l stopped_status stopped
+    if test -t 1
+        set running_status (printf '%s%s%s' (set_color green) running (set_color normal))
+        set stopped_status (printf '%s%s%s' (set_color red) stopped (set_color normal))
+    end
+    set -l rows (printf '%s\n' "$sessions_json" | command jq -r \
+        --arg running "$running_status" \
+        --arg stopped "$stopped_status" \
+        '.sessions[] | [.name, (if .running then $running else $stopped end)] | @tsv'); or return
+    set -l tab (printf '\t')
+    printf '%s\n' (string join "$tab" name status) $rows | command column -t -s "$tab"
+end
+
 function __hdr_session_running --argument-names session
     command herdr session list --json 2>/dev/null \
         | command jq -r --arg name "$session" '.sessions[] | select(.name == $name) | .running'
@@ -267,7 +288,7 @@ function hdr --description "Manage project sessions in Herdr"
                 echo "Usage: hdr list"
                 return 2
             end
-            command herdr session list
+            __hdr_list
         case stop
             __hdr_stop $argv
         case delete rm
