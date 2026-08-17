@@ -1,2 +1,7 @@
-[projects."github.com/ryonakae/dotfiles"]
-worktree-path = "~/Dev/.worktrees/dotfiles/{{ branch | sanitize }}"
+# worktree は repo 本体の並びから隔離して 1 箇所に集約する。~/Dev 配下なのは
+# Safehouse の --add-dirs が ~/Dev を rw で開けており、追加の allowlist 変更が要らないため。
+# owner を挟むのは repo 名の衝突を避けるため (例: figma-design-check-with-llm が
+# github.com/ryonakae と ghe.mng.nintendo.net/d-nakae-ryo の両方に存在する)。
+# owner は remote 由来なので remote 無しの repo では未定義になり、fallback が無いと
+# worktree 作成自体が "Failed to expand worktree-path" で落ちる。
+worktree-path = '~/Dev/_worktrees/{{ owner | default("_local") }}/{{ repo }}/{{ branch | sanitize }}'
