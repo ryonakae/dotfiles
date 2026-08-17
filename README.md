@@ -91,15 +91,13 @@ $ fisher update
 
 ### プロジェクトセッションを開く
 
-`zl` は Zellij、`hdr` は Herdr のプロジェクトセッションを操作する。引数なしではカレントディレクトリ名、パス指定時はそのディレクトリ名をセッション名として開く。
+`zl` は Zellij、`hdr` は Herdr のプロジェクトセッションを操作する。引数なしではカレントディレクトリ名、パス指定時はそのディレクトリ名をセッション名として開く。Herdr の session 名に使えない文字は `-` に置き換える。
 
 ```sh
 zl [PATH]
 hdr [PATH]
 
-zl pick                 # session / repository を選択
-hdr pick
-zl list                 # session 一覧
+zl list                 # session / repository の選択と管理
 hdr list
 zl stop [SESSION...]    # 実行中 session を停止
 hdr stop [SESSION...]
@@ -107,7 +105,9 @@ zl delete [SESSION...]  # 保存済み session を削除
 hdr delete [SESSION...]
 ```
 
-`open [PATH]` で起動操作を明示でき、`-h` または `--help` でヘルプを表示する。`hdr` の起動、選択、停止、削除は Herdr を detach してから実行する。
+`list` は session を状態付きで先に並べ、その後に repository を表示する。`running` は緑、`stopped` は赤で表示する。`Enter` で開き、`Ctrl-S` で session を停止、`Ctrl-D` で削除する。
+
+`open [PATH]` で起動操作を明示でき、`-h` または `--help` でヘルプを表示する。`hdr` の起動、一覧操作、停止、削除は Herdr を detach してから実行する。
 
 ### HOMEBREW_GITHUB_API_TOKEN の設定
 

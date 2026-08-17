@@ -2,25 +2,158 @@ function __hdr_session_names
     command herdr session list --json 2>/dev/null | command jq -r '.sessions[].name'
 end
 
+function __hdr_choices
+    set -l dev_dir "$HOME/dev"
+    set -l history_file "$HOME/.cache/hdr_history"
+    set -l sessions_json (command herdr session list --json 2>/dev/null); or return
+    set -l session_rows (printf '%s\n' "$sessions_json" | command jq -r \
+        '.sessions[] | [.name, (if .running then "running" else "stopped" end)] | @tsv'); or return
+    set -l sessions
+    set -l sorted_sessions
+    set -l tab (printf '\t')
+    set -l records
+    set -l label_width 0
+
+    for row in $session_rows
+        set -l fields (string split "$tab" -- "$row")
+        set -a sessions $fields[1]
+    end
+
+    if test -f "$history_file" -a (count $sessions) -gt 0
+        for name in (tail -r "$history_file" 2>/dev/null)
+            if contains -- "$name" $sessions; and not contains -- "$name" $sorted_sessions
+                set -a sorted_sessions "$name"
+            end
+        end
+    end
+    for name in $sessions
+        contains -- "$name" $sorted_sessions; or set -a sorted_sessions "$name"
+    end
+
+    for session in $sorted_sessions
+        set -l session_status stopped
+        for row in $session_rows
+            set -l fields (string split "$tab" -- "$row")
+            if test "$fields[1]" = "$session"
+                set session_status $fields[2]
+                break
+            end
+        end
+        set label_width (math max $label_width, (string length -- "$session"))
+        set -a records (string join "$tab" session "$session" "$session_status" "$session")
+    end
+
+    set -l repos
+    if test -d "$dev_dir"
+        set repos (fd -t d -H --no-ignore --min-depth 2 --max-depth 4 '^\.git$' "$dev_dir" \
+            | string replace -r '/\.git/?$' '' \
+            | string replace "$HOME/" '')
+    end
+    test -d "$HOME/dotfiles/.git"; and set -a repos dotfiles
+    if test (count $repos) -gt 0
+        set repos (printf '%s\n' $repos | sort -u)
+    end
+    for repo in $repos
+        set -a records (string join "$tab" repo "$repo" repository "+ $repo")
+    end
+
+    for record in $records
+        set -l fields (string split "$tab" -- "$record")
+        if test "$fields[1]" = session
+            set -l status_color (set_color green)
+            test "$fields[3]" = stopped; and set status_color (set_color red)
+            set -l display_status (printf '%s%s%s' "$status_color" "$fields[3]" (set_color normal))
+            printf '%s\t%s\t%s\t%-*s  %s\n' $fields[1] $fields[2] $fields[3] $label_width $fields[4] "$display_status"
+        else
+            printf '%s\t%s\t%s\t%s\n' $fields[1] $fields[2] $fields[3] $fields[4]
+        end
+    end
+end
+
 function __hdr_list
+    __hdr_require_outer_shell; or return
+
+    if not command -q fd
+        echo "error: fd command not found. Install it with: brew install fd"
+        return 127
+    end
+    if not command -q fzf
+        echo "error: fzf command not found. Install it with: brew install fzf"
+        return 127
+    end
     if not command -q jq
         echo "error: jq command not found. Install it with: brew install jq"
         return 127
     end
 
-    set -l sessions_json (command herdr session list --json); or return
-    set -l running_status running
-    set -l stopped_status stopped
-    if test -t 1
-        set running_status (printf '%s%s%s' (set_color green) running (set_color normal))
-        set stopped_status (printf '%s%s%s' (set_color red) stopped (set_color normal))
-    end
-    set -l rows (printf '%s\n' "$sessions_json" | command jq -r \
-        --arg running "$running_status" \
-        --arg stopped "$stopped_status" \
-        '.sessions[] | [.name, (if .running then $running else $stopped end)] | @tsv'); or return
     set -l tab (printf '\t')
-    printf '%s\n' (string join "$tab" name status) $rows | command column -t -s "$tab"
+    set -l history_file "$HOME/.cache/hdr_history"
+
+    while true
+        set -l choices (__hdr_choices); or return
+        if test (count $choices) -eq 0
+            echo "No Herdr sessions or repositories found."
+            return 1
+        end
+
+        set -l result (printf '%s\n' $choices | fzf \
+            --delimiter="$tab" \
+            --with-nth=4 \
+            --ansi \
+            --layout=reverse-list \
+            --border=rounded \
+            --border-label=" Herdr Sessions " \
+            --header="Enter: open | Ctrl-S: stop session | Ctrl-D: delete session | Esc: cancel" \
+            --prompt="> " \
+            --info=inline \
+            --height=60% \
+            --expect=ctrl-s,ctrl-d)
+        set -l fzf_status $status
+        test $fzf_status -eq 130; and return 0
+        test $fzf_status -eq 0; or return $fzf_status
+        test (count $result) -ge 2; or return 0
+
+        set -l action $result[1]
+        test -n "$action"; or set action open
+        set -l selected_parts (string split "$tab" -- "$result[2]")
+        test (count $selected_parts) -ge 4; or begin
+            echo "error: invalid picker selection."
+            return 1
+        end
+        set -l choice_type $selected_parts[1]
+        set -l target $selected_parts[2]
+
+        if test "$choice_type" = repo
+            test "$action" = open; or continue
+
+            set -l project_dir "$HOME/$target"
+            set -l base (__hdr_project_session_name "$project_dir")
+            set -l session "$base"
+            set -l i 2
+            set -l sessions (__hdr_session_names)
+            while contains -- "$session" $sessions
+                set session "$base-$i"
+                set i (math $i + 1)
+            end
+            __hdr_validate_session_name "$session"; or return
+            mkdir -p (dirname "$history_file")
+            echo "$session" >>"$history_file"
+            __hdr_open "$project_dir" "$session"
+            return $status
+        end
+
+        switch "$action"
+            case ctrl-s
+                __hdr_stop "$target"
+            case ctrl-d
+                __hdr_delete "$target"
+            case open
+                mkdir -p (dirname "$history_file")
+                echo "$target" >>"$history_file"
+                __hdr_attach "$target"
+                return $status
+        end
+    end
 end
 
 function __hdr_session_running --argument-names session
@@ -33,6 +166,12 @@ function __hdr_require_outer_shell
         echo "error: detach from Herdr before opening or modifying a session."
         return 1
     end
+end
+
+function __hdr_project_session_name --argument-names project_dir
+    set -l session (string replace -ar '[^A-Za-z0-9._-]+' '-' -- (basename "$project_dir"))
+    set session (string replace -r '^-+' '' -- "$session")
+    test -n "$session"; and echo "$session"; or echo session
 end
 
 function __hdr_validate_session_name --argument-names session
@@ -61,95 +200,10 @@ function __hdr_open --argument-names path session
     end
 
     set -l project_dir (realpath "$path")
-    test -n "$session" || set session (basename "$project_dir")
+    test -n "$session" || set session (__hdr_project_session_name "$project_dir")
     __hdr_validate_session_name "$session"; or return
 
     command env -C "$project_dir" herdr --session "$session"
-end
-
-function __hdr_pick
-    __hdr_require_outer_shell; or return
-
-    if not command -q fd
-        echo "error: fd command not found. Install it with: brew install fd"
-        return 127
-    end
-    if not command -q fzf
-        echo "error: fzf command not found. Install it with: brew install fzf"
-        return 127
-    end
-    if not command -q jq
-        echo "error: jq command not found. Install it with: brew install jq"
-        return 127
-    end
-
-    set -l dev_dir "$HOME/dev"
-    set -l history_file "$HOME/.cache/hdr_history"
-    set -l sessions (__hdr_session_names)
-    set -l sorted_sessions
-
-    if test -f "$history_file" -a (count $sessions) -gt 0
-        for name in (tail -r "$history_file" 2>/dev/null)
-            if contains -- "$name" $sessions; and not contains -- "$name" $sorted_sessions
-                set -a sorted_sessions "$name"
-            end
-        end
-        for name in $sessions
-            contains -- "$name" $sorted_sessions; or set -a sorted_sessions "$name"
-        end
-    else
-        set sorted_sessions $sessions
-    end
-
-    set -l repos
-    if test -d "$dev_dir"
-        set repos (fd -t d -H --no-ignore --min-depth 2 --max-depth 4 '^\.git$' "$dev_dir" \
-            | string replace -r '/\.git/?$' '' \
-            | string replace "$HOME/" '')
-    end
-    test -d "$HOME/dotfiles/.git"; and set -a repos dotfiles
-    if test (count $repos) -gt 0
-        set repos (printf '%s\n' $repos | sort -u | string replace -r '^' '+ ')
-    end
-
-    set -l choices $sorted_sessions $repos
-    if test (count $choices) -eq 0
-        echo "No Herdr sessions or repositories found."
-        return 1
-    end
-
-    set -l selected (printf '%s\n' $choices | fzf \
-        --layout=reverse-list \
-        --border=rounded \
-        --border-label=" Herdr Sessions " \
-        --header="Enter: open | Esc: cancel" \
-        --prompt="> " \
-        --info=inline \
-        --height=40%)
-    set -l fzf_status $status
-    test $fzf_status -eq 130; and return 0
-    test $fzf_status -eq 0; or return $fzf_status
-    test -n "$selected"; or return 0
-
-    mkdir -p (dirname "$history_file")
-
-    if string match -q '+ *' "$selected"
-        set -l relative_dir (string replace '+ ' '' "$selected")
-        set -l project_dir "$HOME/$relative_dir"
-        set -l base (basename "$project_dir")
-        set -l session "$base"
-        set -l i 2
-        set -l sessions (__hdr_session_names)
-        while contains -- "$session" $sessions
-            set session "$base-$i"
-            set i (math $i + 1)
-        end
-        echo "$session" >> "$history_file"
-        __hdr_open "$project_dir" "$session"
-    else
-        echo "$selected" >> "$history_file"
-        __hdr_attach "$selected"
-    end
 end
 
 function __hdr_confirm_sessions --argument-names action
@@ -169,7 +223,7 @@ function __hdr_stop
     end
 
     set -l sessions $argv
-    test (count $sessions) -gt 0; or set sessions (basename (pwd))
+    test (count $sessions) -gt 0; or set sessions (__hdr_project_session_name (pwd))
 
     __hdr_confirm_sessions Stop $sessions; or begin
         echo "Cancelled."
@@ -206,7 +260,7 @@ function __hdr_delete
     end
 
     set -l sessions $argv
-    test (count $sessions) -gt 0; or set sessions (basename (pwd))
+    test (count $sessions) -gt 0; or set sessions (__hdr_project_session_name (pwd))
 
     __hdr_confirm_sessions Delete $sessions; or begin
         echo "Cancelled."
@@ -242,8 +296,7 @@ function __hdr_help
         '' \
         'Commands:' \
         '  open [PATH]         Open the project session (default: current directory)' \
-        '  pick                Select a session or repository with fzf' \
-        '  list                List Herdr sessions' \
+        '  list                Select or manage sessions and repositories with fzf' \
         '  stop [SESSION...]   Stop sessions (default: current directory name)' \
         '  delete [SESSION...] Delete saved sessions (default: current directory name)' \
         '  help                Show this help'
@@ -277,12 +330,6 @@ function hdr --description "Manage project sessions in Herdr"
             set -l path (pwd)
             test (count $argv) -eq 0; or set path $argv[1]
             __hdr_open "$path"
-        case pick
-            if test (count $argv) -gt 0
-                echo "Usage: hdr pick"
-                return 2
-            end
-            __hdr_pick
         case list ls
             if test (count $argv) -gt 0
                 echo "Usage: hdr list"
