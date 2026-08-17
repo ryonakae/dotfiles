@@ -10,10 +10,8 @@ enabled = false
 
 [keys]
 # 左 Option でペインを移動し、Shift 併用でタブとワークスペースを移動する
-focus_pane_left = "alt+h"
 focus_pane_down = "alt+j"
 focus_pane_up = "alt+k"
-focus_pane_right = "alt+l"
 previous_tab = "alt+shift+h"
 next_tab = "alt+shift+l"
 previous_workspace = "alt+shift+k"
@@ -24,6 +22,18 @@ switch_workspace = "prefix+shift+1..9"
 # フラット配置され、worktree-path テンプレートも hooks も効かない）。デフォルトの
 # prefix+shift+g をプラグインへ明け渡すため、本体側を空にして無効化する。
 new_worktree = ""
+
+[[keys.command]]
+key = "alt+h"
+type = "shell"
+command = "sh \"$HOME/.config/herdr/scripts/focus-pane-or-tab.sh\" left"
+description = "Focus left pane or previous tab"
+
+[[keys.command]]
+key = "alt+l"
+type = "shell"
+command = "sh \"$HOME/.config/herdr/scripts/focus-pane-or-tab.sh\" right"
+description = "Focus right pane or next tab"
 
 [[keys.command]]
 key = "prefix+shift+g"
