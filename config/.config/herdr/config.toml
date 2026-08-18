@@ -12,13 +12,15 @@ enabled = false
 delivery = "herdr"
 
 [keys]
-# 左 Option でペインを移動し、Shift 併用でタブとワークスペースを移動する
+# 左 Option と hjkl でペイン・タブ、矢印でエージェント・ワークスペースを移動する
 focus_pane_down = "alt+j"
 focus_pane_up = "alt+k"
 previous_tab = "alt+shift+h"
 next_tab = "alt+shift+l"
-previous_workspace = "alt+shift+k"
-next_workspace = "alt+shift+j"
+previous_workspace = "alt+shift+up"
+next_workspace = "alt+shift+down"
+previous_agent = "alt+up"
+next_agent = "alt+down"
 switch_workspace = "prefix+shift+1..9"
 
 # worktree は worktrunk プラグイン経由で作る（本体の worktree は ~/.herdr/worktrees に
