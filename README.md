@@ -392,7 +392,8 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 | `option+h/l` | 左/右のペインへ移動。端なら前/次のタブへ移動 |
 | `option+j/k` | 下/上のペインへ移動 |
 | `option+shift+h/l` | 前/次のタブへ移動 |
-| `option+shift+k/j` | 前/次のワークスペースへ移動 |
+| `option+↑/↓` | 前/次のエージェントへ移動 |
+| `option+shift+↑/↓` | 前/次のワークスペースへ移動 |
 | `prefix+1..9` | タブを直接選択 |
 | `prefix+shift+1..9` | ワークスペースを直接選択 |
 | `prefix+y` | クリップボード内の TUI の表示折り返しと共通余白を正規化 |
