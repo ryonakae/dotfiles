@@ -156,6 +156,11 @@ function __zl_attach --argument-names session
     end
 end
 
+function __zl_confirm_create --argument-names session project_dir
+    read -P "Create Zellij session '$session' in '$project_dir'? [y/N] " -l answer
+    string match -qr '^[Yy]$' -- "$answer"
+end
+
 function __zl_open --argument-names path session
     if not test -d "$path"
         echo "error: directory not found: $path"
@@ -172,6 +177,11 @@ function __zl_open --argument-names path session
     if contains -- "$session" (__zl_session_names)
         __zl_attach "$session"
         return $status
+    end
+
+    __zl_confirm_create "$session" "$project_dir"; or begin
+        echo "Cancelled."
+        return 0
     end
 
     if set -q ZELLIJ

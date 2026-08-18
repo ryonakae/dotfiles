@@ -191,6 +191,11 @@ function __hdr_attach --argument-names session
     command herdr session attach "$session"
 end
 
+function __hdr_confirm_create --argument-names session project_dir
+    read -P "Create Herdr session '$session' in '$project_dir'? [y/N] " -l answer
+    string match -qr '^[Yy]$' -- "$answer"
+end
+
 function __hdr_open --argument-names path session
     __hdr_require_outer_shell; or return
 
@@ -198,10 +203,22 @@ function __hdr_open --argument-names path session
         echo "error: directory not found: $path"
         return 1
     end
+    if not command -q jq
+        echo "error: jq command not found. Install it with: brew install jq"
+        return 127
+    end
 
     set -l project_dir (realpath "$path")
     test -n "$session" || set session (__hdr_project_session_name "$project_dir")
     __hdr_validate_session_name "$session"; or return
+
+    set -l sessions (__hdr_session_names); or return
+    if not contains -- "$session" $sessions
+        __hdr_confirm_create "$session" "$project_dir"; or begin
+            echo "Cancelled."
+            return 0
+        end
+    end
 
     command env -C "$project_dir" herdr --session "$session"
 end
