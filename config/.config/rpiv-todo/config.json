@@ -1,4 +1,5 @@
 {
+  "maxWidgetLines": 3,
   "guidance": {
     "promptSnippet": "todo は、見えるタスクリストが役立つ複数ステップの作業で使う。",
     "promptGuidelines": [
