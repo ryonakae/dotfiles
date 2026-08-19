@@ -7,7 +7,7 @@ description: 安全なステージング、作業テーマ単位のコミット�
 
 ## 概要
 
-コミット対象の決定 → ドキュメント更新（doc-updater に委譲）→ 必要な単位への分割 → コミット群の作成 → 必要なら push を順に行う。push はユーザーが明示した場合だけ実行する。コミットメッセージの runtime 別ルールは [`references/commit-message-profiles.md`](references/commit-message-profiles.md) に分離している。
+コミット対象の決定 → ドキュメント更新（doc-updater に委譲）→ 必要な単位への分割 → コミット群の作成 → 必要なら push を順に行う。push は、ユーザーが commit + push を明示した場合、引数なしで直接呼び出された場合、または `implement` から検証済み成果物を委譲された場合だけ実行する。コミットメッセージの runtime 別ルールは [`references/commit-message-profiles.md`](references/commit-message-profiles.md) に分離している。
 
 ## トリガー方針
 
@@ -85,7 +85,10 @@ description: 安全なステージング、作業テーマ単位のコミット�
 
 #### ステップ7: push
 
-1. ユーザーが commit + push を一連の操作として明示している場合だけ `git push` する。
+1. 次のいずれかでpushが承認されている場合だけ `git push` する。
+   - ユーザーが commit + push を一連の操作として明示している。
+   - `/skill:commit-push` などで引数なしの明示呼び出しをしている。
+   - `implement` が検証済み成果物をcommit + pushモードで委譲している。
 2. commit-only の指示なら push せず、作成したコミットと「push は未実行」であることを伝えて終了する。
 3. push に失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
 

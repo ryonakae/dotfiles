@@ -265,6 +265,7 @@ Implementation-time minor file differences and validation outcomes must be refle
 - Added `config/.agents/skills/implement/SKILL.md` with explicit Plan mode and Direct mode, ownership preflight, TDD delegation, validated delivery commits, risk-based self-review, independent final review, blocker handling, and post-review archival.
 - Updated `config/.agents/AGENTS.md` with the user-selected `dig → plan → implement` and `dig → implement` routes.
 - Clarified that Plan archive checks exclude the archive action itself to avoid a circular completion gate; all Task 3 static validation commands passed.
+- The first independent review found two workflow gaps: an inconsistent push authorization condition and a missing final implementation-owned residue gate. Both were corrected and passed focused validation before re-review.
 
 **Complete when:**
 - Metadata selects imperative implementation requests and excludes non-mutating discussion/review requests.
@@ -303,24 +304,21 @@ Implementation-time minor file differences and validation outcomes must be refle
 
 ## Final Validation
 
-- [ ] `git diff --check 477a6943d071b9ec53d71f68b1950b6f04869c0d..HEAD -- config/.agents/skills/plan config/.agents/skills/implement config/.agents/skills/commit-push config/.agents/AGENTS.md docs/plans/2026-08-19-plan-and-implement-skills.md docs/plans/archived/2026-08-19-plan-and-implement-skills.md` — Expected: no whitespace errors in implementation-owned committed paths; unrelated worktree changes are excluded.
-- [ ] `test -f config/.agents/skills/plan/SKILL.md && test -f config/.agents/skills/implement/SKILL.md && test -f config/.agents/skills/commit-push/SKILL.md && test ! -e config/.agents/skills/writing-plans` — Expected: all three final skill entrypoints exist and the old planner path does not.
-- [ ] `jq -e '.skill_name == "plan" and (.evals | length == 4)' config/.agents/skills/plan/evals/evals.json` — Expected: `true`; existing planner eval definitions survived the rename.
-- [ ] `! rg -n 'writing-plans' config/.agents/skills/plan config/.agents/skills/implement config/.agents/skills/commit-push config/.agents/AGENTS.md` — Expected: no stale shared-workflow references.
-- [ ] `! rg -n '^disable-model-invocation:' config/.agents/skills/commit-push/SKILL.md` — Expected: `commit-push` is model-visible.
-- [ ] `rg -n '^name: (plan|implement|commit-push)$' config/.agents/skills/{plan,implement,commit-push}/SKILL.md` — Expected: exactly one correct name for each skill.
-- [ ] Manually check every row of **Skill routing** against the three descriptions and trigger sections — Expected: planning, imperative implementation, review-only/explanation, commit-only, commit-plus-push, push-only, and ambiguous intents each select exactly the documented behavior.
-- [ ] Manually check every bullet of **Implementation completion** and R2–R10 against `implement/SKILL.md` — Expected: plan/direct selection, ownership preflight, TDD/alternative validation, progress, atomic commit/push, risk-based self-review, independent final review, review fixes, blockers, and archive ordering each have an explicit gate; detailed TDD/staging rules remain delegated.
-- [ ] Run: `for link in "$HOME/.agents/skills/writing-plans" "$HOME/.claude/skills/writing-plans"; do test -L "$link" && test "$(readlink "$link")" = "$PWD/config/.agents/skills/writing-plans" && rm -- "$link" || exit 1; done; test ! -L "$HOME/.agents/skills/writing-plans" && test ! -L "$HOME/.claude/skills/writing-plans"`
-- [ ] Expected: only the two verified old managed links are removed; both old paths are absent as links.
-- [ ] Run: `sh scripts/create-skills-symlink.sh`
-- [ ] Expected: new `plan` and `implement` links are created or already correct; unrelated links are skipped, not replaced.
-- [ ] Run: `test "$(readlink "$HOME/.agents/skills/plan")" = "$PWD/config/.agents/skills/plan" && test "$(readlink "$HOME/.claude/skills/plan")" = "$PWD/config/.agents/skills/plan" && test "$(readlink "$HOME/.agents/skills/implement")" = "$PWD/config/.agents/skills/implement" && test "$(readlink "$HOME/.claude/skills/implement")" = "$PWD/config/.agents/skills/implement"`
-- [ ] Expected: exit 0; every new managed link targets the matching repository directory and no old `writing-plans` link remains.
-- [ ] In Pi, run `/reload` and inspect skill commands — Expected: `/skill:plan`, `/skill:implement`, and `/skill:commit-push` are available; `/skill:writing-plans` is absent.
-- [ ] Automated LLM eval execution — `N/A`: explicitly deferred by user because of runtime cost; existing planner eval definitions are preserved only.
-- [ ] Requirement Coverage has no unmatched item.
-- [ ] The plan and actual changed files agree, and all pre-existing unrelated worktree changes remain untouched.
+- [x] `git diff --check 477a6943d071b9ec53d71f68b1950b6f04869c0d..HEAD -- config/.agents/skills/plan config/.agents/skills/implement config/.agents/skills/commit-push config/.agents/AGENTS.md docs/plans/2026-08-19-plan-and-implement-skills.md docs/plans/archived/2026-08-19-plan-and-implement-skills.md` — Passed: no whitespace errors in implementation-owned committed paths; unrelated worktree changes are excluded.
+- [x] `test -f config/.agents/skills/plan/SKILL.md && test -f config/.agents/skills/implement/SKILL.md && test -f config/.agents/skills/commit-push/SKILL.md && test ! -e config/.agents/skills/writing-plans` — Passed: all three final skill entrypoints exist and the old planner path does not.
+- [x] `jq -e '.skill_name == "plan" and (.evals | length == 4)' config/.agents/skills/plan/evals/evals.json` — Passed: existing planner eval definitions survived the rename.
+- [x] `! rg -n 'writing-plans' config/.agents/skills/plan config/.agents/skills/implement config/.agents/skills/commit-push config/.agents/AGENTS.md` — Passed: no stale shared-workflow references.
+- [x] `! rg -n '^disable-model-invocation:' config/.agents/skills/commit-push/SKILL.md` — Passed: `commit-push` is model-visible.
+- [x] `rg -n '^name: (plan|implement|commit-push)$' config/.agents/skills/{plan,implement,commit-push}/SKILL.md` — Passed: exactly one correct name exists for each skill.
+- [x] Manually checked every row of **Skill routing** against the three descriptions and trigger sections — Passed: planning, imperative implementation, review-only/explanation, commit-only, commit-plus-push, push-only, and ambiguous intents select the documented behavior.
+- [x] Manually checked every bullet of **Implementation completion** and R2–R10 against `implement/SKILL.md` — Passed after review fixes: every required gate is explicit and detailed TDD/staging rules remain delegated.
+- [x] Removed only `$HOME/.agents/skills/writing-plans` and `$HOME/.claude/skills/writing-plans` after their raw `readlink` targets exactly matched this repository's old managed directory — Passed: both old paths are absent as links.
+- [x] `sh scripts/create-skills-symlink.sh` — Passed: new `plan` and `implement` links were created; unrelated links were skipped.
+- [x] `test "$(readlink "$HOME/.agents/skills/plan")" = "$PWD/config/.agents/skills/plan" && test "$(readlink "$HOME/.claude/skills/plan")" = "$PWD/config/.agents/skills/plan" && test "$(readlink "$HOME/.agents/skills/implement")" = "$PWD/config/.agents/skills/implement" && test "$(readlink "$HOME/.claude/skills/implement")" = "$PWD/config/.agents/skills/implement"` — Passed: every new link targets the matching managed directory.
+- [x] Used Pi 0.83.0 `DefaultResourceLoader` after symlink migration — Passed with no diagnostics: `plan`, `implement`, and model-visible `commit-push` were discovered; `writing-plans` was absent.
+- [x] Automated LLM eval execution — `N/A`: explicitly deferred by user because of runtime cost; existing planner eval definitions are preserved only.
+- [x] Requirement Coverage has no unmatched item.
+- [x] The plan and actual changed files agree, and all pre-existing unrelated worktree changes remain untouched.
 - [ ] An independent reviewer reports no unresolved blocking/high issue in the implementation diff.
 - [ ] After every preceding item succeeds, move this file without renaming to `docs/plans/archived/2026-08-19-plan-and-implement-skills.md`, commit the move separately, and push it.
 
