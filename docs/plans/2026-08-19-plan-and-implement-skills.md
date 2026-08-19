@@ -119,7 +119,7 @@ Provide a concise `dig → plan → implement` workflow, with `dig → implement
 ## Progress
 
 - [x] Task 1: Rename the planner and migrate its shared workflow references
-- [ ] Task 2: Enable safe natural-language `commit-push` invocation
+- [x] Task 2: Enable safe natural-language `commit-push` invocation
 - [ ] Task 3: Add the end-to-end `implement` orchestration skill
 
 Implementation-time minor file differences and validation outcomes must be reflected in the relevant task. Ask the user before changing requirements, Out of Scope, or the routing/completion contracts above.
@@ -203,6 +203,11 @@ Implementation-time minor file differences and validation outcomes must be refle
 - `pushして` → description excludes the skill; no new commit is implied.
 - Ambiguous commit wording without push authorization → push is not performed.
 - Validated internal `implement` checkpoint → commit-plus-push mode is explicit.
+
+**Implementation result:**
+- Removed `disable-model-invocation` and aligned the description with commit-only, commit + push, push-only exclusion, and ambiguity behavior.
+- Added explicit commit + push authorization for validated deliverables delegated by `implement`.
+- Preserved the existing staging ownership and destructive-operation safeguards; all Task 2 validation commands passed.
 
 **Complete when:**
 - The skill is model-visible and its description/body agree on all trigger cases.
