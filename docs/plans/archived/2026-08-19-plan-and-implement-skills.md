@@ -320,8 +320,8 @@ Implementation-time minor file differences and validation outcomes must be refle
 - [x] Automated LLM eval execution — `N/A`: explicitly deferred by user because of runtime cost; existing planner eval definitions are preserved only.
 - [x] Requirement Coverage has no unmatched item.
 - [x] The plan and actual changed files agree, and all pre-existing unrelated worktree changes remain untouched.
-- [ ] An independent reviewer reports no unresolved blocking/high issue in the implementation diff.
-- [ ] After every preceding item succeeds, move this file without renaming to `docs/plans/archived/2026-08-19-plan-and-implement-skills.md`, commit the move separately, and push it.
+- [x] An independent reviewer reports no unresolved blocking/high issue in the implementation diff — Passed after two review-fix iterations; final review approved HEAD `9845ed5`.
+- [x] After every preceding item succeeded, moved this file without renaming to `docs/plans/archived/2026-08-19-plan-and-implement-skills.md` for a separate final commit and push.
 
 ## Risks and Open Questions
 
