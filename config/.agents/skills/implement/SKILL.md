@@ -126,7 +126,11 @@ reviewerには正確性、回帰、セキュリティ、仕様適合性、テス
 
 独立したreviewerを利用できない場合は、その制約を報告して未完了として停止する。自己レビューだけで代替せず、Plan modeの計画はアーカイブしない。
 
-レビューと再検証が終わったら`git status --short`、`git diff --cached`、`git diff`を再確認する。Preflightで記録した既存変更を除き、implementation-ownedなstaged、unstaged、untracked変更が残っている場合は、必要な検証とcommit + pushを終えるまで完了を主張しない。
+レビューと再検証が終わったら`git status --short`、`git diff --cached`、`git diff`を再確認する。Preflightで記録した既存変更を除き、implementation-ownedなstaged、unstaged、untracked変更が残っている場合は、次のように扱う。
+
+- 実装、テスト、文書、設定、生成物など成果物に影響する残差は、必要な検証とcommit + pushを行う。その新しいHEADに対してfinal validationと独立レビューを再実行し、残差確認へ戻る。
+- 独立レビュー結果の計画への記録と、条件通過後のPlan archiveだけは管理上の変更として再レビュー対象から除外し、アーカイブ用の最終commitへ含める。
+- 上記以外の残差がある間は完了を主張しない。
 
 ## Plan archive
 
