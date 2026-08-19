@@ -120,7 +120,7 @@ Provide a concise `dig → plan → implement` workflow, with `dig → implement
 
 - [x] Task 1: Rename the planner and migrate its shared workflow references
 - [x] Task 2: Enable safe natural-language `commit-push` invocation
-- [ ] Task 3: Add the end-to-end `implement` orchestration skill
+- [x] Task 3: Add the end-to-end `implement` orchestration skill
 
 Implementation-time minor file differences and validation outcomes must be reflected in the relevant task. Ask the user before changing requirements, Out of Scope, or the routing/completion contracts above.
 
@@ -260,6 +260,11 @@ Implementation-time minor file differences and validation outcomes must be refle
 - Blocking/high review finding within scope → fix, validate, commit/push, and re-review; required contract change → ask the user.
 - Failed validation or unavailable independent review → leave the plan active and do not claim completion.
 - Unresolved mid-task blocker → leave incomplete work local and uncommitted/unpushed, recording restart context when a plan exists.
+
+**Implementation result:**
+- Added `config/.agents/skills/implement/SKILL.md` with explicit Plan mode and Direct mode, ownership preflight, TDD delegation, validated delivery commits, risk-based self-review, independent final review, blocker handling, and post-review archival.
+- Updated `config/.agents/AGENTS.md` with the user-selected `dig → plan → implement` and `dig → implement` routes.
+- Clarified that Plan archive checks exclude the archive action itself to avoid a circular completion gate; all Task 3 static validation commands passed.
 
 **Complete when:**
 - Metadata selects imperative implementation requests and excludes non-mutating discussion/review requests.
