@@ -1,5 +1,6 @@
 {
   "disableDefaultAgents": true,
   "schedulingEnabled": false,
-  "toolDescriptionMode": "compact"
+  "scopeModels": true,
+  "toolDescriptionMode": "custom"
 }
