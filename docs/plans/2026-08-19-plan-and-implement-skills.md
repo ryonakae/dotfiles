@@ -266,6 +266,7 @@ Implementation-time minor file differences and validation outcomes must be refle
 - Updated `config/.agents/AGENTS.md` with the user-selected `dig → plan → implement` and `dig → implement` routes.
 - Clarified that Plan archive checks exclude the archive action itself to avoid a circular completion gate; all Task 3 static validation commands passed.
 - The first independent review found two workflow gaps: an inconsistent push authorization condition and a missing final implementation-owned residue gate. Both were corrected and passed focused validation before re-review.
+- Re-review found that committing substantive residue could create a new unreviewed HEAD. The residue gate now loops back through final validation and independent review, while review records and the final plan archive remain administrative exceptions.
 
 **Complete when:**
 - Metadata selects imperative implementation requests and excludes non-mutating discussion/review requests.
