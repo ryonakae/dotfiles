@@ -126,6 +126,8 @@ reviewerには正確性、回帰、セキュリティ、仕様適合性、テス
 
 独立したreviewerを利用できない場合は、その制約を報告して未完了として停止する。自己レビューだけで代替せず、Plan modeの計画はアーカイブしない。
 
+レビューと再検証が終わったら`git status --short`、`git diff --cached`、`git diff`を再確認する。Preflightで記録した既存変更を除き、implementation-ownedなstaged、unstaged、untracked変更が残っている場合は、必要な検証とcommit + pushを終えるまで完了を主張しない。
+
 ## Plan archive
 
 Plan modeだけで行う。次の条件がすべて成立した後、計画を同名のまま`docs/plans/archived/`へ移す。
@@ -136,6 +138,7 @@ Plan modeだけで行う。次の条件がすべて成立した後、計画を�
 - 独立レビューに未解決のblocking/highがない。
 - レビュー修正後の再検証と再レビューが完了している。
 - 実装commitがすべてpush済みである。
+- Preflightで記録した既存変更を除き、implementation-ownedな未commitの変更が残っていない。
 
 アーカイブ移動だけを独立した最終commitにし、[`commit-push`](../commit-push/SKILL.md)でpushする。アーカイブ前に条件を満たせなくなった場合は、計画を未アーカイブの場所へ残す。
 
