@@ -1,7 +1,6 @@
 ---
 name: commit-push
-description: 安全なステージング、作業テーマ単位のコミット分割、ドキュメント更新、Conventional Commits メッセージ生成、必要に応じた push までを行うスキル。`コミットして`、`commit`、`コミットプッシュして` など commit を求められたときに使う。push は明示された場合だけ実行し、commit-only では push せず止まる。`pushして`、`プッシュして` など push だけの指示では使わない。
-disable-model-invocation: true
+description: 安全なステージング、作業テーマ単位のコミット分割、ドキュメント更新、Conventional Commits メッセージ生成、必要に応じた push までを行うスキル。`コミットして`、`commit` などでは commit-only、`コミットプッシュして`、`コミットして push して` などでは commit + push として使う。`pushして`、`プッシュして` など push だけの指示では使わず、曖昧な指示では push しない。`implement` スキルから検証済み成果物の commit + push を明示された場合にも使う。
 ---
 
 # commit-push
@@ -14,8 +13,10 @@ disable-model-invocation: true
 
 - commit + push として使う: `/commit-push`、`commit-push`、`コミットプッシュして`、`コミットして push して`、`コミットしてプッシュまでやって` のように、commit と push を一連の操作として明示している場合。
 - 明示呼び出しとして使う: `/skill:commit-push` など、このスキルが直接呼び出され、追加の依頼文が無い場合は commit + push として扱う。追加の依頼文がある場合は、その文面で判定する。
+- `implement` から使う: 検証済み成果物について `implement` スキルがこのスキルを呼び出した場合は、実装開始時の包括承認に基づく commit + push として扱う。
 - commit-only として使う: `コミットして`、`commitして`、`コミット`、`commit`、`commit-push のコミット部分だけ` のように、commit だけを求めている場合。この場合は push しない。
 - 使わない: `プッシュして`、`pushして` のように、push だけを求めている場合。通常の push 手段で対応する。
+- 曖昧な場合: commit の依頼は明確だが push の明示が無い場合は commit-only とする。commit 自体が求められているか判断できない場合は、commit も push もせず確認する。
 
 ## 基本方針
 
