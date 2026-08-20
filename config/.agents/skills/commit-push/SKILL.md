@@ -1,22 +1,21 @@
 ---
 name: commit-push
-description: 安全なステージング、作業テーマ単位のコミット分割、ドキュメント更新、Conventional Commits メッセージ生成、必要に応じた push までを行うスキル。`コミットして`、`commit` などでは commit-only、`コミットプッシュして`、`コミットして push して` などでは commit + push として使う。`pushして`、`プッシュして` など push だけの指示では使わず、曖昧な指示では push しない。`implement` スキルから検証済み成果物の commit + push を明示された場合にも使う。
+description: 安全なステージング、作業テーマ単位のコミット分割、ドキュメント更新、Conventional Commitsメッセージ生成、必要に応じたpushまでを行う。引数でcommit-onlyに制限されない限りcommit + pushとして実行する。implementスキルから手順の正本として参照される場合にも使う。
+disable-model-invocation: true
 ---
 
 # commit-push
 
 ## 概要
 
-コミット対象の決定 → ドキュメント更新（doc-updater に委譲）→ 必要な単位への分割 → コミット群の作成 → 必要なら push を順に行う。push は、ユーザーが commit + push を明示した場合、引数なしで直接呼び出された場合、または `implement` から検証済み成果物を委譲された場合だけ実行する。コミットメッセージの runtime 別ルールは [`references/commit-message-profiles.md`](references/commit-message-profiles.md) に分離している。
+コミット対象の決定 → ドキュメント更新（doc-updaterに委譲）→ 必要な単位への分割 → コミット群の作成 → 必要ならpushを順に行う。`implement`から参照された場合もこの手順を使う。コミットメッセージのruntime別ルールは[`references/commit-message-profiles.md`](references/commit-message-profiles.md)に分離している。
 
-## トリガー方針
+## Invocation policy
 
-- commit + push として使う: `/commit-push`、`commit-push`、`コミットプッシュして`、`コミットして push して`、`コミットしてプッシュまでやって` のように、commit と push を一連の操作として明示している場合。
-- 明示呼び出しとして使う: `/skill:commit-push` など、このスキルが直接呼び出され、追加の依頼文が無い場合は commit + push として扱う。追加の依頼文がある場合は、その文面で判定する。
-- `implement` から使う: 検証済み成果物について `implement` スキルがこのスキルを呼び出した場合は、実装開始時の包括承認に基づく commit + push として扱う。
-- commit-only として使う: `コミットして`、`commitして`、`コミット`、`commit`、`commit-push のコミット部分だけ` のように、commit だけを求めている場合。この場合は push しない。
-- 使わない: `プッシュして`、`pushして` のように、push だけを求めている場合。通常の push 手段で対応する。
-- 曖昧な場合: commit の依頼は明確だが push の明示が無い場合は commit-only とする。commit 自体が求められているか判断できない場合は、commit も push もせず確認する。
+- commit-only、push不要などの制限が指定されていなければcommit + pushとして扱い、指定されていればcommitだけを行う。
+- `implement`が検証済み成果物の手順としてこのファイルを参照した場合は、`implement`の包括承認に基づくcommit + pushとして扱う。
+- pushだけに処理を限定する指示では、この手順を使わず通常のpush手段で対応する。
+- 対象範囲やcommit自体を行うか判断できない場合は、commitもpushもせず確認する。
 
 ## 基本方針
 
@@ -85,11 +84,10 @@ description: 安全なステージング、作業テーマ単位のコミット�
 
 #### ステップ7: push
 
-1. 次のいずれかでpushが承認されている場合だけ `git push` する。
-   - ユーザーが commit + push を一連の操作として明示している。
-   - `/skill:commit-push` などで引数なしの明示呼び出しをしている。
-   - `implement` が検証済み成果物をcommit + pushモードで委譲している。
-2. commit-only の指示なら push せず、作成したコミットと「push は未実行」であることを伝えて終了する。
+1. 次のいずれかでpushが承認されている場合だけ`git push`する。
+   - commit-onlyへの制限が指定されていない。
+   - `implement`が、検証済み成果物のcommit + push手順としてこのファイルを参照している。
+2. 明示呼び出しの引数でcommit-onlyに制限されている場合はpushせず、作成したコミットと「pushは未実行」であることを伝えて終了する。
 3. push に失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
 
 ## 代表ケース

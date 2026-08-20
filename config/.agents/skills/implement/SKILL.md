@@ -1,16 +1,17 @@
 ---
 name: implement
-description: 確定した要件を、実装、検証、atomic commit、push、独立レビュー、必要な計画アーカイブまで完遂するスキル。ユーザーが「実装して」「実装開始して」「このプランを実装して」「続きを実装して」「最後まで仕上げて」など、変更の実装開始・継続・完了を求めたときに使う。計画があれば Plan mode、ユーザーが計画を省略して直接実装すると決めた場合は Direct mode で進める。計画作成、設計相談、説明、レビューだけを求められた場合は使わない。実装指示は検証済み成果物のcommitとpushを含む承認として扱う。
+description: 確定した要件を実装、検証、atomic commit、push、独立レビュー、必要な計画アーカイブまで完遂する。計画があれば Plan mode、ユーザーが計画を省略して直接実装すると決めた場合は Direct mode で進める。
 compatibility: Gitリポジトリと、tdd・commit-pushスキル、独立したreviewerを起動できる実行環境を前提とする。
+disable-model-invocation: true
 ---
 
 # Implement
 
-確定した要件を、検証とレビューを通った状態でリモートへ反映する。詳細なテスト品質は `tdd`、staging、commit、push、ドキュメント更新は [`commit-push`](../commit-push/SKILL.md) を正本とし、このスキルは実行順序と完了条件を管理する。
+確定した要件を検証とレビューを通った状態でリモートへ反映する。詳細なテスト品質は `tdd`、staging、commit、push、ドキュメント更新は [`commit-push`](../commit-push/SKILL.md) を手順の正本とし、このスキルは実行順序と完了条件を管理する。
 
 ## Authorization
 
-このスキルを起動する実装指示は、次を承認したものとして扱う。
+このスキルの起動を、次の承認として扱う。
 
 - 検証済みの成果物単位でatomic commitを作る。
 - 各commitの直後にpushする。
@@ -74,7 +75,7 @@ force push、rebase、amend、履歴の書き換え、破壊的な削除、要�
 4. validationが成功した後にだけ進捗を完了へ更新する。
 5. Plan modeでは、実際の変更ファイル、軽微な実装差分、検証結果の要点を該当タスクへ反映する。要件、Out of Scope、公開契約の変更は先にユーザーへ確認する。
 6. 下記の条件に当てはまる場合はcommit前にタスク差分を自己レビューし、明らかな欠陥、スコープ外変更、テスト漏れを直してfocused validationを再実行する。
-7. [`commit-push`](../commit-push/SKILL.md)を読み、この成果物だけをcommit + pushモードで処理する。pushが成功するまで成果物を完了扱いにしない。
+7. [`commit-push`](../commit-push/SKILL.md)を手順の正本として読み、この成果物だけをcommit + pushとして処理する。pushが成功するまで成果物を完了扱いにしない。
 
 原則は1プランタスクにつき1commitとする。タスクが一つのreview/revert単位として大きすぎる場合は分割し、小さく不可分な隣接タスクは統合できる。分割または統合した場合は、Plan modeの該当タスクへcommitとの対応を記録する。Direct modeでは作業テーマ単位で分ける。
 
@@ -144,7 +145,7 @@ Plan modeだけで行う。次の条件がすべて成立した後、計画を�
 - 実装commitがすべてpush済みである。
 - Preflightで記録した既存変更を除き、implementation-ownedな未commitの変更が残っていない。
 
-アーカイブ移動だけを独立した最終commitにし、[`commit-push`](../commit-push/SKILL.md)でpushする。アーカイブ前に条件を満たせなくなった場合は、計画を未アーカイブの場所へ残す。
+アーカイブ移動だけを独立した最終commitにし、[`commit-push`](../commit-push/SKILL.md)の手順に従ってpushする。アーカイブ前に条件を満たせなくなった場合は、計画を未アーカイブの場所へ残す。
 
 ## Blockers
 
