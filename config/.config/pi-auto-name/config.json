@@ -1,0 +1,19 @@
+{
+  "language": "ja",
+  "initialRenameTrigger": "first-agent-settled",
+  "namingContextDepth": "recent-user-messages",
+  "namingModel": "openai-codex/gpt-5.6-luna",
+  "replaceExistingName": "always",
+  "respectExternalRenames": true,
+  "reRenameEveryNTurns": 30,
+  "sessionNameMaxLength": 60,
+  "skipSessionNameDedup": true,
+  "surfaces": {
+    "renamePiSession": true,
+    "renameHerdrPane": false,
+    "renameHerdrTab": false,
+    "renameTmuxWindow": false,
+    "renameZellijPane": false,
+    "renameZellijTab": false
+  }
+}

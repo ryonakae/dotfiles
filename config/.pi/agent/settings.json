@@ -12,10 +12,15 @@
     "npm:@juicesharp/rpiv-todo",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
-    "npm:@vahor/pi-hooks",
     "npm:pi-web-access",
-    "npm:@tifan/pi-inline-skills"
+    "npm:@tifan/pi-inline-skills",
+    "npm:@normful/pi-auto-name@1.0.2"
   ],
   "quietStartup": true,
-  "theme": "dark"
+  "theme": "dark",
+  "enabledModels": [
+    "openai-codex/gpt-5.6-luna",
+    "openai-codex/gpt-5.6-terra",
+    "openai-codex/gpt-5.6-sol"
+  ]
 }
