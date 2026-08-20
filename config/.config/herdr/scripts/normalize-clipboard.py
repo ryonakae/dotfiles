@@ -148,8 +148,10 @@ def active_pane_width() -> int | None:
         )
         layout = json.loads(result.stdout)["result"]["layout"]
         pane = next(pane for pane in layout["panes"] if pane["pane_id"] == pane_id)
-        width = int(pane["rect"]["width"])
-        return width if width > 0 else None
+        width = pane["rect"]["width"]
+        if isinstance(width, bool) or not isinstance(width, int) or width <= 0:
+            return None
+        return width
     except (
         OSError,
         subprocess.SubprocessError,

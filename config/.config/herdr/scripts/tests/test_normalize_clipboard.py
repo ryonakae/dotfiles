@@ -84,7 +84,7 @@ next
     def test_invalid_active_pane_width_preserves_ambiguous_newlines(self) -> None:
         copied = "abcdefghij\nnext"
 
-        for width in (None, 0, -1):
+        for width in (None, 0, -1, True, 1.5, float("inf")):
             with self.subTest(width=width), tempfile.TemporaryDirectory() as directory:
                 fake_herdr = Path(directory) / "herdr"
                 response = {
