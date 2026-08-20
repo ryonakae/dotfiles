@@ -46,6 +46,72 @@ class NormalizeClipboardTest(unittest.TestCase):
 
         self.assertEqual(self.normalize(copied, pane_width=77), expected)
 
+    def test_normalizes_copy_started_midway_through_wrapped_line(self) -> None:
+        copied = """最初の折り返しだけは正しく判定できない可能
+ 性があります。
+
+ 判定は「現在行がペイン幅近くまであるか」なので、途中から選択すると先頭行が
+ 短くなり、本来の表示折り返しを論理改行として保持してしまいます。2行目以降の
+ 折り返しは通常どおり判定できます。"""
+        expected = """最初の折り返しだけは正しく判定できない可能性があります。
+
+判定は「現在行がペイン幅近くまであるか」なので、途中から選択すると先頭行が短くなり、本来の表示折り返しを論理改行として保持してしまいます。2行目以降の折り返しは通常どおり判定できます。"""
+
+        self.assertEqual(self.normalize(copied, pane_width=77), expected)
+
+    def test_infers_wider_agent_margins_from_wrapped_prose(self) -> None:
+        cases = [(2, "wrapped sentence"), (4, "wrapped wordsx")]
+
+        for margin, continuation in cases:
+            with self.subTest(margin=margin):
+                copied = f"fragment\n{' ' * margin}{continuation}\n{' ' * margin}done."
+                expected = f"fragment {continuation} done."
+                self.assertEqual(self.normalize(copied, pane_width=20), expected)
+
+    def test_does_not_infer_wider_margin_from_indented_single_line(self) -> None:
+        cases = [
+            "fragment\n  short",
+            "heading\n  This is intentionally indented and long enough to wrap.",
+        ]
+
+        for copied in cases:
+            with self.subTest(copied=copied):
+                self.assertEqual(self.normalize(copied, pane_width=20), copied)
+
+    def test_does_not_infer_margin_around_fenced_code(self) -> None:
+        copied = """fragment
+    ```
+    123456789012345
+    ```"""
+
+        self.assertEqual(self.normalize(copied, pane_width=20), copied)
+
+    def test_preserves_sentence_break_after_partial_first_line(self) -> None:
+        copied = """短い文です。
+ 次の論理行です。"""
+        expected = """短い文です。
+次の論理行です。"""
+
+        self.assertEqual(self.normalize(copied, pane_width=77), expected)
+
+    def test_partial_first_line_stays_separate_without_pane_width(self) -> None:
+        copied = "fragment\n continuation"
+        expected = "fragment\ncontinuation"
+        env = os.environ.copy()
+        env.pop("HERDR_ACTIVE_PANE_ID", None)
+        env.pop("HERDR_BIN_PATH", None)
+
+        self.assertEqual(self.normalize(copied, env=env), expected)
+
+    def test_preserves_mixed_indentation(self) -> None:
+        copied = " \talpha\n  beta"
+        expected = "\talpha\n beta"
+
+        self.assertEqual(self.normalize(copied, pane_width=77), expected)
+
+    def test_trims_surrounding_whitespace_only_lines(self) -> None:
+        self.assertEqual(self.normalize(" \ntext\n ", pane_width=77), "text")
+
     def test_preserves_line_breaks_inside_fenced_code_blocks(self) -> None:
         copied = """```
 print("12345678901234567890")
@@ -53,6 +119,13 @@ print("next")
 ```"""
 
         self.assertEqual(self.normalize(copied, pane_width=24), copied)
+
+    def test_fenced_code_does_not_trigger_partial_line_inference(self) -> None:
+        copied = """```python
+ print("x")
+ ```"""
+
+        self.assertEqual(self.normalize(copied, pane_width=77), copied)
 
     def test_preserves_indented_fenced_code_blocks(self) -> None:
         copied = """intro

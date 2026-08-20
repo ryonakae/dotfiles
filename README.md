@@ -376,7 +376,7 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 
 - `config/.config/herdr/config.toml` — UI 設定とキーバインド
 - `config/.config/herdr/scripts/focus-pane-or-tab.sh` — ペイン端でタブ移動へ切り替えるスクリプト
-- `config/.config/herdr/scripts/normalize-clipboard.py` — TUI の表示折り返しを論理行へ戻すクリップボード変換スクリプト
+- `config/.config/herdr/scripts/normalize-clipboard.py` — TUI の表示折り返しとエージェントごとに異なる左余白を正規化するクリップボード変換スクリプト
 - `config/.config/herdr/plugins/config/<plugin_id>/config.toml` — プラグイン個別設定
 
 管理対象外: `plugins.json`（絶対パスと commit hash を含む）、`plugins/`（実体は `herdr plugin install` で再取得）、`session.json` / `sessions/` / `*.log` / `*.sock` / `release-notes.json`（実行時の状態）。
@@ -396,7 +396,7 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 | `option+shift+↑/↓` | 前/次のワークスペースへ移動 |
 | `prefix+1..9` | タブを直接選択 |
 | `prefix+shift+1..9` | ワークスペースを直接選択 |
-| `prefix+y` | クリップボード内の TUI の表示折り返しと共通余白を正規化 |
+| `prefix+y` | 途中選択を含む TUI テキストの表示折り返しと左余白を正規化 |
 
 ### プラグイン
 
