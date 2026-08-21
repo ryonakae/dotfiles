@@ -5,6 +5,14 @@ agent_panel_sort = "spaces"
 pane_gaps = false
 pane_scrollbars = false
 
+[ui.sidebar.agents]
+rows = [
+  ["state_icon", { token = "agent", bold = true, dim = false }],
+  [{ token = "workspace", bold = false, dim = true }, "tab", "pane"],
+  ["$agent_context_session_name"],
+  ["$agent_context_last_message"],
+]
+
 [ui.sound]
 enabled = false
 
