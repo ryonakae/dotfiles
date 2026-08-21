@@ -5,6 +5,7 @@
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
+  "model": "fable",
   "hooks": {
     "Notification": [
       {
@@ -36,10 +37,10 @@
     "padding": 0
   },
   "language": "日本語",
+  "feedbackSurveyRate": 0,
   "spinnerTipsEnabled": false,
   "effortLevel": "high",
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true,
-  "feedbackSurveyRate": 0
+  "skipAutoPermissionPrompt": true
 }
