@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "disable_ai": false,
   "cli_default_open_behavior": "new_window",
   "agent_servers": {},
   "language_models": {
@@ -17,7 +18,7 @@
     },
   },
   "project_panel": {
-    "dock": "left",
+    "dock": "right",
     "git_status": true,
   },
   "tabs": {
@@ -42,9 +43,10 @@
     "button": false,
   },
   "terminal": {
+    "default_width": 640.0,
     "flexible": false,
     "cursor_shape": "bar",
-    "dock": "right",
+    "dock": "left",
     "option_as_meta": true,
   },
   "git_panel": {
@@ -53,7 +55,7 @@
     "sort_by": "name",
     "collapse_untracked_diff": false,
     "status_style": "label_color",
-    "dock": "left",
+    "dock": "right",
     "tree_view": true,
   },
   "sticky_scroll": {
@@ -69,14 +71,15 @@
   "buffer_font_size": 13.0,
   "theme": "Ayu Dark",
   "agent": {
+    "play_sound_when_agent_done": "when_hidden",
     "flexible": false,
     "inline_assistant_model": {
       "provider": "copilot_chat",
       "model": "claude-haiku-4.5",
       "enable_thinking": false,
     },
-    "sidebar_side": "right",
-    "dock": "right",
+    "sidebar_side": "left",
+    "dock": "left",
     "button": true,
     "default_model": {
       "effort": "medium",
