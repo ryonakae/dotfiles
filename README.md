@@ -420,6 +420,7 @@ herdr plugin config-dir <plugin_id>
 | `ryonakae.agent-context` | `ryonakae/herdr-agent-context` | Pi / Claude Code のセッションコンテキストをサイドバーとタブ名に表示 |
 | `shepherd.observability` | `ryonakae/shepherd/packages/shepherd-herdr-plugin` | Shepherd の worker 監視 |
 | `worktrunk` | `devashish2203/herdr-worktrunk` | `wt` による worktree の切替・作成・削除 |
+| `zerdr` | local（zerdr 本体が `~/Library/Application Support/dev.ryonakae.zerdr/` に配置） | Herdr のワークスペースを Zed で開く・フォーカス同期 |
 
 `worktrunk` プラグインは `wt` >= 0.60.0、`fzf`、`jq` に依存する。キーバインドは `config.toml` の `[[keys.command]]` で割り当てている。
 
