@@ -72,3 +72,9 @@ key = "prefix+shift+k"
 type = "plugin_action"
 command = "worktrunk.remove"
 description = "Worktree: remove"
+
+[[keys.command]]
+key = "prefix+z"
+type = "plugin_action"
+command = "zerdr.open-zed"
+description = "Open workspace in Zed"

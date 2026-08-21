@@ -88,5 +88,6 @@
       "provider": "opencode",
       "model": "zen/deepseek-v4-flash",
     },
+    "terminal_init_command": "/Users/ryo.nakae/.cargo/bin/zerdr thread --auto",
   },
 }
