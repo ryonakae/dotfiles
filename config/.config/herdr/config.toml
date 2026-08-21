@@ -14,7 +14,7 @@ rows = [
 ]
 
 [ui.sound]
-enabled = false
+enabled = true
 
 [ui.toast]
 delivery = "herdr"
