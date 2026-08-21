@@ -4,7 +4,7 @@
 # - Claude Code: stdin で JSON を受け取る
 # - Codex: argv[1] で JSON を受け取り、agent-turn-complete のみ通知する
 # - Gemini CLI: stdin で JSON を受け取る（Notification フック）
-# - Pi Coding Agent: pi-hooks の agent_end から呼ばれ、応答完了を通知する
+# - Pi Coding Agent: notification 拡張の agent_settled から呼ばれ、応答完了を通知する
 
 find_app_from_pid() {
   pid="$1"
@@ -49,7 +49,7 @@ detect_terminal_app() {
 }
 
 run_terminal_notifier() {
-  terminal-notifier "$@" >/dev/null 2>&1 || true
+  "$@" >/dev/null 2>&1 || true
 }
 
 notify() {
