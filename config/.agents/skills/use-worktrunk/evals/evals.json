@@ -343,6 +343,19 @@
         "The transient pane is created with --no-focus in the current tab, completion is detected via the numeric sentinel regex, output is collected before closing, the pane closes only on success, and it stays open on failure.",
         "No herdr or wt command was executed during the evaluation."
       ]
+    },
+    {
+      "id": 27,
+      "prompt": "Agent Safehouse内のPiセッションです。fixture-supplied environment metadata: `HERDR_ENV=1`、herdr CLIの疎通確認は成功済み、`HERDR_WORKSPACE_ID`は`w1`です。fixture repository `{{FIXTURE_REPO}}` でbranch `{{FEATURE_BRANCH}}`のworktreeを作成してください。有効なWorktrunk設定から導かれる予定path `{{OUTSIDE_PATH}}` は現在のsessionの書き込みgrant外です。forkや引き継ぎは不要です。設定やpolicyは変更せず、今回は手順の評価なので、herdr・wtのコマンドは実行せず、予定する手順を報告してください。",
+      "expected_output": "grant外destinationのため作成はAgent内で実行できないと判断する。herdr有効かつ非破壊操作なので、ユーザー承認を求めず、通常shell案内にも落とさず、新タブflowで実行する計画を報告する。手順は、workspace `w1`へrepositoryをcwdとした`herdr tab create --no-focus`、そのペインでのユーザー引数を保った`wt switch --create <branch>`（`--no-cd --format=json`を付けない）、`--regex '__WT_DONE=[0-9]+'`での完了待機、`pane get`によるcwd確認。タブはcd済みシェルとして残すと報告する。fork意図がないため`herdr agent start`・fork・引き継ぎpromptは行わず、WorktrunkやSafehouseの設定変更も提案しない。コマンドは実行しない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The creation is classified as delegated because the configured destination is outside the current session grant, without probing the destination.",
+        "With herdr enabled and no fork intent, the plan uses the new-tab flow without requesting user approval and without normal-shell guidance.",
+        "The reported sequence creates the tab in workspace w1 with the repository as cwd and --no-focus, then runs wt switch in that pane preserving the requested branch and omitting --no-cd and --format=json, with completion detected via the numeric sentinel regex.",
+        "The tab is reported as remaining with its shell cd'd into the new worktree; no herdr agent start, fork execution, or handoff prompt is planned.",
+        "No Worktrunk or Safehouse configuration change is executed or proposed, and no herdr or wt command was executed during the evaluation."
+      ]
     }
   ]
 }
