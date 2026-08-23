@@ -84,10 +84,10 @@ Agent Safehouse 内のエージェントが `wt` で worktree を操作すると
 
 ## Progress
 
-- [ ] Task 1: references/herdr-delegation.md の作成
-- [ ] Task 2: SKILL.md の改訂
-- [ ] Task 3: evals の追加と既存 evals の整合確認
-- [ ] Task 4: 実機シナリオ確認（この session で herdr 委譲の作成フローを実行）
+- [x] Task 1: references/herdr-delegation.md の作成（commit 4b04981、Task 2 と統合 — reference と SKILL.md は不可分な review 単位のため）
+- [x] Task 2: SKILL.md の改訂（commit 4b04981。§3 にも「通常shellへ委譲」の文言があるため、§2 の象限記述を「§3・§4が委譲とした操作」に拡張した）
+- [x] Task 3: evals の追加と既存 evals の整合確認（commit e949168。fixtures.md の Environment marker に「既定で HERDR_ENV を外す」harness 契約を追記し、既存 evals の決定性を担保）
+- [x] Task 4: 実機シナリオ確認（成功。tab create → pane run → wait-output → pane get で worktree 作成と cd 定着を確認し、worktree・タブ・使い捨てリポジトリを片付けた。発見: `wait-output --match __WT_DONE=` はエコーされたコマンド行に即マッチするため、reference を `--regex '__WT_DONE=[0-9]+'` 方式に修正した）
 
 ## Tasks
 
@@ -249,6 +249,6 @@ Agent Safehouse 内のエージェントが `wt` で worktree を操作すると
 ## Risks and Open Questions
 
 - `herdr agent start` の kind 別起動コマンドが fish ラッパー関数を経由するかは claude / pi で実績があるが、codex / opencode は未確認。実装時（D5 の help 確認）で差異が見つかったら、その client の fork は現行どおり報告へ落とす
-- sentinel 方式は対話シェルのプロンプト描画と干渉しうる（今回のプローブでも入力混線が 1 度発生）。reference には「`pane run` は前のコマンドが完了しプロンプトにいることを確認してから実行する」旨を含める
+- sentinel 方式は対話シェルのプロンプト描画と干渉しうる（今回のプローブでも入力混線が 1 度発生）。reference には「`pane run` は前のコマンドが完了しプロンプトにいることを確認してから実行する」旨を含める。実機確認で追加の欠陥（`--match` がコマンド行のエコーに即マッチ）が見つかり、`--regex '__WT_DONE=[0-9]+'` 方式へ修正済み
 - wt の承認プロンプトの文言・描画は wt のバージョンで変わりうるため、検出は「sentinel が来ない + pane read の内容確認」で行い、特定の文字列一致に依存させない
 - 未解決事項: なし
