@@ -237,14 +237,20 @@ Agent Safehouse 内のエージェントが `wt` で worktree を操作すると
 
 ## Final Validation
 
-- [ ] `jq -e '.evals | length' config/.agents/skills/use-worktrunk/evals/evals.json` — Expected: 現行件数 +4（27 件）、exit 0
-- [ ] `git diff config/.agents/skills/use-worktrunk/evals/evals.json` — Expected: 既存 eval エントリに変更がなく、追加のみ
-- [ ] `grep -n "HERDR_ENV" config/.agents/skills/use-worktrunk/SKILL.md config/.agents/skills/use-worktrunk/references/herdr-delegation.md` — Expected: 両ファイルに判定・有効化条件が存在
-- [ ] `ls -la ~/.agents/skills/use-worktrunk ~/.claude/skills/use-worktrunk` — Expected: dotfiles の実体を指す symlink で、references/ が配布されている（per-file symlink だった場合は `sh scripts/create-skills-symlink.sh` を実行して再確認）
-- [ ] Task 4 の実機シナリオ（tab create → pane run → wait-output → pane get → 後片付け）が成功
-- [ ] Requirement Coverage に未対応項目がない
-- [ ] 計画と実際の変更内容が整合している
-- [ ] 上記のすべてが成功した後、計画を同名のまま `docs/plans/archived/` へ移した
+- [x] `jq -e '.evals | length' config/.agents/skills/use-worktrunk/evals/evals.json` — 27 件、exit 0
+- [x] `git diff e66e0314..HEAD -- .../evals/evals.json` — 既存 eval エントリの削除行 0、追加のみ
+- [x] `grep -n "HERDR_ENV" config/.agents/skills/use-worktrunk/SKILL.md config/.agents/skills/use-worktrunk/references/herdr-delegation.md` — 両ファイルに判定・有効化条件が存在
+- [x] `ls -la ~/.agents/skills/use-worktrunk ~/.claude/skills/use-worktrunk` — どちらもディレクトリ単位の symlink で references/ は配布済み
+- [x] Task 4 の実機シナリオ（tab create → pane run → wait-output → pane get → 後片付け）が成功
+- [x] Requirement Coverage に未対応項目がない
+- [x] 計画と実際の変更内容が整合している
+- [x] 上記のすべてが成功した後、計画を同名のまま `docs/plans/archived/` へ移した
+
+## 独立レビュー記録
+
+- 1 回目（base e66e0314 → f750cde）: blocking なし。high 1 件（`pane focus` は `--direction` 必須で pane ID を直接指定できず、承認エスカレーション経路が実行不能）、medium 2 件（§2 の非破壊列挙が §4 の Agent 内実行分類と矛盾、herdr fork flow と明示的 `--execute`/multiplexer handoff の優先順位が未規定）、low 1 件（入力クリア ctrl+c の承認プロンプトへの適用除外が未明文化）、テスト不足 1 件
+- 修正: commit fde8f65（high・medium 2 件・low を修正、Eval 26 追加）、commit f8447c2（Eval 27 で topology (a) 単体系を追加）
+- 再レビュー: 全指摘の解消を確認、新たな矛盾・回帰なし。herdr CLI 構文（tab create / pane split / pane run / wait-output --regex / agent start / agent prompt / tab focus / pane focus）は実 CLI（herdr 0.8.2）と照合済み
 
 ## Risks and Open Questions
 
