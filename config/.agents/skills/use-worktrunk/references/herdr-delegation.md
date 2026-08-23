@@ -29,7 +29,7 @@ herdr のペイン内シェルは Agent Safehouse の外で動く。これは sa
 - レイアウト作成は `--no-focus` を付け、ユーザーのフォーカスを動かさない。例外は「承認プロンプトへの委譲」だけ
 - 自分が作っていないタブ・ペインを閉じない。`herdr server stop` を実行しない
 - `pane run` は対象ペインが対話プロンプトにいるときだけ送る。直前のコマンドが残っている可能性があれば `pane read --source visible` で確認し、必要なら `pane send-keys <id> ctrl+c` で入力をクリアしてから送る。混線した入力のまま重ねて送らない
-- wt コマンドの完了検知は sentinel で行う。fish 構文でコマンド末尾に `; echo __WT_DONE=$status` を付け、`pane wait-output <id> --match __WT_DONE= --timeout <ms>` で待ち、`__WT_DONE=0` 以外は失敗として扱う。wt の出力文言との一致には依存しない
+- wt コマンドの完了検知は sentinel で行う。fish 構文でコマンド末尾に `; echo __WT_DONE=$status` を付け、`pane wait-output <id> --regex '__WT_DONE=[0-9]+' --timeout <ms>` で待ち、`__WT_DONE=0` 以外は失敗として扱う。`--match __WT_DONE=` はペインにエコーされたコマンド行自体（`__WT_DONE=$status`）に即マッチするため使わない。wt の出力文言との一致には依存しない
 - タブラベルと agent 名は branch 名から導出し、`[a-z][a-z0-9_-]{0,31}` へ正規化する（大文字は小文字化、その他の不許可文字は `-`、先頭が英小文字でなければ接頭辞を付ける）。agent 名は `herdr agent list` で衝突を確認し、衝突したら短いサフィックスで一意化する
 
 ## (a) fork なしの新規作成
