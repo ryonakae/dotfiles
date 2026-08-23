@@ -54,7 +54,7 @@ test "$HERDR_ENV" = 1
 
 一致し、かつ最初のherdr CLI呼び出し（例: `herdr pane current --current`）が成功すればherdr有効。herdr呼び出しがエラーを返す場合は無効として扱う。組み合わせで変わるのは委譲先とforkの完遂可否だけで、§3の境界分類、§4の操作分類、§1の承認ルールは変わらない。
 
-- Safehouse内 × herdr有効: §3・§4が委譲とした操作を`references/herdr-delegation.md`の手順でherdrペインで実行する。破壊的操作（`wt remove`、cleanupを伴う`wt merge`、live `wt step prune`、`wt step promote`）は実行前にユーザー承認を得る。非破壊操作（作成・switch、copy-ignored、`wt merge --no-remove`、`wt step prune --dry-run`）は承認なしで実行してよい
+- Safehouse内 × herdr有効: §3・§4が委譲とした操作を`references/herdr-delegation.md`の手順でherdrペインで実行する。委譲対象のうち破壊的操作（`wt remove`、cleanupを伴う`wt merge`、live `wt step prune`、`wt step promote`）は実行前にユーザー承認を得る。それ以外の委譲操作（作成・switch、copy-ignored）は承認なしで実行してよい。§4がAgent内で実行可能とする操作（`wt merge --no-remove`、`wt step prune --dry-run`など）は従来どおりAgent内で実行し、herdrへ回さない
 - Safehouse内 × herdr無効: 委譲操作は§6の通常shell案内に従う
 - Safehouse外 × herdr有効: `wt`はAgent内で実行し、herdrは§5のfork完遂にだけ使う
 - Safehouse外 × herdr無効: すべてAgent内で実行し、forkは§5の報告に留める
@@ -140,7 +140,7 @@ Claude Codeのin-session `/fork`や`--worktree`は使わない。Codexの`resume
 - ユーザーがfork・引き継ぎの意図を示した（例:「worktreeを作ってそっちで作業して」）。worktreeの作成だけの依頼では発動しない
 - clientとsession IDを上記の規則で特定できた
 
-このflowでは`wt switch`をAgentのsessionではなくherdrペインの対話shellで実行するため、この節の`--no-cd --format=json`規則は適用せず、reference手順に従う。起動と送信の完了を報告した後、現在のsessionはcoordinatorとして元のworktreeに残る。条件を一つでも満たせない場合は、この節の通常の報告規則に従う。
+このflowでは`wt switch`をAgentのsessionではなくherdrペインの対話shellで実行するため、この節の`--no-cd --format=json`規則は適用せず、reference手順に従う。起動と送信の完了を報告した後、現在のsessionはcoordinatorとして元のworktreeに残る。条件を一つでも満たせない場合は、この節の通常の報告規則に従う。ユーザーが`--execute`、terminal multiplexer、sub-agent handoffなど特定のhandoff手段を明示した場合は、このflowで置き換えず次段落の規則に従う。
 
 ユーザーが一般commandの`--execute`、terminal multiplexer、またはsub-agent handoffを明示し、他に通常shellへの委譲条件がなければ、通常switch規則へ置き換えず公式Skillのhandoff workflowへ委譲する。
 
