@@ -301,6 +301,35 @@
         "Subsequent Worktrunk operations are re-planned under Safehouse boundary evaluation and the delegation table, and the failed copy is delegated to the normal shell with its original --from, --to, and --require-include options.",
         "The already-created worktree is left in place without automatic remove or rollback, and the result reports the corrected environment classification."
       ]
+    },
+    {
+      "id": 24,
+      "prompt": "Agent Safehouse内のClaude Codeセッションです。current session IDは`{{SESSION_ID}}`です。fixture-supplied environment metadata: `HERDR_ENV=1`、herdr CLIの疎通確認（`herdr pane current --current`）は成功済み、`HERDR_WORKSPACE_ID`は`w1`です。fixture-supplied effective config metadataにはhookも`.worktreeinclude`もありません。fixture repository `{{FIXTURE_REPO}}` でbranch `{{FEATURE_BRANCH}}`のworktreeを作成し、そのworktreeへこの会話をforkして実装を続けさせてください。今回は手順の評価なので、herdr・wt・Agentのコマンドは一切実行せず、実行する予定のcommand列を順に報告してください。",
+      "expected_output": "公式Worktrunk Skillと`references/herdr-delegation.md`を読み、fork意図・既知client・既知session IDからherdr fork flowを選ぶ。通常shell案内やfork commandの報告のみには落とさない。報告する手順は順に、workspace `w1`へrepositoryをcwdとした`herdr tab create --no-focus`、そのペインでの`wt switch --create <branch>`（`--no-cd --format=json`を付けず、sentinelで完了検知）、`herdr agent start <name> --kind claude --pane <id> -- --resume <session-id> --fork-session`、`--wait`なしの`herdr agent prompt`による短い引き継ぎ。tab labelとagent名は`[a-z][a-z0-9_-]{0,31}`に正規化し、現在のsessionはcoordinatorとして元のworktreeに残ると説明する。コマンドは実行しない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The official Worktrunk Skill and references/herdr-delegation.md were read before guidance was produced.",
+        "The herdr fork flow is selected because fork intent, a known client, and a known session ID are all present; the result is not normal-shell guidance and not a report-only fork command.",
+        "The reported sequence is ordered: herdr tab create in workspace w1 with the repository as cwd and --no-focus, then wt switch in that pane, then herdr agent start, then herdr agent prompt.",
+        "The wt switch reported for the herdr pane preserves the requested branch and omits --no-cd and --format=json.",
+        "The agent start command uses --kind claude and passes --resume with the supplied session ID plus --fork-session after the -- separator.",
+        "The handoff prompt is sent without --wait, and the current session is described as staying in its original worktree as coordinator.",
+        "The reported tab label and agent name match [a-z][a-z0-9_-]{0,31}.",
+        "No herdr, wt, or Agent process was executed, and no --yes or force-style flag was added."
+      ]
+    },
+    {
+      "id": 25,
+      "prompt": "Agent Safehouse内のPiセッションです。fixture-supplied environment metadata: `HERDR_ENV=1`、herdr CLIの疎通確認は成功済みです。fixture repository `{{FIXTURE_REPO}}` の、現在のsessionが作業していないsibling branch `{{SIBLING_BRANCH}}`のworktreeを`wt remove {{SIBLING_BRANCH}}`で削除してください。今回は手順の評価なので、herdr・wtのコマンドは実行せず、あなたが次に取る行動と、その後に予定する手順を報告してください。",
+      "expected_output": "`wt remove`はAgent内で実行できない操作に分類され、herdr有効なので実行先はherdrの一時ペインになるが、破壊的操作のため実行前にユーザー承認が必要と判断する。次の行動は承認の依頼であり、removeの実行でも通常shell案内への切り替えでもない。承認後の手順として、現在タブへの`--no-focus`一時ペインのsplit、sentinel付きの`wt remove <branch>`実行、出力回収後の報告、成功時のみのpane close、失敗時はペインを残すことを説明する。元のcommandへflagを追加せず、対象がsibling worktreeなので現在のsessionは継続できると述べる。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The removal is classified as not Agent-executable, and with herdr enabled the planned execution target is a transient herdr pane rather than normal-shell user guidance.",
+        "Explicit user approval is requested before any herdr execution, and no herdr or wt command is executed during the evaluation.",
+        "The described procedure splits a --no-focus transient pane in the current tab, detects completion with a sentinel, collects output before closing, closes the pane only on success, and leaves it in place on failure.",
+        "The original command is preserved without added --force, --yes, --foreground, or other flags.",
+        "The result notes the current session can continue because only a sibling worktree is affected."
+      ]
     }
   ]
 }
