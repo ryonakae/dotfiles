@@ -86,7 +86,7 @@ Agent Safehouse 内のエージェントが `wt` で worktree を操作すると
 
 - [x] Task 1: references/herdr-delegation.md の作成（commit 4b04981、Task 2 と統合 — reference と SKILL.md は不可分な review 単位のため）
 - [x] Task 2: SKILL.md の改訂（commit 4b04981。§3 にも「通常shellへ委譲」の文言があるため、§2 の象限記述を「§3・§4が委譲とした操作」に拡張した）
-- [x] Task 3: evals の追加と既存 evals の整合確認（commit e949168。fixtures.md の Environment marker に「既定で HERDR_ENV を外す」harness 契約を追記し、既存 evals の決定性を担保。独立レビュー指摘により Eval 26（非 fork・非破壊の copy 委譲成功系）を追加し、追加は計 3 件・26 件になった）
+- [x] Task 3: evals の追加と既存 evals の整合確認（commit e949168。fixtures.md の Environment marker に「既定で HERDR_ENV を外す」harness 契約を追記し、既存 evals の決定性を担保。独立レビュー指摘により Eval 26（非 fork・非破壊の copy 委譲成功系）と Eval 27（fork なしの委譲された新規作成が herdr 新タブで完遂する系）を追加し、追加は計 4 件・27 件になった）
 - [x] Task 4: 実機シナリオ確認（成功。tab create → pane run → wait-output → pane get で worktree 作成と cd 定着を確認し、worktree・タブ・使い捨てリポジトリを片付けた。発見: `wait-output --match __WT_DONE=` はエコーされたコマンド行に即マッチするため、reference を `--regex '__WT_DONE=[0-9]+'` 方式に修正した）
 
 ## Tasks
@@ -237,7 +237,7 @@ Agent Safehouse 内のエージェントが `wt` で worktree を操作すると
 
 ## Final Validation
 
-- [ ] `jq -e '.evals | length' config/.agents/skills/use-worktrunk/evals/evals.json` — Expected: 現行件数 +3（26 件）、exit 0
+- [ ] `jq -e '.evals | length' config/.agents/skills/use-worktrunk/evals/evals.json` — Expected: 現行件数 +4（27 件）、exit 0
 - [ ] `git diff config/.agents/skills/use-worktrunk/evals/evals.json` — Expected: 既存 eval エントリに変更がなく、追加のみ
 - [ ] `grep -n "HERDR_ENV" config/.agents/skills/use-worktrunk/SKILL.md config/.agents/skills/use-worktrunk/references/herdr-delegation.md` — Expected: 両ファイルに判定・有効化条件が存在
 - [ ] `ls -la ~/.agents/skills/use-worktrunk ~/.claude/skills/use-worktrunk` — Expected: dotfiles の実体を指す symlink で、references/ が配布されている（per-file symlink だった場合は `sh scripts/create-skills-symlink.sh` を実行して再確認）

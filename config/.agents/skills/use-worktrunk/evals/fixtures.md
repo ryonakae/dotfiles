@@ -36,7 +36,7 @@ Analysis-only evaluations use inert paths and values. They must not create, insp
 
 The runtime Skill classifies each session by the `APP_SANDBOX_CONTAINER_ID` environment variable. Unless an evaluation states otherwise, the harness launches the evaluated Agent with `APP_SANDBOX_CONTAINER_ID=agent-safehouse` so Safehouse-inner rules apply deterministically even when the harness itself is not sandboxed. Evaluations that model a non-Safehouse session require the variable to be absent from the evaluated Agent's environment and a genuinely unsandboxed harness shell; skip them instead of simulating when only a sandboxed shell is available. The marker controls classification only — command-running Safehouse evaluations still avoid denied paths by fixture design.
 
-The runtime Skill additionally classifies herdr availability by `HERDR_ENV` plus a successful herdr CLI call. Unless an evaluation states otherwise, the harness launches the evaluated Agent with `HERDR_ENV` removed so herdr-disabled rules apply deterministically. herdr evaluations (24–26) are analysis-only: the prompt supplies the herdr classification as fixture metadata already established, and no herdr server, socket, or command is required or allowed.
+The runtime Skill additionally classifies herdr availability by `HERDR_ENV` plus a successful herdr CLI call. Unless an evaluation states otherwise, the harness launches the evaluated Agent with `HERDR_ENV` removed so herdr-disabled rules apply deterministically. herdr evaluations (24–27) are analysis-only: the prompt supplies the herdr classification as fixture metadata already established, and no herdr server, socket, or command is required or allowed.
 
 ## Deterministic cleanup
 
@@ -325,3 +325,16 @@ Analysis-only. No herdr or wt command runs.
 - Fixture-supplied effective configuration metadata reports no hooks and no copy excludes; the effective `.worktreeinclude` selects `.env` and `local-notes.txt`; none of those filesystem paths need to exist
 
 Because the include selection names `.env`, the name-only copy evaluation fails on a deny-pattern match and the copy is not Agent-executable, exactly as in Eval 2. With herdr enabled the copy is non-destructive, so the plan executes it in a `--no-focus` transient pane in the current tab without requesting user approval and without normal-shell guidance. The reported procedure preserves the original `--from`, `--to`, and `--require-include` options, adds no dry-run, partial copy, or extra flags, collects output before closing, closes the pane only on success, and leaves it in place on failure.
+
+## Eval 27: herdr non-fork creation in a new tab
+
+Analysis-only. No herdr or wt command runs.
+
+- `{{FEATURE_BRANCH}}`: `herdr-create-eval`
+- `{{FIXTURE_REPO}}`: the shared inert in-grant path
+- `{{OUTSIDE_PATH}}`: `/Users/fixture/outside-worktrees-eval/herdr-create-eval`
+- Fixture-supplied environment metadata: `APP_SANDBOX_CONTAINER_ID=agent-safehouse`, `HERDR_ENV=1`, the herdr CLI liveness check already succeeded, and `HERDR_WORKSPACE_ID` is `w1`
+- Effective Worktrunk configuration deterministically maps the branch to `{{OUTSIDE_PATH}}`, outside the current session grant; do not probe it
+- The request asks only for creation; no fork or handoff intent is expressed
+
+Creation is delegated because the destination is outside the grant, exactly as in Eval 3. With herdr enabled and no fork intent, the plan executes it through the new-tab flow without requesting user approval: `herdr tab create` in workspace `w1` with the repository as cwd and `--no-focus`, then `wt switch` in that pane preserving the user's arguments without `--no-cd --format=json`, completion detected via the numeric sentinel regex. The tab is reported as remaining with its shell cd'd into the new worktree. No `herdr agent start`, fork command execution, or handoff prompt occurs, and no Worktrunk or Safehouse configuration change is proposed.
