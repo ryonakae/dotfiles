@@ -78,7 +78,7 @@ live prune は §7 どおり、Agent 内の dry-run 要約 → ユーザー確�
 
 sentinel が来ないまま `wait-output` がタイムアウトしたら、`pane read` で状態を確認して分岐する。
 
-- **wt が対話 approval を求めている**: エージェントは応答しない。`--yes` での迂回もしない。`herdr pane focus`（または `tab focus`）で該当ペインへユーザーを誘導し、承認待ちであることを報告して待つ。ユーザーの応答後に再度 `wait-output` で sentinel を待つ
+- **wt が対話 approval を求めている**: エージェントは応答しない。`--yes` での迂回もしない。「共通規則」の入力クリア（`ctrl+c`）も未解決の承認プロンプトには適用しない。`herdr tab focus <tab-id>` で該当タブへユーザーを誘導し（一時ペインが現在タブ内にあるときはさらに `herdr pane focus --direction <split時の方向> --current` でペインへ寄せる。`pane focus` は `--direction` が必須で、任意の pane ID を直接指定できない）、承認待ちであることを報告して待つ。ユーザーの応答後に再度 `wait-output` で sentinel を待つ
 - **コマンドが失敗した（`__WT_DONE=` が非ゼロ、またはエラー出力）**: 出力の要点を秘密値を伏せて報告し、ペイン・タブ・作成済み worktree を残す。自動 retry・rollback・force 系オプションの追加をしない
 - **まだ実行中**: hook の実行など時間のかかる正当な処理なら、タイムアウトを延ばして待ち直す
 
