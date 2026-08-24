@@ -432,7 +432,7 @@ herdr plugin config-dir <plugin_id>
 
 ### worktree は本体機能ではなくプラグインを使う
 
-herdr 本体にも `[worktrees]` と `herdr worktree` があるが、こちらは使わない。本体は `~/.herdr/worktrees` へフラットに配置し（テンプレート変数なし）、worktrunk の `worktree-path`・hooks・ignored ファイルのコピーがどれも効かない。`~/.herdr` は safehouse の allowlist 外でもある。
+herdr 本体にも `[worktrees]` と `herdr worktree` があるが、worktree の作成・削除には使わない。本体の作成は `~/.herdr/worktrees` へフラットに配置し（テンプレート変数なし）、worktrunk の `worktree-path`・hooks・ignored ファイルのコピーがどれも効かない。`~/.herdr` は safehouse の allowlist 外でもある。例外は `herdr worktree open` で、これは既存 checkout をサイドバーの workspace として登録するだけなので、`use-worktrunk` スキルの herdr 委譲が wt で作成した worktree の登録に使う。
 
 そのため `keys.new_worktree = ""` で本体のデフォルト（`prefix+shift+g`）を無効化し、同じキーをプラグインへ渡している。`prefix+shift+k` を remove に使うのは、プラグイン README 推奨の `prefix+shift+d` が本体の `close_workspace` と衝突するため。
 
