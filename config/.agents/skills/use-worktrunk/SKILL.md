@@ -1,6 +1,6 @@
 ---
 name: use-worktrunk
-description: Worktrunkをこのdotfiles管理のAgent Safehouse環境で安全に操作するための環境アダプター。worktreeの作成、切替、ignoredファイルのコピー、削除、merge、pruneなど、エージェントが`wt`で実際にworktreeを操作するときは必ず使い、公式`worktrunk` Skillも読み込む。Safehouse内外の判定を行い、Safehouseが実際に制限する操作だけを委譲する。herdr環境（HERDR_ENV=1）では委譲操作をherdrペインで実行し、fork依頼はfork起動まで完遂する。herdrがなければ通常shellへ案内する。一般的なWorktrunkの仕様質問だけなら公式Skillを使う。
+description: Worktrunkをこのdotfiles管理のAgent Safehouse環境で安全に操作するための環境アダプター。worktreeの作成、切替、ignoredファイルのコピー、削除、merge、pruneなど、エージェントが`wt`で実際にworktreeを操作するときは必ず使い、公式`worktrunk` Skillも読み込む。Safehouse内外の判定を行い、Safehouseが実際に制限する操作だけを委譲する。herdr環境（HERDR_ENV=1）では委譲操作をherdrペインで実行し、作成したworktreeをherdrのworkspaceとしてsidebarへ登録し、fork依頼はそのworkspaceでのfork起動まで完遂する。herdrがなければ通常shellへ案内する。一般的なWorktrunkの仕様質問だけなら公式Skillを使う。
 compatibility: Requires Worktrunk, the official worktrunk Skill, and this dotfiles repository's Agent Safehouse configuration.
 ---
 
@@ -134,7 +134,7 @@ Claude Codeのin-session `/fork`や`--worktree`は使わない。Codexの`resume
 
 ### herdr fork flow
 
-次のすべてを満たす場合は、コマンド報告の代わりに`references/herdr-delegation.md`のfork手順で、新tabの作成、そのペインでの`wt switch`、`herdr agent start`によるfork起動、引き継ぎpromptの送信まで自動実行する。Safehouse内外は問わない。
+次のすべてを満たす場合は、コマンド報告の代わりに`references/herdr-delegation.md`のfork手順で、一時ペインでの`wt switch`、`herdr worktree open`によるworkspace登録、そのworkspaceでの`herdr agent start`によるfork起動、引き継ぎpromptの送信まで自動実行する。Safehouse内外は問わない。
 
 - §2でherdr有効と判定した
 - ユーザーがfork・引き継ぎの意図を示した（例:「worktreeを作ってそっちで作業して」）。worktreeの作成だけの依頼では発動しない
@@ -170,4 +170,4 @@ live pruneをSafehouse内で委譲する場合は、Agent内のdry-run結果を�
 
 force、policy緩和、deny対象へのprobeで回避しない。Safehouse設定またはWorktrunk設定そのものの変更をユーザーが求める場合は、理由と最小変更を提示し、同意後にだけ編集する。
 
-結果では、環境判定（Safehouse内か外か、herdr有効か）、実行したWorktrunk commandの結果、検証済み絶対path、herdrペインで実行した操作と残したtab・pane、Agent内でもherdrでも実行せず通常shellへ案内したcommand、現在のsessionを継続できるか、新しいAgent sessionが必要かを簡潔に返す。project hookがない場合にsetupやbaseline testを推定しない。
+結果では、環境判定（Safehouse内か外か、herdr有効か）、実行したWorktrunk commandの結果、検証済み絶対path、herdrで実行した操作と残したworkspace・pane、Agent内でもherdrでも実行せず通常shellへ案内したcommand、現在のsessionを継続できるか、新しいAgent sessionが必要かを簡潔に返す。project hookがない場合にsetupやbaseline testを推定しない。

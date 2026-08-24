@@ -25,30 +25,32 @@ herdr のペイン内シェルは Agent Safehouse の外で動く。これは sa
 
 ## 共通規則
 
-- ID は herdr の JSON レスポンスから読む（`.result.tab`、`.result.root_pane`、`.result.pane.pane_id`）。sidebar の並びや例から推測しない
+- ID は herdr の JSON レスポンスから読む（`.result.workspace.workspace_id`、`.result.root_pane.pane_id`、`.result.pane.pane_id`）。sidebar の並びや例から推測しない
 - レイアウト作成は `--no-focus` を付け、ユーザーのフォーカスを動かさない。例外は「承認プロンプトへの委譲」だけ
-- 自分が作っていないタブ・ペインを閉じない。`herdr server stop` を実行しない
+- 自分が作っていない workspace・タブ・ペインを閉じない。例外は (c) の、ユーザーが削除を承認した worktree の workspace close だけ。`herdr server stop` を実行しない
 - `pane run` は対象ペインが対話プロンプトにいるときだけ送る。直前のコマンドが残っている可能性があれば `pane read --source visible` で確認し、必要なら `pane send-keys <id> ctrl+c` で入力をクリアしてから送る。混線した入力のまま重ねて送らない
 - wt コマンドの完了検知は sentinel で行う。fish 構文でコマンド末尾に `; echo __WT_DONE=$status` を付け、`pane wait-output <id> --regex '__WT_DONE=[0-9]+' --timeout <ms>` で待ち、`__WT_DONE=0` 以外は失敗として扱う。`--match __WT_DONE=` はペインにエコーされたコマンド行自体（`__WT_DONE=$status`）に即マッチするため使わない。wt の出力文言との一致には依存しない
-- タブラベルと agent 名は branch 名から導出し、`[a-z][a-z0-9_-]{0,31}` へ正規化する（大文字は小文字化、その他の不許可文字は `-`、先頭が英小文字でなければ接頭辞を付ける）。agent 名は `herdr agent list` で衝突を確認し、衝突したら短いサフィックスで一意化する
+- agent 名は branch 名から導出し、`[a-z][a-z0-9_-]{0,31}` へ正規化する（大文字は小文字化、その他の不許可文字は `-`、先頭が英小文字でなければ接頭辞を付ける）。`herdr agent list` で衝突を確認し、衝突したら短いサフィックスで一意化する。workspace のラベルは `herdr worktree open` の既定（branch 名）に任せる
 
 ## (a) fork なしの新規作成
 
-worktree を新規作成して残す。ペインのシェルが worktree へ cd した状態で残るよう、`--no-cd` は付けない（対話シェルの `wt` 関数が cd を定着させる）。
+worktree を新規作成し、`herdr worktree open` で sidebar の workspace として登録して残す。`wt switch` は現在タブの一時ペインで実行する。ペインのシェルが worktree へ cd した状態を worktree path の検証に使うため、`--no-cd` は付けない（対話シェルの `wt` 関数が cd を定着させる）。
 
-1. `herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd <リポジトリルート> --label <正規化名> --no-focus` を実行し、`.result.tab` と `.result.root_pane` を読む
-2. root pane で `wt switch <ユーザーの引数>; echo __WT_DONE=$status` を `pane run` し、`wait-output` で sentinel を待つ
-3. `__WT_DONE=0` なら `pane get` で cwd が worktree の絶対 path へ移ったことを確認し、タブ位置と path を報告する。タブは閉じない
-4. 失敗・タイムアウトは「承認プロンプトと失敗の分岐」へ
+1. `herdr pane split --current --direction right --cwd <リポジトリルート> --no-focus` で一時ペインを作り（縦長のペインでは `down`）、`.result.pane.pane_id` を読む
+2. 一時ペインで `wt switch <ユーザーの引数>; echo __WT_DONE=$status` を `pane run` し、`wait-output` で sentinel を待つ
+3. `__WT_DONE=0` なら `pane get` で cwd が worktree の絶対 path へ移ったことを確認する
+4. `herdr worktree open --cwd <リポジトリルート> --path <worktree絶対path> --no-focus` を実行し、`.result.workspace.workspace_id` と `.result.root_pane.pane_id` を読む。workspace が sidebar に現れ、root pane は worktree に cd 済みの対話シェルとして開く。`.result.already_open` が true なら既存 workspace をそのまま使う
+5. 一時ペインを `pane close` で閉じ、workspace のラベル・ID と worktree path を報告する。workspace は閉じない
+6. 失敗・タイムアウトは「承認プロンプトと失敗の分岐」へ。失敗時は一時ペインを診断用に残し、workspace は開かない
 
-blocking copy（`wt step copy-ignored`）を伴う依頼では、作成の成功後に同じペインで copy を sentinel 付きで実行する。copy が失敗したら worktree とタブを残して停止し、自動 retry・rollback をしない。
+blocking copy（`wt step copy-ignored`）を伴う依頼では、作成の成功後に同じ一時ペインで copy を sentinel 付きで実行し、copy の成功後に手順 4 へ進む。copy が失敗したら worktree と一時ペインを残して停止し、自動 retry・rollback をしない。
 
 ## (b) fork あり
 
-(a) の成功後、同じペイン（worktree に cd 済み）で fork エージェントを起動し、初動の指示まで送る。開始前に session ID と client 種別を SKILL.md §5 の規則で特定する。特定できなければこのフローへ入らない。
+(a) の成功後、開いた workspace の root pane（worktree に cd 済み）で fork エージェントを起動し、初動の指示まで送る。エージェントのペインは新しい workspace 側に開く。開始前に session ID と client 種別を SKILL.md §5 の規則で特定する。特定できなければこのフローへ入らない。
 
 1. `herdr agent`（kind 一覧）と対象 client の現行 help を確認し、fork 引数を古い知識で組み立てない
-2. `herdr agent start <正規化名> --kind <kind> --pane <root-pane-id> -- <fork 引数>` を実行する。対応は次のとおり
+2. `herdr agent start <正規化名> --kind <kind> --pane <workspaceのroot-pane-id> -- <fork 引数>` を実行する。(a) が `already_open` の workspace を再利用し、その root pane が対話プロンプトにない場合は、`herdr pane split --pane <root-pane-id> --direction right --cwd <worktree絶対path> --no-focus` で同じ workspace 内にペインを作り、そちらで起動する。対応は次のとおり
 
    | client | kind | `--` 以降の fork 引数 |
    |---|---|---|
@@ -59,9 +61,9 @@ blocking copy（`wt step copy-ignored`）を伴う依頼では、作成の成功
 
    ペインは対話 fish なので、client は safehouse wrapper の fish 関数として解決され、fork されたエージェントは通常どおり sandbox 内で起動する
 3. 起動成功後、`herdr agent prompt <名前> "<引き継ぎタスクの要約>"` を送る。fork は会話の文脈を持つので要約は短くする。`--wait` を付けず、初動を見届けない
-4. 起動と送信の完了、タブ位置、agent 名を報告して停止する。現在の session はコーディネーターとして元の worktree に残る
+4. 起動と送信の完了、workspace のラベル・ID、agent 名を報告して停止する。現在の session はコーディネーターとして元の worktree に残る
 
-`agent start` が起動タイムアウト（既定 30 秒）で失敗したら、`pane read` で出力を確認して報告し、再試行しない。worktree とタブは残す。
+`agent start` が起動タイムアウト（既定 30 秒）で失敗したら、`pane read` で出力を確認して報告し、再試行しない。worktree と workspace は残す。
 
 ## (c) メンテナンス操作
 
@@ -72,16 +74,18 @@ copy-ignored 単体、`wt remove`、cleanup 付き `wt merge`、live `wt step pr
 3. `pane read --source recent-unwrapped` で出力を回収して結果を報告する
 4. 成功時だけ `pane close` で一時ペインを閉じる。失敗時は診断用に残し、path を報告する
 
+worktree を削除・入替する操作では、承認を求める前に `herdr worktree list --cwd <リポジトリルート>` で対象 worktree に開いた workspace（`open_workspace_id`）があるか確認する。あれば、削除の承認にその workspace を閉じることも含めて確認し、削除の成功後に `herdr workspace close <workspace-id>` で閉じる。workspace 内で live agent や foreground command が動いている場合は閉じず、報告に留める。
+
 live prune は §7 どおり、Agent 内の dry-run 要約 → ユーザー確認 → live 実行の順を保つ。現在の session の worktree を削除・入替する操作の後は、§7 に従い session を継続しない。
 
 ## 承認プロンプトと失敗の分岐
 
 sentinel が来ないまま `wait-output` がタイムアウトしたら、`pane read` で状態を確認して分岐する。
 
-- **wt が対話 approval を求めている**: エージェントは応答しない。`--yes` での迂回もしない。「共通規則」の入力クリア（`ctrl+c`）も未解決の承認プロンプトには適用しない。`herdr tab focus <tab-id>` で該当タブへユーザーを誘導し（一時ペインが現在タブ内にあるときはさらに `herdr pane focus --direction <split時の方向> --current` でペインへ寄せる。`pane focus` は `--direction` が必須で、任意の pane ID を直接指定できない）、承認待ちであることを報告して待つ。ユーザーの応答後に再度 `wait-output` で sentinel を待つ
-- **コマンドが失敗した（`__WT_DONE=` が非ゼロ、またはエラー出力）**: 出力の要点を秘密値を伏せて報告し、ペイン・タブ・作成済み worktree を残す。自動 retry・rollback・force 系オプションの追加をしない
+- **wt が対話 approval を求めている**: エージェントは応答しない。`--yes` での迂回もしない。「共通規則」の入力クリア（`ctrl+c`）も未解決の承認プロンプトには適用しない。`herdr tab focus <一時ペインのあるtab-id>` で該当タブへユーザーを誘導し、さらに `herdr pane focus --direction <split時の方向> --current` で一時ペインへ寄せて（`pane focus` は `--direction` が必須で、任意の pane ID を直接指定できない）、承認待ちであることを報告して待つ。ユーザーの応答後に再度 `wait-output` で sentinel を待つ
+- **コマンドが失敗した（`__WT_DONE=` が非ゼロ、またはエラー出力）**: 出力の要点を秘密値を伏せて報告し、ペイン・作成済み worktree・開いた workspace を残す。自動 retry・rollback・force 系オプションの追加をしない
 - **まだ実行中**: hook の実行など時間のかかる正当な処理なら、タイムアウトを延ばして待ち直す
 
 ## 報告
 
-SKILL.md §8 の項目に加え、herdr で実行した操作、作成して残したタブ・ペインの ID とラベル、fork した agent 名を含める。
+SKILL.md §8 の項目に加え、herdr で実行した操作、開いて残した workspace・ペインの ID とラベル、閉じた workspace、fork した agent 名を含める。

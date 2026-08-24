@@ -305,16 +305,17 @@
     {
       "id": 24,
       "prompt": "Agent Safehouse内のClaude Codeセッションです。current session IDは`{{SESSION_ID}}`です。fixture-supplied environment metadata: `HERDR_ENV=1`、herdr CLIの疎通確認（`herdr pane current --current`）は成功済み、`HERDR_WORKSPACE_ID`は`w1`です。fixture-supplied effective config metadataにはhookも`.worktreeinclude`もありません。fixture repository `{{FIXTURE_REPO}}` でbranch `{{FEATURE_BRANCH}}`のworktreeを作成し、そのworktreeへこの会話をforkして実装を続けさせてください。今回は手順の評価なので、herdr・wt・Agentのコマンドは一切実行せず、実行する予定のcommand列を順に報告してください。",
-      "expected_output": "公式Worktrunk Skillと`references/herdr-delegation.md`を読み、fork意図・既知client・既知session IDからherdr fork flowを選ぶ。通常shell案内やfork commandの報告のみには落とさない。報告する手順は順に、workspace `w1`へrepositoryをcwdとした`herdr tab create --no-focus`、そのペインでの`wt switch --create <branch>`（`--no-cd --format=json`を付けず、sentinelで完了検知）、`herdr agent start <name> --kind claude --pane <id> -- --resume <session-id> --fork-session`、`--wait`なしの`herdr agent prompt`による短い引き継ぎ。tab labelとagent名は`[a-z][a-z0-9_-]{0,31}`に正規化し、現在のsessionはcoordinatorとして元のworktreeに残ると説明する。コマンドは実行しない。",
+      "expected_output": "公式Worktrunk Skillと`references/herdr-delegation.md`を読み、fork意図・既知client・既知session IDからherdr fork flowを選ぶ。通常shell案内やfork commandの報告のみには落とさない。報告する手順は順に、現在タブへのrepositoryをcwdとした`herdr pane split --no-focus`による一時ペイン作成、そのペインでの`wt switch --create <branch>`（`--no-cd --format=json`を付けず、sentinelで完了検知）、`pane get`によるworktree path確認、`herdr worktree open --path <worktree-path> --no-focus`によるworkspace登録、そのworkspaceのroot paneでの`herdr agent start <name> --kind claude --pane <root-pane-id> -- --resume <session-id> --fork-session`、`--wait`なしの`herdr agent prompt`による短い引き継ぎ。一時ペインは成功後に閉じ、workspaceはsidebarに残す。agent名は`[a-z][a-z0-9_-]{0,31}`に正規化し、現在のsessionはcoordinatorとして元のworktreeに残ると説明する。コマンドは実行しない。",
       "files": ["evals/fixtures.md"],
       "expectations": [
         "The official Worktrunk Skill and references/herdr-delegation.md were read before guidance was produced.",
         "The herdr fork flow is selected because fork intent, a known client, and a known session ID are all present; the result is not normal-shell guidance and not a report-only fork command.",
-        "The reported sequence is ordered: herdr tab create in workspace w1 with the repository as cwd and --no-focus, then wt switch in that pane, then herdr agent start, then herdr agent prompt.",
+        "The reported sequence is ordered: herdr pane split in the current tab with the repository as cwd and --no-focus, then wt switch in that transient pane, then herdr worktree open for the verified worktree path, then herdr agent start in the opened workspace's root pane, then herdr agent prompt.",
         "The wt switch reported for the herdr pane preserves the requested branch and omits --no-cd and --format=json.",
-        "The agent start command uses --kind claude and passes --resume with the supplied session ID plus --fork-session after the -- separator.",
+        "The worktree is registered as a sidebar workspace via herdr worktree open with --no-focus, the workspace is reported as remaining open, and the transient pane closes only after success.",
+        "The agent start command uses --kind claude, targets the opened workspace's root pane, and passes --resume with the supplied session ID plus --fork-session after the -- separator.",
         "The handoff prompt is sent without --wait, and the current session is described as staying in its original worktree as coordinator.",
-        "The reported tab label and agent name match [a-z][a-z0-9_-]{0,31}.",
+        "The reported agent name matches [a-z][a-z0-9_-]{0,31}.",
         "No herdr, wt, or Agent process was executed, and no --yes or force-style flag was added."
       ]
     },
@@ -347,13 +348,14 @@
     {
       "id": 27,
       "prompt": "Agent Safehouse内のPiセッションです。fixture-supplied environment metadata: `HERDR_ENV=1`、herdr CLIの疎通確認は成功済み、`HERDR_WORKSPACE_ID`は`w1`です。fixture repository `{{FIXTURE_REPO}}` でbranch `{{FEATURE_BRANCH}}`のworktreeを作成してください。有効なWorktrunk設定から導かれる予定path `{{OUTSIDE_PATH}}` は現在のsessionの書き込みgrant外です。forkや引き継ぎは不要です。設定やpolicyは変更せず、今回は手順の評価なので、herdr・wtのコマンドは実行せず、予定する手順を報告してください。",
-      "expected_output": "grant外destinationのため作成はAgent内で実行できないと判断する。herdr有効かつ非破壊操作なので、ユーザー承認を求めず、通常shell案内にも落とさず、新タブflowで実行する計画を報告する。手順は、workspace `w1`へrepositoryをcwdとした`herdr tab create --no-focus`、そのペインでのユーザー引数を保った`wt switch --create <branch>`（`--no-cd --format=json`を付けない）、`--regex '__WT_DONE=[0-9]+'`での完了待機、`pane get`によるcwd確認。タブはcd済みシェルとして残すと報告する。fork意図がないため`herdr agent start`・fork・引き継ぎpromptは行わず、WorktrunkやSafehouseの設定変更も提案しない。コマンドは実行しない。",
+      "expected_output": "grant外destinationのため作成はAgent内で実行できないと判断する。herdr有効かつ非破壊操作なので、ユーザー承認を求めず、通常shell案内にも落とさず、一時ペインとworkspace登録のflowで実行する計画を報告する。手順は、現在タブへのrepositoryをcwdとした`herdr pane split --no-focus`、そのペインでのユーザー引数を保った`wt switch --create <branch>`（`--no-cd --format=json`を付けない）、`--regex '__WT_DONE=[0-9]+'`での完了待機、`pane get`によるcwd確認、`herdr worktree open --path <worktree-path> --no-focus`によるworkspace登録、成功後の一時ペインclose。workspaceはsidebarに残り、root paneがworktreeにcd済みの対話シェルとして開くと報告する。fork意図がないため`herdr agent start`・fork・引き継ぎpromptは行わず、WorktrunkやSafehouseの設定変更も提案しない。コマンドは実行しない。",
       "files": ["evals/fixtures.md"],
       "expectations": [
         "The creation is classified as delegated because the configured destination is outside the current session grant, without probing the destination.",
-        "With herdr enabled and no fork intent, the plan uses the new-tab flow without requesting user approval and without normal-shell guidance.",
-        "The reported sequence creates the tab in workspace w1 with the repository as cwd and --no-focus, then runs wt switch in that pane preserving the requested branch and omitting --no-cd and --format=json, with completion detected via the numeric sentinel regex.",
-        "The tab is reported as remaining with its shell cd'd into the new worktree; no herdr agent start, fork execution, or handoff prompt is planned.",
+        "With herdr enabled and no fork intent, the plan uses the transient-pane-plus-workspace flow without requesting user approval and without normal-shell guidance.",
+        "The reported sequence splits a --no-focus transient pane in the current tab with the repository as cwd, then runs wt switch in that pane preserving the requested branch and omitting --no-cd and --format=json, with completion detected via the numeric sentinel regex.",
+        "After the cwd check, the worktree is registered as a sidebar workspace via herdr worktree open with --no-focus, the workspace is reported as remaining open with its root pane cd'd into the new worktree, and the transient pane closes only after success.",
+        "No herdr agent start, fork execution, or handoff prompt is planned.",
         "No Worktrunk or Safehouse configuration change is executed or proposed, and no herdr or wt command was executed during the evaluation."
       ]
     }
