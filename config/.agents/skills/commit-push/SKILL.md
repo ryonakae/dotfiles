@@ -13,7 +13,7 @@ disable-model-invocation: true
 ## Invocation policy
 
 - commit-only、push不要などの制限が指定されていなければcommit + pushとして扱い、指定されていればcommitだけを行う。
-- `implement`が検証済み成果物の手順としてこのファイルを参照した場合は、`implement`の包括承認に基づくcommit + pushとして扱う。
+- `implement`から参照された場合はcommit-onlyとして扱う。`implement`は全ゲート通過後に自身で一度だけpushする。
 - pushだけに処理を限定する指示では、この手順を使わず通常のpush手段で対応する。
 - 対象範囲やcommit自体を行うか判断できない場合は、commitもpushもせず確認する。
 
@@ -88,9 +88,7 @@ disable-model-invocation: true
 
 #### ステップ7: push
 
-1. 次のいずれかでpushが承認されている場合だけ`git push`する。
-   - commit-onlyへの制限が指定されていない。
-   - `implement`が、検証済み成果物のcommit + push手順としてこのファイルを参照している。
+1. commit-onlyへの制限が指定されていない場合だけ`git push`する。
 2. 明示呼び出しの引数でcommit-onlyに制限されている場合はpushせず、作成したコミットと「pushは未実行」であることを伝えて終了する。
 3. push に失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
 
