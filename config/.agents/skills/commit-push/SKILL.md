@@ -73,14 +73,18 @@ disable-model-invocation: true
 #### ステップ6: コミットメッセージ生成と commit
 
 1. [`references/commit-message-profiles.md`](references/commit-message-profiles.md) を読み、選択順に従って profile を 1 つ選ぶ。
-2. コミット単位ごとに `git diff --cached` で最終差分を確認し、コミットメッセージを作る。
+2. trailer を次の順で解決する。
+   1. 現在適用されている上位指示に、完全な commit trailer または一意に trailer を導出できる生成規則があるか確認する。
+   2. 該当する上位指示があれば、その値だけを使う。profile の fallback commit trailer は追加しない。
+   3. 該当する上位指示がなければ、選択した profile の fallback commit trailer を使う。
+3. コミット単位ごとに `git diff --cached` で最終差分を確認し、コミットメッセージを作る。
    - Conventional Commits 形式（`<type>(<scope>): <subject>`）
    - type: `feat|fix|docs|refactor|perf|test|build|ci|chore`
    - scope は分かる場合のみ。subject の末尾に句点は付けない
    - body は必要な場合のみ
-   - profile の trailer・追加ルールに従う
-3. `git commit -m "..."` でコミットする。body や trailer がある場合は別の `-m` で渡す。
-4. コミット後に `git status --short` を確認し、次のコミット単位に進める状態か確認する。複数コミットの場合は、次のコミット単位についてステップ5〜6を繰り返す。
+   - profile の subject/body 追加ルールに従い、ステップ2で解決した trailer だけを付ける
+4. `git commit -m "..."` でコミットする。body や trailer がある場合は別の `-m` で渡す。
+5. コミット後に `git status --short` を確認し、次のコミット単位に進める状態か確認する。複数コミットの場合は、次のコミット単位についてステップ5〜6を繰り返す。
 
 #### ステップ7: push
 
@@ -99,6 +103,8 @@ disable-model-invocation: true
 - 同じセッションで A と B の別テーマを変更: A / B の 2 コミットに分ける。
 - 同一ファイル内に対象外変更と対象変更が混在: path 単位で stage せず確認して停止する。
 - doc-updater が更新したドキュメント: 起因となったテーマのコミットへ含め、そのコミット単位の stage 時に一緒に stage する。
+- 上位指示に trailer 規定あり: 上位指示の値だけを使い、選択した profile の fallback commit trailer は追加しない。
+- 上位指示に trailer 規定なし: 選択した profile の fallback commit trailer を使う。
 
 ## 注意
 
