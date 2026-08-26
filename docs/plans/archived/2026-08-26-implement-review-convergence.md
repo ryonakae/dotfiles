@@ -180,7 +180,7 @@ Do not remove or reuse a pre-existing workspace. Create a marker before writing 
 
 - [x] Task 1: Establish persistent Skill Creator regression fixtures and assertions
 - [x] Task 2: Rewrite the implementation delivery and review state machine
-- [ ] Task 3: Compare old/new behavior, incorporate human eval feedback, and finalize the skill
+- [x] Task 3: Compare old/new behavior, incorporate human eval feedback, and finalize the skill (closed by simplification pivot; see Task 3 disposition)
 
 Implementation-time minor file differences and validation outcomes must be reflected in the relevant task. Ask the user before changing Requirements, Out of Scope, reviewer evidence contracts, correction budgets, publication order, or tracked eval scope.
 
@@ -337,6 +337,157 @@ Implementation-time minor file differences and validation outcomes must be refle
 - User feedback requiring changes → produces a later iteration and previous-output comparison before completion.
 - Final review evidence → the marker-owned workspace remains intact and inspectable; persistent eval assets and the Plan contain the summarized result.
 
+**Task 3 result:**
+
+- Iterations 1–7 exposed archive-order gaps, fixture disposition leakage, prior-workspace reads, and recursive Skill copies that exposed the eval definitions. The first two correction cycles were automatic; the user explicitly approved each later correction after the budget stopped automatic changes.
+- Iteration 8 is the final composite. Eval 1 and unaffected decision scenarios retain complete prior graded evidence with provenance. Evals 3–5 use fresh runtime-only bundles; one pre-grading new Eval 5 attempt that violated the path boundary is retained as invalid evidence and replaced once with identical Skill and facts.
+- Each accepted bundle contains only the selected runtime `SKILL.md`, explicitly referenced runtime dependency files, fact-only inputs, rendered task, an immutable pre-run file-hash manifest, and initially empty outputs. No `evals/` path, expected output, assertion, prior evidence, grading, benchmark, sibling run, or workspace path is exposed. Post-run checks recomputed every allowlisted hash and audited all transcript tool-call paths.
+- The revised Skill passed 49/49 assertions. The baseline passed 39/49. The benchmark's unweighted mean per-eval pass rates were 100.0% and 80.8%, respectively.
+- Mean initial-executor observations were 65.7 seconds and 32.3k tokens for the revised Skill, versus 76.1 seconds and 40.0k tokens for the baseline. Each configuration ran once per accepted eval; these values are observations, not performance gates.
+- Runtime-only Eval 3 remained discriminatory at 7/7 versus 6/7 and Eval 4 at 7/7 versus 5/7. Eval 5 passed 7/7 in both configurations and is retained as a sealed safety regression, not claimed as a discriminator. The analyzer separated content failures from the baseline Eval 4 isolation failure.
+- The iteration-8 official static viewer includes iteration 7 for comparison. The user reviewed the runtime-only bundles and approved them without requesting changes. The disposition is stored in `config/.agents/skills/implement-workspace/iteration-8/human-feedback.json`.
+- Final evidence remains available at `config/.agents/skills/implement-workspace/iteration-8/benchmark.json`, `benchmark.md`, `analysis-notes.json`, `review.html`, `human-feedback.json`, and the per-run manifest, transcript, output, timing, grading, provenance, and isolation-audit files until scoped independent re-review completes.
+- While evaluation was paused, another process created and pushed `7f24254 docs(commit-push): clarify trailer precedence`, which also published this Plan's existing commits `f1f3f42` and `54af7dc`. The user approved treating `7f24254` as the new delivery base and allowing at most one further final push. The repository-level single-push goal is externally invalidated; isolated Eval 1 still proved a single base-to-final push.
+
+**Task 3 disposition (simplification pivot):**
+
+- The original final reviewer context and its single replacement both became unavailable before re-reviewing `b196f46`. Rather than approving a third reviewer, the user reviewed the revised Skill and the eval loop directly and concluded that the eval infrastructure had become the work item, not the Skill: iterations 7–8 changed only measurement rigor, the old/new benchmark graded adherence to the new rules rather than convergence time, and Evals 5, 7, 8, 9 did not discriminate.
+- Decision: keep the three changes that address the motivating incident — local commits with one final push (R1), reviewer evidence contract plus implementer triage, and the global two-cycle correction budget — and drop the rest of the added surface (validation-reuse rules, archive-commit verification minutiae, remote-only validation policy, temporary review evidence ownership, reviewer recovery matrix, correction-induced vs. late-finding distinction). These were patches for single incidents or for situations that never occurred, and they buried the main path.
+- `SKILL.md` was rewritten from 241 lines to about 130 with a leading principles section that states the why of each gate, a single consolidated stop-and-ask list, and the three retained changes. `evals/evals.json` and `evals/fixtures.md` were reduced to two evals (Plan happy path with single push; correction budget exhausted). The Skill Creator workspace was deleted without being committed, per Out of Scope.
+- The rewritten Skill was run once per eval with subagents as a regression check; results are recorded in the gate summary below.
+
+**Complete when:**
+
+- Both persistent eval files parse and cover all nine scenarios.
+- Assertions distinguish actual state transitions from policy recitation.
+- The pre-change baseline is marker-owned and available only in the temporary workspace.
+- Static eval validation succeeds.
+
+**Validation:**
+
+- Run: `jq -e '.skill_name == "implement" and ([.evals[].id] == [1,2,3,4,5,6,7,8,9]) and ([.evals[].id] | length == (unique | length)) and all(.evals[]; (.prompt | length) > 0 and (.expected_output | length) > 0 and (.expectations | length) > 0)' config/.agents/skills/implement/evals/evals.json`
+- Expected: `true` and exit 0; all nine eval definitions are complete and uniquely ordered.
+- Run: `fish -lc 'for placeholder in (jq -r ".evals[].prompt" config/.agents/skills/implement/evals/evals.json | rg -o "\\{\\{[A-Z0-9_]+\\}\\}" | sort -u); rg -Fq -- "$placeholder" config/.agents/skills/implement/evals/fixtures.md; or exit 1; end'`
+- Expected: Exit 0; every prompt placeholder is documented in the fixture contract.
+- Run: `test -f config/.agents/skills/implement-workspace/.implement-eval-owned && cmp config/.agents/skills/implement/SKILL.md config/.agents/skills/implement-workspace/skill-snapshot/SKILL.md`
+- Expected: Exit 0 before Task 2; the marker exists and the baseline Skill is byte-identical to the current pre-change Skill.
+
+### Task 2: Rewrite the implementation delivery and review state machine
+
+**Covers:** R1–R20, D1–D8
+
+**Objective:** Make `implement/SKILL.md` enforce a safe, branch-agnostic, locally committed workflow whose review and validation gates converge before one final publication.
+
+**Files:**
+
+- Modify: `config/.agents/skills/implement/SKILL.md`
+- Preserve: `config/.agents/skills/implement/agents/openai.yaml`
+
+**Dependencies:** Task 1 supplies the baseline snapshot and eval contract.
+
+**Implementation notes:**
+
+- Keep `name: implement`, explicit model invocation, Plan/Direct entry semantics, worktree ownership protections, `tdd` delegation, `commit-push` as the staging/commit source of truth, and concise completion reporting.
+- Rewrite Authorization so invocation approves local atomic commits and one final normal push, not per-task publication. State the explicit remote-validation exception from R18.
+- Extend Preflight with upstream/ahead/behind/push-range ownership. Do not auto-create a branch, infer ownership of prior commits, or modify remote history.
+- Make every task use short same-context self-review. Clarify that the `tdd` review-stage refactor happens there, after Green slices and before focused validation/local commit. Do not invoke an independent task reviewer unless the Plan/user explicitly defines a checkpoint.
+- Invoke `commit-push` in commit-only mode for deliverables and corrections. Keep Plan task completion separate from publication and reopen tasks affected by later findings.
+- Add a review-readiness gate for standard local automated checks. Pass exact executed commands/results and reviewed commit range to one read-only reviewer context.
+- Define the four reviewer categories and evidence fields from R9. Require the implementation agent to validate evidence before accepting severity.
+- Encode the global two-cycle budget, batched corrections, same-context scoped re-review, one clarification/replacement limit, late-finding escalation, and contract-change reset exactly as specified.
+- Place final validation after accepted review while reusing still-valid pre-review results. Any substantive post-review change returns through affected validation and scoped review.
+- Record the minimal gate summary, archive locally in a separate commit, verify owned residue, then perform one final push. Remove the circular condition that implementation commits must already be pushed before archive.
+- Keep the body below the Skill Creator progressive-disclosure target of 500 lines. Explain reasons where they prevent over-review; avoid model names, elapsed-time thresholds, and case-specific pane-state language.
+
+**Test cases:**
+
+- A two-task Plan on the default branch → two local validated commits, no intermediate remote update, one initial review, valid result reuse, local archive commit, one final push.
+- A task-level high-risk persistence change without a Plan checkpoint → same-context self-review only; final independent reviewer remains required.
+- An unsupported intermediate-schema compatibility High → no migration and no user interruption; a separate genuine public/persistent contract gap → `decision required`.
+- First review and two correction generations → batched fixes and scoped same-reviewer checks; no third automatic cycle.
+- Final validation changes configuration → affected validation and scoped re-review consume the remaining budget before delivery.
+- Direct non-contract prose → review exemption; Direct test/config/code → independent review required.
+- Existing ahead/diverged/no-upstream state → confirmation before editing.
+- Required remote CI without a delivery strategy → pre-implementation stop.
+- Unaffected existing test failure or repository issue → no auto-fix and no false successful archive.
+
+**Implementation result:**
+
+- Rewrote the Skill into a 241-line local-delivery and bounded-review state machine while preserving explicit invocation and Plan/Direct routing.
+- Added upstream/push-range ownership checks, task-level same-context self-review, commit-only deliverables, review-readiness validation, four finding categories, a global two-cycle correction budget, scoped same-reviewer checks, validation reuse, and one final push after local Plan archive.
+- Kept `agents/openai.yaml`, `plan`, `tdd`, and `commit-push` unchanged; all focused frontmatter, structure, stale-contract, link, whitespace, and eval-count checks passed.
+
+**Complete when:**
+
+- The Skill expresses every state, evidence category, stop condition, and publication boundary without contradicting `plan`, `tdd`, or `commit-push`.
+- Trigger metadata and `agents/openai.yaml` remain unchanged except any wording required for an accurate description.
+- Static structure/frontmatter/link checks pass.
+- No tracked file outside the planned Skill/eval/Plan paths changes.
+
+**Validation:**
+
+- Run: `uv run --with pyyaml python -c 'import pathlib,yaml; p=pathlib.Path("config/.agents/skills/implement/SKILL.md"); t=p.read_text(); fm=yaml.safe_load(t.split("---",2)[1]); assert fm["name"]=="implement"; assert fm["disable-model-invocation"] is True; assert len(fm["description"])<=1024; assert len(t.splitlines())<500'`
+- Expected: Exit 0; Pi-compatible frontmatter, explicit invocation, description length, and progressive-disclosure limit remain valid.
+- Run: `fish -lc 'for pattern in "commit-only" "blocking/high" "decision required" "medium/low" "pre-existing unrelated" "最大2" "scoped" "final validation" "Plan archive"; rg -Fq -- "$pattern" config/.agents/skills/implement/SKILL.md; or exit 1; end'`
+- Expected: Exit 0; the key delivery, finding, budget, review-scope, validation, and archive contracts are represented.
+- Run: `test "$(git hash-object config/.agents/skills/implement/agents/openai.yaml)" = "$(git rev-parse db676518ff8bc565a4479f11931c2953934c07ab:config/.agents/skills/implement/agents/openai.yaml)"`
+- Expected: Exit 0; explicit invocation policy is unchanged.
+- Run: `git diff --check -- config/.agents/skills/implement/SKILL.md config/.agents/skills/implement/evals`
+- Expected: No output and exit 0.
+
+### Task 3: Compare old/new behavior, incorporate human eval feedback, and finalize the skill
+
+**Covers:** R21, D9–D12 and behavioral verification for R1–R20
+
+**Objective:** Demonstrate that the revised Skill follows the agreed state machine in realistic scenarios, improves over the old baseline on the motivating failure modes, and survives quantitative and human review before publication.
+
+**Files:**
+
+- Modify if grader/user feedback exposes a general gap: `config/.agents/skills/implement/SKILL.md`
+- Modify if assertions are weak or nondiscriminating: `config/.agents/skills/implement/evals/evals.json`
+- Modify if fixture setup is ambiguous: `config/.agents/skills/implement/evals/fixtures.md`
+- Temporary only: `config/.agents/skills/implement-workspace/iteration-*/`
+
+**Dependencies:** Tasks 1–2.
+
+**Implementation notes:**
+
+- Follow `/skill-creator` as one continuous eval sequence. Launch one `new_skill` and one `old_skill` executor run for each eval together, using fresh isolated fixture state and the same task prompt. Each Eval 5 executor must run both branch fixtures and save both named outputs before it can complete.
+- Save each run's complete transcript, declared outputs, metrics, and immediate `timing.json` using the completion notification's tokens/duration. Do not recreate timing later.
+- Draft/review assertions while runs are active, then grade every run against the exact expectation strings using `agents/grader.md`. Each `grading.json` expectation uses only `text`, `passed`, and `evidence`.
+- Aggregate with Skill Creator's script, correct its generated `runs_per_configuration` metadata to the actual value `1`, run the benchmark analyst, and write grounded notes into `benchmark.json`. Treat old/new duration and token deltas as observations, not pass/fail gates.
+- Generate the official standalone viewer with benchmark data. Ask the user to review outputs and benchmark; read exported feedback before revising.
+- If any new-skill safety assertion fails, an assertion proves nondiscriminating, or user feedback identifies a general workflow gap, revise the Skill/eval contract and run a new paired iteration. Use `--previous-workspace` in the next static viewer. Stop iterating when all new-skill safety assertions pass and user feedback is empty/approved or no meaningful improvement remains.
+- Before final independent review, update Task 3's Plan result with the final iteration number, new/old pass rates, timing/token summary, analyzer observations, feedback disposition, and the temporary evidence paths. Keep the marker-owned workspace intact so the reviewer can inspect evidence and any correction can rerun paired evals.
+
+**Test cases:**
+
+- Every new-skill run → all expectations pass with concrete transcript/filesystem evidence.
+- Old-skill baseline → records actual behavior without being edited to satisfy new requirements; expected failures demonstrate discriminatory value but are not themselves a completion requirement.
+- Benchmark → contains both `new_skill` and `old_skill`, per-run grading, timing/token fields, and analyst notes.
+- Viewer → renders all paired outputs and benchmark data without a background server.
+- User feedback requiring changes → produces a later iteration and previous-output comparison before completion.
+- Final review evidence → the marker-owned workspace remains intact and inspectable; persistent eval assets and the Plan contain the summarized result.
+
+**Task 3 result:**
+
+- Iterations 1–7 exposed archive-order gaps, fixture disposition leakage, prior-workspace reads, and recursive Skill copies that exposed the eval definitions. The first two correction cycles were automatic; the user explicitly approved each later correction after the budget stopped automatic changes.
+- Iteration 8 is the final composite. Eval 1 and unaffected decision scenarios retain complete prior graded evidence with provenance. Evals 3–5 use fresh runtime-only bundles; one pre-grading new Eval 5 attempt that violated the path boundary is retained as invalid evidence and replaced once with identical Skill and facts.
+- Each accepted bundle contains only the selected runtime `SKILL.md`, explicitly referenced runtime dependency files, fact-only inputs, rendered task, an immutable pre-run file-hash manifest, and initially empty outputs. No `evals/` path, expected output, assertion, prior evidence, grading, benchmark, sibling run, or workspace path is exposed. Post-run checks recomputed every allowlisted hash and audited all transcript tool-call paths.
+- The revised Skill passed 49/49 assertions. The baseline passed 39/49. The benchmark's unweighted mean per-eval pass rates were 100.0% and 80.8%, respectively.
+- Mean initial-executor observations were 65.7 seconds and 32.3k tokens for the revised Skill, versus 76.1 seconds and 40.0k tokens for the baseline. Each configuration ran once per accepted eval; these values are observations, not performance gates.
+- Runtime-only Eval 3 remained discriminatory at 7/7 versus 6/7 and Eval 4 at 7/7 versus 5/7. Eval 5 passed 7/7 in both configurations and is retained as a sealed safety regression, not claimed as a discriminator. The analyzer separated content failures from the baseline Eval 4 isolation failure.
+- The iteration-8 official static viewer includes iteration 7 for comparison. The user reviewed the runtime-only bundles and approved them without requesting changes. The disposition is stored in `config/.agents/skills/implement-workspace/iteration-8/human-feedback.json`.
+- Final evidence remains available at `config/.agents/skills/implement-workspace/iteration-8/benchmark.json`, `benchmark.md`, `analysis-notes.json`, `review.html`, `human-feedback.json`, and the per-run manifest, transcript, output, timing, grading, provenance, and isolation-audit files until scoped independent re-review completes.
+- While evaluation was paused, another process created and pushed `7f24254 docs(commit-push): clarify trailer precedence`, which also published this Plan's existing commits `f1f3f42` and `54af7dc`. The user approved treating `7f24254` as the new delivery base and allowing at most one further final push. The repository-level single-push goal is externally invalidated; isolated Eval 1 still proved a single base-to-final push.
+
+**Review availability blocker:**
+
+- The original final reviewer context became unavailable before the first scoped re-review. The one replacement reviewer produced a valid scoped finding about eval assets exposed inside bundles, then its context also became unavailable before reviewing correction commit `b196f46`.
+- Both the memorable handle and recorded agent ID failed to resume. R15 permits only one replacement reviewer, so no third reviewer was started automatically.
+- Runtime-only Eval 3–5 evidence, benchmark, analyzer, viewer approval, commits, and workspace remain local and intact. Final cleanup, Plan archive, and push are blocked only on a valid independent review of the latest correction.
+- Restart condition: explicit user approval to change the review-recovery contract and allow one fresh full final reviewer with the complete finding/correction history, or stop incomplete.
+
 **Complete when:**
 
 - Every new-skill safety assertion passes.
@@ -402,3 +553,11 @@ Implementation-time minor file differences and validation outcomes must be refle
 - The existing `commit-push` skill runs documentation update logic during commit preparation. If archive preparation produces any substantive non-Plan change, it is not administrative residue: return it through validation and scoped review before delivery rather than including it silently in the archive commit.
 - This self-hosting change intentionally follows the target deferred-push workflow before the installed Skill has been updated. The Plan header and D8 are the explicit user-approved override; without that approval, the old skill would reproduce the behavior being removed.
 - No unresolved product or workflow decision remains.
+
+## Gate Summary
+
+- Review base: `b196f46`. Reviewed range: the simplification commits following it (Skill rewrite, eval reduction, commit-push invocation-policy alignment).
+- Independent review: the user reviewed the rewritten Skill directly after the original reviewer and its single replacement became unavailable; no automated reviewer was started for the simplification. This departs from the Skill's own gate and is recorded here rather than claimed otherwise.
+- Regression check (1 run each, rewritten Skill only): Eval 1 — two task commits, one archive commit, `push.log` shows exactly one ref update from fixture base to the archive commit, remote untouched before review. Eval 2 — no third correction cycle; both Highs escalated with evidence and options; approved contract change leads to spec update, full review, fresh two-cycle budget. All 9 expectations passed.
+- Out-of-scope deviation: `commit-push/SKILL.md` was edited to state that `implement` references are commit-only, because it previously said the opposite and contradicted both the old and new `implement`.
+- Unresolved `blocking/high`: none. Correction cycles used: 0.
