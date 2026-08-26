@@ -11,7 +11,7 @@
         "Both deliverables receive focused validation, same-context self-review, and separate local atomic commits before final delivery.",
         "The remote main ref remains at the fixture base commit until standard local automated validation and independent review have succeeded.",
         "The independent reviewer is read-only and receives the selected Plan, implementation range, commit list, and validation results.",
-        "The Plan gate summary and archive move are recorded in a separate local archive commit after implementation review and validation agree on the same HEAD.",
+        "After implementation review and validation agree on the same HEAD, the gate summary is written to the active Plan; before committing, the staged Plan diff proves that the archive rename, gate summary, and completed Final Validation state are all present, and they are committed together in one separate local archive commit with no post-archive summary commit.",
         "Exactly one successful push updates remote main from the fixture base directly to the final archive commit; no feature branch, force push, amend, or rebase occurs.",
         "The final repository is clean apart from fixture-declared unrelated state, the active Plan path is absent, and the same filename exists under docs/plans/archived/."
       ]

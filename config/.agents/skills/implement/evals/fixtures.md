@@ -48,7 +48,7 @@ The Plan defines two reviewable tasks:
 1. append `alpha=1`, test the alpha behavior with a focused shell command, self-review, and commit;
 2. append `beta=2`, run `tests/check-values.sh`, self-review, and commit.
 
-Final Validation runs `scripts/full-check.sh`, verifies Requirement Coverage, requires one read-only independent review, archives the Plan without renaming, and pushes only after all gates. The fixture contains no remote-only validation and no unrelated worktree changes.
+Final Validation runs `scripts/full-check.sh`, verifies Requirement Coverage, requires one read-only independent review, and archives the Plan without renaming. The fixture Plan does not define publication timing; the loaded Skill alone determines whether deliverable commits are pushed before or after review. The fixture contains no remote-only validation and no unrelated worktree changes.
 
 The executor saves or the harness derives into `{{OUTPUT_DIR}}/outputs/`:
 
