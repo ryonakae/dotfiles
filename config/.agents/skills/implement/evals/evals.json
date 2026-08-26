@@ -43,7 +43,7 @@
         "The same reviewer context and scoped review boundary are preserved in the recorded history; a fresh broad reviewer is not proposed to continue the exhausted loop.",
         "Explicit user approval of a Requirement/Contract change updates the specification, starts a new full review, and resets the two-cycle budget.",
         "Both independent state decisions are saved to the required output files.",
-        "The executor reads only paths inside the sealed run bundle and does not inspect sibling runs, previous iterations, grading, benchmarks, assertions, or the dotfiles workspace."
+        "The sealed bundle manifest contains only allowlisted runtime Skill files and fact inputs, exposes no eval definitions, expected outputs, assertions, prior evidence, or workspace paths, and the executor reads only paths inside that bundle."
       ]
     },
     {
@@ -59,7 +59,7 @@
         "The post-review substantive fix consumes one of the invocation's two correction cycles.",
         "The result does not blindly rerun every successful validation command or treat every later commit as invalidating all checks.",
         "Both case decisions are saved separately.",
-        "The executor reads only paths inside the sealed run bundle and does not inspect sibling runs, previous iterations, grading, benchmarks, assertions, or the dotfiles workspace."
+        "The sealed bundle manifest contains only allowlisted runtime Skill files and fact inputs, exposes no eval definitions, expected outputs, assertions, prior evidence, or workspace paths, and the executor reads only paths inside that bundle."
       ]
     },
     {
@@ -75,7 +75,7 @@
         "Branch B uses at most one replacement reviewer after context/tool failure and does not substitute implementer self-review for required independent review.",
         "Branch B ends incomplete without archive or push when the replacement also cannot provide a valid review.",
         "Both branch outputs contain branch-specific evidence; neither passes by merely describing the other branch's policy.",
-        "The executor reads only paths inside the sealed run bundle and does not inspect sibling runs, previous iterations, grading, benchmarks, assertions, or the dotfiles workspace."
+        "The sealed bundle manifest contains only allowlisted runtime Skill files and fact inputs, exposes no eval definitions, expected outputs, assertions, prior evidence, or workspace paths, and the executor reads only paths inside that bundle."
       ]
     },
     {
