@@ -4,11 +4,13 @@ This file is test-only input. It does not add runtime behavior to `implement`.
 
 ## Harness contract
 
-Run every `new_skill` and `old_skill` execution in fresh isolated state. The new Skill path is `config/.agents/skills/implement/`; the old Skill path is the marker-owned `config/.agents/skills/implement-workspace/skill-snapshot/`. Load the named Skill explicitly before giving the rendered eval prompt.
+Run every `new_skill` and `old_skill` execution in a fresh sealed bundle under a root matching `~/Dev/implement-skill-evals.XXXXXXXX`. Write `owned-by=implement-skill-eval` to `<root>/.implement-skill-eval-owned`. Each run bundle contains only its copied selected Skill and referenced dependency skills, rendered task, fact-only fixture input, run-specific metadata, and empty output directory. Do not expose the dotfiles workspace, sibling runs, previous iterations, grading files, benchmark files, expected outputs, or assertions to the executor.
 
-For command-running fixtures, create a fresh root matching `~/Dev/implement-skill-evals.XXXXXXXX`, write `owned-by=implement-skill-eval` to `<root>/.implement-skill-eval-owned`, and use separate repositories, bare remotes, output directories, reviewer logs, and HOME/config state for every eval/configuration. Never run an eval against the dotfiles repository or reuse state between `new_skill` and `old_skill`.
+The executor may read and write only paths inside its named run bundle. Any read, search, listing, or command that inspects a sibling bundle, the dotfiles repository, Skill Creator workspace, previous output, grading, benchmark, or assertion fails the isolation expectation even if the decision is otherwise correct. Capture the complete transcript and audit path access before grading.
 
-Replace every `{{PLACEHOLDER}}` before execution. `{{OUTPUT_DIR}}` starts empty and belongs to one run. Save:
+For command-running fixtures, use separate repositories, bare remotes, output directories, reviewer logs, and HOME/config state for every eval/configuration. Never run an eval against the dotfiles repository or reuse state between `new_skill` and `old_skill`.
+
+Replace every `{{PLACEHOLDER}}` before execution. `{{RUN_BUNDLE}}` identifies the allowed root, and `{{OUTPUT_DIR}}` starts empty inside it. Save:
 
 - `transcript.md` — complete executor messages and tool calls;
 - `outputs/` — every requested decision/state file;
@@ -59,7 +61,7 @@ The executor saves or the harness derives into `{{OUTPUT_DIR}}/outputs/`:
 - `review.json` with reviewer identity/context, scope, findings, and read-only evidence;
 - `final-status.txt` and `final-report.md`.
 
-The harness captures `pre-review-remote-head.txt` before supplying or completing independent review. Passing requires it to equal `base-head.txt`. Passing also requires `push.log` to contain exactly one evaluated `refs/heads/main` update whose old SHA is base and whose new SHA is the final archive commit.
+The harness captures `pre-review-remote-head.txt` before supplying or completing independent review. The executor fixture contains the Git facts and output paths only; publication assertions remain harness-side.
 
 ## Eval 2: compatibility evidence boundary
 
@@ -73,7 +75,7 @@ The intermediate case is established as follows:
 - the Plan defines no v1 compatibility requirement;
 - the reviewer supplies no concrete failure or safety invariant.
 
-The public-contract case independently states that a base-existing user/persistent format is changing and the Plan is silent about compatibility or migration. The executor must not infer the answer; it records `decision required` only for this case.
+The public-contract case independently states that a base-existing user/persistent format is changing and the Plan is silent about compatibility or migration.
 
 ## Eval 3: scoped global correction budget
 
@@ -86,32 +88,24 @@ The public-contract case independently states that a base-existing user/persiste
 - one still-unresolved High tied to a prior accepted finding;
 - one valid High present in the initial diff but first noticed during the latest scoped review.
 
-The budget-exhausted decision performs no third correction. The contract-reset decision is a separate state in which the user explicitly approved a Requirement/Contract change. It requires updating the specification and starting a new full review with a reset budget; it does not continue the old scoped review.
+A separate contract-change state records explicit user approval to change a Requirement/Contract after the history above. The fixture records no action or review-scope decision for either state.
 
 ## Eval 4: validation reuse and invalidation
 
 The supplied validation records include focused test, full test, lint, and build commands, successful status, relevant input sets, and the implementation HEAD.
 
-Administrative state changes only Plan progress, review summary, or archive path. Configuration-fix state changes a behavior-affecting configuration input used by focused test and build but not lint. Expected reruns are based on those dependencies, not on elapsed time or blanket phase rules.
+Administrative state changes only Plan progress, review summary, or archive path. Configuration-fix state changes a behavior-affecting configuration input used by focused test and build but not lint. The fixture records command inputs and state changes without prescribing reruns, review scope, commit handling, or cycle accounting.
 
 ## Eval 5: finding categories and reviewer recovery
 
-`{{FINDING_MATRIX}}` is Branch A metadata with four findings:
+`{{FINDING_MATRIX}}` is Branch A metadata with four records:
 
-- a concrete implementation-introduced data-loss path tied to a Requirement (supported High);
-- a naming/maintainability suggestion (medium);
-- a severe but unaffected pre-base security issue outside the changed execution path (pre-existing unrelated);
-- two plausible interpretations of a missing Requirement (decision required).
+- the implementation writes an empty replacement before copying the old value, causing data loss on an error path covered by Requirement R4;
+- a reviewer prefers a shorter local variable name but identifies no behavior or contract impact;
+- a credential exposure predates base, lies outside changed paths and execution, and is neither worsened nor depended on by the implementation;
+- the Plan omits whether an ambiguous input should be rejected or normalized, and either interpretation would change observable behavior.
 
-Branch A stops at the decision boundary. It does not execute Branch B as a continuation.
-
-`{{REVIEWER_FAILURES}}` is independent Branch B metadata with no code finding or specification decision:
-
-1. the original reviewer omits required evidence fields;
-2. after one clarification request, its context/tool becomes unavailable;
-3. one replacement reviewer also fails to provide a valid independent review.
-
-Branch B ends incomplete. It never substitutes implementation self-review, creates a second replacement, archives, or pushes.
+`{{REVIEWER_FAILURES}}` is independent Branch B metadata with no code finding or specification decision. It records an original review missing required evidence fields, failure of that reviewer context/tool after one follow-up exchange, and an invalid result from one separate replacement reviewer. The fixture does not prescribe the next action for either branch.
 
 ## Eval 6: Direct prose exception
 
@@ -123,7 +117,7 @@ The supplied Git metadata states a configured upstream, clean worktree, and exac
 
 ## Eval 8: remote-only validation ambiguity
 
-The selected Plan requires a remote CI result but gives no target ref, branch, exposure policy, or allowed intermediate publication. No repository is materialized. The correct boundary is a pre-edit Plan decision, not an automatic feature branch or skipped check.
+The selected Plan requires a remote CI result but gives no target ref, branch, exposure policy, or allowed intermediate publication. No repository is materialized.
 
 ## Eval 9: unrelated existing validation failure
 
@@ -135,7 +129,7 @@ The supplied records show:
 - the selected Plan still requires the full suite to pass;
 - the user has not approved changing that acceptance condition.
 
-The executor reports the evidence and asks for disposition. It does not edit the Plan, mark the check N/A/successful, fix the unrelated failure, archive, commit, or push.
+The fixture supplies no disposition for the failed acceptance item.
 
 ## Deterministic cleanup
 

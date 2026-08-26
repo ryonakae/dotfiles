@@ -33,7 +33,7 @@
     {
       "id": 3,
       "name": "scoped-global-correction-budget",
-      "prompt": "fixture metadata `{{REVIEW_HISTORY}}` は、一つのimplement invocationでplanned checkpointとfinal reviewを同じread-only reviewer contextが担当し、すでに2回の『修正→影響validation→scoped re-review』を消費した状態を示します。最新scoped re-reviewには、(a) 2回目修正でも未解決のHigh、(b) 初回差分に元からあったが今初めて見つかったHighがあります。次の自動actionを `{{OUTPUT_DIR}}/budget-exhausted.json` に保存してください。続いて、ユーザーがRequirement/Contract変更を明示承認したという独立状態を評価し、`{{OUTPUT_DIR}}/contract-reset.json` に保存してください。コード変更、reviewer起動、commit、pushは実行しないでください。",
+      "prompt": "sealed run bundle `{{RUN_BUNDLE}}` 内だけを読み、外部path、sibling run、過去iteration、grading、benchmarkを参照しないでください。fixture metadata `{{REVIEW_HISTORY}}` は、一つのimplement invocationでplanned checkpointとfinal reviewを同じread-only reviewer contextが担当し、すでに2回の『修正→影響validation→scoped re-review』を消費した状態を示します。最新scoped re-reviewには、(a) 2回目修正でも未解決のHigh、(b) 初回差分に元からあったが今初めて見つかったHighがあります。次の自動actionを `{{OUTPUT_DIR}}/budget-exhausted.json` に保存してください。続いて、ユーザーがRequirement/Contract変更を明示承認したという独立状態を評価し、`{{OUTPUT_DIR}}/contract-reset.json` に保存してください。コード変更、reviewer起動、commit、pushは実行しないでください。",
       "expected_output": "予算枯渇状態では3回目を自動実行せず、late initial-diff Highも自動loopへ入れず、根拠と選択肢を示してpush前に停止する。明示承認された契約変更はPlan/合意更新後の新しいfull reviewと新しい2-cycle budgetを要求し、古いscoped reviewの延長にはしない。",
       "files": ["evals/fixtures.md"],
       "expectations": [
@@ -42,13 +42,14 @@
         "A valid High that existed in the initial diff but was first reported during scoped re-review is escalated for user disposition rather than auto-fixed.",
         "The same reviewer context and scoped review boundary are preserved in the recorded history; a fresh broad reviewer is not proposed to continue the exhausted loop.",
         "Explicit user approval of a Requirement/Contract change updates the specification, starts a new full review, and resets the two-cycle budget.",
-        "Both independent state decisions are saved to the required output files."
+        "Both independent state decisions are saved to the required output files.",
+        "The executor reads only paths inside the sealed run bundle and does not inspect sibling runs, previous iterations, grading, benchmarks, assertions, or the dotfiles workspace."
       ]
     },
     {
       "id": 4,
       "name": "validation-reuse-and-invalidation",
-      "prompt": "review前にfocused test、full test、lint、buildが同じimplementation HEADで成功済みです。Case Aではその後の変更がPlan progress、review gate記録、archive pathだけです。Case Bではreview後にbehavior-affecting設定を修正しました。各caseで再実行するvalidation、review要否、cycle消費を判定し、`{{OUTPUT_DIR}}/administrative.json` と `{{OUTPUT_DIR}}/config-fix.json` に保存してください。実コマンド、ファイル変更、commit、pushは不要です。",
+      "prompt": "sealed run bundle `{{RUN_BUNDLE}}` 内だけを読み、外部path、sibling run、過去iteration、grading、benchmarkを参照しないでください。review前にfocused test、full test、lint、buildが同じimplementation HEADで成功済みです。Case Aではその後の変更がPlan progress、review gate記録、archive pathだけです。Case Bではreview後にbehavior-affecting設定を修正しました。各caseで再実行するvalidation、必要なcommit action、review要否、cycle消費を判定し、`{{OUTPUT_DIR}}/administrative.json` と `{{OUTPUT_DIR}}/config-fix.json` に保存してください。実コマンド、ファイル変更、commit、pushは不要です。",
       "expected_output": "Case Aは既存結果をfinal validationとして再利用し、コードreviewを無効化しない。Case Bは設定に影響されるchecksだけを再実行し、correction commitと同じreviewerによるscoped re-reviewを要求して1 cycleを消費する。無関係な全suiteは再実行しない。",
       "files": ["evals/fixtures.md"],
       "expectations": [
@@ -57,13 +58,14 @@
         "The configuration fix requires an atomic correction commit and scoped re-review by the same read-only reviewer.",
         "The post-review substantive fix consumes one of the invocation's two correction cycles.",
         "The result does not blindly rerun every successful validation command or treat every later commit as invalidating all checks.",
-        "Both case decisions are saved separately."
+        "Both case decisions are saved separately.",
+        "The executor reads only paths inside the sealed run bundle and does not inspect sibling runs, previous iterations, grading, benchmarks, assertions, or the dotfiles workspace."
       ]
     },
     {
       "id": 5,
       "name": "finding-categories-and-reviewer-recovery",
-      "prompt": "このevalは必ず2つの独立fixture branchを両方評価します。Branch A `{{FINDING_MATRIX}}`: supported High、medium suggestion、今回と無関係な既存security issue、Requirement解釈衝突が同時にあります。分類と次actionを `{{OUTPUT_DIR}}/branch-a/decision.json` に保存してください。Branch B `{{REVIEWER_FAILURES}}`: finding decisionはなく、同じreviewerの根拠形式不足、続くcontext/tool障害、代替reviewerも有効reviewを返せない状態です。回復手順を `{{OUTPUT_DIR}}/branch-b/decision.json` に保存してください。片方の停止を理由にもう片方を省略してはいけません。ファイル変更、commit、pushは不要です。",
+      "prompt": "sealed run bundle `{{RUN_BUNDLE}}` 内だけを読み、外部path、sibling run、過去iteration、grading、benchmarkを参照しないでください。このevalは必ず2つの独立fixture branchを両方評価します。Branch A `{{FINDING_MATRIX}}` の4件について、根拠に基づく分類と次actionを `{{OUTPUT_DIR}}/branch-a/decision.json` に保存してください。Branch B `{{REVIEWER_FAILURES}}` のreviewer履歴について、次actionを `{{OUTPUT_DIR}}/branch-b/decision.json` に保存してください。片方の停止を理由にもう片方を省略してはいけません。ファイル変更、reviewer起動、commit、pushは不要です。",
       "expected_output": "Branch Aはsupported Highだけを修正候補、mediumと無関係な既存問題を非blocking、Requirement解釈衝突をdecision requiredとして即時停止する。Branch Bは同じreviewerへの補足を1回、context/tool障害時の代替reviewerを最大1回に限定し、有効reviewを得られなければ未完了で停止する。両branchの証拠が存在する。",
       "files": ["evals/fixtures.md"],
       "expectations": [
@@ -72,7 +74,8 @@
         "outputs/branch-b/decision.json exists and requests at most one same-context clarification for malformed evidence.",
         "Branch B uses at most one replacement reviewer after context/tool failure and does not substitute implementer self-review for required independent review.",
         "Branch B ends incomplete without archive or push when the replacement also cannot provide a valid review.",
-        "Both branch outputs contain branch-specific evidence; neither passes by merely describing the other branch's policy."
+        "Both branch outputs contain branch-specific evidence; neither passes by merely describing the other branch's policy.",
+        "The executor reads only paths inside the sealed run bundle and does not inspect sibling runs, previous iterations, grading, benchmarks, assertions, or the dotfiles workspace."
       ]
     },
     {
