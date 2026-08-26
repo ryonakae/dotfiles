@@ -179,7 +179,7 @@ Do not remove or reuse a pre-existing workspace. Create a marker before writing 
 ## Progress
 
 - [x] Task 1: Establish persistent Skill Creator regression fixtures and assertions
-- [ ] Task 2: Rewrite the implementation delivery and review state machine
+- [x] Task 2: Rewrite the implementation delivery and review state machine
 - [ ] Task 3: Compare old/new behavior, incorporate human eval feedback, and finalize the skill
 
 Implementation-time minor file differences and validation outcomes must be reflected in the relevant task. Ask the user before changing Requirements, Out of Scope, reviewer evidence contracts, correction budgets, publication order, or tracked eval scope.
@@ -278,6 +278,12 @@ Implementation-time minor file differences and validation outcomes must be refle
 - Existing ahead/diverged/no-upstream state → confirmation before editing.
 - Required remote CI without a delivery strategy → pre-implementation stop.
 - Unaffected existing test failure or repository issue → no auto-fix and no false successful archive.
+
+**Implementation result:**
+
+- Rewrote the Skill into a 241-line local-delivery and bounded-review state machine while preserving explicit invocation and Plan/Direct routing.
+- Added upstream/push-range ownership checks, task-level same-context self-review, commit-only deliverables, review-readiness validation, four finding categories, a global two-cycle correction budget, scoped same-reviewer checks, validation reuse, and one final push after local Plan archive.
+- Kept `agents/openai.yaml`, `plan`, `tdd`, and `commit-push` unchanged; all focused frontmatter, structure, stale-contract, link, whitespace, and eval-count checks passed.
 
 **Complete when:**
 
