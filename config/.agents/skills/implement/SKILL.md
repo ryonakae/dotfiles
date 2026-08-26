@@ -7,18 +7,19 @@ disable-model-invocation: true
 
 # Implement
 
-確定した要件を検証とレビューを通った状態でリモートへ反映する。詳細なテスト品質は `tdd`、staging、commit、push、ドキュメント更新は [`commit-push`](../commit-push/SKILL.md) を手順の正本とし、このスキルは実行順序と完了条件を管理する。
+確定した要件を、検証と独立レビューを通った状態でremoteへ反映する。テスト品質は`tdd`、staging、commit、文書更新は[`commit-push`](../commit-push/SKILL.md)を正本とする。このスキルは実行順序、reviewerとの契約、完了条件を管理する。
 
 ## Authorization
 
 このスキルの起動を、次の承認として扱う。
 
-- 検証済みの成果物単位でatomic commitを作る。
-- 各commitの直後にpushする。
-- レビュー指摘のうち、スコープ内のblocking/highを修正してcommit、pushする。
-- 全完了後、対象プランを独立したcommitでアーカイブしてpushする。
+- 検証済みの成果物単位でlocal atomic commitを作る。
+- スコープ内のblocking/highを、定めた予算内で修正してlocal atomic commitを作る。
+- 全ゲート通過後、Plan archiveを含むcommit列をcurrent branchへ一度pushする。
 
-force push、rebase、amend、履歴の書き換え、破壊的な削除、要件外の変更、ユーザーや別プロセスの変更は承認に含まれない。
+成果物ごとのpush、force push、rebase、amend、squash、履歴の書き換え、破壊的な削除、要件外の変更、ユーザーや別プロセスの変更は承認に含まれない。default branchも同じゲートを使う。feature branchの作成や推奨は行わない。
+
+Planまたはユーザーがremote-only validation用のpush先と公開条件を決めた場合だけ、その合意を通常の一回pushに対する例外として使う。
 
 ## Entry modes
 
@@ -30,141 +31,211 @@ force push、rebase、amend、履歴の書き換え、破壊的な削除、要�
 
 1. ユーザーが指定したパス。
 2. 現在の会話で作成または選択したプラン。
-3. `docs/plans/` 直下にある未アーカイブの計画が1件だけなら、その計画。
+3. `docs/plans/`直下にある未アーカイブの計画が1件だけなら、その計画。
 
-複数の候補が残る場合は、編集前に対象を一つだけ確認する。プランのRequirements、Decisions、Out of Scope、Contracts、Tasks、Validationを実装仕様とする。
+複数候補が残る場合は、編集前に対象を一つ確認する。PlanのRequirements、Decisions、Out of Scope、Contracts、Tasks、Validationを実装仕様とする。
 
 ### Direct mode
 
-ユーザーが「このまま実装して」などと指示し、計画を作らず進む経路を選んだ場合に使う。現在の会話、`dig`で合意した決定、ユーザーが提示した完了条件を実装仕様とする。計画ファイルは作成せず、アーカイブもしない。
+ユーザーが計画を作らず実装すると決めた場合に使う。現在の会話、`dig`で合意した決定、ユーザーが提示した完了条件を実装仕様とする。計画ファイルは作成せず、アーカイブもしない。
 
-要件、Out of Scope、公開契約、テスト境界に未確定事項が残る場合は、実装を始めず一度に一つだけ確認する。複数領域への波及や新しい設計判断が判明し、直接実装の前提が崩れた場合は停止して`plan`の利用を提案する。
+要件、Out of Scope、公開契約、永続形式、テスト境界に未確定事項が残る場合は、実装を始めず一度に一つ確認する。複数領域への波及や新しい設計判断が判明し、直接実装の前提が崩れた場合は停止して`plan`を提案する。
 
 ## Preflight
 
 編集前に次を行う。
 
 1. 対象ファイルへ適用される`AGENTS.md`などの指示を読む。
-2. Plan modeではプラン全体を読み、Direct modeでは会話中の決定事項と対象外を整理する。
+2. Plan modeではPlan全体を読み、Direct modeでは決定事項と対象外を整理する。
 3. `git status --short`、`git diff --cached`、`git diff`でstaged、unstaged、untrackedを確認する。
-4. この実装が所有する変更パスと、開始前から存在する変更パスを区別する。
-5. 既存のstaged変更がある場合は、所有権が明確でも開始せずユーザーに確認する。
-6. 既存のunstaged/untracked変更が対象ファイルと重なる場合は開始せず確認する。重ならない変更は残したまま続行し、commit対象から除外する。
-7. レビュー用に開始時のbase commitを記録する。
-8. 成果物の数と依存関係を確認し、必要な場合だけユーザー可視のtodoを作る。
+4. upstream、ahead/behind、push対象commit rangeを確認する。upstreamが未設定または曖昧、branchがdiverged、開始前から未push commitがある場合は、所有権を推測せず編集前に確認する。
+5. この実装が所有する変更パスと、開始前から存在する変更パスを区別する。
+6. 既存のstaged変更がある場合は、所有権が明確でも開始せず確認する。
+7. 既存のunstaged/untracked変更が対象ファイルと重なる場合は開始せず確認する。重ならない変更は残し、commit対象から除外する。
+8. review用のbase commitを記録する。
+9. 成果物の数と依存関係を確認し、必要な場合だけユーザー可視のtodoを作る。
 
-## TDD
+PlanやDirect modeの変更が公開契約、永続形式、互換性へ影響するのに方針が決まっていない場合は停止する。release、tag、branch、途中commitから互換性要件を推定しない。
 
-自動テストで観測できる振る舞いには、`tdd`スキルを読み、確定済みのtest seamでRed → Greenを繰り返す。
+必須validationがremote CIやpreview deployでしか実行できない場合は、Planまたはユーザーがpush先、公開条件、途中反映の扱いを決めているか確認する。未決定なら編集前に停止する。
 
-- プランのTesting Decisionsにあるseam、または`dig`で合意したseamは確認済みとして扱う。
-- seamが決まっておらず、選択によって公開インターフェースやテスト範囲が変わる場合は確認する。
+## TDD and local delivery
+
+自動テストで観測できる振る舞いには`tdd`スキルを読み、確定済みのtest seamでRed → Greenを繰り返す。
+
+- PlanのTesting Decisionsまたは`dig`で合意したseamは確認済みとして扱う。
+- seamが未決定で、選択によって公開interfaceやテスト範囲が変わる場合は確認する。
 - 一つの振る舞いについて、失敗するテストを確認してから、それを通す最小限の実装を書く。
-- 先のテストや機能をまとめて実装せず、vertical sliceごとに進める。
-- リファクタリングはRed → Greenの途中に混ぜず、レビュー段階で行う。
+- 先のテストや機能をまとめず、vertical sliceごとに進める。
 
-文書、設定、生成物など、失敗テストを作る意味がない変更にはRedを強制しない。Plan modeでは理由と代替検証を該当タスクへ記録し、Direct modeでは進捗報告に示してから、構文検査、差分比較、実コマンド確認など最も近い検証を行う。
+文書、設定、生成物など、失敗テストを作る意味がない変更にはRedを強制しない。Plan modeでは理由と代替validationを該当Taskへ記録する。Direct modeでは進捗報告に示し、構文検査、差分比較、実command確認など最も近いvalidationを使う。
 
-## Delivery loop
-
-プランタスク、またはDirect modeのレビュー可能な成果物ごとに次を繰り返す。
+成果物ごとに次を行う。
 
 1. 対象成果物をin progressにする。
-2. テスト可能な振る舞いはTDDで実装する。非テスト変更は定めた代替検証を使う。
-3. 成果物に最も近いfocused validationを実行する。
-4. validationが成功した後にだけ進捗を完了へ更新する。
-5. Plan modeでは、実際の変更ファイル、軽微な実装差分、検証結果の要点を該当タスクへ反映する。要件、Out of Scope、公開契約の変更は先にユーザーへ確認する。
-6. 下記の条件に当てはまる場合はcommit前にタスク差分を自己レビューし、明らかな欠陥、スコープ外変更、テスト漏れを直してfocused validationを再実行する。
-7. [`commit-push`](../commit-push/SKILL.md)を手順の正本として読み、この成果物だけをcommit + pushとして処理する。pushが成功するまで成果物を完了扱いにしない。
+2. TDDまたは合意済みの代替validationで実装する。
+3. 同じ実装contextでtask-level self-reviewを行う。要件対応、scope、明白な欠陥、テスト漏れを確認し、必要なrefactorをここで行う。
+4. 成果物に最も近いfocused validationを実行する。self-reviewで変更した場合は、その変更を含む状態で実行する。
+5. Plan modeでは、実際の変更ファイル、軽微な実装差分、validation結果を該当Taskへ反映し、Progressを完了へ更新する。Requirement、Out of Scope、Contractはユーザー承認前に変えない。
+6. [`commit-push`](../commit-push/SKILL.md)を読み、この成果物とPlan更新だけを**commit-only**で処理する。pushしない。
+7. local commitが成功した時点でTaskの完了を確定する。commitが失敗した場合は完了扱いにせず、Plan更新をlocalに残す。
 
-原則は1プランタスクにつき1commitとする。タスクが一つのreview/revert単位として大きすぎる場合は分割し、小さく不可分な隣接タスクは統合できる。分割または統合した場合は、Plan modeの該当タスクへcommitとの対応を記録する。Direct modeでは作業テーマ単位で分ける。
+原則は1 Plan Taskにつき1commitとする。Taskが一つのreview/revert単位として大きすぎる場合は分割し、小さく不可分な隣接Taskは統合できる。Plan modeではcommitとの対応を記録する。Direct modeでは作業テーマ単位で分ける。
 
-### Task-level self-review
-
-次のいずれかに当てはまる場合に行う。
-
-- 複数タスクまたは複数コンポーネントにまたがる。
-- 公開契約、データ移行、永続化、並行処理を変更する。
-- 認証、認可、セキュリティ、課金、データ損失に関係する。
-- focused validationだけでは回帰範囲を十分に絞れない。
-
-局所的で既存パターンに沿い、強い自動テストがある変更では省略できる。最終の独立レビューは省略しない。
+Task-level reviewは同じ実装contextで行う。独立reviewerによる中間checkpointは、Planまたはユーザーが明示した場合だけ実行する。そのcheckpointは後述の一つのreviewer contextと共通の修正予算を使う。
 
 ## Progress
 
 ### Plan mode
 
-- TaskのValidationが成功したら、Progressの対応項目を完了にする。
-- 計画との差異は作業ログとして羅列せず、変更ファイル、判断に影響する差分、検証結果だけを残す。
+- focused validation、self-review、Plan更新、local commitが成功したら、Progressの対応項目を完了にする。
+- 後のreview findingがTaskに関係する場合は再びin progressへ戻し、correction commitとvalidation後に完了へ戻す。
+- 計画との差異は作業ログとして羅列せず、変更ファイル、判断に影響する差分、validation結果だけを残す。
 - Final Validationは実行して成功した項目だけを完了にする。
-- 失敗、未検証、未解決の項目を完了にしない。
 
 ### Direct mode
 
 - 3件以上の意味ある成果物や依存関係がある場合はtodoを使う。
 - 小さな変更ではチャットの進捗だけを使う。
-- Git履歴を永続的な実装記録とし、進捗記録のためだけの文書は作らない。
+- Git履歴を実装記録とし、進捗記録だけの文書は作らない。
 
-## Final review
+進捗報告は経過時間ではなく状態変化に合わせる。初回reviewでblocking/high修正へ入るときは報告して自走を続ける。Requirement、Contract、Out of Scope、合意済みtest seamの変更、`decision required`、review予算枯渇、reviewer利用不能、所有権衝突、受入条件未達では停止して確認する。
 
-全成果物のpush後に、関連するfocused test、full test、lint、typecheck、build、手動確認などのfinal validationを実行する。適用できない標準検証は、理由を明記してN/Aとする。
+## Review readiness
 
-次に、実装を担当していない別コンテキストのreviewerへ以下を渡す。
+全成果物をlocal commitした後、reviewerへ渡す前に次を行う。
 
-- Plan modeのプラン、またはDirect modeで確定した要件と対象外。
-- base commitから現在のHEADまでの実装差分とcommit一覧。
-- 実行した検証と結果。
-- 既存の無関係なworktree変更の一覧。
+1. Taskのfocused validation結果を確認する。
+2. Planまたはprojectで標準化された、localで非対話、非破壊に実行できるtest、lint、typecheck、buildを実行する。
+3. 外部環境、資格情報、実deploy、手動操作が必要なvalidationはfinal validationへ残す。
+4. `git status --short`、`git diff --cached`、`git diff`を確認する。実装所有のsubstantive residueがあれば、必要なvalidationとlocal commitを行う。
+5. review対象HEAD、baseからのcommit一覧、実行済みvalidationと結果を記録する。
 
-reviewerには正確性、回帰、セキュリティ、仕様適合性、テスト不足を重要度順に報告させる。
+Planまたはユーザーが一時的なreview evidenceを明示している場合は、commit対象外としてreview完了まで残せる。所有者、path、cleanup条件が明確でなければ、この例外を使わない。
 
-- スコープ内のblocking/highは自動で修正する。
-- 要件、Out of Scope、公開契約の変更が必要な指摘はユーザーへ確認する。
-- 軽微な指摘は、修正による複雑化と保守性を比較して判断する。
-- 修正にはTDDと同じ検証規則を適用し、atomic commitを作ってpushする。
-- 影響範囲の検証とfinal validationを再実行し、reviewerへ再レビューを依頼する。
-- 同じblocking/highが解消できない場合は停止し、完了を主張しない。
+## Independent review
 
-独立したreviewerを利用できない場合は、その制約を報告して未完了として停止する。自己レビューだけで代替せず、Plan modeの計画はアーカイブしない。
+Plan modeでは必須とする。Direct modeで省略できるのは、変更のすべてが非実行のprose/commentで、Contractや運用手順を定義しない場合だけとする。code、test、script、dependency、build/CI、挙動に影響する設定はreviewする。
 
-レビューと再検証が終わったら`git status --short`、`git diff --cached`、`git diff`を再確認する。Preflightで記録した既存変更を除き、implementation-ownedなstaged、unstaged、untracked変更が残っている場合は、次のように扱う。
+実装を担当していない一つのread-only reviewer contextを使う。Planで明示した中間checkpoint、final full review、scoped re-reviewで同じcontextを継続する。中間checkpointを通過していても、final reviewはbaseから完成HEADまでの全実装範囲を確認する。model名やthinking levelは固定しない。
 
-- 実装、テスト、文書、設定、生成物など成果物に影響する残差は、必要な検証とcommit + pushを行う。その新しいHEADに対してfinal validationと独立レビューを再実行し、残差確認へ戻る。
-- 独立レビュー結果の計画への記録と、条件通過後のPlan archiveだけは管理上の変更として再レビュー対象から除外し、アーカイブ用の最終commitへ含める。
-- 上記以外の残差がある間は完了を主張しない。
+reviewerへ次を渡す。
+
+- Plan modeのPlan、またはDirect modeで確定したRequirements、Contracts、Out of Scope。
+- base commitからreview対象HEADまでの実装diffとcommit一覧。
+- 実行したvalidation、その結果、結果が対応するHEAD。
+- 既存の無関係なworktree変更と、明示された一時review evidence。
+- 初回は全実装範囲、再reviewは後述の限定scope。
+
+reviewerはsourceを編集、commit、validation結果の書き換えを行わない。成功済みfull suiteを独立性のためだけに再実行せず、findingの再現または未検証経路の確認に必要なfocused commandだけを実行できる。
+
+### Reviewer output contract
+
+findingを次のcategoryに分ける。
+
+- `blocking/high`
+- `decision required`
+- `medium/low`
+- `pre-existing unrelated`
+
+各`blocking/high`には次を必須とする。
+
+- 違反するRequirement、Contract、Out of Scope、合意済みDecision、または重大な安全性invariant。
+- 対象箇所。
+- 具体的な入力、実行経路、失敗結果、または静的に追跡できるfailure path。
+- 今回のdiffが問題を導入、悪化、到達可能にした根拠。
+- severityの理由。
+
+今回と無関係な既存問題は`pre-existing unrelated`へ分ける。未合意の将来要件、互換性、設計上の好みを`blocking/high`にしない。RequirementやContractが不足して正解を決められない場合は、要件を補わず`decision required`とする。
+
+## Finding triage
+
+reviewerのseverityをそのまま実装命令にしない。実装担当がfindingをRequirementsと上記証拠形式へ照合する。
+
+- 根拠を満たすscope内の`blocking/high`は採用し、同じreviewer generationのfindingをまとめて修正する。
+- 根拠不足、将来改善、設計上の好みはblocking対象から外し、理由を記録する。
+- `decision required`は修正前に停止し、ユーザーへ一つずつ確認する。
+- `medium/low`は今回中に修正せず、completion reportへ残す。
+- 今回のdiffが導入、悪化、到達可能にしていない`pre-existing unrelated`は報告するが、deliveryを止めない。
+
+既存問題でも、今回のdiffが新たに到達可能にした、悪化させた、またはRequirement達成を妨げる場合は今回のfindingとして扱う。
+
+reviewer出力が証拠形式を満たさない場合は、同じcontextへ一度だけ補足を求める。context/tool障害では代替reviewerを一度だけ使い、Plan、finding履歴、限定scopeを引き継ぐ。有効な独立reviewを得られなければ未完了で停止する。これはcorrection cycleに数えない。
+
+## Correction budget and scoped re-review
+
+一回の`implement` invocation全体で、自動correction cycleを最大2回とする。中間checkpoint、final review、final validation起因のsubstantive fixを合算する。
+
+1 cycleは次のまとまりとする。
+
+1. 一つのreviewer generationで採用した`blocking/high`をtriageしてまとめる。
+2. TDDまたは同等のvalidation規則で修正する。
+3. 一つ以上のlocal atomic correction commitを作る。amend、rebase、squashは行わない。
+4. 影響範囲のvalidationを実行する。
+5. 同じreviewerへscoped re-reviewを依頼する。
+
+scoped re-reviewの対象は、既存findingの解消、correction diff、その修正が直接影響する実行経路に限る。correctionが導入または顕在化した新しい`blocking/high`は次cycleで扱える。初回実装diffに元から存在し、scoped re-reviewで初めて見つかった有効なHighは自動修正せず、根拠と選択肢を示してpush前に停止する。
+
+2 cycle終了時に`blocking/high`が残る場合は、明白な小修正でも3 cycle目へ進まない。未解決finding、根拠、対応案を示して停止する。
+
+ユーザーがRequirementまたはContract変更を承認した場合は、PlanまたはDirect modeの合意を更新し、影響範囲を実装、validationした後、新仕様に対するfull reviewを行う。新しい2-cycle budgetを使う。変更がPlanの前提を崩す場合は停止して新しいPlanを提案する。
+
+## Final validation and delivery
+
+独立reviewで未解決の`blocking/high`と`decision required`がなくなった後、final validationを行う。
+
+- review前validationの入力と対象挙動が変わっていなければ、その成功結果を再利用する。
+- 未実行の外部/manual項目と、変更によって無効化されたvalidationだけを実行する。
+- 再利用可否が曖昧なら、影響するvalidationを安全側で再実行する。全commandを一律に繰り返さない。
+- final validationがsubstantive fixを必要とした場合はlocal correction commitを作り、correction budgetを1 cycle使って影響validationとscoped re-reviewを行う。
+
+full suiteの失敗がbaseでも再現し、今回と無関係だと確認できても、自動修正、`N/A`化、成功扱いはしない。根拠とscope内validationの成功を示し、受入条件を変えるかユーザーへ確認する。解決までPlanをarchiveせず、完了を主張しない。
+
+reviewとvalidationが同じimplementation HEADに対して有効になったら、次の順でdeliveryする。
+
+1. Plan modeでは、review対象commit、採用した`blocking/high`とcorrection commit、未解決`blocking/high`がないことを最小限のgate summaryとして記録する。
+2. 明示された一時review evidenceを、所有権とpathを確認して削除する。
+3. `git status --short`、`git diff --cached`、`git diff`を再確認する。
+4. implementation-ownedなsubstantive residueがあれば、必要なlocal commit、validation、scoped re-reviewへ戻る。
+5. Plan modeではPlan archive条件を確認し、同名のまま`docs/plans/archived/`へ移して独立したlocal commitを作る。archive commitにも[`commit-push`](../commit-push/SKILL.md)のcommit-only手順を使う。
+6. archive準備や文書更新がPlan管理以外のsubstantive変更を生んだ場合は、archive commitへ混ぜず、validationとreviewへ戻す。
+7. Preflightで確認したpush rangeとcurrent upstreamを再確認し、通常の`git push`でcommit列全体を一度pushする。
+
+push成功まで完了扱いにしない。pushが失敗した場合はlocal commitを戻さず、エラーと再実行条件を報告する。remote更新が必要なmerge、rebase、force pushは自動で行わない。
 
 ## Plan archive
 
-Plan modeだけで行う。次の条件がすべて成立した後、計画を同名のまま`docs/plans/archived/`へ移す。
+Plan modeだけで行う。次の条件をすべて満たしてからarchiveする。
 
-- すべてのタスクと、Plan archive自体を除くFinal Validationが完了している。
+- すべてのTaskと、Plan archive自体を除くFinal Validationが完了している。
 - Requirement Coverageと実際の変更が一致している。
-- final validationが成功している。
-- 独立レビューに未解決のblocking/highがない。
-- レビュー修正後の再検証と再レビューが完了している。
-- 実装commitがすべてpush済みである。
-- Preflightで記録した既存変更を除き、implementation-ownedな未commitの変更が残っていない。
+- validationと独立reviewが同じimplementation HEADに対して有効である。
+- 未解決の`blocking/high`と`decision required`がない。
+- correction後のvalidationとscoped re-reviewが完了している。
+- implementation-ownedなsubstantive residueがない。
+- final push対象のcommit列とupstreamが確定している。
 
-アーカイブ移動だけを独立した最終commitにし、[`commit-push`](../commit-push/SKILL.md)の手順に従ってpushする。アーカイブ前に条件を満たせなくなった場合は、計画を未アーカイブの場所へ残す。
+archive移動とgate summaryは管理上の変更としてcode re-review対象から除外する。archive前に条件を満たせなくなった場合は、Planを未アーカイブの場所へ残す。
 
 ## Blockers
 
-タスク途中でvalidation失敗、所有権衝突、未確定仕様、解決できないレビュー指摘などのblockerが残った場合は、未完成の変更をcommitもpushもしない。変更はローカルに残し、Plan modeでは次を計画へ記録する。
+validation失敗、所有権衝突、未確定仕様、reviewer利用不能、review予算枯渇などのblockerが残った場合は、未完成の変更をpushしない。未commitの変更はlocalに残し、Plan modeでは次を記録する。
 
-- 失敗した検証と結果。
+- 失敗したvalidationと結果。
 - 判明した原因。
 - 未完了の範囲。
 - 再開に必要な判断または条件。
 
-pushだけが失敗した場合は、作成済みのローカルcommitを戻さない。エラーと再実行条件を報告し、push成功まで次の成果物とPlan archiveへ進まない。
+pushだけが失敗した場合は、作成済みlocal commitを戻さない。push成功までPlan archive後の状態を含めて未配信として扱い、完了を主張しない。
 
 ## Completion report
 
-最終報告は次の順で簡潔にまとめる。
+次の順で簡潔にまとめる。
 
 1. 完了または未完了の結論。
 2. 実装した成果物と主要commit。
-3. 検証結果。
-4. 独立レビューと修正結果。
-5. Plan modeではアーカイブ先。Direct modeでは計画なしで完了した旨。
-6. 残した無関係なworktree変更または未解決blocker。
+3. 実行、再利用、未実行に分けたvalidation結果。
+4. 独立review、採用したfinding、correction cycle数、残したmedium/low。
+5. Plan modeではarchive先。Direct modeではPlanなしで完了した旨。
+6. final push結果。
+7. 残した無関係なworktree変更または未解決blocker。
