@@ -187,17 +187,17 @@ scoped re-reviewの対象は、既存findingの解消、correction diff、その
 - review前validationの入力と対象挙動が変わっていなければ、その成功結果を再利用する。
 - 未実行の外部/manual項目と、変更によって無効化されたvalidationだけを実行する。
 - 再利用可否が曖昧なら、影響するvalidationを安全側で再実行する。全commandを一律に繰り返さない。
-- final validationがsubstantive fixを必要とした場合はlocal correction commitを作り、correction budgetを1 cycle使って影響validationとscoped re-reviewを行う。
+- final validationがsubstantive fixを必要とした場合はlocal atomic correction commitを作り、correction budgetを1 cycle使って影響validationと同じread-only reviewerによるscoped re-reviewを行う。
 
 full suiteの失敗がbaseでも再現し、今回と無関係だと確認できても、自動修正、`N/A`化、成功扱いはしない。根拠とscope内validationの成功を示し、受入条件を変えるかユーザーへ確認する。解決までPlanをarchiveせず、完了を主張しない。
 
 reviewとvalidationが同じimplementation HEADに対して有効になったら、次の順でdeliveryする。
 
-1. Plan modeでは、review対象commit、採用した`blocking/high`とcorrection commit、未解決`blocking/high`がないことを最小限のgate summaryとして記録する。
+1. Plan modeでは、review対象commit、採用した`blocking/high`とcorrection commit、未解決`blocking/high`がないことを、移動前のactive Planへ最小限のgate summaryとして記録する。この時点ではsummaryだけをcommitしない。
 2. 明示された一時review evidenceを、所有権とpathを確認して削除する。
 3. `git status --short`、`git diff --cached`、`git diff`を再確認する。
 4. implementation-ownedなsubstantive residueがあれば、必要なlocal commit、validation、scoped re-reviewへ戻る。
-5. Plan modeではPlan archive条件を確認し、同名のまま`docs/plans/archived/`へ移して独立したlocal commitを作る。archive commitにも[`commit-push`](../commit-push/SKILL.md)のcommit-only手順を使う。
+5. Plan modeではPlan archive条件を確認し、gate summaryを含むPlanを同名のまま`docs/plans/archived/`へ移す。移動後、archive完了によって初めて確定するcheckboxだけを移動先で更新し、Plan pathをstageする。commit前に`git diff --cached --summary`とPlanのstaged diffを確認し、同名のarchive rename、移動前に書いたgate summary、Final Validationの完了状態がすべてindexへ入っていることを検証する。renameだけ、またはsummaryだけの状態ではcommitしない。検証済みのgate summaryとarchive moveを一つの独立したlocal archive commitにまとめ、archive後にsummary commitを追加しない。archive commitにも[`commit-push`](../commit-push/SKILL.md)のcommit-only手順を使う。誤って不完全なarchive commitを作った場合はamendや追加の管理commitで直さず、push前に停止してユーザー判断を求める。
 6. archive準備や文書更新がPlan管理以外のsubstantive変更を生んだ場合は、archive commitへ混ぜず、validationとreviewへ戻す。
 7. Preflightで確認したpush rangeとcurrent upstreamを再確認し、通常の`git push`でcommit列全体を一度pushする。
 
@@ -215,7 +215,7 @@ Plan modeだけで行う。次の条件をすべて満たしてからarchiveす�
 - implementation-ownedなsubstantive residueがない。
 - final push対象のcommit列とupstreamが確定している。
 
-archive移動とgate summaryは管理上の変更としてcode re-review対象から除外する。archive前に条件を満たせなくなった場合は、Planを未アーカイブの場所へ残す。
+archive移動とgate summaryは同じarchive commitへ入れ、管理上の変更としてcode re-review対象から除外する。archive後にgate summaryや完了状態だけのcommitを追加しない。archive前に条件を満たせなくなった場合は、Planを未アーカイブの場所へ残す。
 
 ## Blockers
 
