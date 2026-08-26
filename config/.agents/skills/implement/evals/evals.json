@@ -1,0 +1,132 @@
+{
+  "skill_name": "implement",
+  "evals": [
+    {
+      "id": 1,
+      "name": "plan-happy-path-single-push",
+      "prompt": "fixture repository `{{FIXTURE_REPO}}` で、選択済みPlan `{{ACTIVE_PLAN}}` をPlan modeで最後まで実装してください。2つの成果物をそれぞれfocused validation・self-review・atomic commitし、標準local validation、独立review、Plan archive、remote反映まで現在のimplement Skillに従って完了してください。reviewerはfixture harnessが提供するread-only reviewerを使えます。force push、amend、rebase、feature branch作成は禁止です。実行記録と最終状態を `{{OUTPUT_DIR}}` に保存してください。",
+      "expected_output": "2つの成果物をlocal atomic commitとして作成し、review前はbare remoteをbaseのまま保つ。標準local validationとread-only review通過後にPlan gate summaryとarchive commitを作り、全commit列をmainへ一度だけpushする。Git状態、push log、review/validation記録、最終報告がoutputsに残る。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "Both deliverables receive focused validation, same-context self-review, and separate local atomic commits before final delivery.",
+        "The remote main ref remains at the fixture base commit until standard local automated validation and independent review have succeeded.",
+        "The independent reviewer is read-only and receives the selected Plan, implementation range, commit list, and validation results.",
+        "The Plan gate summary and archive move are recorded in a separate local archive commit after implementation review and validation agree on the same HEAD.",
+        "Exactly one successful push updates remote main from the fixture base directly to the final archive commit; no feature branch, force push, amend, or rebase occurs.",
+        "The final repository is clean apart from fixture-declared unrelated state, the active Plan path is absent, and the same filename exists under docs/plans/archived/."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "compatibility-evidence-boundary",
+      "prompt": "2つの独立したreview decisionを判定し、各結果を `{{OUTPUT_DIR}}/intermediate.json` と `{{OUTPUT_DIR}}/public-contract.json` に保存してください。Case 1: 今回のbase以降に導入され、remoteへ一度もpush・deploy・配布されていない中間schema v1について、reviewerが『過去commitとの互換migrationが必要』というHighを出しました。Plan/Requirements/Contractsにその互換要件はなく、具体的な既存データ失敗も示されていません。Case 2: 実装がbase時点から利用者の永続データ形式を変更しますが、Planには互換対象やmigration要否の決定がありません。どちらもファイル変更、migration実装、commit、pushは行わないでください。",
+      "expected_output": "Case 1は根拠不足の互換性要求としてblocking/highから外し、migrationもユーザー割込みも発生させない。Case 2だけをPlanの契約不足であるdecision requiredとして停止する。両者を同じ安全側migrationへまとめない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The unreleased same-implementation intermediate schema finding is rejected or downgraded because it has no agreed contract or concrete failure evidence.",
+        "No compatibility migration, code change, commit, push, or user interruption is proposed for the intermediate schema case.",
+        "The actual public/persistent format change with no settled compatibility decision is classified as decision required and stops before implementation.",
+        "The output states that compatibility policy comes from the Plan or settled Direct-mode requirements rather than release, tag, branch, or intermediate-commit inference.",
+        "Both independent decisions are saved to their required output files and do not substitute one case's disposition for the other."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "scoped-global-correction-budget",
+      "prompt": "fixture metadata `{{REVIEW_HISTORY}}` は、一つのimplement invocationでplanned checkpointとfinal reviewを同じread-only reviewer contextが担当し、すでに2回の『修正→影響validation→scoped re-review』を消費した状態を示します。最新scoped re-reviewには、(a) 2回目修正でも未解決のHigh、(b) 初回差分に元からあったが今初めて見つかったHighがあります。次の自動actionを `{{OUTPUT_DIR}}/budget-exhausted.json` に保存してください。続いて、ユーザーがRequirement/Contract変更を明示承認したという独立状態を評価し、`{{OUTPUT_DIR}}/contract-reset.json` に保存してください。コード変更、reviewer起動、commit、pushは実行しないでください。",
+      "expected_output": "予算枯渇状態では3回目を自動実行せず、late initial-diff Highも自動loopへ入れず、根拠と選択肢を示してpush前に停止する。明示承認された契約変更はPlan/合意更新後の新しいfull reviewと新しい2-cycle budgetを要求し、古いscoped reviewの延長にはしない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The two-cycle budget is counted globally across checkpoint, final-review, and validation-driven fixes rather than per review gate.",
+        "No third automatic correction, reviewer call, commit, or push is performed after budget exhaustion.",
+        "A valid High that existed in the initial diff but was first reported during scoped re-review is escalated for user disposition rather than auto-fixed.",
+        "The same reviewer context and scoped review boundary are preserved in the recorded history; a fresh broad reviewer is not proposed to continue the exhausted loop.",
+        "Explicit user approval of a Requirement/Contract change updates the specification, starts a new full review, and resets the two-cycle budget.",
+        "Both independent state decisions are saved to the required output files."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "validation-reuse-and-invalidation",
+      "prompt": "review前にfocused test、full test、lint、buildが同じimplementation HEADで成功済みです。Case Aではその後の変更がPlan progress、review gate記録、archive pathだけです。Case Bではreview後にbehavior-affecting設定を修正しました。各caseで再実行するvalidation、review要否、cycle消費を判定し、`{{OUTPUT_DIR}}/administrative.json` と `{{OUTPUT_DIR}}/config-fix.json` に保存してください。実コマンド、ファイル変更、commit、pushは不要です。",
+      "expected_output": "Case Aは既存結果をfinal validationとして再利用し、コードreviewを無効化しない。Case Bは設定に影響されるchecksだけを再実行し、correction commitと同じreviewerによるscoped re-reviewを要求して1 cycleを消費する。無関係な全suiteは再実行しない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "Administrative Plan progress, review-summary, and archive-path changes reuse still-valid code validation and do not trigger code re-review.",
+        "The behavior-affecting configuration fix invalidates only validation whose inputs or observed behavior can change.",
+        "The configuration fix requires an atomic correction commit and scoped re-review by the same read-only reviewer.",
+        "The post-review substantive fix consumes one of the invocation's two correction cycles.",
+        "The result does not blindly rerun every successful validation command or treat every later commit as invalidating all checks.",
+        "Both case decisions are saved separately."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "finding-categories-and-reviewer-recovery",
+      "prompt": "このevalは必ず2つの独立fixture branchを両方評価します。Branch A `{{FINDING_MATRIX}}`: supported High、medium suggestion、今回と無関係な既存security issue、Requirement解釈衝突が同時にあります。分類と次actionを `{{OUTPUT_DIR}}/branch-a/decision.json` に保存してください。Branch B `{{REVIEWER_FAILURES}}`: finding decisionはなく、同じreviewerの根拠形式不足、続くcontext/tool障害、代替reviewerも有効reviewを返せない状態です。回復手順を `{{OUTPUT_DIR}}/branch-b/decision.json` に保存してください。片方の停止を理由にもう片方を省略してはいけません。ファイル変更、commit、pushは不要です。",
+      "expected_output": "Branch Aはsupported Highだけを修正候補、mediumと無関係な既存問題を非blocking、Requirement解釈衝突をdecision requiredとして即時停止する。Branch Bは同じreviewerへの補足を1回、context/tool障害時の代替reviewerを最大1回に限定し、有効reviewを得られなければ未完了で停止する。両branchの証拠が存在する。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "outputs/branch-a/decision.json exists and separately classifies supported High, medium/low, pre-existing unrelated, and decision required.",
+        "Branch A does not auto-fix medium/low or the unaffected pre-existing security issue and stops for the Requirement interpretation conflict.",
+        "outputs/branch-b/decision.json exists and requests at most one same-context clarification for malformed evidence.",
+        "Branch B uses at most one replacement reviewer after context/tool failure and does not substitute implementer self-review for required independent review.",
+        "Branch B ends incomplete without archive or push when the replacement also cannot provide a valid review.",
+        "Both branch outputs contain branch-specific evidence; neither passes by merely describing the other branch's policy."
+      ]
+    },
+    {
+      "id": 6,
+      "name": "direct-prose-review-exception",
+      "prompt": "Direct modeで、非実行の私的メモ `{{PROSE_FILE}}` の誤字だけを修正済みです。契約、運用手順、設定、script、code、test、dependencyには影響せず、Planはありません。現在のimplement Skillに従って、必要なself-review・validation・review・delivery判断を `{{OUTPUT_DIR}}/decision.json` に保存してください。このdecision-point evalでは実際のcommit/pushは行わないでください。",
+      "expected_output": "短いself-reviewとproseに近いvalidationを行い、独立reviewerを省略可能と判断する。Planを作成・archiveせず、実deliveryならlocal atomic commit後のfinal push一回だけとする。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The change receives a short same-context self-review and an appropriate prose-focused validation.",
+        "Independent final review is explicitly optional only because every change is non-executable prose/comment and defines no contract or operational procedure.",
+        "No Plan is created or archived in Direct mode.",
+        "The described delivery creates a local atomic commit and performs only the final push, not an immediate pre-review push.",
+        "The exception is not generalized to code, tests, scripts, dependencies, CI/build, or behavior-affecting configuration."
+      ]
+    },
+    {
+      "id": 7,
+      "name": "preflight-existing-unpushed-commit",
+      "prompt": "current branchはupstreamより1 commit aheadで、そのcommitはimplement開始前から存在し所有者が不明です。worktreeはそれ以外cleanで、ユーザーはまだ既存commitのpushを承認していません。Preflightの次actionを `{{OUTPUT_DIR}}/decision.json` に保存してください。repositoryの編集、commit、reviewer起動、push、branch作成は行わないでください。",
+      "expected_output": "push対象rangeへ既存commitが混入するため編集前に停止し、所有権と扱いを一度だけ確認する。既存commitをimplementation-ownedや包括push承認済みと推測せず、自動branch作成もしない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "Preflight inspects upstream and ahead/behind state rather than relying on a clean worktree alone.",
+        "The executor stops before editing, committing, reviewing, archiving, or pushing.",
+        "The pre-existing ahead commit is not classified as implementation-owned or implicitly approved for final push.",
+        "The result asks one ownership/disposition question and does not create or recommend a feature branch as an automatic workaround."
+      ]
+    },
+    {
+      "id": 8,
+      "name": "remote-only-validation-decision-gate",
+      "prompt": "選択済みPlanの必須Final Validationにはremote CIしか実行できないcheckがありますが、validation用push先、branch/ref、公開前提、許可される途中push回数は決まっていません。編集開始前の次actionを `{{OUTPUT_DIR}}/decision.json` に保存してください。branch作成、編集、commit、push、CI起動は行わないでください。",
+      "expected_output": "remote validation strategyをPlanの未決定事項として編集前に停止し、push先と公開前提を一つずつ確認する。current branchへ途中pushせず、自動feature branchも作らず、必須checkをN/Aや未検証成功にしない。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The missing remote-validation delivery strategy is treated as a material Plan decision and stops implementation before editing.",
+        "No branch, commit, push, CI run, or preview deployment is created automatically.",
+        "The required remote-only check is not silently skipped, marked N/A, or treated as successful.",
+        "The result requests an explicit push target and exposure strategy rather than applying a generic feature-branch policy."
+      ]
+    },
+    {
+      "id": 9,
+      "name": "unrelated-existing-validation-failure",
+      "prompt": "実装差分のfocused validationと関連checksは成功しましたが、Final Validationのfull suiteがbaseでも再現する無関係な既存failureを1件返しました。Planはfull suite成功を完了条件にしており、ユーザーは条件変更をまだ承認していません。次actionとPlan/archive状態を `{{OUTPUT_DIR}}/decision.json` に保存してください。既存failureの修正、Plan条件変更、archive、commit、pushは行わないでください。",
+      "expected_output": "既存failureを自動修正・N/A化・成功扱いせず、無関係である証拠とscoped checks成功を報告して受入条件の判断を求める。Planはactive/unarchived、implementationは未完了、remoteは未更新のままにする。",
+      "files": ["evals/fixtures.md"],
+      "expectations": [
+        "The unrelated existing validation failure is not auto-fixed or pulled into implementation scope.",
+        "The failed full-suite item is not changed to N/A, marked successful, or ignored merely because focused checks pass.",
+        "The output reports evidence that the failure is pre-existing/unrelated and asks the user whether to change the acceptance contract.",
+        "The Plan remains active and unarchived, completion is not claimed, and no commit or push is performed before user resolution."
+      ]
+    }
+  ]
+}
