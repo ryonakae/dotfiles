@@ -6,6 +6,14 @@
 # - Gemini CLI: stdin で JSON を受け取る（Notification フック）
 # - Pi Coding Agent: notification 拡張の agent_settled から呼ばれ、応答完了を通知する
 
+notifications_disabled() {
+  [ "${HERDR_ENV:-}" = 1 ] || [ "${TERM_PROGRAM:-}" = zed ]
+}
+
+if notifications_disabled; then
+  exit 0
+fi
+
 find_app_from_pid() {
   pid="$1"
   while [ "$pid" -gt 1 ] 2>/dev/null; do
