@@ -7,90 +7,82 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "disable_ai": false,
+  // General
   "cli_default_open_behavior": "new_window",
-  "agent_servers": {},
-  "language_models": {
-    "opencode": {
-      "show_go_models": false,
-      "show_free_models": false,
-      "show_zen_models": true,
-    },
-  },
-  "project_panel": {
-    "dock": "right",
-    "git_status": true,
+
+  // Appearance
+  "buffer_font_family": "SauceCodePro Nerd Font",
+  "buffer_font_size": 13.0,
+  "icon_theme": "Symbols Icon Theme",
+  "sticky_scroll": {
+    "enabled": true,
   },
   "tabs": {
     "git_status": true,
   },
-  "outline_panel": {
-    "dock": "right",
+  "theme": "Ayu Dark",
+  "ui_font_size": 15.0,
+
+  // Panels
+  "collaboration_panel": {
     "button": false,
   },
-  "when_closing_with_no_tabs": "platform_default",
+  "git_panel": {
+    "default_width": 240.0,
+    "file_icons": true,
+    "sort_by": "name",
+    "status_style": "label_color",
+    "tree_view": true,
+  },
+  "outline_panel": {
+    "button": false,
+    "default_width": 240.0,
+  },
+  "terminal": {
+    "cursor_shape": "bar",
+    "dock": "left",
+    "flexible": false,
+    "option_as_meta": true,
+  },
+
+  // AI
+  "agent": {
+    "commit_message_model": {
+      "model": "zen/deepseek-v4-flash",
+      "provider": "opencode",
+    },
+    "default_model": {
+      "enable_thinking": true,
+      "effort": "medium",
+      "model": "zen/deepseek-v4-flash",
+      "provider": "opencode",
+    },
+    "flexible": false,
+    "inline_assistant_model": {
+      "model": "claude-haiku-4.5",
+      "provider": "copilot_chat",
+    },
+    "play_sound_when_agent_done": "when_hidden",
+  },
   "edit_predictions": {
     "allow_data_collection": "no",
     "open_ai_compatible_api": {
-      "prompt_format": "deepseek_coder",
-      "model": "deepseek-v4-flash",
       "api_url": "https://opencode.ai/zen/v1/chat/completions",
+      "model": "deepseek-v4-flash",
+      "prompt_format": "deepseek_coder",
     },
     "provider": "open_ai_compatible_api",
   },
-  "collaboration_panel": {
-    "dock": "right",
-    "button": false,
+  "language_models": {
+    "opencode": {
+      "show_free_models": false,
+      "show_go_models": false,
+    },
   },
-  "terminal": {
-    "default_width": 640.0,
-    "flexible": false,
-    "cursor_shape": "bar",
-    "dock": "left",
-    "option_as_meta": true,
-  },
-  "git_panel": {
-    "show_count_badge": false,
-    "file_icons": true,
-    "sort_by": "name",
-    "collapse_untracked_diff": false,
-    "status_style": "label_color",
-    "dock": "right",
-    "tree_view": true,
-  },
-  "sticky_scroll": {
-    "enabled": true,
-  },
-  "buffer_font_family": "SauceCodePro Nerd Font",
+
+  // Privacy
   "telemetry": {
     "diagnostics": false,
     "metrics": false,
-  },
-  "icon_theme": "Symbols Icon Theme",
-  "ui_font_size": 15.0,
-  "buffer_font_size": 13.0,
-  "theme": "Ayu Dark",
-  "agent": {
-    "play_sound_when_agent_done": "when_hidden",
-    "flexible": false,
-    "inline_assistant_model": {
-      "provider": "copilot_chat",
-      "model": "claude-haiku-4.5",
-      "enable_thinking": false,
-    },
-    "sidebar_side": "left",
-    "dock": "left",
-    "button": true,
-    "default_model": {
-      "effort": "medium",
-      "provider": "opencode",
-      "model": "zen/deepseek-v4-flash",
-      "enable_thinking": true,
-    },
-    "commit_message_model": {
-      "provider": "opencode",
-      "model": "zen/deepseek-v4-flash",
-    },
-    "terminal_init_command": "/Users/ryo.nakae/.cargo/bin/zerdr thread --auto",
   },
 }
