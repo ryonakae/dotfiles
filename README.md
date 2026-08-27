@@ -383,6 +383,8 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 
 `create-symlink.sh` はファイル単位で symlink するため、socket や log が同居する `~/.config/herdr/` に置いても安全。
 
+共通通知フックは、Herdr 管理ペイン（`HERDR_ENV=1`）と Zed 統合ターミナル（`TERM_PROGRAM=zed`）ではエージェントの応答完了通知を送らない。
+
 ### キーバインド
 
 左 Option はペイン移動、Shift 併用はタブまたはワークスペース移動に使う。`prefix` は `Ctrl+b`。
