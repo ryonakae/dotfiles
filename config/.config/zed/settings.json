@@ -75,7 +75,6 @@
   },
   "language_models": {
     "opencode": {
-      "show_free_models": false,
       "show_go_models": false,
     },
   },
