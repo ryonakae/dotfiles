@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.83.0",
+  "lastChangelogVersion": "0.84.3",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-5.6-sol",
   "defaultThinkingLevel": "high",
@@ -14,7 +14,8 @@
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
     "npm:@tifan/pi-inline-skills",
-    "npm:@normful/pi-auto-name@1.0.2"
+    "npm:@normful/pi-auto-name@1.0.2",
+    "npm:@pi-kaush/pi-tool-call-markers"
   ],
   "quietStartup": true,
   "theme": "dark",
