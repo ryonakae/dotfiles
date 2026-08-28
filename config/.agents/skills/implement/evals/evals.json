@@ -6,7 +6,9 @@
       "name": "plan-happy-path-single-push",
       "prompt": "fixture repository `{{FIXTURE_REPO}}` で、選択済みPlan `{{ACTIVE_PLAN}}` をPlan modeで最後まで実装してください。2つの成果物をそれぞれfocused validation・self-review・atomic commitし、標準local validation、独立review、Plan archive、remote反映まで現在のimplement Skillに従って完了してください。reviewerはfixture harnessが提供するread-only reviewerを使えます。force push、amend、rebase、feature branch作成は禁止です。実行記録と最終状態を `{{OUTPUT_DIR}}` に保存してください。",
       "expected_output": "2つの成果物をlocal atomic commitとして作成し、review前はbare remoteをbaseのまま保つ。標準local validationとread-only review通過後にPlan archive commitを作り、全commit列をmainへ一度だけpushする。",
-      "files": ["evals/fixtures.md"],
+      "files": [
+        "evals/fixtures.md"
+      ],
       "expectations": [
         "Both deliverables receive focused validation, same-context self-review, and separate local atomic commits before final delivery.",
         "The remote main ref remains at the fixture base commit until local validation and independent review have succeeded.",
@@ -20,12 +22,31 @@
       "name": "correction-budget-exhausted",
       "prompt": "fixture metadata `{{REVIEW_HISTORY}}` は、一つのimplement invocationで同じread-only reviewer contextがfinal reviewを担当し、すでに2回の『修正→影響validation→scoped re-review』を消費した状態を示します。最新scoped re-reviewには、(a) 2回目修正でも未解決のHigh、(b) 初回差分に元からあったが今初めて見つかったHighがあります。現在のimplement Skillに従い、次にとる行動を `{{OUTPUT_DIR}}/budget-exhausted.json` に保存してください。続いて、ユーザーがRequirement/Contract変更を明示承認したという独立状態を評価し、`{{OUTPUT_DIR}}/contract-reset.json` に保存してください。コード変更、reviewer起動、commit、pushは実行しないでください。",
       "expected_output": "予算枯渇状態では3回目を自動実行せず、未解決High・新規Highともに根拠と選択肢を示してpush前に停止する。明示承認された契約変更はPlan/合意更新後の新しいfull reviewと新しい2-cycle budgetを要求する。",
-      "files": ["evals/fixtures.md"],
+      "files": [
+        "evals/fixtures.md"
+      ],
       "expectations": [
         "No third automatic correction, reviewer call, commit, or push is chosen after budget exhaustion; the decision is to stop and present unresolved findings, evidence, and options.",
         "The late-found High from the initial diff is escalated for user disposition rather than auto-fixed.",
         "Explicit user approval of a Requirement/Contract change leads to updating the specification, a new full review, and a fresh two-cycle budget rather than continuing the exhausted scoped loop.",
         "Both decisions are saved to the required output files without editing code, launching a reviewer, committing, or pushing."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "direct-mode-no-plan",
+      "prompt": "fixture repository `{{FIXTURE_REPO}}` を直接直してください。計画ファイルは作らなくていいです。(1) `config/limits.txt` を `max_retries=3` と `timeout_seconds=30` にする、(2) `tests/check-limits.sh` が `config/limits.txt` が空でも成功扱いになるので、その場合は失敗するようにする。検証は `tests/check-limits.sh` と `scripts/full-check.sh` を使ってください。現在のimplement SkillのDirect modeに従い、終わったらmainへ反映してください。reviewerはfixture harnessが提供するread-only reviewerを使えます。force push、amend、rebase、feature branch作成は禁止です。実行記録と最終状態を `{{OUTPUT_DIR}}` に保存してください。",
+      "expected_output": "計画ファイルも進捗記録用の文書も作らず、2つの成果物をそれぞれfocused validation・self-review・別々のlocal atomic commitにする。Planが無くても実行される設定とスクリプトの変更なのでread-only独立reviewを行い、標準local validationとreview通過後にmainへ一度だけpushする。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "No plan file, progress-tracking document, or docs/plans/ entry is created, and no archive step is performed.",
+        "The config change and the checker fix land as two separate local atomic commits, each preceded by focused validation and same-context self-review.",
+        "An independent read-only review runs before delivery even though no Plan exists, because the changes are executable configuration and script rather than non-executable prose.",
+        "The independent reviewer is read-only and receives the agreed requirements, implementation diff, commit list, and validation results.",
+        "The remote main ref remains at the fixture base commit until local validation and the independent review have succeeded.",
+        "Exactly one successful push updates remote main; no feature branch, force push, amend, or rebase occurs."
       ]
     }
   ]
