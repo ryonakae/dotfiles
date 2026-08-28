@@ -2,5 +2,7 @@
   "disableDefaultAgents": true,
   "schedulingEnabled": false,
   "scopeModels": true,
-  "toolDescriptionMode": "custom"
+  "toolDescriptionMode": "custom",
+  "worktreeIsolation": false,
+  "fallbackSubagent": "none"
 }
