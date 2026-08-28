@@ -15,7 +15,8 @@
     "npm:pi-web-access",
     "npm:@tifan/pi-inline-skills",
     "npm:@normful/pi-auto-name@1.0.2",
-    "npm:@pi-kaush/pi-tool-call-markers"
+    "npm:@pi-kaush/pi-tool-call-markers",
+    "npm:@ryonakae/shepherd-pi"
   ],
   "quietStartup": true,
   "theme": "dark",
@@ -23,5 +24,6 @@
     "openai-codex/gpt-5.6-luna",
     "openai-codex/gpt-5.6-terra",
     "openai-codex/gpt-5.6-sol"
-  ]
+  ],
+  "hideThinkingBlock": true
 }
