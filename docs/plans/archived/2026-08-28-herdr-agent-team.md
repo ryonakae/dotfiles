@@ -475,8 +475,8 @@ Implementation-time minor file differences and validation outcomes must be refle
 - [x] User feedback is reviewed and either incorporated or explicitly accepted as non-blocking。
 - [x] Pi trigger-description optimization script: N/A because the supplied optimizer evaluates Claude CLI invocation, not Pi/OpenAI skill triggering; positive and near-miss trigger wording receives human review instead。
 - [x] Live Herdr/Shepherd wake integration: N/A because Shepherd extension/Skill installation is explicitly outside this change; fixture evals validate orchestration decisions without mutating the host workspace。
-- [ ] Final independent reviewer finds no unresolved blocking/high or decision-required issue in the Skill, references, eval contract, or evaluation evidence。
-- [ ] After review, marker-owned workspace cleanup succeeds with:
+- [x] Final independent reviewer finds no unresolved blocking/high or decision-required issue in the Skill, references, eval contract, or evaluation evidence。
+- [x] After review, marker-owned workspace cleanup succeeds with:
   ```fish
   set workspace "$PWD/config/.agents/skills/herdr-agent-team-workspace"
   test (realpath "$workspace") = "$workspace"
@@ -485,7 +485,7 @@ Implementation-time minor file differences and validation outcomes must be refle
   test ! -e "$workspace"
   ```
   Expected: only the exact marker-owned canonical workspace is removed and is absent before archive/push。
-- [ ] Before symlink deployment, this read-only inventory exits 0; any failure stops for user confirmation instead of running the repository-wide creator:
+- [x] Before symlink deployment, this read-only inventory exits 0; any failure stops for user confirmation instead of running the repository-wide creator:
   ```fish
   for source in config/.agents/skills/*/
     set name (basename "$source")
@@ -506,11 +506,19 @@ Implementation-time minor file differences and validation outcomes must be refle
   not test -e "$HOME/.claude/skills/herdr-agent-team"; and not test -L "$HOME/.claude/skills/herdr-agent-team"; or exit 1
   ```
   Expected: every unrelated managed source already has the correct target; the only missing targets are the two new Skill links。
-- [ ] Run`sh scripts/create-skills-symlink.sh`, then verify`readlink "$HOME/.agents/skills/herdr-agent-team"`and`readlink "$HOME/.claude/skills/herdr-agent-team"`both equal`$PWD/config/.agents/skills/herdr-agent-team`。
-- [ ] `git status --short`and focused diff contain only the new Skill package and this Plan/archive work; unrelated changes remain untouched。
-- [ ] Requirement Coverage has no unaddressed item。
-- [ ] The Plan and actual tracked changes agree。
-- [ ] After every item above succeeds, move this Plan without renaming to`docs/plans/archived/2026-08-28-herdr-agent-team.md`。
+- [x] Run`sh scripts/create-skills-symlink.sh`, then verify`readlink "$HOME/.agents/skills/herdr-agent-team"`and`readlink "$HOME/.claude/skills/herdr-agent-team"`both equal`$PWD/config/.agents/skills/herdr-agent-team`。
+- [x] `git status --short`and focused diff contain only the new Skill package and this Plan/archive work; unrelated changes remain untouched。
+- [x] Requirement Coverage has no unaddressed item。
+- [x] The Plan and actual tracked changes agree。
+- [x] After every item above succeeds, move this Plan without renaming to`docs/plans/archived/2026-08-28-herdr-agent-team.md`。
+
+**Final gate result (2026-08-28):**
+
+- The same Herdr reviewer context re-reviewed`d2a940c..47e695f`at stable HEAD`47e695fc0c7e6014867e23e0d715b794f9b20157`and returned`Review status: Approved`、`Findings: None`。Both original blocking/high findings were resolved and no decision-required issue remained。
+- Main Pi verified the canonical temporary workspace path and exact`herdr-agent-team-eval-v1\n`marker bytes, then removed only that workspace。Iterations 3、5、and 7 had already been summarized in this Plan; aborted iterations 4 and 6 were not used as final evidence。
+- The read-only repository-wide Skill-link inventory passed before mutation。`scripts/create-skills-symlink.sh`created only`~/.agents/skills/herdr-agent-team`and`~/.claude/skills/herdr-agent-team`; both resolve to`$PWD/config/.agents/skills/herdr-agent-team`。
+- The Herdr`agents`reviewer pane remains available after accepted completion, matching the pane-retention lifecycle。No team-managed long-running process remains。
+-`config/.claude/settings.json`and`config/.pi/agent/settings.json`remain user-owned unstaged changes and were never staged、committed、reviewed for content、or reverted by this work。
 
 ## Risks and Open Questions
 
