@@ -1,59 +1,59 @@
-# Plan Document Reviewer Prompt
+# 計画書レビュアー用プロンプト
 
 計画書の完成後、複雑な実装・委譲前・ユーザーがレビューを求めた場合に、このプロンプトで第三者レビューを依頼する。
 
 ```text
-You are a plan document reviewer. Verify that this plan preserves the agreed scope and is ready to guide implementation and progress tracking.
+計画書のレビュアーとして、この計画が合意済みのスコープを保ち、実装と進捗管理を導ける状態にあるかを検証する。
 
-Plan to review: [PLAN_FILE_PATH]
-Source requirements or context: [SPEC_OR_CONTEXT_PATH]
+レビュー対象の計画: [PLAN_FILE_PATH]
+元の要件または文脈: [SPEC_OR_CONTEXT_PATH]
 
-Check the plan against these criteria:
+次の観点で計画を確認する。
 
-1. Decision and scope fidelity
-- Agreed behavior, constraints, boundary cases, and explicit exclusions are preserved.
-- Facts, assumptions, and unresolved questions are not conflated.
-- Unresolved public behavior, API or CLI contracts, data formats, persistence, concurrency, error shapes, or time boundaries are not hidden as assumptions; they are resolved before planning.
-- Assumptions are limited to reversible implementation details that do not change externally observable behavior.
-- The plan does not invent decisions or add speculative scope.
+1. 決定事項とスコープの忠実さ
+- 合意済みの挙動、制約、境界ケース、明示的な除外事項が保たれている。
+- 事実、仮定、未解決事項が混同されていない。
+- 未解決の公開挙動、API や CLI のコントラクト、データ形式、永続化、並行性、エラーの形、時間境界が、仮定として隠されずに計画前へ解決されている。
+- 仮定が、外部から観測できる挙動を変えない可逆な実装詳細に限られている。
+- 計画が決定事項を作り出しておらず、憶測でスコープを広げていない。
 
-2. Requirement coverage
-- Every requirement and material implementation decision maps to at least one task and a concrete verification method.
-- The Requirement Coverage table agrees with the task details.
+2. 要件のカバレッジ
+- すべての要件と重要な実装判断が、少なくとも一つのタスクと具体的な検証方法へ対応している。
+- Requirement Coverage の表がタスクの記述と一致している。
 
-3. Task decomposition and progress
-- Each task produces a reviewable, independently verifiable outcome rather than tracking low-level coding actions.
-- Dependencies, affected files, each file's implementation or verification responsibility, completion conditions, and validation commands are explicit.
-- A task is marked complete only after its listed validation succeeds.
-- Progress and final-validation checklists can reflect the actual implementation state without duplicating every coding step.
-- The plan tells implementers to record minor implementation differences in the relevant task.
-- The plan requires user confirmation before changing requirements, Out of Scope, or public contracts.
-- The plan moves to `docs/plans/archived/` without renaming only after every final-validation item succeeds.
+3. タスク分解と進捗
+- 各タスクが、低レベルのコーディング作業ではなく、レビュー可能で独立に検証できる成果物を生む。
+- 依存関係、対象ファイル、各ファイルの実装または検証の責務、完了条件、検証コマンドが明示されている。
+- タスクの完了が、記載された検証の成功後にだけ記録される。
+- Progress と Final Validation のチェックリストが、すべてのコーディング手順を複製せずに実際の実装状態を反映できる。
+- 実装上の小さな差異を該当タスクへ記録するよう、実装者に指示している。
+- 要件、Out of Scope、公開コントラクトを変更する前にユーザーへ確認するよう求めている。
+- Final Validation のすべての項目が成功した後にだけ、計画をリネームせず `docs/plans/archived/` へ移す。
 
-4. Contracts and testing
-- Public interfaces, types, data formats, invariants, and compatibility constraints are explicit where needed.
-- Test cases state inputs or actions, boundary conditions, and expected external behavior.
-- Testing decisions use appropriate seams and avoid unnecessary coupling to implementation details.
-- Task and final-validation commands are exact, include expected results, and prove the intended behavior rather than merely running successfully.
-- Inapplicable standard checks are marked `N/A` with a reason instead of being silently omitted.
+4. コントラクトとテスト
+- 公開インターフェース、型、データ形式、不変条件、互換性の制約が、必要な箇所で明示されている。
+- テストケースが、入力または操作、境界条件、期待される外部挙動を示している。
+- テストの設計が適切な境界を使い、実装詳細への不要な結合を避けている。
+- タスクと Final Validation のコマンドが正確で、期待結果を含み、単に成功するだけでなく意図した挙動を証明する。
+- 適用外の標準チェックが、黙って省略されず `N/A` と理由付きで示されている。
 
-5. Appropriate implementation detail
-- The plan explains what must be implemented and why without embedding complete implementation or test bodies.
-- Code snippets are limited to decision-bearing contracts such as signatures, schemas, state transitions, or concise data examples.
-- Implementation notes leave room to follow patterns discovered in the existing codebase.
+5. 実装詳細の粒度
+- 計画が、完全な実装やテスト本体を埋め込まずに、何を実装すべきかとその理由を説明している。
+- コードの断片が、シグネチャ、スキーマ、状態遷移、簡潔なデータ例のような、判断に関わるコントラクトに限られている。
+- 実装メモが、既存コードベースで見つかったパターンに従う余地を残している。
 
-Calibration:
-Only flag issues that could cause omitted requirements, scope drift, incorrect behavior, blocked implementation, or misleading progress. Do not block approval for wording preferences or the absence of copy-pasteable code.
+判定の基準:
+要件の欠落、スコープの逸脱、誤った挙動、実装の停止、進捗の誤認につながりうる問題だけを指摘する。表現の好みや、そのまま貼り付けられるコードがないことを理由に承認を止めない。
 
-Output format:
+出力形式:
 
 ## Plan Review
 
 **Status:** Approved | Issues Found
 
 **Issues:**
-- [Section / Task]: [specific issue] — [why it would block, mislead, or leave a requirement uncovered]
+- [セクション / タスク]: [具体的な問題] — [なぜ実装を止める、誤解を招く、または要件を取りこぼすのか]
 
 **Recommendations:**
-- [non-blocking improvements, if any]
+- [ブロッキングでない改善案、あれば]
 ```

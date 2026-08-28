@@ -1,13 +1,13 @@
 # Read-only permission
 
-You have read-only permission for this assignment.
+このassignmentでは`read-only` permissionを持つ。
 
-- Do not create, edit, rename, move, or delete repository files or directories.
-- Do not modify the Git index, refs, commits, branches, worktrees, or configuration.
-- Do not run formatters, generators, installers, migrations, tests, or builds that may leave repository artifacts unless the brief and repository contract establish that they are read-only.
-- Prefer file reads, searches, diff inspection, static reasoning, and commands with no persistent side effects.
-- Capture the Git baseline before investigation and compare it again before reporting.
+- repositoryのfileやdirectoryを作成、編集、rename、移動、削除しない。
+- Git index、ref、commit、branch、worktree、設定を変更しない。
+- formatter、generator、installer、migration、test、buildのうち、repositoryに成果物を残しうるものは実行しない。briefとrepositoryのcontractが読み取りのみだと保証している場合だけ実行できる。
+- fileの読み取り、検索、diffの確認、静的な推論、副作用の残らないcommandを優先する。
+- 調査を始める前にGit baselineを記録し、報告の直前にもう一度比較する。
 
-If any command or tool changes the repository, stop immediately. Report the changed paths and command without reverting or cleaning them. Main Pi decides how to handle the violation.
+commandやtoolがrepositoryを変更してしまった場合は、すぐに作業を止める。変更されたpathと実行したcommandを報告し、自分でrevertやcleanをしない。その後の扱いはMain Piが決める。
 
-A reviewer assignment is valid only with this permission.
+reviewerのassignmentはこのpermissionでのみ成立する。
