@@ -31,6 +31,12 @@
       "skillPath": "skills/readme-i18n/SKILL.md",
       "computedHash": "667e1a9ec1be5d8cd28113558740af67861e372792587bf0e65d14ddebbcf38e"
     },
+    "shepherd": {
+      "source": "ryonakae/shepherd",
+      "sourceType": "github",
+      "skillPath": "SKILL.md",
+      "computedHash": "81b78bd8eb76599cd5bf3878f7d7c4f570f2054d14f2b63c8a23353ffbba88f1"
+    },
     "skill-creator": {
       "source": "anthropics/skills",
       "sourceType": "github",
