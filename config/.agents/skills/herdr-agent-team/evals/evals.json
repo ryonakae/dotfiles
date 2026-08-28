@@ -5,7 +5,7 @@
       "id": 1,
       "name": "topology-jit-custom-role",
       "prompt": "`evals/fixtures.md`の「Eval 1: topology, JIT, and custom role」にある4つの独立状態とtrigger review matrixを評価してください。各状態でMain Piが次に行う判断と順序を、`{{OUTPUT_DIR}}/layout-1.md`、`layout-2.md`、`layout-3.md`、`layout-4.md`へ分けて保存し、trigger判定を`{{OUTPUT_DIR}}/trigger-review.md`へ保存してください。実Herdr/Shepherd/Gitの変更、raw-shell command、agent起動、subagent起動、commit、pushは行わず、fixtureで既に確認済みの状態だけを使ってください。各layout fileには予約tabの扱い、pane配置、focus/cwd、起動するworkerと待機task、role/permission、agent名、routing参照、停止条件、保持する既存状態を具体的なdecision recordとして書いてください。",
-      "expected_output": "4つのlayout fileがそれぞれ1 pane全面、2 pane左右、3 pane左1・右上下2、4 pane 2×2を選び、予約3tabだけをno-focusで整え、無関係tabを保持する。ready taskだけを最大4まで起動し、custom roleにもcommon+read-only contractを付け、model IDを複製せずrouting正本を読む。Branch 4の後続eventでは独立read-only workerとwriterの並行を許可しつつ、read-only開始baselineとMain検証済みwriter delta ledgerで終了差分を帰属確認し、曖昧なら受理しない。trigger reviewは明示的なHerdr team依頼だけを受理し、通常の/implement、単一agent、Shepherd照会、Worktrunk-only依頼を除外する。",
+      "expected_output": "4つのlayout fileがそれぞれ1 pane全面、2 pane左右、3 pane左1・右上下2、4 pane 2×2を選び、予約3tabだけをno-focusで整え、無関係tabを保持する。ready taskだけを最大4まで起動し、custom roleにもcommon+read-only contractを付ける。各dispatchではrouting正本を参照し、taskに基づいてmodelとthinkingを独立選択し、選択結果と理由をdecision recordへ記録するが、routing表・benchmarkを複製せず、roleごとの固定model対応も作らない。選択したruntime model IDの記録は禁止しない。Branch 4の後続eventでは独立read-only workerとwriterの並行を許可しつつ、read-only開始baselineとMain検証済みwriter delta ledgerで終了差分を帰属確認し、曖昧なら受理しない。trigger reviewは明示的なHerdr team依頼だけを受理し、通常の/implement、単一agent、Shepherd照会、Worktrunk-only依頼を除外する。",
       "files": [
         "evals/fixtures.md"
       ],
@@ -15,7 +15,8 @@
         "Each branch starts only dependency-ready work, records dependent work as pending, and the four-worker branch queues the fifth ready task rather than exceeding four workers.",
         "For Branch 4's later event, the decision permits the implementation writer to overlap the independent trace-cache read-only worker, records that worker's start baseline and active/accepted writer delta ledger, and accepts the read-only outcome only when the complete end delta exactly matches Main-verified writer paths, commits, and diffs; any unexplained, read-only-attributable, or ambiguously attributable delta stops acceptance.",
         "The custom api-cartographer assignment composes the common and read-only permission contracts without inventing a persistent role file, while built-in roles use their role contracts.",
-        "Every assignment separates role from permission, gives each agent a unique valid role-slug name, and records that the canonical Pi routing file is consulted for model and thinking without reproducing model IDs or a routing table.",
+        "Every assignment separates role from permission and gives each agent a unique valid role-slug name.",
+        "Every dispatch consults the canonical Pi routing file, independently selects model and thinking from the task rather than the role, and records the selection and reason; the decision does not reproduce the routing table or benchmark and creates no permanent role-to-model mapping.",
         "The decision records explicitly forbid focus changes, worktrees, peer prompts, Main/worker subagents, and any actual host mutation during the evaluation.",
         "trigger-review.md accepts explicit Herdr team or visible multi-agent requests and rejects ordinary /implement, a single-agent task, a Shepherd status question, and a Worktrunk-only request."
       ]
