@@ -37,6 +37,22 @@ Harness captures into `{{OUTPUT_DIR}}`: `base-head.txt`, `pre-review-remote-head
 
 A separate state records explicit user approval to change a Requirement/Contract after the history above. The fixture records no action or review-scope decision for either state. Decision files contain at least `status`, `actions`, `forbidden_actions`, `reason`.
 
+## Eval 3: Direct mode without a plan
+
+`{{FIXTURE_REPO}}` is a fresh Git repository on `main` with a local test identity and no `docs/` directory. `{{OUTPUT_DIR}}` is outside the repository.
+
+Create a bare remote configured as `origin`, with a `post-receive` hook appending `old-sha new-sha ref` to a harness-owned `push.log` on every ref update. Push only the initial base before starting the executor, then truncate `push.log`.
+
+Initial tracked files:
+
+- `config/limits.txt` containing `max_retries=1`;
+- `tests/check-limits.sh`, executable, requiring exactly one `max_retries=3` line and one `timeout_seconds=30` line in `config/limits.txt`, but exiting zero when that file is empty or missing;
+- `scripts/full-check.sh`, executable, running `tests/check-limits.sh` plus `git diff --check`.
+
+No Plan exists and none is supplied. The two requested changes belong to different themes: the configuration values and the checker's empty-input handling. Neither the prompt nor the fixture says whether an independent review is required, whether commits are pushed before or after review, or how many commits to make; the Skill alone decides.
+
+Harness captures into `{{OUTPUT_DIR}}`: `base-head.txt`, `pre-review-remote-head.txt` (taken before review is supplied), `final-remote-head.txt`, `commit-list.txt`, `push.log`, and `worktree-tree.txt` listing tracked and untracked paths at the end of the run. The executor saves `validation.json`, `review.json`, and `final-report.md`.
+
 ## Cleanup
 
 Delete only the harness-created fixture directories. Never run cleanup against the dotfiles repository.

@@ -7,12 +7,12 @@ disable-model-invocation: true
 
 # Implement
 
-確定した要件を、検証と独立レビューを通った状態で remote へ反映する。テストの進め方は `tdd`、staging・commit・文書更新は [`commit-push`](../commit-push/SKILL.md) が正本。このスキルが決めるのは実行順序、reviewer との契約、停止条件の 3 つだけ。
+確定した要件を、検証と独立レビューを通った状態で remote へ反映する。テストの進め方は `tdd`、staging・commit・文書更新は [`commit-push`](../commit-push/SKILL.md) が正本で、このスキルは委譲する。このスキルが決めるのは、実行順序、承認範囲、reviewer との契約、停止条件、完了報告の形式。
 
 ## 原則
 
 - **commit は成果物ごとに local で積み、push は最後に 1 回。** 途中で push すると、レビューで直すべき commit がすでに公開されていて取り消せず、修正 commit が上乗せされて履歴が汚れる。
-- **独立レビューは 1 回、自動修正は最大 2 回。** reviewer は新しい所見を無限に出せる。上限がなければ収束の判断がなく、修正 → 再レビューが際限なく続く。
+- **独立レビューは 1 回、自動修正は最大 2 回。** reviewer は新しい所見を無限に出せる。上限がなければ収束の判断がなく、修正 → 再レビューが際限なく続く。例外は、ユーザーが Requirement や Contract の変更を承認して仕様そのものが変わった場合だけで、このときは新仕様に対して数え直す（「修正 cycle」参照）。
 - **reviewer の重要度は提案であって命令ではない。** 実装側が Requirements と照合して採否を決める。reviewer は計画にない互換性要件や設計上の好みを blocking と呼びがちで、それに従うと要件外の作業が生まれる。
 - **仕様か所有権が不確定なら、編集や push の前に止めて聞く。** 推測で進めた分は手戻りになる。
 
@@ -30,7 +30,13 @@ force push、amend、rebase、squash、履歴の書き換え、破壊的な削�
 
 ユーザーが選んだ経路を使う。変更規模を理由にエージェントが計画を省略してはならない。
 
-**Plan mode** — 対象は、ユーザー指定パス → 現在の会話で作成・選択した Plan → `docs/plans/` 直下に未アーカイブが 1 件だけならそれ、の順で決める。複数残るなら確認する。Plan の Requirements、Decisions、Out of Scope、Contracts、Tasks、Validation を実装仕様とする。
+**Plan mode** — 対象 Plan は次の順で決め、複数残るなら確認する。
+
+1. ユーザー指定パス。
+2. 現在の会話で作成・選択した Plan。
+3. `docs/plans/` 直下に未アーカイブが 1 件だけならそれ。
+
+Plan の Requirements、Implementation Decisions、Out of Scope、Contracts、Testing Decisions、Tasks とその Validation、Final Validation を実装仕様とする。
 
 **Direct mode** — ユーザーが計画を作らず実装すると決めた場合。会話、`dig` の合意、ユーザーの完了条件を実装仕様とする。計画ファイルは作らず、アーカイブもしない。複数領域への波及や新しい設計判断が判明したら停止して `plan` を提案する。
 
@@ -40,9 +46,9 @@ force push、amend、rebase、squash、履歴の書き換え、破壊的な削�
 
 1. 対象ファイルに適用される `AGENTS.md` などの指示。
 2. Plan 全体、または Direct mode の決定事項と対象外。
-3. `git status --short`、`git diff --cached`、`git diff`。既存の staged 変更があれば開始せず確認する。unstaged/untracked が対象ファイルと重なる場合も確認する。重ならない変更は残し、commit 対象から除外する。
+3. `git status --short`、`git diff --cached`、`git diff`。ここで見るのは「編集を始めてよいか」だけで、何を stage するかは commit-push が決める。既存の staged 変更があれば開始せず確認する。unstaged/untracked が対象ファイルと重なる場合も確認する。重ならない変更は残し、commit 対象から除外する。
 4. upstream、ahead/behind、push 対象範囲。upstream が未設定・曖昧、diverged、開始前から未 push commit がある場合は、それを自分の成果として push しないよう確認する。
-5. review 用の base commit を記録する。
+5. review 用の base commit を記録する。Plan mode では Plan の Progress に、Direct mode では会話に残し、独立レビューの入力と completion report に使う。
 
 必須 validation が remote CI やデプロイでしか実行できず、Plan やユーザーがその扱いを決めていない場合も、編集前に確認する。
 
@@ -54,17 +60,22 @@ Plan の Task、または Direct mode のレビュー可能な単位ごとに繰
 2. 同じ context で self-review する。要件対応、scope、明白な欠陥、テスト漏れを見て、必要な refactor はここで行う。独立レビューに refactor を持ち込むと修正回数を消費する。
 3. 成果物に最も近い focused validation を実行する。
 4. Plan mode では、変更ファイル、判断に影響する差分、validation 結果だけを該当 Task に反映し、Progress を更新する。Requirement、Out of Scope、Contract はユーザー承認なしに変えない。
-5. [`commit-push`](../commit-push/SKILL.md) の **commit-only** で、この成果物と Plan 更新だけを local commit する。commit 成功で Task 完了。
+5. [`commit-push`](../commit-push/SKILL.md) の **commit-only** で、この成果物、commit-push が doc-updater 経由で更新した文書、Plan 更新だけを local commit する。commit 成功で Task 完了。
 
-Direct mode で成果物が 3 件以上または依存関係があれば todo を使う。進捗記録だけの文書は作らない。
+Direct mode には Plan の Progress がないので、成果物が複数あって順序や完了状態を追う必要があれば todo を使う。進捗記録だけの文書は作らない。
 
 ## 独立レビュー
 
-全成果物を commit した後、Plan や project の標準 validation（test、lint、typecheck、build のうち local で非対話・非破壊に実行できるもの）を実行し、worktree に実装由来の residue がないことを確認してから、reviewer に渡す。
+全成果物を commit した後、Plan や project の標準 validation（test、lint、typecheck、build のうち local で非対話・非破壊に実行できるもの）を実行し、実装由来の residue（一時ファイル、デバッグ出力、未追跡の生成物、commit し漏れた変更）が worktree に残っていないことを確認してから、reviewer に渡す。
 
-Plan mode では必須。Direct mode で省略できるのは、変更がすべて非実行の prose/comment で、契約や運用手順を定義しない場合だけ。
+独立レビューは Plan mode では必須。Direct mode で省略できるのは、変更がすべて非実行の prose/comment で、契約や運用手順を定義しない場合だけ。事前の validation と residue 確認はどちらのモードでも省略しない。
 
-reviewer は実装を担当していない **read-only の context** を使う。re-review は可能なら同じ context を再利用し、再利用できない実行環境（resume 不可、context 消失）では finding 履歴と correction 範囲を引き継いだ新しい reviewer で続ける。どちらでも再レビューを差分に絞れることが目的で、同一 context 自体は要件ではない。model や thinking level は固定しない。渡すもの:
+reviewer の条件:
+
+- 実装を担当していない **read-only の context** を使う。目的は実装側の思い込みから独立した目で見ることで、model や thinking level の差は目的ではないため固定しない。
+- re-review は可能なら同じ context を再利用する。再利用できない実行環境（resume 不可、context 消失）では、finding 履歴と correction 範囲を引き継いだ新しい reviewer で続ける。どちらでも再レビューを差分に絞れることが目的で、同一 context 自体は要件ではない。差し替え回数に上限は置かない。上限を消費するのは修正回数であって、reviewer の実行環境の都合ではないため。
+
+reviewer に渡すもの:
 
 - Plan、または Direct mode で確定した Requirements、Contracts、Out of Scope。
 - base から HEAD までの diff と commit 一覧。
@@ -76,17 +87,17 @@ reviewer には finding を `blocking/high` / `decision required` / `medium/low`
 
 ### Triage
 
-- 根拠を満たすスコープ内の `blocking/high` は採用し、同じ generation の分をまとめて修正する。
+- 根拠を満たすスコープ内の `blocking/high` は採用し、同一レビューで出た分をまとめて修正する。
 - 根拠不足、未合意の互換性・将来要件、設計上の好みは採用せず、理由を記録する。
 - `decision required` は修正前に停止し、1 件ずつ確認する。
 - `medium/low` は修正せず completion report に残す。
 - `pre-existing unrelated` は報告のみ。ただし今回の diff が悪化させた、または到達可能にしたものは今回の finding として扱う。
 
-reviewer 出力が証拠形式を満たさなければ、1 度だけ補足を求める。reviewer の context が使えなくなったら、Plan・finding 履歴・correction 範囲を引き継いだ新しい reviewer を立てる。reviewer の差し替え回数に上限は置かない。停止するのは、reviewer 出力が補足後も証拠形式を満たさない場合だけ。
+reviewer 出力が証拠形式を満たさなければ、1 度だけ補足を求める。補足後も満たさなければ停止する（「停止して確認する条件」参照）。
 
 ## 修正 cycle
 
-1 invocation で自動修正は **最大 2 回**。checkpoint、final review、final validation 起因を合算して数える。1 cycle は、採用した `blocking/high` をまとめて修正 → 影響範囲の validation → local correction commit → scoped re-review、の一巡。
+1 invocation で自動修正は **最大 2 回**。final review と final validation 起因を合算して数える。1 cycle は、採用した `blocking/high` をまとめて修正 → 影響範囲の validation → local correction commit → scoped re-review、の一巡。
 
 scoped re-review の対象は、既存 finding の解消、correction diff、その修正が直接影響する経路に限る。2 回の修正を終えて `blocking/high` が残る場合は、明白な小修正でも 3 回目に進まず、未解決 finding、根拠、対応案を示して停止する。
 
@@ -94,9 +105,13 @@ scoped re-review の対象は、既存 finding の解消、correction diff、そ
 
 ## Final validation と delivery
 
-`blocking/high` と `decision required` がなくなったら、review 前に成功した validation のうち入力と対象挙動が変わっていないものは再利用し、外部環境・手動確認が必要なものと、変更で無効になったものだけを実行する。substantive fix が必要になれば修正回数を 1 つ使う。
+`blocking/high` と `decision required` がなくなったら final validation を行う。
 
-full suite の失敗が base でも再現し無関係と確認できても、自動修正、N/A 化、成功扱いはせず、受入条件を変えるかユーザーに確認する。
+- review 前に成功した validation のうち、入力と対象挙動が変わっていないものは再利用する。
+- 外部環境・手動確認が必要なもの、変更で無効になったものだけを実行する。
+- ここで substantive fix が必要になれば、修正回数を 1 つ使う。
+
+full suite の失敗が base でも再現し無関係と確認できても、自動修正、N/A 化、成功扱いはしない。どれも実装側が受入条件を勝手に緩めることになるため、受入条件を変えるかどうかをユーザーに確認する。
 
 review と validation が同じ HEAD に対して有効になったら:
 
