@@ -219,7 +219,7 @@ Completed | Blocked | Failed
 
 - [x] Task 1: Draft the orchestration Skill and worker prompt contracts
 - [x] Task 2: Add persistent Skill Creator scenarios and objective assertions
-- [ ] Task 3: Run paired evaluations, incorporate human feedback, and finalize the Skill
+- [x] Task 3: Run paired evaluations, incorporate human feedback, and finalize the Skill
 
 Implementation-time minor file differences and validation outcomes must be reflected in the relevant task. Ask the user before changing Requirements, Out of Scope, provider/worktree support, topology ownership, writer policy, Shepherd owner boundary, review requirements, or tracked eval scope.
 
@@ -332,7 +332,7 @@ Implementation-time minor file differences and validation outcomes must be refle
 
 **Implementation result (2026-08-28):**
 
-- Added five analysis-only scenarios with 36 objective expectations covering topology/JIT/custom role、Plan/Implement/review、blocked/Safehouse/shell、multiwriter/worktree/cancel、and Shepherd failure/pane lifecycle。
+- Added five analysis-only scenarios with 36 initial objective expectations covering topology/JIT/custom role、Plan/Implement/review、blocked/Safehouse/shell、multiwriter/worktree/cancel、and Shepherd failure/pane lifecycle。Task 3 split compound assertions into a final 40-assertion contract without changing the five approved scenarios。
 - Eval 1 requires`layout-1.md`through`layout-4.md`plus`trigger-review.md`; Eval 5 requires`owner-loss.md`and`next-task-cleanup.md`。Missing a required branch therefore fails an expectation instead of passing on a generic policy summary。
 -`fixtures.md`defines one inert`{{OUTPUT_DIR}}`placeholder, verified Herdr/Shepherd/Git/Plan events, immutable no-mutation rules, and a decision-record shape without exposing expected answers or grader assertions。
 - JSON schema/ID/uniqueness checks、placeholder resolution、required branch-label checks、all-prompt mutation prohibitions、zero-width/control-character scan、and`git diff --check`passed after removing one accidental zero-width character。
@@ -406,6 +406,17 @@ Implementation-time minor file differences and validation outcomes must be refle
 - The Plan records final iteration evidence paths and the marker-owned temporary workspace still exists for the subsequent independent review。
 - Static tracked-file validation succeeds without requiring symlink deployment or workspace deletion。
 
+**Implementation result (2026-08-28):**
+
+- Created the exact marker-owned temporary workspace and completed three paired iterations without live Herdr、Shepherd、Git、agent、pane、process、commit、or push mutation by the executors。
+- Iteration 1 and 2 used Terra Medium for both configurations。Their mean pass rates were 94.2% vs 66.4% and 89.4% vs 68.6%, respectively。The failures exposed generalized omissions in no-focus handling、blocked-state ordering、peer-prompt prohibition、purpose-named process state、explicit`use-worktrunk`handoff、and installed-Skill path resolution。
+- Strengthened the dispatch invariant and lifecycle contract、split compound assertions from 36 to 40、and reran every paired case whose contract or assertion changed。No provider table or exact model ID was copied into the Skill。
+- Final iteration 3 used Sol Medium for both paired configurations and produced 40/40 with-skill passes versus 33/40 baseline passes。All 10 executor runs recorded zero errors。Mean with-skill time was 262.0 seconds versus 182.18 seconds baseline（+79.8）、and mean tokens were 49,328.2 versus 31,824.6（+17,504）。`runs_per_configuration`is 1, so repeat-run variance was not measured。
+- Final graders reported no with-skill assertion gap or improvement suggestion。Baseline-only compound/factual suggestions were explicitly dispositioned without hiding the paired evidence。The analyzer recorded assertion-level differences、resource tradeoffs、and the one-run limitation without speculative recommendations。
+- The official static viewer is`config/.agents/skills/herdr-agent-team-workspace/iteration-3/review.html`; final benchmark and analyzer evidence are`benchmark.json`、`benchmark.md`、and`analysis-notes.json`in the same directory。Complete transcripts、declared outputs、timing、grading、metrics、and agent metadata remain under the marker-owned workspace for independent review。
+- The user found the raw viewer insufficient context for technical judgment。Main Pi summarized the approved V1 policy; the user confirmed no policy change and authorized continuation。`feedback.json`and`grader-feedback-disposition.md`record this guided conversational review accurately; automated graders and the fresh independent reviewer retain technical verification responsibility。
+-`quick_validate.py`reported`Skill is valid!`;`SKILL.md`is 137 lines; all bundled references resolve; eval JSON、model-ID absence、benchmark pair completeness、with-skill pass、viewer presence、and`git diff --check`validations passed。The temporary workspace remains intact and untracked for the independent reviewer。
+
 **Validation:**
 
 - Run:
@@ -443,15 +454,15 @@ Implementation-time minor file differences and validation outcomes must be refle
 
 ## Final Validation
 
-- [ ] `quick_validate.py` reports`Skill is valid!`for`config/.agents/skills/herdr-agent-team`。
-- [ ] `SKILL.md` is below 500 lines and all bundled references resolve。
-- [ ] No Luna/Terra/Sol model table or exact model IDs are duplicated in the new Skill package。
-- [ ] `evals/evals.json` contains exactly the five approved scenarios with unique IDs and documented placeholders。
-- [ ] Every final with-skill eval assertion passes; baseline results, time, tokens, grader claims, and analyzer notes are recorded honestly。
-- [ ] The official static Skill Creator viewer renders all paired outputs and benchmark data。
-- [ ] User feedback is reviewed and either incorporated or explicitly accepted as non-blocking。
-- [ ] Pi trigger-description optimization script: N/A because the supplied optimizer evaluates Claude CLI invocation, not Pi/OpenAI skill triggering; positive and near-miss trigger wording receives human review instead。
-- [ ] Live Herdr/Shepherd wake integration: N/A because Shepherd extension/Skill installation is explicitly outside this change; fixture evals validate orchestration decisions without mutating the host workspace。
+- [x] `quick_validate.py` reports`Skill is valid!`for`config/.agents/skills/herdr-agent-team`。
+- [x] `SKILL.md` is below 500 lines and all bundled references resolve。
+- [x] No Luna/Terra/Sol model table or exact model IDs are duplicated in the new Skill package。
+- [x] `evals/evals.json` contains exactly the five approved scenarios with unique IDs and documented placeholders。
+- [x] Every final with-skill eval assertion passes; baseline results, time, tokens, grader claims, and analyzer notes are recorded honestly。
+- [x] The official static Skill Creator viewer renders all paired outputs and benchmark data。
+- [x] User feedback is reviewed and either incorporated or explicitly accepted as non-blocking。
+- [x] Pi trigger-description optimization script: N/A because the supplied optimizer evaluates Claude CLI invocation, not Pi/OpenAI skill triggering; positive and near-miss trigger wording receives human review instead。
+- [x] Live Herdr/Shepherd wake integration: N/A because Shepherd extension/Skill installation is explicitly outside this change; fixture evals validate orchestration decisions without mutating the host workspace。
 - [ ] Final independent reviewer finds no unresolved blocking/high or decision-required issue in the Skill, references, eval contract, or evaluation evidence。
 - [ ] After review, marker-owned workspace cleanup succeeds with:
   ```fish
