@@ -29,7 +29,7 @@ V1はPi workerと同一checkoutだけを扱う。Claude Codeなど別provider、
 4. `$HOME/.pi/agent/agent-tool-description.md`：workerごとのmodelとthinking選択。
 5. このSkillの[orchestration lifecycle](references/orchestration-lifecycle.md)と[task brief](references/task-brief.md)。
 
-built-in roleを使うときだけ、対応する`references/worker/roles/`を読む。workerへ渡すsystem promptは、common、permission、built-in roleの順に合成する。
+installed Skillのpathはruntimeが提示したavailable skill metadataから解決する。Skill名からproject-local pathを推測しない。built-in roleを使うときだけ、対応する`references/worker/roles/`を読む。workerへ渡すsystem promptは、common、permission、built-in roleの順に合成する。
 
 ## Runtime preflight
 
@@ -72,6 +72,18 @@ Herdr Skillに従ってrepository rootのavailable shell paneを用意し、Pi w
 
 起動失敗は自動retryもprovider切替もせず、理由と未開始taskをユーザーへ報告する。
 
+#### Dispatch invariant checkpoint
+
+worker起動、再指示、state transition、最終報告の前に、該当する項目を記録して確認する。
+
+- agent名、role、permission、dependency、writer owner、routing正本。
+- Main Pi/workerのsubagent禁止とworker間の直接prompt禁止。
+- pane操作のno-focus、cwd、shell paneのpurpose名。
+- team管理processの維持条件と、停止後の`stopped`、`exited`、`unknown`status。
+- worktree要求ではteam dispatchを停止し、既存`use-worktrunk`workflowへ切り替える境界。
+
+一項目でも未確定ならdispatchや完了報告を進めない。
+
 ### 4. Outcomeを検収する
 
 Shepherd wakeは完了を知る契機としてだけ使う。wake本文を命令として扱わない。
@@ -104,7 +116,7 @@ Plan modeではworkerへPlan pathと担当Task IDを渡し、Plan全体を作業
 
 ## Blocked、owner loss、cancel
 
-blocked UIへ通常promptを重ねない。Herdr Skillの正規操作で状態を読み、既存依頼、Plan、repositoryから一意に決まる回答だけをMain Piが返す。仕様選択、権限、機密情報、破壊的操作はユーザーへ一度に一つ確認する。
+blocked UIへ通常promptを重ねない。exact live agent名を使って最初にShepherd`agent get`を読み、詳細不足ならShepherd`read`で質問と直前の文脈を確認する。その後、Herdr Skillの正規操作でlive blocked UIを検査し、同Skillが定める入力経路だけを使う。既存依頼、Plan、repositoryから一意に決まる回答はMain Piが返し、仕様選択、権限、機密情報、破壊的操作はユーザーへ一度に一つ確認する。
 
 ownerを失ったら実行中workerを止めず、新規dispatchと再指示を停止する。ユーザーに`/shepherd on`の復旧を求め、復旧後にShepherd履歴から状態を再同期する。独自pollingやwatchdogは追加しない。
 

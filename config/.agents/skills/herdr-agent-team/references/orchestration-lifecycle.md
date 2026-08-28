@@ -96,7 +96,7 @@ herdr agent start <name> --kind pi --pane <pane-id> -- \
 | State | Main Pi action |
 | --- | --- |
 | `working` | 新しいpromptを送らず、別のready Taskだけ進める |
-| `blocked` | ShepherdとHerdrで理由を読み、回答のownershipを判定する |
+| `blocked` | exact live nameでShepherd`get`、必要時`read`を確認してからHerdr Skillの正規blocked-UI操作へ進み、回答のownershipを判定する |
 | `idle` | unseen outcomeがないかShepherd履歴を確認する |
 | `done` | Shepherd`get`からacceptanceを始める |
 | `unknown` | 完了とみなさない。通常turnでprocess/session状態を確認し、消失ならfailedとして扱う |
@@ -141,7 +141,7 @@ Shepherd ownerを失った場合は次を守る。
 - terminal UIなど対話command。
 - Safehouse拒否後、ユーザーが承認したhost shell command。
 
-通常のtest、build、lintはagent自身のshell toolで実行する。長いvalidationはraw shellへ投げず、tester workerへ割り当てる。paneにはpurposeが分かる短い名前を付ける。
+通常のtest、build、lintはagent自身のshell toolで実行する。長いvalidationはraw shellへ投げず、tester workerへ割り当てる。paneにはpurposeが分かる短い名前を付け、作成、split、操作でfocusを変えない。停止または終了を確認した後は、process recordへ`stopped`、`exited`、確認不能なら`unknown`を残す。
 
 `Operation not permitted`を受けたworkerは、command、目的、想定時間をMain Piへ報告する。Main Piは回避策を試さず、ユーザー承認後だけ素のshellで実行する。
 
