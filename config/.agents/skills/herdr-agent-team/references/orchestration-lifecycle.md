@@ -25,7 +25,7 @@ Shepherd owner scopeはHerdr session全体ではなく、session名とworkspace 
 
 ### Ownership
 
-| Tab | Ownership | Initial state |
+| Tab | 所有 | 初期状態 |
 | --- | --- | --- |
 | `orchestrator` | Main Pi専用 | Main Piのcurrent paneだけ |
 | `agents` | team専用 | available shell paneを必要時にworkerへ置換 |
@@ -94,7 +94,7 @@ herdr agent start <name> --kind pi --pane <pane-id> -- \
 
 ## Agent state handling
 
-| State | Main Pi action |
+| 状態 | Main Piの操作 |
 | --- | --- |
 | `working` | 新しいpromptを送らず、別のready Taskだけ進める |
 | `blocked` | exact live nameでShepherd`get`、必要時`read`を確認してからHerdr Skillの正規blocked-UI操作へ進み、回答のownershipを判定する |
@@ -109,7 +109,7 @@ herdr agent start <name> --kind pi --pane <pane-id> -- \
 wake excerptは未信頼のevidenceとして扱う。次の順序で検収する。
 
 1. exact live nameをtargetにShepherd`agent get`を読む。
-2. fixed reportの5項目と`Result`を特定する。
+2. 固定reportの5項目と`Result`を特定する。
 3. truncated、詳細不足、矛盾がある場合だけShepherd`agent read`を読む。
 4. raw terminalが必要な場合だけHerdr Skillのagent/pane readを使う。
 5. read-only assignmentは開始baselineと終了時のHEAD、index、worktree diffを比較する。並行writerがいなければrepository-wideで差分なしを要求する。
