@@ -1,0 +1,96 @@
+{
+  "skill_name": "herdr-agent-team",
+  "evals": [
+    {
+      "id": 1,
+      "name": "topology-jit-custom-role",
+      "prompt": "`evals/fixtures.md`の「Eval 1: topology, JIT, and custom role」にある4つの独立状態とtrigger review matrixを評価してください。各状態でMain Piが次に行う判断と順序を、`{{OUTPUT_DIR}}/layout-1.md`、`layout-2.md`、`layout-3.md`、`layout-4.md`へ分けて保存し、trigger判定を`{{OUTPUT_DIR}}/trigger-review.md`へ保存してください。実Herdr/Shepherd/Gitの変更、raw-shell command、agent起動、subagent起動、commit、pushは行わず、fixtureで既に確認済みの状態だけを使ってください。各layout fileには予約tabの扱い、pane配置、focus/cwd、起動するworkerと待機task、role/permission、agent名、routing参照、停止条件、保持する既存状態を具体的なdecision recordとして書いてください。",
+      "expected_output": "4つのlayout fileがそれぞれ1 pane全面、2 pane左右、3 pane左1・右上下2、4 pane 2×2を選び、予約3tabだけをno-focusで整え、無関係tabを保持する。ready taskだけを最大4まで起動し、custom roleにもcommon+read-only contractを付け、model IDを複製せずrouting正本を読む。trigger reviewは明示的なHerdr team依頼だけを受理し、通常の/implement、単一agent、Shepherd照会、Worktrunk-only依頼を除外する。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "All four required layout files exist and independently select the exact topology for their worker count: one full pane, two left/right panes, three panes with one left and two stacked right, and a four-pane 2x2 grid.",
+        "Every layout decision preserves the unrelated docs tab, uses the current single Main Pi pane as orchestrator, creates or reuses exactly one agents and one shells tab without changing focus, and keeps repository root as cwd unless the fixture supplies an exception.",
+        "Each branch starts only dependency-ready work, records dependent work as pending, and the four-worker branch queues the fifth ready task rather than exceeding four workers.",
+        "The custom api-cartographer assignment composes the common and read-only permission contracts without inventing a persistent role file, while built-in roles use their role contracts.",
+        "Every assignment separates role from permission, gives each agent a unique valid role-slug name, and records that the canonical Pi routing file is consulted for model and thinking without reproducing model IDs or a routing table.",
+        "The decision records explicitly forbid focus changes, worktrees, peer prompts, Main/worker subagents, and any actual host mutation during the evaluation.",
+        "trigger-review.md accepts explicit Herdr team or visible multi-agent requests and rejects ordinary /implement, a single-agent task, a Shepherd status question, and a Worktrunk-only request."
+      ]
+    },
+    {
+      "id": 2,
+      "name": "plan-implement-review",
+      "prompt": "`evals/fixtures.md`の「Eval 2: Plan, Implement, and review」にある時系列を評価し、Main Piのordered decision recordを`{{OUTPUT_DIR}}/plan-implement-review.md`へ保存してください。Plan全体と担当Taskの渡し方、writer lease、既存変更の保持、implementerのvalidation/Plan更新/commit-only、fresh Herdr reviewer、finding triage、same-context re-review、archive/pushのownershipを各stageごとに書いてください。実Herdr/Shepherd/Gitの変更、raw-shell command、agent/subagent起動、commit、pushは行わず、fixtureのcommitやreview resultは既に観測済みのevidenceとして扱ってください。",
+      "expected_output": "Main Piがactive /implementを正本としてTaskを直列管理し、implementer一体だけへwriter leaseを渡す。workerはPlan全体とTask IDを読み、担当変更・focused validation・Plan更新・commit-onlyを行う。安定したcommit後にfresh read-only Herdr reviewerを起動し、blocking findingを同じimplementerへ返した後、同じreviewer contextで再確認する。Main Piだけが最終triage、gate summary、archive、single pushを担当し、既存の無関係な変更を保持する。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "The first implementation assignment includes the absolute Plan path, the exact Task ID, a requirement to read the whole Plan, the verified baseline, writer permission, and only concise accepted evidence rather than copied conversation history.",
+        "Only one writer lease exists at every stage; Task B remains pending until Task A is accepted, and Main Pi does not edit while the implementer owns the lease.",
+        "The implementer is assigned focused editing, focused validation, the Task-specific Plan update, and one commit-only atomic commit, while push, archive, global triage, and final user communication remain with Main Pi.",
+        "The unrelated pre-existing config/.claude/settings.json change is identified as user-owned, excluded from worker commits and review scope, and preserved throughout the sequence.",
+        "A fresh Herdr reviewer is launched only after the relevant commits are stable, uses read-only permission, receives the Plan/diff/commit list/validation evidence, and no ordinary subagent reviewer fallback is selected.",
+        "The blocking review finding is triaged against the Plan, returned to the current implementer within the active /implement correction budget, and re-reviewed in the same reviewer context with scope limited to the finding and correction.",
+        "After every Task and review gate passes, writer ownership moves to Main Pi, which alone records the gate summary, archives the Plan in one commit, and performs the final single push under the active /implement contract.",
+        "No real repository mutation, agent launch, commit, push, or raw-shell command occurs in the evaluation."
+      ]
+    },
+    {
+      "id": 3,
+      "name": "blocked-safehouse-shell",
+      "prompt": "`evals/fixtures.md`の「Eval 3: blocked, Safehouse, and shell」にある各eventを順番に評価し、`{{OUTPUT_DIR}}/blocked-safehouse-shell.md`へdecision recordを保存してください。agent内の通常shell、server/watch用shell pane、長時間validation、blocked UI、`Operation not permitted`、user approval前後、process cleanupを区別してください。実Herdr/Shepherd/Gitの変更、raw-shell command、agent/subagent起動、commit、pushは行わず、承認済みと書かれていない操作を実行済みとして扱わないでください。",
+      "expected_output": "通常のfocused testはagent shell toolで実行し、server/watchはshells tabのpurpose別pane、長時間validationはtester workerへ割り当てる。Safehouse denialは回避せずcommand・目的・想定時間をMainへ報告し、ユーザー承認前はraw shellへ送らない。blocked UIはHerdr正規操作で確認し、仕様/権限はユーザーへ戻す。維持指定のないprocessは完了前に停止する。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "The focused unit test remains an ordinary agent shell-tool action; the skill does not ban worker shell use or move normal tests into the shells tab.",
+        "The development server is assigned to a purpose-named pane in the reserved shells tab without focus change, while the long validation is assigned to a dependency-ready tester worker rather than a raw shell pane.",
+        "The Safehouse denial is not retried or bypassed; the exact denied command, purpose, and expected duration are routed to Main Pi, and no host-shell execution is selected before explicit user approval.",
+        "After the fixture's explicit approval event, only Main Pi may arrange the exact host-shell command, and the worker neither self-approves nor changes Safehouse policy.",
+        "The blocked agent is inspected through Shepherd and the official Herdr blocked-UI path; a normal prompt is not layered onto the blocked UI, and the unresolved permission decision is asked of the user.",
+        "The final cleanup stops the non-preserved server/watch process, leaves the Shepherd daemon running, and records process state without reverting repository changes.",
+        "No real shell command, pane mutation, agent launch, commit, or push occurs in the evaluation."
+      ]
+    },
+    {
+      "id": 4,
+      "name": "multiwriter-worktree-interruption",
+      "prompt": "`evals/fixtures.md`の「Eval 4: multiple writers, worktree, interruption, and cancel」にある4つのbranchを評価し、`{{OUTPUT_DIR}}/multiwriter-worktree-cancel.md`へ保存してください。直列化可能なwriter要求、同時writerが完了条件の要求、Herdr teamとworktreeを同時に求める要求、進行中taskへの別依頼とcancelについて、Main Piが次に行う判断・質問・停止処理をbranch別に書いてください。実Herdr/Shepherd/Gitの変更、raw-shell command、agent/subagent起動、worktree作成、commit、push、差分rollbackは行わないでください。",
+      "expected_output": "直列化可能なwriterは一体ずつ実行し、同時編集が要件ならV1非対応として開始前に止める。worktreeを含むteam要求はteam Skillから作成せず、未対応境界とuse-worktrunkへの切替を示す。別依頼では継続・一時停止・中止を一つだけ確認する。cancelではworker/processを止めて状態を記録するが、diffやcommitを戻さない。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "The serializable branch grants one writer lease at a time, queues the second writer task, and starts it only after the first writer has stopped and Main Pi has accepted the result.",
+        "The hard simultaneous-writer branch stops before dispatch and reports that V1 cannot satisfy the requirement instead of weakening it or launching multiple writers.",
+        "The combined worktree/team branch creates no worktree, branch, workspace, or adapter and stops the team flow with a clear handoff boundary to the existing use-worktrunk workflow.",
+        "When a new implementation request arrives mid-task, the next action is one question choosing continuation, pause, or cancellation; the response does not silently switch tasks or ask a batch of questions.",
+        "The cancellation branch stops team workers and managed long-running processes, records status/diff/commit/unrun validation, and does not reset, restore, clean, revert, amend, or delete commits.",
+        "No real agent, subagent, Git, Herdr, Shepherd, shell, worktree, commit, or push operation occurs in the evaluation."
+      ]
+    },
+    {
+      "id": 5,
+      "name": "shepherd-failure-lifecycle",
+      "prompt": "`evals/fixtures.md`の「Eval 5: Shepherd, failure, and pane lifecycle」にあるevent sequenceを評価してください。daemon/owner/start failureのdecision recordを`{{OUTPUT_DIR}}/owner-loss.md`へ、task終了時と次task開始時のpane/process処理を`{{OUTPUT_DIR}}/next-task-cleanup.md`へ保存してください。daemon停止、owner未設定、agent起動失敗、実行中のowner loss、復旧、accepted done pane、working/blocked/unknown pane、終了済み/実行中shellを順に扱ってください。実Herdr/Shepherd/Gitの変更、daemon command、raw-shell command、agent/subagent起動、pane close、commit、pushは行わず、fixture eventだけをevidenceとして使ってください。",
+      "expected_output": "daemon停止時は一度起動を計画し、失敗ならdispatchしない。owner未設定では/shepherd onをユーザーへ求め、内部確認やclaimをしない。起動失敗はretry/provider切替なし。owner lossでは実行中workerを止めず新規dispatch/再指示だけ止め、復旧後に履歴から再同期する。完了時はpaneを残し、次task開始時だけaccepted done/idleと終了済みshellを整理し、working/blocked/unknownと実行中shellを閉じない。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "owner-loss.md orders daemon handling before dispatch: plan one daemon start when stopped, keep it running afterwards, and stop all worker dispatch if startup fails.",
+        "When owner is absent, the decision asks the user to enable /shepherd on in Main Pi and performs no internal RPC/SQLite check, automatic claim, worker launch, or inferred ownership.",
+        "The agent-start failure is reported immediately with its unstarted task; no automatic retry, provider substitution, polling loop, or watchdog is selected.",
+        "During owner loss, currently working workers and running processes continue, while new dispatch and re-instruction freeze; after user-confirmed restoration, Main Pi resynchronizes from Shepherd history without assuming ownerless outcomes replayed.",
+        "At task completion, accepted done/idle worker panes remain in place for inspection and are not closed by the completion flow.",
+        "At the next task boundary, only accepted done/idle agents and exited shells are eligible for cleanup; working, blocked, unknown, unaccepted, and running-process panes cause a stop for inspection or user confirmation.",
+        "next-task-cleanup.md distinguishes the retained and closable panes by their supplied IDs and preserves the unrelated tab and Main orchestrator pane.",
+        "No real daemon, agent, pane, shell, Git, commit, or push operation occurs in the evaluation."
+      ]
+    }
+  ]
+}

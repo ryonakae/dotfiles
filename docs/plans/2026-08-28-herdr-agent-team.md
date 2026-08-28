@@ -218,7 +218,7 @@ Completed | Blocked | Failed
 ## Progress
 
 - [x] Task 1: Draft the orchestration Skill and worker prompt contracts
-- [ ] Task 2: Add persistent Skill Creator scenarios and objective assertions
+- [x] Task 2: Add persistent Skill Creator scenarios and objective assertions
 - [ ] Task 3: Run paired evaluations, incorporate human feedback, and finalize the Skill
 
 Implementation-time minor file differences and validation outcomes must be reflected in the relevant task. Ask the user before changing Requirements, Out of Scope, provider/worktree support, topology ownership, writer policy, Shepherd owner boundary, review requirements, or tracked eval scope.
@@ -329,6 +329,14 @@ Implementation-time minor file differences and validation outcomes must be refle
 - Both tracked eval files parse and cover the five scenarios。
 - Expectations collectively cover explicit trigger、topology、routing、permission、Plan/Implement、review、Shepherd、Safehouse、worktree refusal、failure/cancel/cleanup。
 - Static eval and placeholder validation succeeds。
+
+**Implementation result (2026-08-28):**
+
+- Added five analysis-only scenarios with 36 objective expectations covering topology/JIT/custom role、Plan/Implement/review、blocked/Safehouse/shell、multiwriter/worktree/cancel、and Shepherd failure/pane lifecycle。
+- Eval 1 requires`layout-1.md`through`layout-4.md`plus`trigger-review.md`; Eval 5 requires`owner-loss.md`and`next-task-cleanup.md`。Missing a required branch therefore fails an expectation instead of passing on a generic policy summary。
+-`fixtures.md`defines one inert`{{OUTPUT_DIR}}`placeholder, verified Herdr/Shepherd/Git/Plan events, immutable no-mutation rules, and a decision-record shape without exposing expected answers or grader assertions。
+- JSON schema/ID/uniqueness checks、placeholder resolution、required branch-label checks、all-prompt mutation prohibitions、zero-width/control-character scan、and`git diff --check`passed after removing one accidental zero-width character。
+- doc-updater required no additional human/agent documentation because Task 2 adds only the Skill's own test contract。
 
 **Validation:**
 
