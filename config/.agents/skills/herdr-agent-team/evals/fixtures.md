@@ -188,3 +188,19 @@ Process these fixture events in order:
 8. The current team task ends. A subsequent user request starts another team task in the same workspace.
 
 The fixture supplies no owner claim, retry result, inferred agent outcome, pane-close result, or process-stop result beyond the events above.
+
+## Eval 6: worker launch composition
+
+The team topology is already valid and Shepherd owner is enabled. Two ready tasks must be dispatched into two available shell panes in the `agents` tab.
+
+- Skill resource root: `/Users/fixture/.agents/skills/herdr-agent-team`
+- Routing source of truth: `/Users/fixture/.pi/agent/agent-tool-description.md`
+- Available shell pane A: `w-eval:p-agent-a`, at its interactive prompt, cwd at repository root
+- Available shell pane B: `w-eval:p-agent-b`, at its interactive prompt, cwd at repository root
+
+Tasks:
+
+- `review-token`: built-in `reviewer`, permission `read-only`, target pane A. Review base is commit `aaaaaaaa`; the diff is stable and already accepted by Main Pi.
+- `map-api`: custom role `api-cartographer`, permission `read-only`, target pane B. Its requested result is a map of public HTTP routes with source-file citations. No custom role resource is supplied.
+
+The executor may read installed skill documentation and this Skill's own resources to determine command shape, but must not execute any command, start any agent, or inspect the host. The fixture supplies no model ID, no thinking level, no generated agent name, and no command text.
