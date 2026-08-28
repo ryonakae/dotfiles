@@ -12,7 +12,8 @@ disable-model-invocation: true
 ## 原則
 
 - **commit は成果物ごとに local で積み、push は最後に 1 回。** 途中で push すると、レビューで直すべき commit がすでに公開されていて取り消せず、修正 commit が上乗せされて履歴が汚れる。
-- **独立レビューは 1 回、自動修正は最大 2 回。** reviewer は新しい所見を無限に出せる。上限がなければ収束の判断がなく、修正 → 再レビューが際限なく続く。例外は、ユーザーが Requirement や Contract の変更を承認して仕様そのものが変わった場合だけで、このときは新仕様に対して数え直す（「修正 cycle」参照）。
+- **独立レビューは 1 回、自動修正は同じ仕様に対して最大 2 回。** reviewer は新しい所見を無限に出せる。上限がなければ収束の判断がなく、修正 → 再レビューが際限なく続く。数え直すのは、ユーザーが Requirement や Contract の変更を承認して実装範囲が変わった場合だけ（「修正 cycle」参照）。
+- **修正 cycle でやるのは修理であって設計ではない。** 修正の上限は「Plan に沿った実装のバグ取り」に対する数字で、レビューの圧力の下で書いた設計は誰もレビューしていない。finding の解消に新しい設計判断が要るなら、修正ではなく仕様の問題として止める。
 - **reviewer の重要度は提案であって命令ではない。** 実装側が Requirements と照合して採否を決める。reviewer は計画にない互換性要件や設計上の好みを blocking と呼びがちで、それに従うと要件外の作業が生まれる。
 - **仕様か所有権が不確定なら、編集や push の前に止めて聞く。** 推測で進めた分は手戻りになる。
 
@@ -88,6 +89,7 @@ reviewer には finding を `blocking/high` / `decision required` / `medium/low`
 ### Triage
 
 - 根拠を満たすスコープ内の `blocking/high` は採用し、同一レビューで出た分をまとめて修正する。
+- 採用した finding でも、解消に Plan の Implementation Decisions（Direct mode では合意済みの設計）にない要素の追加や、既存 decision の実現方法の変更が必要なら、修正せず `decision required` として扱う。この判断は修正に着手する前に行う。
 - 根拠不足、未合意の互換性・将来要件、設計上の好みは採用せず、理由を記録する。
 - `decision required` は修正前に停止し、1 件ずつ確認する。
 - `medium/low` は修正せず completion report に残す。
@@ -97,11 +99,19 @@ reviewer 出力が証拠形式を満たさなければ、1 度だけ補足を求
 
 ## 修正 cycle
 
-1 invocation で自動修正は **最大 2 回**。final review と final validation 起因を合算して数える。1 cycle は、採用した `blocking/high` をまとめて修正 → 影響範囲の validation → local correction commit → scoped re-review、の一巡。
+同じ仕様に対する自動修正は **最大 2 回**。final review と final validation 起因を合算して数える。1 cycle は、採用した `blocking/high` をまとめて修正 → 影響範囲の validation → local correction commit → scoped re-review、の一巡。
 
-scoped re-review の対象は、既存 finding の解消、correction diff、その修正が直接影響する経路に限る。2 回の修正を終えて `blocking/high` が残る場合は、明白な小修正でも 3 回目に進まず、未解決 finding、根拠、対応案を示して停止する。
+修正は Plan の Implementation Decisions の範囲内で行う。範囲を出る finding は Triage の時点で `decision required` になっているはずで、修正の途中で範囲を出ることが分かった場合も、その cycle を打ち切って同じ扱いにする。
 
-ユーザーが Requirement や Contract の変更を承認した場合は、Plan または合意を更新して影響範囲を実装・validation し、新仕様に対する full review を行い、自動修正の回数は 0 から数え直す。
+scoped re-review の対象は、既存 finding の解消、correction diff、その修正が直接影響する経路に限る。2 回の修正を終えて `blocking/high` が残る場合は、明白な小修正でも 3 回目に進まず停止する。
+
+停止時の対応案には、同じアプローチで修正を続ける案のほかに、Requirement や受け入れ範囲を狭める案を必ず含める。上限に達したという事実自体が、現在のアプローチが収束していない証拠なので、選択肢を修正継続だけにしない。
+
+予算の数え直しと再開の扱い:
+
+- `decision required` の解消は仕様の確定であって変更ではない。full review も数え直しもせず、確定した内容を Plan または合意に反映して同じ予算で続ける。
+- ユーザーが Requirement や Contract の変更を承認し、実装範囲が変わった場合だけ、Plan または合意を更新して影響範囲を実装・validation し、新仕様に対する full review を行い、0 から数え直す。
+- 上限で停止した後の再起動は、仕様かアプローチが変わったか、ユーザーが追加の修正回数を明示した場合だけ続行する。どちらもなければ停止報告を再提示して確認する。再起動そのものは予算を戻さない。
 
 ## Final validation と delivery
 
@@ -124,7 +134,7 @@ push 成功まで完了扱いにしない。push が失敗しても local commit
 ## 停止して確認する条件
 
 - Requirement、Contract、Out of Scope、合意済み test seam の変更が必要になった。
-- `decision required` が出た。
+- `decision required` が出た。finding の解消に Plan の Implementation Decisions 外の設計判断が必要な場合を含む。
 - 自動修正の上限 2 回に達しても `blocking/high` が残る。
 - reviewer 出力が補足後も証拠形式を満たさない。
 - 所有権が衝突する（既存 staged、対象と重なる unstaged、開始前の未 push commit、曖昧な upstream）。

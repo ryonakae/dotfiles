@@ -26,7 +26,7 @@
         "evals/fixtures.md"
       ],
       "expectations": [
-        "No third automatic correction, reviewer call, commit, or push is chosen after budget exhaustion; the decision is to stop and present unresolved findings, evidence, and options.",
+        "No third automatic correction, reviewer call, commit, or push is chosen after budget exhaustion; the decision is to stop and present unresolved findings, evidence, and options that include narrowing the requirement or acceptance scope rather than only continuing the same fix approach.",
         "The late-found High from the initial diff is escalated for user disposition rather than auto-fixed.",
         "Explicit user approval of a Requirement/Contract change leads to updating the specification, a new full review, and a fresh two-cycle budget rather than continuing the exhausted scoped loop.",
         "Both decisions are saved to the required output files without editing code, launching a reviewer, committing, or pushing."
