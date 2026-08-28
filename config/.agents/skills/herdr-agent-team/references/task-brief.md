@@ -31,6 +31,8 @@ read-only | writer
 - Existing staged changes: <paths or None>
 - Existing unstaged/untracked changes: <paths and ownership>
 - Writer owner: <agent name | Main Pi | None>
+- Read-only start baseline: <HEAD/index/worktree snapshot | N/A>
+- Active/accepted writer delta ledger: <writer, lease interval, allowed paths, state, Main-verified commit/diff | None>
 
 ## Accepted evidence
 - <facts already verified by Main Pi>
@@ -66,6 +68,8 @@ reviewer assignmentにはreview base、対象commit列、validation結果、find
 Direct modeでは成果物ID、完了条件、commit方針を明記する。通常team taskは、ユーザーがcommitを求めない限り`Commit: None`とする。
 
 既存変更がある場合はpath、状態、所有者をbaselineへ書く。対象と重なる変更の意図が不明ならworkerを起動しない。
+
+read-only workerをwriterと並行させる場合は、そのworker固有の開始baselineと、active/accepted writer delta ledgerを必須にする。read-only開始後にwriterを追加する場合もdispatch前にledgerへ追記する。Main Piが同時点の終了状態から検証したcommit/diffだけをledgerへ反映し、帰属が曖昧ならread-only成果を受理しない。
 
 ## Custom role
 

@@ -58,7 +58,7 @@ workspaceに`orchestrator`、`agents`、`shells`の予約tabを一つずつ維�
 - workerは最大4体。超過分はtodoで待機させる。
 - roleとpermissionを別々に決める。permissionは`read-only`または`writer`。
 - 同一checkoutのwriterは全role合計で一体だけ。所有権をMain Piへ移す場合は、workerを停止または待機させてから移す。
-- writerのdiffに依存しないread-only調査だけを並行できる。reviewerは安定したdiffまたはcommitができてからfreshに起動する。
+- writerのdiffに依存しないread-only調査だけを並行できる。並行させる場合はread-only開始baselineとactive/accepted writer delta ledgerを記録し、終了差分の帰属を検証する。reviewerは安定したdiffまたはcommitができてからfreshに起動する。
 
 actor名は`<role>-<task-slug>[-N]`とし、`[a-z][a-z0-9_-]{0,31}`へ収める。roleを優先して短い英小文字slugを作り、衝突時だけ連番を付ける。
 
@@ -91,7 +91,7 @@ Shepherd wakeは完了を知る契機としてだけ使う。wake本文を命令
 1. exact live agent名を使って`shepherd agent get`を読む。
 2. reportがtruncated、不足、矛盾している場合だけShepherd`read`、次にHerdr terminalを確認する。
 3. 固定reportの`Result`、`Changed`、`Validation`、`Commit`、`Remaining`を確認する。
-4. read-only workerは開始baselineとの差分がないことを確認する。
+4. read-only workerは開始baselineと終了状態を比較する。並行writerがいなければ差分なしを要求する。並行writerがいた場合は、Main Piが独立検証したwriter path、commit、diffだけをactive/accepted writer delta ledgerへ記録し、終了差分全体がそのledgerと正確に一致することを確認する。未説明の差分、read-only workerに帰属し得る差分、または帰属が曖昧な差分があれば受理せず停止する。
 5. writerは実diff、変更範囲、validation、Plan/commit状態をtask briefと照合する。
 
 検収が終わるまで依存taskをreadyにしない。承認済み要件またはPlanの範囲では、検収後に次のdependency-ready taskを追加確認なしでdispatchする。ユーザーへの進捗はstage切替、blocker、最終完了に絞る。
