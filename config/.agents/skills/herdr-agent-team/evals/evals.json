@@ -97,6 +97,24 @@
         "next-task-cleanup.md distinguishes the retained and closable panes by their supplied IDs and preserves the unrelated tab and Main orchestrator pane.",
         "No real daemon, agent, pane, shell, Git, commit, or push operation occurs in the evaluation."
       ]
+    },
+    {
+      "id": 6,
+      "name": "worker-launch-composition",
+      "prompt": "`evals/fixtures.md`の「Eval 6: worker launch composition」にある2つのtaskについて、Main Piが実際に発行するはずのworker起動手順を`{{OUTPUT_DIR}}/launch-composition.md`へ保存してください。taskごとに、agent名、role、permission、選択したmodelとthinkingとその理由、`--append-system-prompt`へ渡すabsolute pathとその順序、組み立てた`herdr agent start`のcommand文字列、起動後に最初のuser messageとして送るtask briefの見出し構成を書いてください。実際のcommand実行、agent起動、subagent起動、pane操作、Git変更は行わず、fixtureの状態だけを使ってください。",
+      "expected_output": "各taskのcommandが`herdr agent start <name> --kind pi --pane <pane-id>`とagent引数separatorを正しく使い、common→permission→roleの順でabsolute pathを個別の`--append-system-prompt`として渡す。built-in reviewerは3枚、custom api-cartographerはrole fileを作らず2枚になる。model/thinkingはrouting正本を参照してtaskごとに独立選択し理由を記録する。起動後のbriefは非同期送信で、wait commandやpolling loopを使わない。",
+      "files": [
+        "evals/fixtures.md"
+      ],
+      "expectations": [
+        "Each launch command uses `herdr agent start` with the exact fixture pane ID, `--kind pi`, and passes Pi arguments after the `--` separator rather than inventing a different invocation shape.",
+        "The reviewer launch passes exactly three `--append-system-prompt` values in the order common contract, read-only permission contract, reviewer role contract, each as an absolute path under the fixture skill resource root.",
+        "The custom `api-cartographer` launch passes only the common and read-only permission contracts, creates no persistent or temporary role file, and defines its responsibility in the task brief instead.",
+        "Both agent names follow the role-slug convention, are unique, and satisfy the character and length constraints defined by the Herdr skill rather than a constraint invented in this skill.",
+        "Model and thinking are selected per task by consulting the canonical Pi routing file, with the selection and its reason recorded, and no routing table, benchmark, or fixed role-to-model mapping is reproduced.",
+        "The task brief is described as the first user message sent asynchronously after a successful start, with no wait command or polling loop used for ordinary completion.",
+        "No command is actually executed and no agent, subagent, pane, or repository mutation occurs in the evaluation."
+      ]
     }
   ]
 }
