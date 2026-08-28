@@ -5,7 +5,6 @@
     "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1",
     "CLAUDE_CODE_SUBAGENT_MODEL": "sonnet"
   },
-  "model": "fable",
   "hooks": {
     "Notification": [
       {
@@ -42,5 +41,6 @@
   "effortLevel": "high",
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "fable"
 }
