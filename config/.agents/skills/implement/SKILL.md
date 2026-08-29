@@ -12,8 +12,8 @@ disable-model-invocation: true
 ## 原則
 
 - **commit は成果物ごとに local で積み、push は最後に 1 回。** 途中で push すると、レビューで直すべき commit がすでに公開されていて取り消せず、修正 commit が上乗せされて履歴が汚れる。
-- **独立レビューは 1 回、自動修正は同じ仕様に対して最大 2 回。** reviewer は新しい所見を無限に出せる。上限がなければ収束の判断がなく、修正 → 再レビューが際限なく続く。数え直すのは、ユーザーが Requirement や Contract の変更を承認して実装範囲が変わった場合だけ（「修正 cycle」参照）。
-- **修正 cycle でやるのは修理であって設計ではない。** 修正の上限は「Plan に沿った実装のバグ取り」に対する数字で、レビューの圧力の下で書いた設計は誰もレビューしていない。finding の解消に新しい設計判断が要るなら、修正ではなく仕様の問題として止める。
+- **修正が効いていなければ、次の修正をせずユーザーに聞く。** 直した finding が再レビューでまだ残っている、修正が新しい blocking を生んだ、同じ invariant への指摘が形を変えて繰り返される。どれも今のアプローチが効いていない証拠で、そこで自動修正を重ねても手戻りが増えるだけ。
+- **修正 cycle でやるのは修理であって設計ではない。** レビューの圧力の下で書いた設計は誰もレビューしていない。finding の解消に新しい設計判断が要るなら、修正ではなく仕様の問題として止める。
 - **reviewer の重要度は提案であって命令ではない。** 実装側が Requirements と照合して採否を決める。reviewer は計画にない互換性要件や設計上の好みを blocking と呼びがちで、それに従うと要件外の作業が生まれる。
 - **仕様か所有権が不確定なら、編集や push の前に止めて聞く。** 推測で進めた分は手戻りになる。
 
@@ -22,7 +22,7 @@ disable-model-invocation: true
 このスキルの起動は次の承認として扱う。
 
 - 検証済みの成果物単位で local atomic commit を作る。
-- スコープ内の blocking/high を 2 回以内の修正で解消し、correction commit を作る。
+- スコープ内の blocking/high を修正して correction commit を作る。ただし前の修正が効いていなかった場合は、次の修正の前に確認する。
 - 全ゲート通過後、Plan archive を含む commit 列を current branch へ 1 回 push する。
 
 force push、amend、rebase、squash、履歴の書き換え、破壊的な削除、要件外の変更、ユーザーや別プロセスの変更、feature branch の作成は承認に含まれない。default branch でも同じゲートを使う。
@@ -58,7 +58,7 @@ Plan の Requirements、Implementation Decisions、Out of Scope、Contracts、Te
 Plan の Task、または Direct mode のレビュー可能な単位ごとに繰り返す。原則 1 Task = 1 commit。大きすぎれば分割、不可分な隣接 Task は統合してよい。
 
 1. 自動テストで観測できる振る舞いは `tdd` を読み、Red → Green を vertical slice ごとに進める。合意済みの test seam は確認済みとして扱い、seam の選択が公開 interface やテスト範囲を変えるなら確認する。文書・設定・生成物には Red を強制せず、構文検査や差分比較など最も近い validation を使う。
-2. 同じ context で self-review する。要件対応、scope、明白な欠陥、テスト漏れを見て、必要な refactor はここで行う。独立レビューに refactor を持ち込むと修正回数を消費する。
+2. 同じ context で self-review する。要件対応、scope、明白な欠陥、テスト漏れを見て、必要な refactor はここで行う。独立レビューに refactor を持ち込むと、reviewer が本来見るべき要件適合の確認が薄まる。
 3. 成果物に最も近い focused validation を実行する。
 4. Plan mode では、変更ファイル、判断に影響する差分、validation 結果だけを該当 Task に反映し、Progress を更新する。Requirement、Out of Scope、Contract はユーザー承認なしに変えない。
 5. [`commit-push`](../commit-push/SKILL.md) の **commit-only** で、この成果物、commit-push が doc-updater 経由で更新した文書、Plan 更新だけを local commit する。commit 成功で Task 完了。
@@ -74,7 +74,7 @@ Direct mode には Plan の Progress がないので、成果物が複数あっ�
 reviewer の条件:
 
 - 実装を担当していない **read-only の context** を使う。目的は実装側の思い込みから独立した目で見ることで、model や thinking level の差は目的ではないため固定しない。
-- re-review は可能なら同じ context を再利用する。再利用できない実行環境（resume 不可、context 消失）では、finding 履歴と correction 範囲を引き継いだ新しい reviewer で続ける。どちらでも再レビューを差分に絞れることが目的で、同一 context 自体は要件ではない。差し替え回数に上限は置かない。上限を消費するのは修正回数であって、reviewer の実行環境の都合ではないため。
+- re-review は可能なら同じ context を再利用する。再利用できない実行環境（resume 不可、context 消失）では、finding 履歴と correction 範囲を引き継いだ新しい reviewer で続ける。どちらでも再レビューを差分に絞れることが目的で、同一 context 自体は要件ではない。差し替え回数に上限は置かない。reviewer の実行環境の都合は、修正が効いているかどうかとは無関係なため。
 
 reviewer に渡すもの:
 
@@ -99,19 +99,19 @@ reviewer 出力が証拠形式を満たさなければ、1 度だけ補足を求
 
 ## 修正 cycle
 
-同じ仕様に対する自動修正は **最大 2 回**。final review と final validation 起因を合算して数える。1 cycle は、採用した `blocking/high` をまとめて修正 → 影響範囲の validation → local correction commit → scoped re-review、の一巡。
+1 cycle は、採用した `blocking/high` をまとめて修正 → 影響範囲の validation → local correction commit → scoped re-review、の一巡。scoped re-review の対象は、既存 finding の解消、correction diff、その修正が直接影響する経路に限る。
 
 修正は Plan の Implementation Decisions の範囲内で行う。範囲を出る finding は Triage の時点で `decision required` になっているはずで、修正の途中で範囲を出ることが分かった場合も、その cycle を打ち切って同じ扱いにする。
 
-scoped re-review の対象は、既存 finding の解消、correction diff、その修正が直接影響する経路に限る。2 回の修正を終えて `blocking/high` が残る場合は、明白な小修正でも 3 回目に進まず停止する。
+scoped re-review が「対象 finding はすべて解消、新しい `blocking/high` なし」を返したら final validation へ進む。次のどれかに当たる場合は、次の修正を自動で始めず停止する。
 
-停止時の対応案には、同じアプローチで修正を続ける案のほかに、Requirement や受け入れ範囲を狭める案を必ず含める。上限に達したという事実自体が、現在のアプローチが収束していない証拠なので、選択肢を修正継続だけにしない。
+- 直した finding が解消されていない。
+- correction diff が新しい `blocking/high` を生んだ。
+- 一度修正した invariant に対する指摘が、別の経路や入力で繰り返されている。
 
-予算の数え直しと再開の扱い:
+停止時は、未解決 finding、根拠、対応案を示す。対応案には、同じアプローチで修正を続ける案のほかに、Requirement や受け入れ範囲を狭める案を必ず含める。修正が効かなかったという事実自体がアプローチの問題を示しているので、選択肢を修正継続だけにしない。
 
-- `decision required` の解消は仕様の確定であって変更ではない。full review も数え直しもせず、確定した内容を Plan または合意に反映して同じ予算で続ける。
-- ユーザーが Requirement や Contract の変更を承認し、実装範囲が変わった場合だけ、Plan または合意を更新して影響範囲を実装・validation し、新仕様に対する full review を行い、0 から数え直す。
-- 上限で停止した後の再起動は、仕様かアプローチが変わったか、ユーザーが追加の修正回数を明示した場合だけ続行する。どちらもなければ停止報告を再提示して確認する。再起動そのものは予算を戻さない。
+ユーザーが修正の続行を選んだ場合は、その指示の範囲で 1 cycle 行い、同じ判定に戻る。ユーザーが Requirement や Contract の変更を承認した場合は、Plan または合意を更新して影響範囲を実装・validation し、新仕様に対する full review を行う。`decision required` の解消は仕様の確定であって変更ではないので、full review はせず、確定した内容を Plan または合意に反映して続ける。
 
 ## Final validation と delivery
 
@@ -119,7 +119,7 @@ scoped re-review の対象は、既存 finding の解消、correction diff、そ
 
 - review 前に成功した validation のうち、入力と対象挙動が変わっていないものは再利用する。
 - 外部環境・手動確認が必要なもの、変更で無効になったものだけを実行する。
-- ここで substantive fix が必要になれば、修正回数を 1 つ使う。
+- ここで substantive fix が必要になれば、修正 cycle として扱い、同じ停止条件を適用する。
 
 full suite の失敗が base でも再現し無関係と確認できても、自動修正、N/A 化、成功扱いはしない。どれも実装側が受入条件を勝手に緩めることになるため、受入条件を変えるかどうかをユーザーに確認する。
 
@@ -135,7 +135,7 @@ push 成功まで完了扱いにしない。push が失敗しても local commit
 
 - Requirement、Contract、Out of Scope、合意済み test seam の変更が必要になった。
 - `decision required` が出た。finding の解消に Plan の Implementation Decisions 外の設計判断が必要な場合を含む。
-- 自動修正の上限 2 回に達しても `blocking/high` が残る。
+- 修正が効いていない（直した finding が解消されない、修正が新しい `blocking/high` を生む、同じ invariant への指摘が繰り返される）。
 - reviewer 出力が補足後も証拠形式を満たさない。
 - 所有権が衝突する（既存 staged、対象と重なる unstaged、開始前の未 push commit、曖昧な upstream）。
 - 受入条件を満たせない validation 失敗が残った。
@@ -147,7 +147,7 @@ push 成功まで完了扱いにしない。push が失敗しても local commit
 1. 完了または未完了の結論。
 2. 実装した成果物と主要 commit。
 3. validation 結果（実行・再利用・未実行）。
-4. 独立レビュー、採用した finding、修正回数、残した medium/low。
+4. 独立レビュー、採用した finding、修正 cycle の経過、残した medium/low。
 5. Plan mode では archive 先。Direct mode では Plan なしで完了した旨。
 6. push 結果。
 7. 残した無関係な worktree 変更または未解決 blocker。

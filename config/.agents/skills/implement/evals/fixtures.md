@@ -25,14 +25,13 @@ The Plan defines two tasks: (1) append `alpha=1`, verify with a focused shell co
 
 Harness captures into `{{OUTPUT_DIR}}`: `base-head.txt`, `pre-review-remote-head.txt` (taken before review is supplied), `final-remote-head.txt`, `commit-list.txt`, `push.log`. The executor saves `validation.json`, `review.json`, and `final-report.md`.
 
-## Eval 2: correction budget exhausted
+## Eval 2: correction not converging
 
 `{{REVIEW_HISTORY}}` is an inert JSON fixture describing:
 
-- one read-only reviewer context reused for the final review and both scoped re-reviews;
+- one read-only reviewer context reused for the final review and the scoped re-review;
 - correction cycle 1 and scoped re-review complete;
-- correction cycle 2 and scoped re-review complete;
-- one still-unresolved High tied to a prior accepted finding;
+- one still-unresolved High tied to the accepted finding that cycle 1 was meant to fix;
 - one valid High present in the initial diff but first noticed during the latest scoped review.
 
 A separate state records explicit user approval to change a Requirement/Contract after the history above. The fixture records no action or review-scope decision for either state. Decision files contain at least `status`, `actions`, `forbidden_actions`, `reason`.

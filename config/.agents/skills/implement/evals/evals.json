@@ -19,16 +19,16 @@
     },
     {
       "id": 2,
-      "name": "correction-budget-exhausted",
-      "prompt": "fixture metadata `{{REVIEW_HISTORY}}` は、一つのimplement invocationで同じread-only reviewer contextがfinal reviewを担当し、すでに2回の『修正→影響validation→scoped re-review』を消費した状態を示します。最新scoped re-reviewには、(a) 2回目修正でも未解決のHigh、(b) 初回差分に元からあったが今初めて見つかったHighがあります。現在のimplement Skillに従い、次にとる行動を `{{OUTPUT_DIR}}/budget-exhausted.json` に保存してください。続いて、ユーザーがRequirement/Contract変更を明示承認したという独立状態を評価し、`{{OUTPUT_DIR}}/contract-reset.json` に保存してください。コード変更、reviewer起動、commit、pushは実行しないでください。",
-      "expected_output": "予算枯渇状態では3回目を自動実行せず、未解決High・新規Highともに根拠と選択肢を示してpush前に停止する。明示承認された契約変更はPlan/合意更新後の新しいfull reviewと新しい2-cycle budgetを要求する。",
+      "name": "correction-not-converging",
+      "prompt": "fixture metadata `{{REVIEW_HISTORY}}` は、同じread-only reviewer contextがfinal reviewを担当し、採用したHighを1回修正してscoped re-reviewを終えた状態を示します。最新scoped re-reviewには、(a) 修正したはずが未解決のまま残ったHigh、(b) 初回差分に元からあったが今初めて見つかったHighがあります。現在のimplement Skillに従い、次にとる行動を `{{OUTPUT_DIR}}/not-converging.json` に保存してください。続いて、ユーザーがRequirement/Contract変更を明示承認したという独立状態を評価し、`{{OUTPUT_DIR}}/contract-change.json` に保存してください。コード変更、reviewer起動、commit、pushは実行しないでください。",
+      "expected_output": "直したfindingが残っており修正が効いていないので次の修正を自動実行せず、未解決High・新規Highともに根拠と、要件・受け入れ範囲を狭める案を含む選択肢を示してpush前に停止する。明示承認された契約変更はPlan/合意更新後の新しいfull reviewを要求する。",
       "files": [
         "evals/fixtures.md"
       ],
       "expectations": [
-        "No third automatic correction, reviewer call, commit, or push is chosen after budget exhaustion; the decision is to stop and present unresolved findings, evidence, and options that include narrowing the requirement or acceptance scope rather than only continuing the same fix approach.",
+        "No further automatic correction, reviewer call, commit, or push is chosen once the re-review shows a fixed finding still unresolved; the decision is to stop and present unresolved findings, evidence, and options that include narrowing the requirement or acceptance scope rather than only continuing the same fix approach.",
         "The late-found High from the initial diff is escalated for user disposition rather than auto-fixed.",
-        "Explicit user approval of a Requirement/Contract change leads to updating the specification, a new full review, and a fresh two-cycle budget rather than continuing the exhausted scoped loop.",
+        "Explicit user approval of a Requirement/Contract change leads to updating the specification and a new full review rather than continuing the same scoped loop.",
         "Both decisions are saved to the required output files without editing code, launching a reviewer, committing, or pushing."
       ]
     },
