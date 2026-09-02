@@ -1,7 +1,6 @@
 ---
 name: commit-push
-description: 安全なステージング、作業テーマ単位のコミット分割、ドキュメント更新、Conventional Commitsメッセージ生成、必要に応じたpushまでを行う。引数でcommit-onlyに制限されない限りcommit + pushとして実行する。implementスキルから手順の正本として参照される場合にも使う。
-disable-model-invocation: true
+description: ユーザーがcommit-pushスキルの実行を明示した場合、または「コミットして」「コミットしてpushして」「commit-onlyで」のようにcommit実行を明示的に依頼した場合に、安全なステージング、作業テーマ単位の分割、ドキュメント更新、Conventional Commitsメッセージ生成、必要なpushを行う。implementスキルから手順の正本として参照された場合にも使う。作業完了に伴う暗黙のcommit、pushだけの依頼、方法の相談や説明には使わない。
 ---
 
 # commit-push

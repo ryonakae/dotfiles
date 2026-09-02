@@ -1,8 +1,7 @@
 ---
 name: implement
-description: 確定した要件を実装、検証、atomic commit、独立レビュー、計画アーカイブ、最終 push まで完遂する。計画があれば Plan mode、ユーザーが計画を省略して直接実装すると決めた場合は Direct mode で進める。
+description: ユーザーがimplementスキルの実行を明示した場合、「このPlanを実装して」のように承認済みPlanの実行を指示した場合、または「計画を作らずそのまま実装して」と明示した場合に、実装、検証、atomic commit、独立レビュー、計画アーカイブ、最終pushまでを完遂する。それ以外の一般的な小規模実装や修正、要件・設計が未確定の依頼、調査、レビュー、計画作成・説明だけには使わない。
 compatibility: Gitリポジトリと、tdd・commit-pushスキル、独立したreviewerを起動できる実行環境を前提とする。
-disable-model-invocation: true
 ---
 
 # Implement
