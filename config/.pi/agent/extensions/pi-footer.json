@@ -37,13 +37,13 @@
         "options": {
           "raw": false,
           "hideWhenEmpty": true,
-          "icon": "",
+          "icon": "f",
           "text": "-",
           "fg": "pi:dim",
           "bg": "default",
           "bold": false,
           "externalStatusKey": "pi-fast-mode",
-          "trimValue": 0,
+          "trimValue": 1,
           "preserveTrimStyles": true
         }
       },
@@ -149,9 +149,11 @@
   },
   "extensionStatusRow": {
     "hiddenKeys": [
+      "@hk_net/pi-usage-bars",
       "pi-fast-mode"
     ],
     "knownKeys": [
+      "@hk_net/pi-usage-bars",
       "pi-fast-mode"
     ]
   }
