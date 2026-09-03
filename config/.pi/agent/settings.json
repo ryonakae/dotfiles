@@ -18,7 +18,7 @@
     "npm:@pi-kaush/pi-tool-call-markers",
     "npm:@ryonakae/shepherd-pi",
     "npm:@wienerberliner/pi-openai-fast@0.1.3",
-    "npm:@narumitw/pi-usage"
+    "npm:@hk_net/pi-usage-bars"
   ],
   "quietStartup": true,
   "theme": "dark",
