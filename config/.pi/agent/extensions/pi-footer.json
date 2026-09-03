@@ -31,6 +31,23 @@
         }
       },
       {
+        "id": "external-status-mtl658hp-1khxid",
+        "type": "external-status",
+        "enabled": true,
+        "options": {
+          "raw": false,
+          "hideWhenEmpty": true,
+          "icon": "",
+          "text": "-",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false,
+          "externalStatusKey": "pi-fast-mode",
+          "trimValue": 0,
+          "preserveTrimStyles": true
+        }
+      },
+      {
         "id": "flex-separator-mq60bnka-8w7oy1",
         "type": "flex-separator",
         "enabled": true,
@@ -131,7 +148,11 @@
     "colorLevel": "ansi256"
   },
   "extensionStatusRow": {
-    "hiddenKeys": [],
-    "knownKeys": []
+    "hiddenKeys": [
+      "pi-fast-mode"
+    ],
+    "knownKeys": [
+      "pi-fast-mode"
+    ]
   }
 }
