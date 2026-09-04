@@ -125,3 +125,20 @@
     (global-name "com.apple.usernoted.daemon_client")
     (global-name "com.apple.usernotifications.usernotificationservice")
 )
+
+;; xcodebuild test は開始時に IOPMAssertionCreateWithName で sleep 抑止 assertion を取り、
+;; powerd への mach-lookup が拒否されると -536870199 で Simulator test 自体が始まらない。
+;; Safehouse の xcode integration は CoreSimulator だけを許可し powerd を含まないため、ここで補足する。
+(allow mach-lookup
+    (global-name "com.apple.PowerManagement.control")
+    ;; test runner の DTServiceHub は Simulator へ接続する際に instruments の arbiter、security などの
+    ;; XPC service を順に引く。1 つでも拒否されると "failed to bless service hub" で xcodebuild test が
+    ;; 応答しなくなるため、Xcode 同梱の instruments service 群をまとめて許可する。
+    (global-name-regex #"^com\.apple\.dt\.instruments\.")
+)
+
+;; xcodebuild test は完了後に Simulator 側で起動した test runner（sandbox 外のプロセス）へ終了シグナルを送る。
+;; 既定の (allow signal (target same-sandbox)) では拒否され、終了を待ち続けてハングする。
+;; --enable=process-control でも同じ許可が得られるが、wrapper の既存 --enable 一覧と併用すると
+;; safehouse 0.9.0 の policy renderer が "Bad file descriptor" で落ちるため、ここで signal だけを開ける。
+(allow signal (target others))
