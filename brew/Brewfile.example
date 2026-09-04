@@ -18,6 +18,7 @@ brew 'fisher'
 brew 'fzf'
 brew 'jq'
 brew 'trasta298/tap/keifu'
+brew 'mosh'
 brew 'tmux'
 brew 'tree'
 brew 'vim'
@@ -32,12 +33,14 @@ brew 'zoxide'
 # tap 'composer'
 
 # パッケージマネージャ
+brew 'cocoapods'
 brew 'mas'
 brew 'mise'
 brew 'usage'
 brew 'uv'
 
 # 開発ツール
+brew 'fastlane'
 # brew 'firebase-cli'
 # tap 'heroku/brew'
 # brew 'heroku'
@@ -45,8 +48,8 @@ brew 'uv'
 # AI
 brew 'agent-browser'
 brew 'eugene1g/safehouse/agent-safehouse'
-brew 'antigravity-cli'
 brew 'ctx7'
+brew 'herdr'
 brew 'anomalyco/tap/opencode'
 brew 'pi-coding-agent'
 
@@ -68,7 +71,7 @@ cask '1password'
 # cask 'amorphousdiskmark'
 # cask 'android-file-transfer'
 cask 'appcleaner'
-cask 'bartender'
+# cask 'bartender'
 cask 'bettertouchtool'
 cask 'cleanshot'
 cask 'cmd-eikana'
@@ -120,7 +123,7 @@ cask 'sourcetree'
 
 # エディタ・IDE
 cask 'android-studio'
-cask 'antigravity'
+# cask 'antigravity'
 cask 'coteditor'
 # cask 'cursor'
 # cask 'processing'
@@ -184,15 +187,16 @@ cask 'zoom'
 # cask 'via'
 
 # AI
+cask 'antigravity-cli'
 cask 'chatgpt'
 cask 'claude'
-cask 'claude-code'
+cask 'claude-code@latest'
 cask 'codex'
-cask 'codex-app'
 
 
 # MacAppStoreのアプリをインストール
 ########################################
+mas 'Barbee', id: 1548711022
 # mas 'AutoMounter', id: 1160435653
 mas 'Bear', id: 1091189122
 # mas 'DaisyDisk', id: 411643860
