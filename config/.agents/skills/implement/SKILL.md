@@ -36,7 +36,7 @@ force push、amend、rebase、squash、履歴の書き換え、破壊的な削�
 2. 現在の会話で作成・選択した Plan。
 3. `docs/plans/` 直下に未アーカイブが 1 件だけならそれ。
 
-Plan の Requirements、Implementation Decisions、Out of Scope、Contracts、Testing Decisions、Tasks とその Validation、Final Validation を実装仕様とする。
+Plan に記載された要件、決定事項、対象外、公開契約、Tasks、検証方法を実装仕様とする。見出しの分け方は問わず、省略された任意の節や要件対応表を実装前に補う必要はない。
 
 **Direct mode** — ユーザーが計画を作らず実装すると決めた場合。会話、`dig` の合意、ユーザーの完了条件を実装仕様とする。計画ファイルは作らず、アーカイブもしない。複数領域への波及や新しい設計判断が判明したら停止して `plan` を提案する。
 
@@ -48,7 +48,7 @@ Plan の Requirements、Implementation Decisions、Out of Scope、Contracts、Te
 2. Plan 全体、または Direct mode の決定事項と対象外。
 3. `git status --short`、`git diff --cached`、`git diff`。ここで見るのは「編集を始めてよいか」だけで、何を stage するかは commit-push が決める。既存の staged 変更があれば開始せず確認する。unstaged/untracked が対象ファイルと重なる場合も確認する。重ならない変更は残し、commit 対象から除外する。
 4. upstream、ahead/behind、push 対象範囲。upstream が未設定・曖昧、diverged、開始前から未 push commit がある場合は、それを自分の成果として push しないよう確認する。
-5. review 用の base commit を記録する。Plan mode では Plan の Progress に、Direct mode では会話に残し、独立レビューの入力と completion report に使う。
+5. review 用の base commit を記録する。Plan mode では Plan の Tasks（独立した Progress があればそちら）に、Direct mode では会話に残し、独立レビューの入力と completion report に使う。
 
 必須 validation が remote CI やデプロイでしか実行できず、Plan やユーザーがその扱いを決めていない場合も、編集前に確認する。
 
@@ -59,7 +59,7 @@ Plan の Task、または Direct mode のレビュー可能な単位ごとに繰
 1. 自動テストで観測できる振る舞いは `tdd` を読み、Red → Green を vertical slice ごとに進める。合意済みの test seam は確認済みとして扱い、seam の選択が公開 interface やテスト範囲を変えるなら確認する。文書・設定・生成物には Red を強制せず、構文検査や差分比較など最も近い validation を使う。
 2. 同じ context で self-review する。要件対応、scope、明白な欠陥、テスト漏れを見て、必要な refactor はここで行う。独立レビューに refactor を持ち込むと、reviewer が本来見るべき要件適合の確認が薄まる。
 3. 成果物に最も近い focused validation を実行する。
-4. Plan mode では、変更ファイル、判断に影響する差分、validation 結果だけを該当 Task に反映し、Progress を更新する。Requirement、Out of Scope、Contract はユーザー承認なしに変えない。
+4. Plan mode では、変更ファイル、判断に影響する差分、validation 結果だけを該当 Task に反映し、タスクのチェック状態（独立した Progress があればそちら）を更新する。Requirement、Out of Scope、Contract はユーザー承認なしに変えない。
 5. [`commit-push`](../commit-push/SKILL.md) の **commit-only** で、この成果物、commit-push が doc-updater 経由で更新した文書、Plan 更新だけを local commit する。commit 成功で Task 完了。
 
 Direct mode には Plan の Progress がないので、成果物が複数あって順序や完了状態を追う必要があれば todo を使う。進捗記録だけの文書は作らない。
