@@ -4,5 +4,7 @@
   "scopeModels": true,
   "toolDescriptionMode": "custom",
   "worktreeIsolation": false,
-  "fallbackSubagent": "none"
+  "fallbackSubagent": "none",
+  "widgetMode": "off",
+  "fleetView": true
 }
