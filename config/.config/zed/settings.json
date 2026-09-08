@@ -40,7 +40,7 @@
   },
   "terminal": {
     "cursor_shape": "bar",
-    "dock": "left",
+    "dock": "bottom",
     "flexible": false,
     "option_as_meta": true,
   },
