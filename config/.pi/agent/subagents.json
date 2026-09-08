@@ -5,6 +5,5 @@
   "toolDescriptionMode": "custom",
   "worktreeIsolation": false,
   "fallbackSubagent": "none",
-  "widgetMode": "off",
-  "fleetView": true
+  "fleetView": false
 }
