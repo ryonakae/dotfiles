@@ -5,15 +5,16 @@
   "lines": [
     [
       {
-        "id": "model-provider-mq60b9a3-eqewla",
-        "type": "model-provider",
+        "id": "model-mto3cn8k-q2k3ec",
+        "type": "model",
         "enabled": true,
         "options": {
           "raw": true,
           "icon": "",
           "fg": "pi:dim",
           "bg": "default",
-          "bold": false
+          "bold": false,
+          "showProvider": false
         }
       },
       {
@@ -35,16 +36,12 @@
         "type": "external-status",
         "enabled": true,
         "options": {
-          "raw": false,
+          "raw": true,
           "hideWhenEmpty": true,
-          "icon": "f",
-          "text": "-",
           "fg": "pi:dim",
           "bg": "default",
           "bold": false,
-          "externalStatusKey": "pi-fast-mode",
-          "trimValue": 1,
-          "preserveTrimStyles": true
+          "externalStatusKey": "pi-gpt-fast-mode"
         }
       },
       {
@@ -150,11 +147,11 @@
   "extensionStatusRow": {
     "hiddenKeys": [
       "@hk_net/pi-usage-bars",
-      "pi-fast-mode"
+      "pi-gpt-fast-mode"
     ],
     "knownKeys": [
       "@hk_net/pi-usage-bars",
-      "pi-fast-mode"
+      "pi-gpt-fast-mode"
     ]
   }
 }
