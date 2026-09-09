@@ -8,7 +8,7 @@
   "enableSkillCommands": false,
   "packages": [
     "npm:@narumitw/pi-btw",
-    "npm:@tintinweb/pi-subagents",
+    "git:github.com/ryonakae/pi-subagents@e34de6d6f4b62c6f1eaa9e99231b92db6742a2c5",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
