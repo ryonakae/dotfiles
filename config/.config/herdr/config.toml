@@ -20,6 +20,7 @@ enabled = true
 delivery = "herdr"
 
 [keys]
+edit_scrollback = "prefix+shift+e"
 # 左 Option と hjkl でペイン・タブ、矢印でエージェント・ワークスペースを移動する
 focus_pane_down = "alt+j"
 focus_pane_up = "alt+k"
