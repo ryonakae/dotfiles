@@ -202,13 +202,18 @@ cd ~ && npx skills add <owner>/<repo> -s <skill-name> -a claude-code -y   # 個�
 # スキルを削除
 cd ~ && npx skills remove -s <skill-name> -y
 
-# 一覧・更新・検索
+# 一覧・検索
 cd ~ && npx skills list
-cd ~ && npx skills update
 cd ~ && npx skills find
 ```
 
 `-g` フラグは使わない（user スコープの別ディレクトリに入ってしまい、現状の運用と整合しない）。
+
+更新は登録済みの取得元・スキル名で `cd ~ && npx skills add <owner>/<repo> -s <skill-name> -a claude-code -y` を再実行する。現行の `update` は内部の `add` に配布先を渡さず、検出した他エージェントにも配布するため使わない。
+
+現行CLIは `add` の配布先が1エージェントだと symlink を実体コピーに置き換える。実行後は取得済みの `~/.claude/skills/<skill-name>/` を `~/.agents/skills/<skill-name>/` の実体として配置し直し、Claude 側を symlink に戻す。旧実体は退避し、更新前の内容で上書きしない。
+
+`remove` 後は配布ファイルだけでなく `config/skills-lock.json` の登録も確認し、残っていれば削除する。
 
 `experimental_install` は lock に記録された版を再現するのではなく、記載された全スキルを取得元の最新版で取り直す。実行すると `computedHash` が更新されるので、復元目的以外では使わない。
 
