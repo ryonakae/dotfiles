@@ -26,5 +26,8 @@
     "openai-codex/gpt-5.6-sol",
     "openai-codex/gpt-6-astra"
   ],
-  "hideThinkingBlock": true
+  "hideThinkingBlock": true,
+  "terminal": {
+    "showImages": false
+  }
 }
