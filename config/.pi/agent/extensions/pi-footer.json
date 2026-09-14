@@ -38,10 +38,14 @@
         "options": {
           "raw": true,
           "hideWhenEmpty": true,
+          "icon": "",
+          "text": "-",
           "fg": "pi:dim",
           "bg": "default",
           "bold": false,
-          "externalStatusKey": "pi-gpt-fast-mode"
+          "externalStatusKey": "pi-gpt-fast-mode",
+          "trimValue": 0,
+          "preserveTrimStyles": true
         }
       },
       {
@@ -60,8 +64,8 @@
         "type": "context",
         "enabled": true,
         "options": {
-          "raw": false,
-          "icon": "Ctx: ",
+          "raw": true,
+          "icon": "",
           "fg": "pi:dim",
           "bg": "default",
           "bold": false,
@@ -87,7 +91,7 @@
           "bg": "default",
           "bold": false,
           "cwdDisplayStyle": "fish",
-          "segments": 2
+          "segments": 1
         }
       },
       {
@@ -147,11 +151,15 @@
   "extensionStatusRow": {
     "hiddenKeys": [
       "@hk_net/pi-usage-bars",
-      "pi-gpt-fast-mode"
+      "mcp",
+      "pi-gpt-fast-mode",
+      "subagents"
     ],
     "knownKeys": [
       "@hk_net/pi-usage-bars",
-      "pi-gpt-fast-mode"
+      "mcp",
+      "pi-gpt-fast-mode",
+      "subagents"
     ]
   }
 }

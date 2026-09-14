@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.85.0",
+  "lastChangelogVersion": "0.85.1",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-6-astra",
   "defaultThinkingLevel": "medium",
@@ -7,15 +7,14 @@
   "collapseChangelog": true,
   "enableSkillCommands": false,
   "packages": [
-    "npm:@narumitw/pi-btw",
     "git:github.com/ryonakae/pi-subagents@e34de6d6f4b62c6f1eaa9e99231b92db6742a2c5",
+    "npm:@narumitw/pi-btw",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
     "npm:@tifan/pi-inline-skills",
-    "npm:@normful/pi-auto-name@1.0.2",
+    "npm:@normful/pi-auto-name",
     "npm:@pi-kaush/pi-tool-call-markers",
-    "npm:@ryonakae/shepherd-pi",
     "npm:pi-gpt-fast-mode",
     "npm:@hk_net/pi-usage-bars"
   ],
