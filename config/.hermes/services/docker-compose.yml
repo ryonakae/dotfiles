@@ -33,7 +33,7 @@ services:
       HINDSIGHT_API_CONSOLIDATION_SOURCE_FACTS_MAX_TOKENS: "4096"
     volumes:
       - $HOME/.hermes/hindsight/data:/home/hindsight/.pg0
-      - $HOME/.codex:/home/hindsight/.codex:ro
+      - $HOME/.codex:/home/hindsight/.codex:rw
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8888/health"]
       interval: 30s
