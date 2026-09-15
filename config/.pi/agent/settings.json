@@ -7,7 +7,7 @@
   "collapseChangelog": true,
   "enableSkillCommands": false,
   "packages": [
-    "git:github.com/ryonakae/pi-subagents@e34de6d6f4b62c6f1eaa9e99231b92db6742a2c5",
+    "git:github.com/ryonakae/pi-subagents",
     "npm:@narumitw/pi-btw",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
