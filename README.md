@@ -251,7 +251,7 @@ gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hi
 - `config/.config/fish/functions/hermes-gateway.fish` — gateway 管理コマンド
 - `config/.config/fish/functions/hermes-dashboard.fish` — dashboard 管理コマンド
 
-`.env` 実体は `copy.sh` で `.env.example` から生成し、`.gitignore` 対象。編集は dotfiles 側で行う。`~/.hermes/hindsight/config.json` は `hermes memory setup` が自動生成するので dotfiles では管理しない。
+`.env` 実体は `copy.sh` で `.env.example` から生成し、`.gitignore` 対象。編集は dotfiles 側で行う。`~/.hermes/hindsight/config.json` は `hermes memory setup` が自動生成するので dotfiles では管理しない。Hindsight の `openai-codex` provider が使うホストの `~/.codex` は、コンテナの `/home/hindsight/.codex` へ読み書き可能でマウントする。
 
 ### セットアップ
 
