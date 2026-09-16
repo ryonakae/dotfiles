@@ -8,7 +8,6 @@
   "enableSkillCommands": false,
   "packages": [
     "git:github.com/ryonakae/pi-subagents",
-    "npm:@narumitw/pi-btw",
     "npm:pi-footer",
     "npm:pi-mcp-adapter",
     "npm:pi-web-access",
@@ -19,7 +18,6 @@
     "npm:@hk_net/pi-usage-bars"
   ],
   "quietStartup": true,
-  "theme": "dark",
   "enabledModels": [
     "openai-codex/gpt-5.6-luna",
     "openai-codex/gpt-5.6-terra",
@@ -29,5 +27,7 @@
   "hideThinkingBlock": true,
   "terminal": {
     "showImages": false
-  }
+  },
+  "showCacheMissNotices": true,
+  "treeFilterMode": "no-tools"
 }
