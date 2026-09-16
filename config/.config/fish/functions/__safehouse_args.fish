@@ -21,6 +21,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --workdir="$workdir" \
         --env-pass=CONTEXT7_API_KEY \
         --env-pass=DISABLE_AUTOUPDATER \
+        --env-pass=GIT_OPTIONAL_LOCKS \
         --env-pass=NO_BROWSER \
         --env-pass=TERM_PROGRAM \
         --env-pass=HERDR_ENV \
