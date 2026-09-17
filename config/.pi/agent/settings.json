@@ -28,6 +28,7 @@
   "terminal": {
     "showImages": false
   },
-  "showCacheMissNotices": true,
-  "treeFilterMode": "no-tools"
+  "showCacheMissNotices": false,
+  "treeFilterMode": "no-tools",
+  "theme": "dark"
 }
