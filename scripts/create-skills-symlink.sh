@@ -139,6 +139,11 @@ printf '%s\n' "$TARGET_DIRS" | while IFS= read -r target_dir; do
   done
 done
 
+# 外部スキルの追加・更新も反映するため、共通置き場全体を参照する
+ANTIGRAVITY_SKILLS_PARENT="$HOME/.gemini/antigravity-cli"
+mkdir -p "$ANTIGRAVITY_SKILLS_PARENT"
+create_skill_symlink "$HOME/.agents/skills" "$ANTIGRAVITY_SKILLS_PARENT"
+
 print_summary
 
 echo "Skills symlink creation finished."
