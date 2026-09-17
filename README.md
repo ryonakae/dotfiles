@@ -179,11 +179,12 @@ $ brew doctor
 ### 構成
 
 - 実体スキル: `~/.agents/skills/<skill-name>/`
-- 参照は `~/.claude/skills/<skill-name>` → `~/.agents/skills/<skill-name>` の symlink
+- Claude の参照は `~/.claude/skills/<skill-name>` → `~/.agents/skills/<skill-name>` の symlink
+- Antigravity CLI は `~/.gemini/antigravity-cli/skills` → `~/.agents/skills` のディレクトリ symlink。`sh scripts/create-skills-symlink.sh` で作成し、自作・外部の共通スキル全体を参照する。以後の追加・更新も反映される。Claude 専用スキルは含めない。既存の配置先は上書きせずスキップする
 - lock ファイル: `config/skills-lock.json`（dotfiles 管理）。`~/skills-lock.json` がここへの symlink
 - `config/.agents/skills/` 配下の自作スキルは dotfiles 管理。`npx skills` の管理対象外。追加後は `sh scripts/create-skills-symlink.sh` で配布する
 
-**配布先は `~/.agents/skills`（実体）と `~/.claude/skills`（symlink）の 2 つだけ**。`npx skills` はホームを走査して検出したエージェント全部に symlink を貼るため、放置すると `~/.hermes/skills`、`~/.pi/skills`、`~/.pi/agent/skills` などに使わないリンクが増える。`add` / `experimental_install` では必ず `-a claude-code` で配布先を絞る。
+**共通スキルの置き場は `~/.agents/skills`、参照先は Claude と Antigravity CLI のみ**。`npx skills` はホームを走査して検出したエージェント全部に symlink を貼るため、放置すると `~/.hermes/skills`、`~/.pi/skills`、`~/.pi/agent/skills` などに使わないリンクが増える。`add` / `experimental_install` では必ず `-a claude-code` で配布先を絞る。
 
 ### 実行ディレクトリ
 
@@ -221,7 +222,7 @@ cd ~ && npx skills find
 
 1. `cd ~ && npx skills add <owner>/<repo> -s <skill-name> -a claude-code -y` で `~/.agents/skills/` に展開＆ `~/skills-lock.json`（= dotfiles の `config/skills-lock.json`）が自動更新される
 2. `~/.claude/skills/<skill-name>` → `../../.agents/skills/<skill-name>` の symlink が貼られたことを確認する
-3. `~/.hermes/skills` など他エージェント側にリンクが作られていないか確認し、あれば削除する
+3. Antigravity CLI は上記のディレクトリ symlink 経由で参照する。`~/.hermes/skills` など配布対象外のエージェント側にリンクが作られていないか確認し、あれば削除する
 4. dotfiles の `config/skills-lock.json` の差分をコミット
 
 ---
