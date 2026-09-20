@@ -13,6 +13,12 @@
       "skillPath": "skills/cognitive-rhythm-writing/SKILL.md",
       "computedHash": "def774bec82be93446483f7061d98ce583ad85feb7e5f9f19e7f7c711b4987ad"
     },
+    "cua-driver": {
+      "source": "trycua/cua",
+      "sourceType": "github",
+      "skillPath": "libs/cua-driver/rust/Skills/cua-driver/SKILL.md",
+      "computedHash": "1396c8ef5e8e8ce24b581a0ff347eec95c51a8676a4acaa97db687a46060c771"
+    },
     "find-docs": {
       "source": "upstash/context7",
       "sourceType": "github",
