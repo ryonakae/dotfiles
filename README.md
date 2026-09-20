@@ -170,6 +170,16 @@ $ brew cleanup
 $ brew doctor
 ```
 
+### mosh のアップグレード後
+
+`brew upgrade mosh` の後は、次のスクリプトを実行して `mosh-server` を macOS ファイアウォールの着信許可に登録し直す。
+
+```
+$ sh scripts/allow-mosh-firewall.sh
+```
+
+Homebrew の `mosh-server` は未署名かつ読み取り専用で、ALF が許可登録時に打ち込む ad-hoc 署名を書き込めない。このため `socketfilterfw --listapps` 上は許可に見えても UDP 着信は落とされ、クライアントに `Nothing received from server on UDP port ...` が出る。スクリプトは先に ad-hoc 署名してから登録し直す。バージョン番号を含む実体パスがアップグレードのたびに変わるので、その都度再実行する。
+
 ---
 
 ## 外部スキル（npx skills）

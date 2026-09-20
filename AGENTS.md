@@ -20,6 +20,7 @@ macOS 向け設定ファイル管理リポジトリ。`config/` 配下を `$HOME
 - `scripts/create-skills-symlink.sh` — 共通スキルと Claude 専用スキルを配布し、Antigravity CLI から共通スキルへの参照リンクを作成
 - `scripts/remove-broken-symlinks.sh` — 壊れた symlink を対話的に削除（`-y` で自動）
 - `scripts/install.sh` — Xcode CLI Tools と Homebrew（新規マシン向け、初回のみ）
+- `scripts/allow-mosh-firewall.sh` — `mosh-server` を ad-hoc 署名して macOS ファイアウォールの着信許可に登録（`brew upgrade mosh` で実体パスが変わるたびに再実行）
 
 ## エージェント設定
 
