@@ -41,6 +41,7 @@ brew 'uv'
 
 # 開発ツール
 brew 'fastlane'
+brew 'googleworkspace-cli'
 # brew 'firebase-cli'
 # tap 'heroku/brew'
 # brew 'heroku'
@@ -52,12 +53,15 @@ brew 'ctx7'
 brew 'herdr'
 brew 'anomalyco/tap/opencode'
 brew 'pi-coding-agent'
+brew 'rtk'
 
 # その他
+brew 'exiftool'
 brew 'ffmpeg'
 # brew 'fontforge'
 brew 'imagemagick'
 # brew 'libpng'
+brew 'qrencode'
 # brew 'openssl'
 # brew 'postgresql'
 brew 'terminal-notifier'
@@ -77,7 +81,8 @@ cask 'cleanshot'
 cask 'cmd-eikana'
 cask 'contexts'
 cask 'cursorsense'
-cask 'google-japanese-ime@dev'
+cask 'google-japanese-ime'
+# cask 'google-japanese-ime@dev' # 環境によっては動作しない
 cask 'karabiner-elements'
 cask 'keepingyouawake'
 cask 'logi-options+'
@@ -87,6 +92,7 @@ cask 'monocle-app'
 # cask 'private-internet-access'
 cask 'raycast'
 cask 'rectangle'
+# cask 'tailscale-app'
 # cask 'tg-pro'
 cask 'the-unarchiver'
 # cask 'timemachineeditor'
@@ -150,7 +156,7 @@ cask 'figma@beta'
 # cask 'fontforge'
 # cask 'framer'
 cask 'imageoptim'
-# cask 'ogdesign-eagle'
+cask 'ogdesign-eagle'
 cask 'sf-symbols'
 # cask 'sketch'
 cask 'typeface'
@@ -202,6 +208,7 @@ mas 'Bear', id: 1091189122
 # mas 'DaisyDisk', id: 411643860
 # mas 'Disk Diag', id: 672206759
 # mas 'EdgeView 2', id: 1206246482
+# mas 'Ethernet Menubar', id: 1549412235
 # mas 'GarageBand', id: 682658836
 # mas 'GlueMotion', id: 1396851118
 # mas 'iMovie', id: 408981434
