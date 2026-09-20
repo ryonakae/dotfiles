@@ -142,3 +142,8 @@
 ;; --enable=process-control でも同じ許可が得られるが、wrapper の既存 --enable 一覧と併用すると
 ;; safehouse 0.9.0 の policy renderer が "Bad file descriptor" で落ちるため、ここで signal だけを開ける。
 (allow signal (target others))
+
+;; ホスト側のCuaDriverデーモンへの接続だけを許可する。
+(allow network-outbound
+    (home-literal "/Library/Caches/cua-driver/cua-driver.sock")
+)
