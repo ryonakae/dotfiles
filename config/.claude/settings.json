@@ -37,7 +37,16 @@
   "language": "日本語",
   "feedbackSurveyRate": 0,
   "spinnerTipsEnabled": false,
+  "awaySummaryEnabled": false,
+  "promptSuggestionEnabled": false,
+  "feedbackDrafts": "off",
+  "workflowKeywordTriggerEnabled": false,
   "effortLevel": "high",
+  "modelSettings": {
+    "claude-opus-5": {
+      "effortLevel": "high"
+    }
+  },
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true
