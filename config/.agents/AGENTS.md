@@ -20,7 +20,7 @@
 
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
 - worktree の操作は `git worktree` を直接使わず、`wt`（Worktrunk）と `use-worktrunk` スキルで行う
-- `Operation not permitted` が出たら回避策を試みず報告する。ただし `HERDR_ENV=1` なら、依頼範囲内の非破壊的操作は Herdr の別タブ・ペインで実行してよい。破壊的操作・機密情報へのアクセス・権限やセキュリティ設定の変更は事前承認を得る
+- `APP_SANDBOX_CONTAINER_ID=agent-safehouse` なら Safehouse 内。制限対象と分かる操作は試さず、想定外の `Operation not permitted` も回避せず報告する。ただし `HERDR_ENV=1` なら、依頼範囲内の非破壊的操作は Herdr の別タブ・ペインで実行してよい。破壊的操作・機密情報へのアクセス・権限やセキュリティ設定の変更は事前承認を得る
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - ライブラリ/API のドキュメントは `find-docs` スキルで参照する
 - Web検索・ページ取得は一次情報（公式ドキュメント、API リファレンス）を優先し、検索/取得ツールの失敗時・未提供時や `403` エラーの場合は `agent-browser` をフォールバックに使う
