@@ -237,6 +237,26 @@ cd ~ && npx skills find
 
 ---
 
+## Pi の Jev 連携
+
+[pi-subagents](https://github.com/ryonakae/pi-subagents) と [pi-inline-skills](https://github.com/ryonakae/pi-inline-skills) は独立forkの`master`を使う。Pi 0.87.1・Node.js 22.19以上が必要。導入先は`config/.pi/agent/settings.json`で管理し、upstream版と同時にロードしない。
+
+- モデル選定: `config/.pi/agent/subagents.json`の`jev`で候補・比較データ・閾値を設定する。選定方針は同ディレクトリの`model-selection-guide.md`、自動選定時の親向け案内は`model-selection-auto-guide.md`を編集する。
+- スキル選定: `config/.pi/agent/extensions/pi-inline-skills/config.json`で設定する。自動本文はモデルに渡して履歴へ保存し、チャットには成功通知だけを表示する。本文がコンパクションで消えた場合は必要時に再ロードする。
+- 両設定でJevを有効化し、TypeSafeを指定している。起動元で`TYPESAFE_API_KEY`を設定する（`config/.config/fish/config.fish.example`参照）。実キーはGitへ保存しない。共通wrapperは`TYPESAFE_API_KEY`と`OPENROUTER_API_KEY`をSafehouseへ渡す。
+- OpenRouterへ切り替える場合は各設定の`provider`を`openrouter`、`model`を`typesafe/jev-1.13`へ変更する。認証はPi標準のOpenRouter認証を使う。両拡張とも`jev.enabled: false`で自動選定を停止できる。
+
+```fish
+pi update git:github.com/ryonakae/pi-subagents@master
+pi update git:github.com/ryonakae/pi-inline-skills@master
+```
+
+設定・パッケージの更新後は`/reload`する。環境変数を変更した場合は、その値を持つシェルからPiを起動し直す。
+
+Jevにはモデル選定時の委譲タスク、スキル選定時の上限付き会話などを外部送信する。通常の文章に含まれる秘密情報は自動マスキングしない。モデル選定が低confidenceなどで不採用なら、子を起動せず親へ判断を戻す。自動選定による速度・品質・費用の改善は未計測。詳細と検証記録は[dig log](docs/dig/2026-09-28-pi-jev-routing.md)を参照。
+
+---
+
 ## Hermes Agent
 
 gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hindsight は `~/.hermes/services/docker-compose.yml` で Docker 管理する。Dashboard は Docker で `~/.hermes` を bind mount しない。`~/.hermes/hindsight/` は Hermes 本体と Docker の双方が読み書きする共有領域。
