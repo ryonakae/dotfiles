@@ -20,6 +20,8 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
     set -l args \
         --workdir="$workdir" \
         --env-pass=CONTEXT7_API_KEY \
+        --env-pass=TYPESAFE_API_KEY \
+        --env-pass=OPENROUTER_API_KEY \
         --env-pass=DISABLE_AUTOUPDATER \
         --env-pass=GIT_OPTIONAL_LOCKS \
         --env-pass=NO_BROWSER \

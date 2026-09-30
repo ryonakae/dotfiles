@@ -40,6 +40,7 @@ config/
 - 無効化したグローバルスキルは `config/.agents/skills/.disabled/` に移動する。ドットで始まるディレクトリは `create-skills-symlink.sh` の配布対象外
 - `config/.agents/skills/` には自作スキルのみを置く。外部スキル（`npx skills` で取得するもの）は `~/.agents/skills/` 配下に実体として展開され、`config/skills-lock.json`（`~/skills-lock.json` の symlink 元）で管理する。詳細な運用は `README.md` の「外部スキル（npx skills）」節を参照
 - Pi の extension 一覧は `config/.pi/agent/settings.json`、extension 個別設定は原則 `config/.pi/agent/extensions/<extension-name>/`、subagent 定義は `config/.pi/agent/agents/*.md` に置く。保存先を固定する外部 extension は実装に従う。`hooks/` というディレクトリ名は Pi extension として自動読み込みされるため使わない
+- Pi の Jev 候補・比較データは `config/.pi/agent/subagents.json`、選定方針は同ディレクトリの `model-selection-guide.md` / `model-selection-auto-guide.md` で管理する。認証・更新・無効化は README の「Pi の Jev 連携」を参照
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
 - wrapper で export した環境変数を Safehouse 内へ渡すには、`__safehouse_args.fish` の `--env-pass` にも追加する。例: `pi.fish` の `GIT_OPTIONAL_LOCKS=0` は footer の Git 参照によるロック競合を抑える
 - 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--add-dirs` で top-level（`~/.config`, `~/.local`, `~/.cache`, `~/Library/Caches`, `~/dotfiles`, `~/Dev`, `~/.shepherd` 等）を列挙する allowlist 型ポリシー。列挙外は safehouse default deny + `--enable=...` の組み合わせで暗黙に閉じる。allow 領域内の機密ファイル名（`.env`, `credentials.json`, 秘密鍵類）と、wide-read で見えるホスト credential（`~/.gnupg`, `~/.aws/credentials` 等）だけを `local-overrides.sb` で後勝ち deny する
