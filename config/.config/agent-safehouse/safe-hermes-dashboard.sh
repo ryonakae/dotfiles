@@ -47,7 +47,9 @@ done
 [ -d "$HOME/Dev" ] && args+=(--add-dirs="$HOME/Dev")
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
-exec safehouse "${args[@]}" -- hermes dashboard \
+# launchd でも mise のバージョン指定を適用し、Hermes 本体は既存 venv に固定する。
+exec mise -C "$HOME/.hermes" exec -- safehouse "${args[@]}" -- \
+  "$HOME/.hermes/hermes-agent/venv/bin/hermes" dashboard \
   --host "$HERMES_DASHBOARD_HOST" \
   --port "$HERMES_DASHBOARD_PORT" \
   --no-open \

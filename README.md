@@ -254,6 +254,7 @@ gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hi
 `config/.hermes/` を `~/.hermes/` に、`config/.config/` を `~/.config/` に `create-symlink.sh` で配置する。
 
 - `config/.hermes/SOUL.md` — エージェント人格定義
+- `config/.hermes/mise.toml` — Hermes 配下の Python / Node.js バージョン指定（ランタイム本体・`venv` は管理対象外）
 - `config/.hermes/services/docker-compose.yml` — Docker サービス構成（hindsight）
 - `config/.hermes/hindsight/.env.example` — hindsight LLM 設定テンプレート
 - `config/.config/agent-safehouse/safe-hermes-gateway.sh` — gateway launchd 用 safehouse ラッパー
@@ -307,7 +308,7 @@ curl -sf http://127.0.0.1:9120/api/status >/dev/null && echo "dashboard OK"
 hermes memory status        # Provider: hindsight / Status: available
 ```
 
-ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh` と `config/.config/agent-safehouse/safe-hermes-dashboard.sh`。hermes-gateway が git push などで SSH 秘密鍵を使うため、safehouse ポリシーを通じて SSH_AUTH_SOCK 環境変数を引き継いでいる。Dashboard の runtime plist はマシン固有なので tracked file にはせず、`~/Library/LaunchAgents/ai.hermes.dashboard.plist` に配置する。
+ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh` と `config/.config/agent-safehouse/safe-hermes-dashboard.sh`。両方とも `mise -C ~/.hermes exec` でランタイムの環境を適用してから Safehouse を起動し、Hermes 本体は `~/.hermes/hermes-agent/venv/bin/hermes` を使う。初回は `mise -C ~/.hermes install` で指定バージョンを導入する。Python のバージョンを変更した場合は、既存 `venv` の再作成も必要。hermes-gateway が git push などで SSH 秘密鍵を使うため、safehouse ポリシーを通じて SSH_AUTH_SOCK 環境変数を引き継いでいる。Dashboard の runtime plist はマシン固有なので tracked file にはせず、`~/Library/LaunchAgents/ai.hermes.dashboard.plist` に配置する。
 
 Dashboard plist は `Label` を `ai.hermes.dashboard`、`ProgramArguments` を `/Users/ryo.nakae/.config/agent-safehouse/safe-hermes-dashboard.sh` の 1 要素、`WorkingDirectory` を `/Users/ryo.nakae/.hermes/hermes-agent` にする。`EnvironmentVariables` は gateway plist と同じ `PATH` / `VIRTUAL_ENV` / `HERMES_HOME` を使う。
 
