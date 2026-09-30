@@ -51,7 +51,7 @@ config/
 
 運用・セットアップ・トラブルシュートは `README.md` の「Hermes Agent」節を参照。
 
-- dotfiles で管理するのは 3 ファイルのみ: `SOUL.md`, `services/docker-compose.yml`, `hindsight/.env.example`
+- `config/.hermes/` で管理するのは `SOUL.md`, `mise.toml`, `services/docker-compose.yml`, `hindsight/.env.example`。`mise.toml` は Hermes 配下の Python / Node.js バージョンを固定し、ランタイム本体と `venv` は管理しない
 - 管理対象外: `config.yaml`（クレデンシャル）、`hooks/` / `cron/` / `automations/` / `skills/hermes-custom/`（自己改善で書き換わる）、memory / session / 認証系全般
 - `hermes gateway install --force` / `start` / `setup` の一部分岐は plist を再生成するため、実行後は README 「Hermes Agent › セットアップ」ステップ 3 で ProgramArguments を safehouse ラッパーに差し替え直す
 

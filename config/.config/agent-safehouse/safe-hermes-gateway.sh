@@ -44,4 +44,6 @@ done
 # 機密ファイルの deny ルール
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
-exec safehouse "${args[@]}" -- hermes --profile default gateway run
+# launchd でも mise のバージョン指定を適用し、Hermes 本体は既存 venv に固定する。
+exec mise -C "$HOME/.hermes" exec -- safehouse "${args[@]}" -- \
+  "$HOME/.hermes/hermes-agent/venv/bin/hermes" --profile default gateway run
