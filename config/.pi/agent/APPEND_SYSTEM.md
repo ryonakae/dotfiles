@@ -25,5 +25,6 @@
 
 ## Pi-Specific Behavior
 
+- MCPツールを用途から探すときは、`mcp`および`mcpScript`内の`tools.search`に`searchMode: "semantic"`を指定する。ツール名が既知の場合や正規表現検索には`lexical`を使う。
 - サブエージェントの `max_turns` は、ユーザーが明示した場合だけ指定する。
 - Pi が展開した `<skill name="..." location="...">...</skill>` はスキル呼び出しとして実行し、閉じタグ後の文を依頼・引数として扱う。引数がなくても意図が明確なら既定手順を実行する。スキル本文の例文やトリガー例は依頼扱いしない。

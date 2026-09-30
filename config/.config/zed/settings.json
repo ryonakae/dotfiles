@@ -40,7 +40,6 @@
   },
   "terminal": {
     "cursor_shape": "bar",
-    "dock": "bottom",
     "flexible": false,
     "option_as_meta": true,
   },
@@ -54,22 +53,23 @@
     "default_model": {
       "enable_thinking": true,
       "effort": "medium",
-      "model": "zen/deepseek-v4-flash",
-      "provider": "opencode",
+      "model": "gpt-6-sol",
+      "provider": "openai-subscribed",
     },
     "flexible": false,
     "inline_assistant_model": {
-      "model": "claude-haiku-4.5",
-      "provider": "copilot_chat",
+      "model": "gpt-6-sol",
+      "provider": "openai-subscribed",
     },
     "play_sound_when_agent_done": "when_hidden",
   },
   "edit_predictions": {
     "allow_data_collection": "no",
     "open_ai_compatible_api": {
-      "api_url": "https://opencode.ai/zen/v1/chat/completions",
-      "model": "deepseek-v4-flash",
-      "prompt_format": "deepseek_coder",
+      "api_url": "https://openrouter.ai/api/v1/completions",
+      "model": "qwen/qwen3-coder-next",
+      "prompt_format": "qwen",
+      "max_output_tokens": 512,
     },
     "provider": "open_ai_compatible_api",
   },
