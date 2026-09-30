@@ -40,7 +40,6 @@
   },
   "terminal": {
     "cursor_shape": "bar",
-    "dock": "bottom",
     "flexible": false,
     "option_as_meta": true,
   },
@@ -54,8 +53,8 @@
     "default_model": {
       "enable_thinking": true,
       "effort": "medium",
-      "model": "zen/deepseek-v4-flash",
-      "provider": "opencode",
+      "model": "gpt-6-astra",
+      "provider": "openai-subscribed",
     },
     "flexible": false,
     "inline_assistant_model": {
