@@ -1,9 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "env": {
-    "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1",
-    "CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING": "1"
-  },
+  "autoMemoryEnabled": false,
   "hooks": {
     "Notification": [
       {
@@ -22,31 +19,30 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash '/Users/ryo.nakae/.claude/hooks/herdr-agent-state.sh' session",
+            "command": "bash \"$HOME/.claude/hooks/herdr-agent-state.sh\" session",
             "timeout": 10
           }
         ]
       }
     ]
   },
+  "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
-    "command": "npx -y ccstatusline@latest",
-    "padding": 0
+    "command": "npx -y ccstatusline@latest"
   },
   "language": "日本語",
   "feedbackSurveyRate": 0,
-  "spinnerTipsEnabled": false,
-  "awaySummaryEnabled": false,
-  "promptSuggestionEnabled": false,
   "feedbackDrafts": "off",
-  "workflowKeywordTriggerEnabled": false,
-  "effortLevel": "high",
+  "spinnerTipsEnabled": false,
   "modelSettings": {
-    "claude-opus-5": {
+    "claude-opus-5-5": {
       "effortLevel": "high"
     }
   },
+  "advisorModel": "fable",
+  "promptSuggestionEnabled": false,
+  "awaySummaryEnabled": false,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
   "skipAutoPermissionPrompt": true
