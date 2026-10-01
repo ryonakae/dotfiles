@@ -9,7 +9,6 @@ pane_scrollbars = false
 rows = [
   ["state_icon", { token = "agent", bold = true, dim = false }],
   [{ token = "workspace", bold = false, dim = true }, "tab", "pane"],
-  ["$agent_context_session_name"],
   ["$agent_context_last_message"],
 ]
 
@@ -80,3 +79,10 @@ key = "prefix+shift+z"
 type = "plugin_action"
 command = "zerdr.open-zed"
 description = "Open workspace in Zed"
+
+# 別クライアントから Zed の thread に pane を返してもらう
+[[keys.command]]
+key = "prefix+shift+d"
+type = "plugin_action"
+command = "zerdr.detach-thread"
+description = "Release the Zed thread on this pane"

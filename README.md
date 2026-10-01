@@ -436,6 +436,7 @@ Hermes Agent に Google Workspace 操作を許すときは、人間用 (`~/.conf
 | `prefix+shift+1..9` | ワークスペースを直接選択 |
 | `prefix+shift+e` | スクロールバックをエディタで開く |
 | `prefix+y` | 途中選択を含む TUI テキストの表示折り返しと左余白を正規化 |
+| `prefix+shift+d` | このペインと Zed の thread の連携を解除（標準のワークスペース終了キーを上書き） |
 
 ### プラグイン
 
