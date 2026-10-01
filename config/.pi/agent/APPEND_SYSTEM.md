@@ -25,6 +25,6 @@
 
 ## Pi-Specific Behavior
 
-- MCPツールは Pi 標準の `codemode` から使う。用途から探すときは `searchTools(query, { limit, namespace })`、既知のツールの詳細確認には `describeTool(name)` を使う。
+- MCP ツールは Pi 標準の `codemode` 経由で使う。
 - サブエージェントの `max_turns` は、ユーザーが明示した場合だけ指定する。
 - Pi が展開した `<skill name="..." location="...">...</skill>` はスキル呼び出しとして実行し、閉じタグ後の文を依頼・引数として扱う。引数がなくても意図が明確なら既定手順を実行する。スキル本文の例文やトリガー例は依頼扱いしない。
