@@ -1,12 +1,14 @@
 {
   "lastChangelogVersion": "0.99.1",
-  "defaultProvider": "openai-codex",
-  "defaultModel": "gpt-6-astra",
-  "defaultThinkingLevel": "medium",
+  "defaultProvider": "openai",
+  "defaultModel": "gpt-6.1-sol",
+  "defaultThinkingLevel": "high",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
   "enableSkillCommands": false,
-  "defaultTools": ["+codemode"],
+  "defaultTools": [
+    "+codemode"
+  ],
   "packages": [
     "git:github.com/ryonakae/pi-subagents@master",
     "npm:pi-footer",
@@ -19,15 +21,14 @@
   ],
   "quietStartup": true,
   "enabledModels": [
-    "openai-codex/gpt-6-luna",
-    "openai-codex/gpt-6.1-sol",
-    "openai-codex/gpt-6-astra"
+    "openai/gpt-6-luna",
+    "openai/gpt-6.1-sol",
+    "openai/gpt-6-astra"
   ],
   "hideThinkingBlock": true,
   "terminal": {
     "showImages": false
   },
   "showCacheMissNotices": false,
-  "treeFilterMode": "no-tools",
-  "theme": "dark"
+  "treeFilterMode": "no-tools"
 }

@@ -241,6 +241,7 @@ cd ~ && npx skills find
 
 Pi 0.99.1 を使用し、導入先は`config/.pi/agent/settings.json`で管理する。
 
+- OpenAI は`/login openai`の`Sign in with ChatGPT`で認証し、`openai`側のモデルを使う。旧`openai-codex`の認証とは別。
 - [pi-subagents](https://github.com/ryonakae/pi-subagents) は独立forkの`master`を使う。動作設定は`config/.pi/agent/subagents.json`、親エージェントのモデル・thinking選定方針と比較データは`agent-tool-description.md`で管理する。
 - [pi-inline-skills](https://github.com/tifandotme/pi-extensions/tree/master/packages/pi-inline-skills) はオリジナルの`npm:@tifan/pi-inline-skills`を使う。
 - MCP は Pi 標準機能を使う。サーバーは`~/.pi/agent/mcp.json`（個人用）または`.pi/mcp.json`（プロジェクト用）に設定し、`pi mcp list`で接続を確認する。OAuth認証は`pi mcp login <server>`で行う。旧アダプターの認証情報は自動移行されない。

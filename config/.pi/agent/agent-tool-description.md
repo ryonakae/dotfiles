@@ -48,9 +48,9 @@
 
 モデルID:
 
-- Luna: `openai-codex/gpt-6-luna`
-- Sol: `openai-codex/gpt-6.1-sol`
-- Astra: `openai-codex/gpt-6-astra`
+- Luna: `openai/gpt-6-luna`
+- Sol: `openai/gpt-6.1-sol`
+- Astra: `openai/gpt-6-astra`
 
 ## 比較データ
 
