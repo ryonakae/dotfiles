@@ -6,44 +6,5 @@
   "worktreeIsolation": false,
   "fallbackSubagent": "none",
   "fleetView": true,
-  "widgetMode": "off",
-  "jev": {
-    "enabled": true,
-    "provider": "typesafe",
-    "model": "jev-1.13.0",
-    "timeoutMs": 5000,
-    "minConfidence": 0.7,
-    "maxRequestBytes": 65536,
-    "benchmark": {
-      "name": "DeepSWE",
-      "url": "https://deepswe.datacurve.ai/artifacts/v1.1/leaderboard-live.json",
-      "date": "2026-09-03",
-      "conditions": "mini-swe-agent、113タスク×4周。スコアはpass@1 ± 周回間95%信頼区間の半幅、他は採点対象試行の平均。コンテキスト超過・タイムアウトは失敗、provider/verifier/networkエラーは除外。",
-      "notes": "長工程の実装ベンチマークであり、調査・レビュー・画面操作やPiでの性能は直接測らない。起動ごとの再検索は不要。USDはサイトの価格補正を反映（生JSONとは異なる）。個別タスクの成功率・時間・費用を保証する値ではない。",
-      "priceCorrectionUrl": "https://deepswe.datacurve.ai/changelog",
-      "priceCheckedAt": "2026-09-17"
-    },
-    "candidates": [
-      { "model": "openai-codex/gpt-5.6-luna", "effort": "low", "benchmark": { "scorePercent": 1.5, "scoreCi95HalfWidthPp": 0.8, "minutesPerTask": 1.3, "stepsPerTask": 12.5, "usdPerTask": 0.014 } },
-      { "model": "openai-codex/gpt-5.6-luna", "effort": "medium", "benchmark": { "scorePercent": 11.3, "scoreCi95HalfWidthPp": 0.8, "minutesPerTask": 3.0, "stepsPerTask": 23.7, "usdPerTask": 0.043 } },
-      { "model": "openai-codex/gpt-5.6-luna", "effort": "high", "benchmark": { "scorePercent": 44.2, "scoreCi95HalfWidthPp": 2.9, "minutesPerTask": 7.9, "stepsPerTask": 49.0, "usdPerTask": 0.156 } },
-      { "model": "openai-codex/gpt-5.6-luna", "effort": "xhigh", "benchmark": { "scorePercent": 56.9, "scoreCi95HalfWidthPp": 2.2, "minutesPerTask": 12.2, "stepsPerTask": 71.1, "usdPerTask": 0.307 } },
-      { "model": "openai-codex/gpt-5.6-luna", "effort": "max", "benchmark": { "scorePercent": 67.2, "scoreCi95HalfWidthPp": 4.0, "minutesPerTask": 18.7, "stepsPerTask": 101.7, "usdPerTask": 0.606 } },
-      { "model": "openai-codex/gpt-5.6-terra", "effort": "low", "benchmark": { "scorePercent": 24.1, "scoreCi95HalfWidthPp": 0.8, "minutesPerTask": 2.9, "stepsPerTask": 21.5, "usdPerTask": 0.342 } },
-      { "model": "openai-codex/gpt-5.6-terra", "effort": "medium", "benchmark": { "scorePercent": 35.1, "scoreCi95HalfWidthPp": 3.4, "minutesPerTask": 3.8, "stepsPerTask": 25.1, "usdPerTask": 0.467 } },
-      { "model": "openai-codex/gpt-5.6-terra", "effort": "high", "benchmark": { "scorePercent": 53.8, "scoreCi95HalfWidthPp": 4.3, "minutesPerTask": 6.1, "stepsPerTask": 33.5, "usdPerTask": 0.908 } },
-      { "model": "openai-codex/gpt-5.6-terra", "effort": "xhigh", "benchmark": { "scorePercent": 60.2, "scoreCi95HalfWidthPp": 2.1, "minutesPerTask": 9.7, "stepsPerTask": 43.1, "usdPerTask": 1.702 } },
-      { "model": "openai-codex/gpt-5.6-terra", "effort": "max", "benchmark": { "scorePercent": 69.6, "scoreCi95HalfWidthPp": 2.6, "minutesPerTask": 16.9, "stepsPerTask": 75.9, "usdPerTask": 3.957 } },
-      { "model": "openai-codex/gpt-5.6-sol", "effort": "low", "benchmark": { "scorePercent": 45.4, "scoreCi95HalfWidthPp": 2.4, "minutesPerTask": 4.4, "stepsPerTask": 23.4, "usdPerTask": 0.817 } },
-      { "model": "openai-codex/gpt-5.6-sol", "effort": "medium", "benchmark": { "scorePercent": 61.1, "scoreCi95HalfWidthPp": 1.6, "minutesPerTask": 7.1, "stepsPerTask": 30.9, "usdPerTask": 1.416 } },
-      { "model": "openai-codex/gpt-5.6-sol", "effort": "high", "benchmark": { "scorePercent": 69.4, "scoreCi95HalfWidthPp": 1.4, "minutesPerTask": 9.9, "stepsPerTask": 36.9, "usdPerTask": 2.662 } },
-      { "model": "openai-codex/gpt-5.6-sol", "effort": "xhigh", "benchmark": { "scorePercent": 70.7, "scoreCi95HalfWidthPp": 0.8, "minutesPerTask": 13.3, "stepsPerTask": 44.0, "usdPerTask": 3.599 } },
-      { "model": "openai-codex/gpt-5.6-sol", "effort": "max", "benchmark": { "scorePercent": 72.7, "scoreCi95HalfWidthPp": 2.8, "minutesPerTask": 18.8, "stepsPerTask": 61.3, "usdPerTask": 6.456 } },
-      { "model": "openai-codex/gpt-6-astra", "effort": "low", "benchmark": { "scorePercent": 67.0, "scoreCi95HalfWidthPp": 1.3, "minutesPerTask": 10.2, "stepsPerTask": 19.5, "usdPerTask": 2.189 } },
-      { "model": "openai-codex/gpt-6-astra", "effort": "medium", "benchmark": { "scorePercent": 72.8, "scoreCi95HalfWidthPp": 2.6, "minutesPerTask": 14.7, "stepsPerTask": 26.0, "usdPerTask": 4.380 } },
-      { "model": "openai-codex/gpt-6-astra", "effort": "high", "benchmark": { "scorePercent": 73.2, "scoreCi95HalfWidthPp": 3.4, "minutesPerTask": 17.3, "stepsPerTask": 27.4, "usdPerTask": 5.724 } },
-      { "model": "openai-codex/gpt-6-astra", "effort": "xhigh", "benchmark": { "scorePercent": 74.1, "scoreCi95HalfWidthPp": 2.9, "minutesPerTask": 18.9, "stepsPerTask": 28.8, "usdPerTask": 6.524 } },
-      { "model": "openai-codex/gpt-6-astra", "effort": "max", "benchmark": { "scorePercent": 73.2, "scoreCi95HalfWidthPp": 0.8, "minutesPerTask": 33.0, "stepsPerTask": 28.5, "usdPerTask": 12.369 } }
-    ]
-  }
+  "widgetMode": "off"
 }

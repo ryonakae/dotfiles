@@ -237,23 +237,21 @@ cd ~ && npx skills find
 
 ---
 
-## Pi の Jev 連携
+## Pi の拡張・MCP
 
-[pi-subagents](https://github.com/ryonakae/pi-subagents) と [pi-inline-skills](https://github.com/ryonakae/pi-inline-skills) は独立forkの`master`を使う。Pi 0.87.1・Node.js 22.19以上が必要。導入先は`config/.pi/agent/settings.json`で管理し、upstream版と同時にロードしない。
+Pi 0.99.1 を使用し、導入先は`config/.pi/agent/settings.json`で管理する。
 
-- モデル選定: `config/.pi/agent/subagents.json`の`jev`で候補・比較データ・閾値を設定する。選定方針は同ディレクトリの`model-selection-guide.md`、自動選定時の親向け案内は`model-selection-auto-guide.md`を編集する。
-- スキル選定: `config/.pi/agent/extensions/pi-inline-skills/config.json`で設定する。自動本文はモデルに渡して履歴へ保存し、チャットには成功通知だけを表示する。本文がコンパクションで消えた場合は必要時に再ロードする。
-- 両設定でJevを有効化し、TypeSafeを指定している。起動元で`TYPESAFE_API_KEY`を設定する（`config/.config/fish/config.fish.example`参照）。実キーはGitへ保存しない。共通wrapperは`TYPESAFE_API_KEY`と`OPENROUTER_API_KEY`をSafehouseへ渡す。
-- OpenRouterへ切り替える場合は各設定の`provider`を`openrouter`、`model`を`typesafe/jev-1.13`へ変更する。認証はPi標準のOpenRouter認証を使う。両拡張とも`jev.enabled: false`で自動選定を停止できる。
+- [pi-subagents](https://github.com/ryonakae/pi-subagents) は独立forkの`master`を使う。動作設定は`config/.pi/agent/subagents.json`、親エージェントのモデル・thinking選定方針と比較データは`agent-tool-description.md`で管理する。
+- [pi-inline-skills](https://github.com/tifandotme/pi-extensions/tree/master/packages/pi-inline-skills) はオリジナルの`npm:@tifan/pi-inline-skills`を使う。
+- MCP は Pi 標準機能を使う。サーバーは`~/.pi/agent/mcp.json`（個人用）または`.pi/mcp.json`（プロジェクト用）に設定し、`pi mcp list`で接続を確認する。OAuth認証は`pi mcp login <server>`で行う。旧アダプターの認証情報は自動移行されない。
+- `defaultTools: ["+codemode"]`でcodemodeを常時有効にする。通常のツール呼び出しも維持し、MCPツールは既定でcodemodeから使う。
 
 ```fish
 pi update git:github.com/ryonakae/pi-subagents@master
-pi update git:github.com/ryonakae/pi-inline-skills@master
+pi update npm:@tifan/pi-inline-skills
 ```
 
-設定・パッケージの更新後は`/reload`する。環境変数を変更した場合は、その値を持つシェルからPiを起動し直す。
-
-Jevにはモデル選定時の委譲タスク、スキル選定時の上限付き会話などを外部送信する。通常の文章に含まれる秘密情報は自動マスキングしない。モデル選定が低confidenceなどで不採用なら、子を起動せず親へ判断を戻す。自動選定による速度・品質・費用の改善は未計測。詳細と検証記録は[dig log](docs/dig/2026-09-28-pi-jev-routing.md)を参照。
+設定・パッケージの更新後はPiを起動し直す。Jev対応は両forkの`feat/jev-routing`に保存し、通常の`master`とは分離する。過去の設計・検証記録は[dig log](docs/dig/2026-09-28-pi-jev-routing.md)を参照。
 
 ---
 
