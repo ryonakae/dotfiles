@@ -4,6 +4,16 @@
 
 OVERRIDES="$HOME/.config/agent-safehouse/local-overrides.sb"
 
+# 別ユーザー用の TMPDIR を継承しても Safehouse の mktemp を失敗させない。
+if [ ! -d "${TMPDIR:-}" ] || [ ! -w "$TMPDIR" ] || [ ! -x "$TMPDIR" ]; then
+  TMPDIR="$(getconf DARWIN_USER_TEMP_DIR)"
+  if [ ! -d "$TMPDIR" ] || [ ! -w "$TMPDIR" ] || [ ! -x "$TMPDIR" ]; then
+    printf '%s\n' 'error: no usable user temporary directory.' >&2
+    exit 1
+  fi
+  export TMPDIR
+fi
+
 # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
 export HISTFILE=/dev/null
 
@@ -44,4 +54,6 @@ done
 # 機密ファイルの deny ルール
 [ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
-exec safehouse "${args[@]}" -- hermes --profile default gateway run
+# launchd でも mise のバージョン指定を適用し、Hermes 本体は既存 venv に固定する。
+exec mise -C "$HOME/.hermes" exec -- safehouse "${args[@]}" -- \
+  "$HOME/.hermes/hermes-agent/venv/bin/hermes" --profile default gateway run
