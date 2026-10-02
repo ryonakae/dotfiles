@@ -111,7 +111,7 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 
 ## 共通ツール用の秘密（dotenvx）
 
-共通のAPIキーは`config/.config/.env`にまとめ、dotenvxで暗号化する。Git管理するのは値が空の`.env.example`だけ。`~/.config/.env`は実ファイルへのsymlinkとし、復号鍵はmacOS Keychainへ保存する。プロジェクト・本番環境用の秘密は混ぜず、必要なコマンドだけを`dotenvx run -f <project-env> -- <command>`で実行する。
+`CONTEXT7_API_KEY`、`HOMEBREW_GITHUB_API_TOKEN`、`TYPESAFE_API_KEY`などの共通キーは`config/.config/.env`にまとめ、dotenvxで暗号化する。Git管理するのは値が空の`.env.example`だけ。`~/.config/.env`は実ファイルへのsymlinkとし、復号鍵はmacOS Keychainへ保存する。プロジェクト・本番環境用の秘密は混ぜず、必要なコマンドだけを`dotenvx run -f <project-env> -- <command>`で実行する。
 
 既存マシンでは、エージェントやHermesサービスを再起動する前に、sandbox外のfishで初期設定する。既存ファイルは上書きしない。
 
@@ -136,6 +136,8 @@ dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
 ### 起動の確認と戻し方
 
 秘密の初期移行が済んだら、新しい端末でCLIを確認し、Hermesは`hermes-gateway restart`／`hermes-dashboard restart`で正規再起動する。復号失敗やprofile/rmラッパーの欠落は、秘密注入なしで続行せず起動を止める。
+
+dotenvx経由ではCtrl-Cで子が停止しても、外側の終了コードが1になる場合がある。signal終了状態の完全一致は保証せず、キャンセル後に子が残らないこととサービスの正規停止を確認する。
 
 問題があれば追加の再起動を止め、sandbox外で管理ファイルを変更前の版へ戻してから新しい端末で読み直す。rm転送を外す場合は、今回追加した`~/.local/bin/rm`・fishの`rm.fish`・`conf.d/gomi.fish`のsymlinkだけを確認して退避し、他の実体は削除しない。暗号化`.env`・Keychain項目・ごみ箱のデータは残す。既存サービスを戻す際も管理関数を使い、Keychainのdefaultやアクセス設定を変更しない。
 
