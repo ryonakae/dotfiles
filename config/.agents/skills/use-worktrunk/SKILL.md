@@ -70,7 +70,9 @@ test "$HERDR_ENV" = 1
 ~/dotfiles/config/.config/agent-safehouse/local-overrides.sb
 ```
 
-`wt config show --format=json`と、必要なら`wt hook show --expanded`で有効な設定とdirect hookも確認する。allowlist、deny pattern、hookをSkill本文から推測しない。
+`wt config show --format=json`と、必要なら`wt hook show --expanded`で有効な設定とdirect hookも確認する。grant、deny pattern、hookをSkill本文から推測しない。現在のwrapperはHOME RWを基本とするため、HOME内の新規worktreeを以前のtop-level allowlist外という理由だけで委譲しない。`wide-read` は読み取りだけの許可であり、HOME外の書き込みgrantとは区別する。
+
+独自の管理wrapper/policy編集禁止、保護対象の親・ごみ箱ルートのrename禁止は撤廃されている。一方、`.env` / `.envrc` / secrets / 鍵のdenyと既存例外、ごみ箱payloadへの直接アクセス拒否は残るため、機密コピーの評価は省かない。起動時のpolicyが判定対象で、正本を編集しても現在のsandboxは更新されない。
 
 新規作成をAgent内で行う前に、予定destinationとtarget commitのGit tree path名を安全なGit metadataから確認する。実ファイルをprobeせず、`local-overrides.sb`のrule順序と後勝ちallowを含めて最終的なaccessを判断する。tracked pathが最終denyになる場合、または確信を持って判断できない場合は作成を通常shellへ委譲する。このpreflightは既存worktreeの選択には行わない。
 
@@ -86,6 +88,10 @@ copy workflowとして扱う場合、次のすべてを実ファイルの内容�
 
 1件でもdeny一致・grant外・判定不能があれば、対象を選別した部分copyや除外付きcopyへ切り替えず、copy全体を通常shellへ委譲する。deny対象の実ファイルをprobeして確かめない。
 
+### 削除・交換の境界を評価する
+
+`promote`、remove、merge cleanup、live pruneは、HOME内という理由だけで安全とは判断しない。既存のdenyが対象pathや配下のファイル操作へ適用されるか、信頼できるGit metadata・name-onlyの候補・現在のpolicyで確認する。最終accessがallowと確認できる操作はAgent内で実行できる。deny・grant外・判定不能なら、既存の委譲手順を使う。拒否を試す目的でコマンドを実行しない。破壊的操作の承認と§7のsession制約はどちらの実行先でも維持する。
+
 ## 4. Agent内で実行する操作と委譲する操作
 
 この表は§2でSafehouse内と判定した場合だけ適用する。Safehouse外では委譲せずAgent内で実行する。表の「通常shellへ委譲」は「Agent内では実行しない」という操作分類であり、実際の委譲先は§2のherdr判定に従う。herdr有効なら`references/herdr-delegation.md`の手順でherdrペインで実行し（§2の破壊的操作はユーザー承認後）、無効なら§6の案内に落とす。
@@ -98,10 +104,10 @@ copy workflowとして扱う場合、次のすべてを実ファイルの内容�
 | direct copy hookを伴う新規作成 | §3のcopy評価とtracked path preflightを満たせば`--no-cd --format=json`で実行可能。満たさなければ作成から通常shellへ委譲 |
 | 現在のsessionのgrant外への新規作成 | 設定を変えず、作成から通常shellへ委譲 |
 | tracked pathが最終deny、またはpolicy評価が不確実な新規作成 | 作成から通常shellへ委譲 |
-| `wt step promote`、`wt remove`、live `wt step prune` | 通常shellへ委譲 |
-| cleanupを伴う`wt merge` | 通常shellへ委譲 |
+| `wt step promote`、`wt remove`、live `wt step prune` | §3の削除・交換評価でallowと確認できればAgent内で実行可能。deny・grant外・判定不能なら通常shellへ委譲 |
+| cleanupを伴う`wt merge` | 同じ削除・交換評価に従う |
 | ユーザーが明示した`wt merge --no-remove` | Agent内で実行可能 |
-| `wt step prune --dry-run` | Agent内で実行・要約可能。live実行は確認後に通常shellへ委譲 |
+| `wt step prune --dry-run` | Agent内で実行・要約可能。live実行は確認後に§3の削除・交換評価で実行先を決める |
 
 copy評価を満たさず委譲する場合、`copy-ignored`の対象を実在や安全なfileだけに選別しない。Agent内でdry-runや部分copyを行わず、元の`--from`、`--to`、`--require-include`、include/exclude条件を保持したreal commandを、§2の判定に従いherdrペインで実行するか通常shell向けに案内する。copy用dry-runは追加しない。
 
@@ -168,6 +174,6 @@ live pruneをSafehouse内で委譲する場合は、Agent内のdry-run結果を�
 ~/.agents/skills/use-agent-safehouse/SKILL.md
 ```
 
-force、policy緩和、deny対象へのprobeで回避しない。Safehouse設定またはWorktrunk設定そのものの変更をユーザーが求める場合は、理由と最小変更を提示し、同意後にだけ編集する。
+force、無断のpolicy緩和、deny対象へのprobeで回避しない。Safehouse設定またはWorktrunk設定そのものの変更をユーザーが求める場合は、標準機能と最終profile順から原因を確認し、理由と最小変更を提示して同意後にだけ `config/` の正本を編集する。`--allow-profile-writes` はappendしたprofileの標準書き込み保護を省くが、現在のsandboxを変更しない。新しいpolicyは次回起動で反映し、現在の拒否を無断で外側へ回さない。
 
 結果では、環境判定（Safehouse内か外か、herdr有効か）、実行したWorktrunk commandの結果、検証済み絶対path、herdrで実行した操作と残したworkspace・pane、Agent内でもherdrでも実行せず通常shellへ案内したcommand、現在のsessionを継続できるか、新しいAgent sessionが必要かを簡潔に返す。project hookがない場合にsetupやbaseline testを推定しない。

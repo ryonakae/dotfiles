@@ -45,7 +45,7 @@ def main():
     checkout.mkdir()
     env = dict(os.environ, HOME=str(home), UNLISTED_RUNTIME_VALUE='inherited value with spaces')
     args = ['safehouse', '--workdir=' + str(home), '--add-dirs=' + str(home), '--env',
-            '--enable=wide-read,ssh,process-control,launch-services',
+            '--allow-profile-writes', '--enable=wide-read,ssh,process-control,launch-services',
             '--append-profile=' + str(RUNTIME / 'compatibility.sb'),
             '--append-profile=' + str(RUNTIME / 'local-overrides.sb'), '--', sys.executable, '-c']
 
@@ -103,21 +103,16 @@ placeholder.unlink()
                      *[root + '/files/private.txt' for root in trash_roots]]:
       check('deny read ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).read_text()', 1)
     for relative in ['.env', '.aws/credentials', '.gnupg/private.txt', '.ssh/id_ed25519',
-                     '.config/fish/config.fish', '.config/agent-safehouse/run-with-agent-env.sh',
-                     'dotfiles/config/.local/bin/rm',
+                     '.config/fish/config.fish',
                      *[root + '/files/private.txt' for root in trash_roots]]:
       check('deny write ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")', 1)
-    for relative in ['.config', '.aws', 'Library', 'Library/Application Support/Google',
-                     'dotfiles', 'dotfiles/config/.config/fish',
-                     '.local/share', *trash_roots,
-                     'volume/.Trash']:
-      check('deny rename ' + relative, f'import os; os.rename({str(home / relative)!r}, {str(home / (relative + "-moved"))!r})', 1)
     for relative in ['Downloads/normal.txt', '.ssh/config', '.ssh/known_hosts',
                      '.ssh/agent/socket-fixture', '.config/agent-browser/profile/normal.txt',
                      '.hermes/.env', 'vendor/fixture/.env',
                      *[root + '/info/item.trashinfo' for root in trash_roots]]:
       check('allow read ' + relative, f'from pathlib import Path; assert Path({str(home / relative)!r}).read_text() == "dummy data"')
-    for relative in ['Downloads/normal.txt', '.ssh/known_hosts', '.hermes/.env', 'vendor/fixture/.env']:
+    for relative in ['Downloads/normal.txt', '.ssh/known_hosts', '.hermes/.env', 'vendor/fixture/.env',
+                     '.config/agent-safehouse/run-with-agent-env.sh', 'dotfiles/config/.local/bin/rm']:
       check('allow write ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")')
     for root in trash_roots:
       put_source = home / 'Downloads/put-source'

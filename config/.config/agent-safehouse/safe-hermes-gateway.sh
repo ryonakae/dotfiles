@@ -27,6 +27,7 @@ args=(
   --workdir="$HOME/.hermes"
   --env
   --add-dirs="$HOME"
+  --allow-profile-writes
   --enable=macos-gui,ssh,agent-browser,docker,all-agents,wide-read,keychain,process-control,launch-services
 )
 

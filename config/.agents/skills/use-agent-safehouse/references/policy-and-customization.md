@@ -16,7 +16,9 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 7. **55-integrations-optional/*.sb**: `--enable=...` でオプトイン可能な統合
 8. **60-agents/*.sb**: コマンドのベースネームでエージェント別プロファイルを自動選択
 9. **65-apps/*.sb**: アプリバンドル別プロファイル
-10. 設定/環境変数/CLI グラント、`--append-profile` で追加されたプロファイル
+10. 設定/環境変数/CLI グラント
+11. `--append-profile` で追加されたプロファイル
+12. appendしたprofileの標準書き込み保護と、最後のterminal deny（workdirの `.safehouse` の保護）。それぞれ対応するopt-outで省略可能
 
 ### 重要な設計原則
 
@@ -58,12 +60,12 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 
 ### 安全ガイドライン
 
-- 最小権限と狭い path グラントを優先
-- 広い `subpath` グラントは避ける
-- 最終優先度が必要な場合は追加プロファイルでハード deny ルールを使用
+- このdotfiles環境では開発の互換性を優先し、HOME RW、`wide-read`、全環境継承、既存の `process-control` と広域IPC許可を維持する。`allow default` や `/` のRWには変更しない
+- 標準機能と生成policyの最終順序を確認し、必要性と保護への影響を説明して、ユーザー承認後に最小修正する
+- 実機密は後段のprofileで直接保護する。OS重要領域は標準のdeny-first構成で書き込み許可を広げず、最終policyで範囲を確認する。拒否された操作や機密へのprobeを無断で外側に回さない
 - worktree が安定した親ディレクトリ配下にある場合、`--add-dirs-ro` で親を指定してクロス worktree 読み取りアクセスを許可
-- ポリシー変更後はテストを追加・更新する
-- プロファイルやランタイムロジック変更後は `./scripts/generate-dist.sh` で配布アーティファクトを再生成
+- 検証は変更範囲に合わせる。dotfilesの文書修正にフルsuiteやSandbox外実行を一律に要求しない
+- Safehouse本体のプロファイルやランタイムロジックを変更する場合は、必要に応じて `./scripts/generate-dist.sh` で配布アーティファクトを再生成する。dotfilesの追加profileだけの変更では不要
 
 ### ローカルオーバーライド
 
@@ -72,6 +74,12 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 ```
 ~/.config/agent-safehouse/local-overrides.sb
 ```
+
+この環境は `compatibility.sb` → `local-overrides.sb` の順で追加する。広域IPCとSimulatorの `system-fsctl` は前者、機密denyとvendor/Hermes例外は後者にまとめる。既存の広域allowと重複する個別Mach/network/signalルールは追加しない。
+
+独自の管理wrapper/policyディレクトリ編集deny、保護対象の親・ごみ箱ルートのrename denyは撤廃する。一方、`.env` / `.envrc` / secrets / 鍵の名前・拡張子deny、ごみ箱payloadへの直接アクセス拒否は維持する。実秘密の固定保存場所への移行は、未把握の本番署名鍵や独自保存場所があるため保留している。
+
+Safehouse標準のappend profile書き込み保護は独自denyとは別で、3起動経路の `--allow-profile-writes` で省く。これは書き込みgrantを追加せず、`.safehouse` の標準保護も解除しない。承認後に `config/` の正本を編集し、次回起動で反映する。実行中のsandboxは変更できず、現在の拒否を無断で迂回しない。
 
 ### ワーキングディレクトリ設定ファイル
 

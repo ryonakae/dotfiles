@@ -14,6 +14,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --workdir="$workdir" \
         --env \
         --add-dirs="$HOME" \
+        --allow-profile-writes \
         --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents,wide-read,keychain,xcode,process-control,launch-services
 
     # HOME の許可より後に拒否を適用し、保護ファイルの欠落を黙って許可にしない。
