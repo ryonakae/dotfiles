@@ -86,6 +86,9 @@
 - 互換性の追加確認で、`process-control`を有効にしたダミーHOMEの新しいsandboxでも`/bin/ps`のexecがEPERMになった。`/tmp/dotfiles-practical-compatibility.log`に記録。process-controlで解消済みとは扱わず、許可の追加や受入条件の変更前に確認する。`/bin/ps`はsetuid実行ファイルだが、それだけで原因確定とはしない。
 - `ps`以外の確認は`PRACTICAL_COMPAT_OTHER_DONE=0`。所有するダミーhostプロセスへのsignal、Wrangler/Kotlin/agent-device相当の保存先、AF_UNIX listen/connect、共通loaderのenv注入・TTY・Ctrl-Cによる子停止を確認した。外側のexit 1は合意どおり許容する。実ツール全体や既存サービスの動作まで確認した結果ではない。
 - ステージング時に既存`.git/index.lock`で失敗。mtimeは2026-10-02 15:45:30（作業確認時17:14）、サイズ0、`lsof -t .git/index.lock`は所有processを出さずexit 1。ユーザーの「削除でいいです」で承認を得て、所有process不在・通常の空ファイル・inode/mtimeの不変を再確認して削除した。index自体は変更していない。psの受入判断は未解決。独立したread-onlyレビューは`39207c2`に対してApproved。コード修正を要するblocking/high・medium/lowはなし。`93001c5..39207c2`を中心に全体baseからの変更、関連起動経路と配布契約も確認し、commit版のPython AST・shell/fish構文・差分検査を通過。unit/native/host結果は親報告であり、reviewerによる独立再実行ではない。psと本番配布の残ゲートは解消しておらず、全体完了とはしない。
-- HOME配布、既存gomi設定の退避、本番秘密移行、全CLIと既存Hermesサービスの確認は未実施。他者の変更を保持し、archive/pushはしない。
+- 追加配布: `compatibility.sb`・共通loader・rm本体・fishのrm関数/conf.dと共通`.env`のリンクを配置した。既存gomi実設定は内容を読まず日時付きバックアップへ退避し、管理設定へのリンクに切り替えた。ユーザーから共通キー入力・暗号化の完了報告を受け、既存の3キーの環境変数を外した状態で`dotenvx run --quiet --strict --no-armor -f ~/.config/.env -fk /dev/null -- /usr/bin/true`が成功した。秘密値は表示・移行していない。暗号化状態と鍵バックアップの独立確認はしていない。
+- 配布後の小さな確認で、通常rmによる隔離ダミーのgomi転送・payload/metadata保存と、実fishラッパー経由の`pi --version`（0.99.2）が成功した。全CLIの対話動作と既存Hermesサービスの再起動・health/status・正規停止は未確認。機密保存場所への保護移行も保留のため、計画はarchiveしない。
+- 独自制限の削減は`7f05b28`でcommit済み。独立read-onlyレビューは`08ac9e0..7f05b28`を確認してApproved、指摘なし。追加のテスト再実行はしていない。
+- 最新の「コミットプッシュで」により、ここまでのcommitと本記録をcurrent branchへ通常pushする。他者の未コミット変更は含めない。
 
 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、本計画と元計画をそれぞれ同名のまま `docs/plans/archived/` へ移す。
