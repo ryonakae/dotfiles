@@ -1,8 +1,8 @@
 {
-  "lastChangelogVersion": "0.99.1",
+  "lastChangelogVersion": "0.99.2",
   "defaultProvider": "openai",
-  "defaultModel": "gpt-6.1-sol",
-  "defaultThinkingLevel": "high",
+  "defaultModel": "gpt-6-astra",
+  "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
   "enableSkillCommands": false,
