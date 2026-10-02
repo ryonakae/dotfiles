@@ -53,6 +53,16 @@
     (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
 )
 
+;; Gitは追跡用placeholderとdirectoryの列挙を必要とするが、秘密の内容は不要。
+(allow file-read-metadata (regex #".*/\.secrets(/.*)?$"))
+(allow file-read-data file-write-create
+    (require-all
+        (regex #".*/\.secrets$")
+        (vnode-type DIRECTORY)
+    )
+)
+(allow file-read* file-write* (regex #".*/\.secrets/\.gitkeep$"))
+
 ;; サードパーティ依存ディレクトリ配下に紛れる .env / 鍵 / pem は agent 個人の機密ではなく、
 ;; git clone / ビルドで読み書きが必要。上記の汎用 deny を後勝ち allow で例外化する。
 ;; これが無いと vendor/libghostty-vt/.envrc の checkout が deny されて clone が失敗する。
@@ -75,6 +85,8 @@
     (home-subpath "/.dart-tool")
     (home-subpath "/.dartServer")
     (home-subpath "/.android/cache")
+    ;; 開発用の自動生成鍵だけを許可し、本番署名鍵は保護する。
+    (home-literal "/.android/debug.keystore")
 )
 
 ;; --enable=xcode の標準プロファイルは macOS 26 / Xcode 26 系の Simulator runtime に

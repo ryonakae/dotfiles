@@ -25,6 +25,8 @@ def main():
       'Library/Application Support/Google/Chrome/Cookies',
       '.config/agent-browser/profile/normal.txt', '.hermes/.env',
       'vendor/fixture/.env',
+      'project/.secrets/.gitkeep', 'project/.secrets/token.txt', 'project/.secrets/.env',
+      '.android/release.keystore', 'project/custom.keystore',
       '.config/agent-safehouse/run-with-agent-env.sh',
       'dotfiles/config/.config/fish/config.fish',
       'dotfiles/config/.local/bin/rm',
@@ -34,6 +36,13 @@ def main():
       target.parent.mkdir(parents=True, exist_ok=True)
       target.write_text('dummy data')
     (home / 'secret-alias').symlink_to(home / '.env')
+    alias_directory = home / 'alias-project/.secrets'
+    alias_directory.mkdir(parents=True)
+    (alias_directory / '.gitkeep').symlink_to(home / '.env')
+    project = home / 'project'
+    (project / '.gitignore').write_text('.secrets/*\n!.secrets/.gitkeep\n')
+    checkout = home / 'checkout'
+    checkout.mkdir()
     env = dict(os.environ, HOME=str(home), UNLISTED_RUNTIME_VALUE='inherited value with spaces')
     args = ['safehouse', '--workdir=' + str(home), '--add-dirs=' + str(home), '--env',
             '--enable=wide-read,ssh,process-control,launch-services',
@@ -49,6 +58,44 @@ def main():
       print('PASS', label, flush=True)
 
     check('compile + environment', 'import os; assert os.environ["UNLISTED_RUNTIME_VALUE"] == "inherited value with spaces"')
+    debug_key = home / '.android/debug.keystore'
+    check('create/read/write Android debug keystore',
+          f'from pathlib import Path; p=Path({str(debug_key)!r}); '
+          'p.write_text("dummy debug key"); assert p.read_text() == "dummy debug key"')
+    for relative in ['.android/release.keystore', 'project/custom.keystore']:
+      check('deny keystore read ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).read_text()', 1)
+      check('deny keystore write ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")', 1)
+    debug_key.unlink()
+    debug_key.symlink_to(home / '.env')
+    check('deny debug keystore alias read', f'from pathlib import Path; Path({str(debug_key)!r}).read_text()', 1)
+    check('deny debug keystore alias write', f'from pathlib import Path; Path({str(debug_key)!r}).write_text("changed")', 1)
+    check('Git placeholder metadata and directory listing',
+          f'from pathlib import Path; p=Path({str(project / ".secrets")!r}); '
+          'assert p.stat(); assert sorted(x.name for x in p.iterdir()) == [".env", ".gitkeep", "token.txt"]; '
+          'assert (p / "token.txt").stat().st_size > 0; assert (p / ".gitkeep").read_text() == "dummy data"')
+    check('Git status/add/diff and checkout with .secrets placeholder', f'''
+import subprocess
+from pathlib import Path
+p = Path({str(project)!r})
+for arguments in [
+  ['init', '--quiet', '--initial-branch=main'],
+  ['status', '--porcelain'],
+  ['add', '--', '.gitignore', '.secrets/.gitkeep'],
+  ['diff', '--cached', '--stat'],
+  ['checkout-index', '--all', '--prefix={str(checkout)}/'],
+]:
+  result = subprocess.run(['git', '-C', str(p), *arguments], capture_output=True, text=True)
+  assert result.returncode == 0, result.stderr
+  assert not result.stderr, result.stderr
+assert Path({str(checkout / '.secrets/.gitkeep')!r}).read_text() == 'dummy data'
+placeholder = p / '.secrets/.gitkeep'
+placeholder.write_text('updated placeholder')
+placeholder.unlink()
+''')
+    for relative in ['project/.secrets/token.txt', 'project/.secrets/.env', 'alias-project/.secrets/.gitkeep']:
+      check('deny secret content ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).read_text()', 1)
+      check('deny secret mutation ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")', 1)
+    check('deny secret deletion', f'from pathlib import Path; Path({str(project / ".secrets/token.txt")!r}).unlink()', 1)
     for relative in ['.env', '.aws/credentials', '.gnupg/private.txt', '.ssh/id_ed25519',
                      '.config/fish/config.fish', 'Library/Messages/chat.db',
                      'Library/Application Support/Google/Chrome/Cookies', 'secret-alias',
