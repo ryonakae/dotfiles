@@ -217,7 +217,19 @@ $ vim hoge
 
 ## Ruby、Node、Python とか設定する
 
-[mise](https://mise.jdx.dev/) を使う
+[mise](https://mise.jdx.dev/) を使う。グローバルのバージョンは `config/.config/mise/config.toml`、プロジェクト固有のバージョンは各リポジトリの mise 設定で管理する。
+
+### Node と npm CLI の実行環境
+
+`~/.local/bin` に Hermes 専用の `node` / `npm` / `npx` を公開しない。共通 PATH 上でこれらのリンクが必要な場合は `~/.local/share/mise/shims/` の同名 shim を参照させ、cwd の mise 設定に従わせる。`~/.local/bin` の優先順位を変えて Node を直そうとすると rm 転送にも影響するため、ツール固有のリンクを修正する。
+
+mise の `npm:` backend は CLI のインストール先を Node 本体と分けるが、実行時の Node は通常そのプロジェクトの選択に従う。古い Node のプロジェクトから新しい Node が必要な CLI を使う場合は、CLI の子プロセスだけ対応版を明示する。例えば、Node 22.14.0 で動く版の agent-device なら次の形で実行する。cwd とプロジェクトの設定ファイルは変わらない。
+
+```fish
+mise exec node@22.14.0 -- agent-device test ./e2e/agent-device/ios
+```
+
+単なる `mise exec -- agent-device …` は Node のバージョンを固定しない。CLI の対応 Node バージョンは CLI 更新時にも確認する。
 
 ### PHP を mise で管理する
 
@@ -315,6 +327,47 @@ cd ~ && npx skills find
 2. `~/.claude/skills/<skill-name>` → `../../.agents/skills/<skill-name>` の symlink が貼られたことを確認する
 3. Antigravity CLI は上記のディレクトリ symlink 経由で参照する。`~/.hermes/skills` など配布対象外のエージェント側にリンクが作られていないか確認し、あれば削除する
 4. dotfiles の `config/skills-lock.json` の差分をコミット
+
+---
+
+## iOS Simulator の動作検証（agent-device）
+
+[agent-device](https://github.com/callstack/agent-device) を使い、繰り返す検証は `.ad` テストとして各アプリのリポジトリに保存する。[use-agent-device スキル](config/.agents/skills/use-agent-device/SKILL.md) を入口に、基本操作は公式の `agent-device` スキル、配置・記法・記録・実行・引き継ぎは [references/ad-tests.md](config/.agents/skills/use-agent-device/references/ad-tests.md) を参照する。dotfiles にはアプリ固有のテストを置かない。
+
+CLI 本体は `config/.config/mise/config.toml` の `npm:agent-device` でバージョンを固定する。[公式のインストール手順](https://oss.callstack.com/agent-device/docs/installation) に従い、導入後はバージョンと環境診断を確認する。iOS 向けの Node 要件は22.12以上、Web 操作は24以上。以下の Node 22.14.0 の例は iOS 向け。
+
+```fish
+mise install npm:agent-device
+mise exec node@22.14.0 -- agent-device --version
+mise exec node@22.14.0 -- agent-device doctor --platform ios
+```
+
+エージェントの PATH が通常の端末と異なる場合は `mise exec node@22.14.0 -- agent-device …` を使う。実体の場所は `mise which agent-device` で確認できる。コマンドが見つからないからといって、毎回 `npx` で最新版を取得しない。
+
+既存のプロジェクト規約があれば優先する。未定の場合は次を既定とする。
+
+| 対象 | 各アプリ内の保存先 | Git 管理 |
+|---|---|---|
+| テスト定義 | `e2e/agent-device/ios/<scenario>.ad` | する |
+| ビルド・初期状態準備・実行方法 | `e2e/agent-device/README.md` | する |
+| スクリーンショット・ログ・レポート | `.artifacts/agent-device/` | しない（アプリ側の `.gitignore` に追加） |
+
+アプリのビルド・インストールと初期状態の準備を済ませ、リポジトリルートから実行する。各 `.ad` に `context platform=ios` を記載する。`test --platform ios` はフィルターであり、platform のないファイルはスキップされる。コマンドは導入版の `agent-device help replay` / `agent-device help test` でも確認する。
+
+```fish
+agent-device replay e2e/agent-device/ios/create-item.ad --platform ios
+agent-device test e2e/agent-device/ios --platform ios --artifacts-dir .artifacts/agent-device
+```
+
+操作を記録するだけで終わらず、仕様に基づくアサーションを入れる。新規・変更したフローは初期状態から再実行する。別セッションに引き継げるよう、Bundle ID、ビルド・インストール、テストデータ・認証・権限の準備、Simulator の選び方をアプリ側の文書に残す。個人の UDID、絶対パス、秘密は共有テストに固定しない。
+
+公式スキルは `config/skills-lock.json` で取得元と内容のハッシュを管理し、実体を `~/.agents/skills/agent-device/` に置く。ホームで次を実行して取得する（この dotfiles の配布規約では `-g` を付けない）。更新時も同じコマンドを使い、取得後は「外部スキル」の手順に従って Claude 側の実体を共通置き場へ移し、参照を symlink に揃える。
+
+```fish
+cd ~; and npx skills add callstack/agent-device -s agent-device -a claude-code -y
+```
+
+共通の追加ルールは自作スキル `config/.agents/skills/use-agent-device/` で管理し、dotfiles ルートで `sh scripts/create-skills-symlink.sh` を実行して配布する。`SKILL.md` に公式スキルの読み込みと mise・Node の扱い、`references/ad-tests.md` にテスト運用の詳細を置く。共通 `AGENTS.md` から参照するため、スキル一覧に表示されないエージェントも `~/.agents/skills/use-agent-device/SKILL.md` を読める。公式スキルは改変せず、`config/skills-lock.json` での管理を維持する。スキルの導入は CLI 本体のインストールを兼ねない。
 
 ---
 
