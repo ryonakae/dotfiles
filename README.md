@@ -66,6 +66,14 @@ fishでは`brew shellenv`でHomebrewを優先する。ただし通常の`rm`は`
 
 設定後に `exec fish` またはターミナル再起動で反映される
 
+## Safehouseの許可と保護
+
+開発ツールの互換性を優先し、HOMEの読み書き、環境変数の全継承、IPC・Macサービス・ホストプロセス操作を許可する。Documents・Music/Musics・Movies・Downloads・Picturesには追加の制限を設けない。機密ファイルと人間用ブラウザ等への直接アクセスは、後段の`local-overrides.sb`で拒否する。
+
+Git操作のため、`.secrets`の一覧・メタデータと直下の`.gitkeep`は許可する。他のファイルの内容・変更・削除は保護するが、ファイル名と属性は見える。Androidは`~/.android/debug.keystore`だけを許可し、その他の署名鍵の保護は維持する。
+
+SwiftPM/Flutterの二重sandboxはこの許可だけでは解決しない。内側sandboxを無効にできる起動経路か、承認したsandbox外ビルドで対応する。ホスト連携を含む全経路の隔離は保証しない。
+
 ## 通常のrmをごみ箱へ転送する（gomi）
 
 fishの`rm`と、PATHを継承するbash/sh・エージェント・Hermesサービスは`~/.local/bin/rm`を使う。ラッパーは一つの共有ロックで対象を順にgomiへ渡す。`/bin/rm`自体は変更しない。

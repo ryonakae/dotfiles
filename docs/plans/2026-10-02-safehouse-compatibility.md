@@ -2,6 +2,8 @@
 
 参照: [dig log](../dig/2026-10-02-safehouse-compatibility.md)。Q12の全体方針への回答「ok」と、その後のQ13:A（XDG方式・コピーへのフォールバック無効化）の説明への回答「ok」を含めて計画化する。dig logの最終確認待ちという記載は会話で解決済み。計画作成時点では計画ファイルだけを変更し、設定変更・インストール・テスト実行・commit・pushは行っていない。その後の`/implement`で実装を承認され、gomiは`brew install gomi`での導入を明示された。
 
+> 後続の合意と受入条件は[実用優先への補足計画](2026-10-02-safehouse-practical-adjustments.md)を優先する。以下の特殊trash迂回・Ctrl-C終了状態一致に関する停止記録は当時の履歴であり、現在の追加修正要求ではない。HOME配布と秘密移行は引き続き未完了。
+
 ## Requirements
 
 - Safehouseを継続し、Claude Code、pi、Codex、OpenCode、Antigravity CLI（既存の`gemini`関数）、Hermes対話CLIとgateway/dashboardに共通方針を適用する。
@@ -56,6 +58,16 @@
 Keychain検証: `scripts/tests/check_dotenvx_runtime.py`の初版はOS Keychain操作にもダミーHOMEを渡し、`failed to save private key to macOS Keychain`と「キーチェーンが見つかりません」のダイアログで失敗した。実HOMEを維持しenvファイルだけ一時領域に置くfixtureへ修正。ユーザーの「ダイアログ出てないですよ」を受け再開し、CLI復号・実launchdの非対話復号・env欠落時の子起動阻止・新規ダミーKeychain項目/jobのcleanupを通過（`HOST_KEYCHAIN_RETRY=0`）。既存Keychainのdefault、アクセス設定、実鍵は変更していない。
 
 現在の停止条件: read-only事前検査 `a440770a-2f95-423` は `Changes Required`。high 2件はtrashルートのrenameによるpayload保護迂回と、外部XDGの`.Trash-<uid>/files`・`.Trash/<uid>/files`の拒否漏れ。親も一時HOMEだけでnative再現し、3ケースとも読めてしまうことを確認した（`/tmp/dotfiles-trash-gap.py`、`HOST_TRASH_GAP=0`は再現プログラム自体の正常終了であり保護通過ではない）。high 2件は修正済み。trashルート/標準share親のrename拒否を追加し、既知の外部XDG形式へpayloadのread/write/unlink拒否を拡張。Redは`TRASH_RENAME_RED=1`（ルートrenameが成功して失敗）と`EXTERNAL_TRASH_RED=1`（外部payloadを読めて失敗）。Greenは`TRASH_RENAME_GREEN=0`と`EXTERNAL_TRASH_GREEN=0`で、標準・custom XDG・`.Trash-<uid>`・`.Trash/<uid>`のpayload読み書き拒否、trashルートrename拒否、metadata読み取り、rename Put、既存SSH/vendor/Hermes例外を確認した。再レビューはまだ実施していない。壊れたsymlinkをエラーで残す受入仕様はユーザーの「ok」で確定。独自の削除/移動やコピーfallbackは追加せず、実gomiでリンク保持と非zero終了を回帰確認する。外部trash祖先の保証範囲はユーザーの「a」でAに確定。HOME/指定XDGと、operandの祖先/直下で検出できる既知の外部trashを保護し、深いmountを含む任意のdirectoryの網羅は対象外。既知の外部XDG形式のpayload拒否とtrashルートのrename迂回は修正する。decision requiredは解決。実gomiのbroken symlink保持/非zeroを回帰テストに追加し、rmの15テストを通過。`README.md`に別作業のagent-device節とNode/npm環境の変更が混在していたため停止し、他者変更を残して今回の箇所だけ編集/部分stageする扱いをユーザーの「ok」で承認された。別作業のhunkはstageせず残す。正式な独立レビューは成果物commit・residue整理・必須検証後に同じreview contextへ再依頼する。全体実装・HOME配布・実秘密移行・既存サービス確認・archive/pushは未完了。別操作で追加された`config/.agents/AGENTS.md`、`config/skills-lock.json`、`config/.agents/agent-device-tests.md`も今回の対象外として保持する。新たな`config/.config/mise/config.toml`、`config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`、`config/.agents/skills/use-agent-device/`も対象外。他者変更の増減は引き続き確認し、勝手にstageしない。
+
+追加validationによる停止（commit後）: 成果物は`d74495a`（rm）と`93001c5`（runtime/policy/docs）としてlocal commit済み。最新21 tests、fish/bash/sh構文、Python AST、diff検査、修正production policyの実gomi Put/PTY復元/4並列は通過。自身の生成bytecode 2件はtempへ非破壊退避し、stagedなし。他者READMEの2 hunkと他者設定を保持。旧review contextはcleanupされresume不可のため、finding履歴と承認済みdecisionを引き継いだread-only `f10e5552-188f-4fb`で再レビューした結果、`Changes Required`。旧high #2（外部XDG payload拒否）、既存decision 2件と運用docs不足は解消。旧high #1は部分解消に留まり、custom XDG祖先をHermes例外へ移す迂回が残る。
+
+追加のsandbox外ダミーPTY試験は`HOST_COMPATIBILITY_SMOKE=1`/`HOST_COMPATIBILITY_DETAIL=1`。直接Python/同SafehouseのみはCtrl-CでSIGINT終了（wait status -2）、共通loader→dotenvx→Safehouse→同childはexit 1に変わる。TTYとダミーenv注入、KeyboardInterrupt、子の停止は確認でき、所有するダミーhostプロセスへのsignalも成功。CLIの終了code/signal透過に対する未解決validationとして残し、成功扱いにせず、新しい注入方式/受入契約変更の前にユーザーへ確認する。既存サービスは操作していない。
+
+再レビューhighの親検証: `/tmp/dotfiles-trash-hermes-gap.py`でダミーの`custom data/Trash/files/private.txt`を含む親`custom data`を`.hermes/imported`へrenameし、sandbox内で内容を読めることをnative再現（`CUSTOM_TRASH_REPARENT_READ_ALLOWED=True`、`HOST_HERMES_TRASH_GAP=0`は再現成功であって保護通過ではない）。trash regexは移動後も一致するがHermes除外でdenyが外れる。根拠は`local-overrides.sb:234-244`と既存のHermes allow。修正が同じ安全invariantを閉じきれなかったため追加修正はせず停止。提案Aはgomiごみ箱のpayload/ルート保護だけをHermes内にも適用し、他のHermes自己改善/`.env`例外を維持して同方式で修正続行。提案BはHermesへ移されたごみ箱を内容保護の保証外とする受入範囲変更。承認前にHermesの信頼境界を狭めない。
+
+Ctrl-C差分はreviewerがmedium + decision requiredとして分類し、キャンセル不能/子残留/データ損失とは認定していない。現透過契約のままvalidation通過にはできない。公式v2.32.4 `src/lib/helpers/executeCommand.js`でもsignal終了のfallbackは`commandExitCode = error.exitCode || 1`となることを確認した。通常の数値終了codeとは分けて、修正するかキャンセル時のexit 1を許容するか後続の承認が必要。
+
+HOME配布前のmetadata確認では、`~/.config/gomi/config.yaml`は既存実ファイル（新規wrapper等は未配布）。内容は読まず、上書き/退避/リンク置換をしない。終了statusの受入判断に加え、この既存設定の退避承認と本番秘密のユーザー側移行・バックアップ確認が必要。Final Validation未完了のためarchive/pushはしない。
 
 - [x] **導入と初期設定のひな形**: `brew/Brewfile.example`に`gomi`と`dotenvx/brew/dotenvx`を追加し、`config/.config/.env.example`を追加。`config/.config/fish/config.fish.example`のContext7/Homebrew token exportをひな形へ移し、README/AGENTSにユーザー側の初期移行手順を記載。
   - `brew install gomi`と`brew install dotenvx/brew/dotenvx`はsandbox外でexit 0。導入版はgomi 1.6.5、dotenvx 2.32.4。実Brewfile/実config.fish/実.envは読まず変更していない。gomiの初回起動は管理設定を要するため、保存方式と実動作は次のタスクで検証する。
