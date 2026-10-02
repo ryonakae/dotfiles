@@ -11,6 +11,7 @@ macOS 向け設定ファイル管理リポジトリ。`config/` 配下を `$HOME
 - `*.example` パターン: マシン固有・機密を含むファイルは `.example` をリポジトリ管理し、実ファイルは `.gitignore` で除外（`brew/Brewfile`, `config/.config/fish/config.fish`, `~/.hermes/hindsight/.env` など）
 - 機密情報（API キー、トークン等）を `*.example` に含めない
 - env 変数の置き場: マシン非依存の設計定数は wrapper（fish 関数 / shell スクリプト）に直書き、機密・マシン固有値は `.env`（実体は `.gitignore`）に分離する
+- 共通ツール用の秘密は `config/.config/.env`（Git管理外）をdotenvxで暗号化し、`~/.config/.env`から起動時に注入する。テンプレートは `.env.example`、復号鍵はmacOS Keychain。実秘密・実鍵の初期移行はユーザーが行う。手順はREADME「共通ツール用の秘密」を参照
 - EditorConfig: スペース 2、LF、UTF-8
 
 ## scripts/
