@@ -92,7 +92,7 @@ command -s rm
 - 標準の保存先は`~/.local/share/Trash`。`XDG_DATA_HOME`を指定していればその`Trash`を使う。Finderのごみ箱とは別で、復元にはgomiを使う。
 - `-f/-r/-R/-d/-v/--`に対応する。`-d`は空directoryだけ。`-i`は対象全体の転送を端末で確認し、非対話では失敗する。未対応optionとgomi専用optionは操作前に拒否する。
 - gomi 1.6.5の制約で、壊れたsymlinkは移動せずエラーにする。通常のsymlinkはリンク自体を移す。複数対象は部分成功があり得る。
-- 通常rmではHOME/指定XDGごみ箱と、対象の祖先/直下で検出できる外部ごみ箱を巻き込む操作を拒否する。深い位置のマウント先まで探索する保証はない。
+- 通常rmでは標準/指定XDGごみ箱と共有ロックを巻き込む操作を拒否する。外部ごみ箱の探索や、特殊な移動による迂回の追跡はしない。
 - `Trash`・`.Trash`・`.Trash-<uid>`などのごみ箱ルート名は、sandbox内でのrenameを拒否する。これらの予約名を通常directoryに使う場合も移動が制限される。payloadの内容はsandbox内から読み書きできず、metadataとrenameによる転送は可能。既存の`~/.hermes`信頼境界は例外。
 
 ### 復元と手動掃除

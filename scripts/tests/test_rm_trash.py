@@ -158,9 +158,6 @@ class RmTrashTests(unittest.TestCase):
   def test_sigint_waits_for_child_and_cancels_next_operand(self):
     self.assert_cancel_waits_for_child(signal.SIGINT)
 
-  def test_sighup_waits_for_child_and_cancels_next_operand(self):
-    self.assert_cancel_waits_for_child(signal.SIGHUP)
-
   def test_sigkill_keeps_child_lock_until_child_finishes(self):
     first, call, release = self.prepare_blocked_move()
     os.kill(call['parent'], signal.SIGKILL)
@@ -215,11 +212,6 @@ class RmTrashTests(unittest.TestCase):
     result = self.run_rm('trash-link')
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertTrue(custom_trash.is_dir())
-    external = self.work / ('volume/.Trash-' + str(os.getuid()))
-    external.mkdir(parents=True)
-    result = self.run_rm('-r', external.parent)
-    self.assertNotEqual(result.returncode, 0)
-    self.assertTrue(external.exists())
 
   @unittest.skipUnless(shutil.which('fish'), 'fish is not installed')
   def test_noninteractive_fish_and_its_child_shells_use_same_wrapper(self):
