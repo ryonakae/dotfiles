@@ -84,6 +84,7 @@ class AgentRuntimeTests(unittest.TestCase):
         self.assertEqual(payload['first_path'], str(self.bin))
         args = payload['args']
         self.assertIn('--env', args)
+        self.assertIn('--allow-profile-writes', args)
         self.assertIn('--add-dirs=' + str(self.home), args)
         self.assertEqual(args[-len(tail):], tail)
         self.assertEqual([arg for arg in args if arg.startswith('--append-profile=')],

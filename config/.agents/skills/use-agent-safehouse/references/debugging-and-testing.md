@@ -41,16 +41,14 @@
 | sysctl deny | `(allow sysctl-read (sysctl-name "<name>"))` |
 | mach-lookup deny | `(allow mach-lookup (global-name "<name>"))` |
 
-### プロファイルの段階的構築
+### 既存policyからの診断
 
-1. 最小構成から始める：
-```
-(version 1)
-(deny default)
-```
+1. 失敗commandとログに現れたpath・操作を確認する。deny対象の実秘密をprobeしない。
+2. 実際の起動引数で `--stdout` を使い、標準feature、grant、追加profile、terminal denyの順を確認する。`--stdout` はcommandを実行しない。`--explain` はサマリ表示後、指定commandを実行するので、拒否操作の再試行に使わない。
+3. 標準機能や既存grantで対応できるかを先に確認する。互換性を優先し、承認された最小修正だけを行う。denyログからallowを機械的に追加しない。
+4. policy変更は次回起動で反映する。`--allow-profile-writes` はappendしたファイルの標準書き込み保護を省く設定であり、現在のsandboxを更新しない。
 
-2. 各 deny をマッピングして allow ルールを追加
-3. フルツールチェーンワークフローをテスト（子プロセスはサンドボックスポリシーを継承するため）
+`.env` / `.envrc` のダミーテストも残る名前denyの対象になる。必要時はSKILL.mdの承認済みテスト専用代案を使い、無断でSandbox外へ移したり実秘密を読んだりしない。検証は変更に近い差分・構文・必要なsmokeに絞り、毎回のフルsuiteは要求しない。
 
 ## テストフレームワーク
 
@@ -59,8 +57,9 @@
 - `sandbox-exec` が使える macOS ホスト
 - 既存のサンドボックスセッション外で実行する必要がある
 
-### テストスイート
+### Safehouse本体のテストスイート
 
+以下はSafehouse本体リポジトリの手順であり、dotfilesの変更ごとの完了条件ではない。
 メインのエントリポイント: `./tests/run.sh`
 
 ```bash

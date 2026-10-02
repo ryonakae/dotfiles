@@ -1,5 +1,5 @@
 ;; Agent Safehouse のローカルオーバーライド。
-;; 生成ポリシーの後に読み込まれるため、ここでの deny/allow が最終的な優先権を持つ。
+;; 標準のパス許可より後に、機密ファイルへの直接アクセスを制限する。
 ;; 通常の共有アクセスには --add-dirs-ro/--add-dirs を使い、ホスト固有のルールをここに書く。
 
 ;; HOMEの広い許可より後に、コピーされた秘密もファイル名で保護する。
@@ -89,20 +89,6 @@
     (home-literal "/.android/debug.keystore")
 )
 
-;; --enable=xcode の標準プロファイルは macOS 26 / Xcode 26 系の Simulator runtime に
-;; 必要な mach service / fsctl をカバーしていないため、ここで補う。
-;; これが無いと simctl が "liblaunch_sim.dylib could not be opened" /
-;; "iOS-26-X Unavailable" で booted な Simulator を認識できない。
-(allow mach-lookup
-    (global-name "com.apple.CoreSimulator.simdiskimaged")
-    (global-name "com.apple.CoreSimulator.SimLaunchHost-arm64")
-)
-
-;; DMG / cryptex マウントの読み書きで simctl が発行する fsctl ioctl。
-(allow system-fsctl
-    (fsctl-command (_IO "J" 32))
-)
-
 ;; config.fish にマシンローカルの機密情報が含まれているため、
 ;; shell-init が有効化された場合でも読み書きを拒否する。
 (deny file-read* file-write*
@@ -149,94 +135,12 @@
 )
 (allow file-read* file-write* file-read-metadata (home-subpath "/.ssh/agent"))
 
-;; 親のrenameで絶対パスの保護を外さず、配下の通常の書き込みは制限しない。
-(deny file-write-unlink
-    (literal HOME_DIR)
-    (home-literal "/.config")
-    (home-literal "/.config/fish")
-    (home-literal "/.config/fish/functions")
-    (home-literal "/.config/fish/conf.d")
-    (home-literal "/.config/agent-safehouse")
-    (home-literal "/.config/gomi")
-    (home-literal "/.local")
-    (home-literal "/.local/bin")
-    (home-literal "/.local/share")
-    (home-literal "/.aws")
-    (home-literal "/.kube")
-    (home-literal "/Library")
-    (home-literal "/Library/Containers")
-    (home-literal "/Library/Group Containers")
-    (home-literal "/Library/Application Support")
-    (home-literal "/Library/Application Support/Google")
-    (home-literal "/Library/Application Support/Firefox")
-    (home-literal "/dotfiles")
-    (home-literal "/dotfiles/config")
-    (home-literal "/dotfiles/config/.config")
-    (home-literal "/dotfiles/config/.config/fish")
-    (home-literal "/dotfiles/config/.config/fish/functions")
-    (home-literal "/dotfiles/config/.config/fish/conf.d")
-    (home-literal "/dotfiles/config/.config/agent-safehouse")
-    (home-literal "/dotfiles/config/.config/gomi")
-    (home-literal "/dotfiles/config/.local")
-    (home-literal "/dotfiles/config/.local/bin")
-)
-;; 転送・注入の処理をsandbox内から書き換えて保護を無効化しない。
-(deny file-write*
-    (home-literal "/.local/bin/rm")
-    (home-subpath "/.config/gomi")
-    (home-subpath "/.config/agent-safehouse")
-    (home-literal "/.config/fish/functions/__safehouse_args.fish")
-    (home-literal "/.config/fish/functions/safe.fish")
-    (home-literal "/.config/fish/functions/hermes.fish")
-    (home-literal "/.config/fish/functions/rm.fish")
-    (home-literal "/.config/fish/conf.d/gomi.fish")
-    (home-literal "/dotfiles/config/.local/bin/rm")
-    (home-subpath "/dotfiles/config/.config/gomi")
-    (home-subpath "/dotfiles/config/.config/agent-safehouse")
-    (home-literal "/dotfiles/config/.config/fish/functions/__safehouse_args.fish")
-    (home-literal "/dotfiles/config/.config/fish/functions/safe.fish")
-    (home-literal "/dotfiles/config/.config/fish/functions/hermes.fish")
-    (home-literal "/dotfiles/config/.config/fish/functions/rm.fish")
-    (home-literal "/dotfiles/config/.config/fish/conf.d/gomi.fish")
-)
-
 ;; ~/.hermes は Hermes Agent の workdir かつ信頼境界。
 ;; Agent が自己改善で .env / hooks / cron / automations / skills を書き換える前提のため、
 ;; 上記の汎用 deny（.env / secrets / credentials.json 等）を後勝ちで貫通させる。
 ;; 信頼境界は ~/.hermes の内側に閉じる前提。
 (allow file-read* file-write*
     (home-subpath "/.hermes")
-)
-
-;; terminal-notifier (macOS通知) が必要とする Mach サービスを許可。
-;; macos-gui では hiservices 等は許可されるが、UserNotifications フレームワーク
-;; が使う usernoted デーモンへの接続は含まれていないため、ここで補足する。
-(allow mach-lookup
-    (global-name "com.apple.usernoted.client")
-    (global-name "com.apple.usernoted.daemon_client")
-    (global-name "com.apple.usernotifications.usernotificationservice")
-)
-
-;; xcodebuild test は開始時に IOPMAssertionCreateWithName で sleep 抑止 assertion を取り、
-;; powerd への mach-lookup が拒否されると -536870199 で Simulator test 自体が始まらない。
-;; Safehouse の xcode integration は CoreSimulator だけを許可し powerd を含まないため、ここで補足する。
-(allow mach-lookup
-    (global-name "com.apple.PowerManagement.control")
-    ;; test runner の DTServiceHub は Simulator へ接続する際に instruments の arbiter、security などの
-    ;; XPC service を順に引く。1 つでも拒否されると "failed to bless service hub" で xcodebuild test が
-    ;; 応答しなくなるため、Xcode 同梱の instruments service 群をまとめて許可する。
-    (global-name-regex #"^com\.apple\.dt\.instruments\.")
-)
-
-;; xcodebuild test は完了後に Simulator 側で起動した test runner（sandbox 外のプロセス）へ終了シグナルを送る。
-;; 既定の (allow signal (target same-sandbox)) では拒否され、終了を待ち続けてハングする。
-;; --enable=process-control でも同じ許可が得られるが、wrapper の既存 --enable 一覧と併用すると
-;; safehouse 0.9.0 の policy renderer が "Bad file descriptor" で落ちるため、ここで signal だけを開ける。
-(allow signal (target others))
-
-;; ホスト側のCuaDriverデーモンへの接続だけを許可する。
-(allow network-outbound
-    (home-literal "/Library/Caches/cua-driver/cua-driver.sock")
 )
 
 ;; 元の保護パスから人間が移した秘密をtrash経由で読み取らせない。
@@ -246,13 +150,8 @@
         (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")
         (require-not (home-subpath "/.hermes"))
     )
-    (home-subpath "/.Trash")
-)
-
-;; XDGの保存先が変わっても、ルートのrenameでpayloadのパス拒否を外さない。
-(deny file-write-unlink
     (require-all
-        (regex #".*/(Trash|\.Trash(-[0-9]+)?|\.Trash/[0-9]+)$")
-        (require-not (home-subpath "/.hermes"))
+        (home-subpath "/.Trash")
+        (require-not (home-literal "/.Trash"))
     )
 )

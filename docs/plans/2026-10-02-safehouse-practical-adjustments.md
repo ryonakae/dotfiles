@@ -14,6 +14,17 @@
 
 - 追加合意「それでOK」により、対話CLIへ承認・sandboxモードの強制引数を追加しない。Claudeの`--permission-mode bypassPermissions`、Codexの`--dangerously-bypass-approvals-and-sandbox`、Geminiの`--yolo`を外し、Hermes/pi/OpenCodeと同様にユーザー指定の引数だけ渡す。Safehouse・dotenvx・既存env処理とHermesサービス専用の起動引数は維持する。各CLI内部の動作は設定・既定値に従い、内蔵sandboxとの互換性は配布後の実CLI確認に残す。
 
+## 追加合意: 独自制限の削減
+
+ユーザーの「それで修正して」により、以下は上記と旧計画の競合する要件に優先する。
+
+- 管理wrapper・gomi/起動設定の編集禁止、保護対象の親とtrashルートのrename禁止を撤廃する。共通fishとHermes gateway/dashboardに`--allow-profile-writes`を追加する。実行中のsandboxの変更や、`.safehouse`自体の標準保護解除は行わない。
+- 個別Mach/network許可は`compatibility.sb`、host signalは標準`process-control`に任せる。Simulator用`system-fsctl`は`compatibility.sb`へ移す。既存のHOME許可・全env継承・feature差分・秘密注入・CLI引数透過は維持する。
+- 実機密の保存場所を中心にした保護へ移行する方針。ただし、管理設定から本番署名鍵や独自秘密の保存先を特定できず、名前/拡張子denyは今回は維持する。実秘密は読まない。この移行は未完了として残す。
+- 実機密・ブラウザ・Mail/Messages・trash payloadへの直接保護、既存vendor/Hermes例外、rm/gomiの動作は維持する。HOME外の全面書き込み、OS領域の大雑把な追加deny、CLIの承認設定変更は行わない。
+- スキルと運用説明を互換性優先へ修正し、現在の拒否を無断迂回する指示にはしない。
+- 追加指示「重厚長大なテストとか検証とか、やらなくていい」「早く改修を終わらせて」を優先し、今回の確認は構文・差分・既存ラッパーテスト1件と一時HOMEの小さなsmokeに限定する。フルsuiteや実CLI/Hermesサービスの検証を今回の修正完了ゲートにしない。従来の本番配布・秘密移行の未確認を成功扱いしない。
+
 ## Implementation Decisions
 
 ### 2か所のファイル許可
@@ -52,6 +63,9 @@
 - [x] **運用文書と注入確認**: `README.md`とルート`AGENTS.md`の今回の箇所だけ更新し、旧計画へ本補足計画の優先を明記する。`config/.config/.env.example`には追加済みの`TYPESAFE_API_KEY=`を含める。共通loaderをキー名ごとに改修せず、任意キーの継承を既存runtimeテストで確認する。
   - `39207c2`までにcommit済み。READMEは他者のNode/npm・agent-device 2 hunkを保持。旧計画に補足計画の優先を記し、通常rmの範囲とCtrl-Cのexit 1許容を文書化。TYPESAFE_API_KEYは空値1件、テンプレート内全値が空であることを確認。READMEは既存部分込み646行のためdoc-updaterの300行超警告に該当するが、全体整理は対象外。
 - [x] **対話CLIの引数透過**: `claude.fish`、`codex.fish`、`gemini.fish`から強制引数だけを削除し、READMEに記載。`test_agent_runtime.py`で6 CLIを実fish→共通loader→stub Safehouseまで通し、無引数・空白/空文字を含む引数の完全一致を検証。変更前に3 CLI×2ケースの失敗を確認し、変更後はruntime全6 testsと全体21 tests（26.949秒）、変更した3 fishの構文・差分検査を通過。env/TMPDIR等や実CLIの設定ファイルは変更していない。
+- [x] **独自制限の削減と指示の整合**: 上記の追加合意をpolicy・3起動経路・スキル・運用説明へ反映した。既存テストから廃止した拒否期待を除き、管理ファイル編集の期待へ変更した。
+  - 構文・差分検査、既存ラッパーテスト1件（2.410秒）が通過。一時HOMEの小さな確認で管理ファイル/読み込んだprofileの編集、親とXDG/Finderごみ箱ルートの移動、.envのread/write/unlink拒否とtrash payloadのread拒否を確認。フルsuite・実CLI/Hermesサービス確認は追加指示に従い未実行。
+  - 保護先未確認の名前/拡張子denyの移行は保留。今回の変更は本番HOME配布やサービス再起動を含めない。
 - [ ] **配布と実動作確認**: 不足する`compatibility.sb`、共通loader、rm等を含む配置を揃え、新規起動で確認する。既存の`~/.config/gomi/config.yaml`は実ファイルなので、設定内容・用途の確認と退避の承認後に置き換える。実秘密の移行前に既存CLI/サービスを壊す中途半端な配布・再起動をしない。
 
 ## Final Validation

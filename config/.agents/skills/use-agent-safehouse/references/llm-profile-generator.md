@@ -56,6 +56,8 @@ git -C ~/[project] worktree list 2>/dev/null
 ## 設計原則
 
 - **deny-by-default** ルール
-- グローバル dotfile への最小限のアクセス
-- 広い権限ではなく明示的なサブパスルール
-- コメントによる明確な監査可能性
+- このdotfiles環境では互換性優先のHOME RWと `wide-read` を前提に、実機密・OS重要領域への直接アクセスを保護する
+- 標準機能と最終profile順を先に確認し、ユーザー承認後に必要な最小変更を行う。`allow default` や `/` のRWに変更しない
+- `.env` / `.envrc` / secrets / 鍵のdenyとvendor/Hermes例外を維持し、未把握の秘密保存場所を推測で許可しない
+- 実秘密の内容やセッション、拒否対象をprobeせず、必要なpath名とアクセス要件はユーザーへ確認する
+- コメントは許可・拒否の理由を記す

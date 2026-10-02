@@ -44,7 +44,7 @@ config/
 - Pi のサブエージェント設定は `config/.pi/agent/subagents.json`、親によるモデル・thinking 選定方針と比較データは同ディレクトリの `agent-tool-description.md` で管理する。構成・更新方法は README の「Pi の拡張・MCP」を参照
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
 - 環境変数は `--env` で全継承する。共通dotenvx注入とrmの優先PATHは `config/.config/agent-safehouse/run-with-agent-env.sh`。復号失敗、rmラッパーや保護profileの欠落では起動を止める
-- 共通sandbox引数は `config/.config/fish/functions/__safehouse_args.fish`。HOMEを原則読み書き可能にし、`compatibility.sb`でファイル以外のIPCを緩和した後、`local-overrides.sb`で秘密・私的データを拒否する。管理wrapperの書き換えや、保護対象の親の移動も拒否する。policy変更はSandbox外で行い、`scripts/tests/check_safehouse_runtime.py`でダミーHOMEの実効保護を確認する
+- 共通sandbox引数は `config/.config/fish/functions/__safehouse_args.fish`。HOMEを原則読み書き可能にし、`compatibility.sb`でファイル以外のIPCを緩和した後、`local-overrides.sb`で秘密・私的データを拒否する。管理wrapper・設定ファイルの編集と親ディレクトリの移動は独自に禁止しない。3つの起動経路で`--allow-profile-writes`を指定する。実行中のsandboxには変更が反映されないため、現在の制限に従って編集し、次回起動から適用する。検証は変更した設定の構文・差分と必要な小さな動作確認に絞る
 - 通常のrmは `config/.local/bin/rm` でgomiへ転送する。実rmへfallbackしない。ごみ箱内容への通常の直接アクセスはSandbox内で拒否し（既存のHermes信頼領域は例外）、復元/手動掃除は人間がSandbox外で行う。特殊な移動迂回の完全封鎖は保証しない。絶対パスrm、言語API、Git等による削除・上書きは転送対象外
 - Git向けに`.secrets`の一覧・メタデータと直下の`.gitkeep`、Android開発向けに`~/.android/debug.keystore`を許可する。他の秘密ファイルの内容や署名鍵は保護する。完全隔離ではなく互換性優先の直接アクセス制限とし、詳細はREADME「Safehouseの許可と保護」を参照
 - 機密ファイルの deny ルール、vendor 配下の例外 allow、`~/.hermes` の信頼境界 allow は `config/.config/agent-safehouse/local-overrides.sb` に集約。`~/.hermes` は Hermes Agent の workdir かつ信頼境界として、汎用 deny（`.env` 等）を後勝ちで貫通させる

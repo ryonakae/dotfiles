@@ -2,3 +2,8 @@
 (allow mach-lookup mach-register)
 (allow ipc-posix* ipc-sysv*)
 (allow network* system-socket)
+
+;; Simulator の DMG / cryptex マウントには、IPC とは別に fsctl の許可が必要。
+(allow system-fsctl
+    (fsctl-command (_IO "J" 32))
+)
