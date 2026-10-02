@@ -18,9 +18,19 @@
 
 ## ツール・環境
 
+### 実行環境
+
+- 作業開始前に `APP_SANDBOX_CONTAINER_ID` と `HERDR_ENV` を一度確認（明示済みなら不要）。環境変数の一括出力は禁止
+- `APP_SANDBOX_CONTAINER_ID=agent-safehouse` なら Safehouse 内。制限操作は試さず、`Operation not permitted` は回避せず報告する。ただし `HERDR_ENV=1` なら依頼範囲内の非破壊的操作は Herdr の別タブ・ペインで実行可。破壊的操作・機密情報へのアクセス・権限やセキュリティ設定の変更は要事前承認
+
+### コマンド・検証ツール
+
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
 - worktree の操作は `git worktree` を直接使わず、`wt`（Worktrunk）と `use-worktrunk` スキルで行う
-- `APP_SANDBOX_CONTAINER_ID=agent-safehouse` なら Safehouse 内。制限対象と分かる操作は試さず、想定外の `Operation not permitted` も回避せず報告する。ただし `HERDR_ENV=1` なら、依頼範囲内の非破壊的操作は Herdr の別タブ・ペインで実行してよい。破壊的操作・機密情報へのアクセス・権限やセキュリティ設定の変更は事前承認を得る
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
+- iOS Simulator での UI 動作検証や `.ad` テストの作成・実行には `use-agent-device` スキルを読み、公式 `agent-device` スキルも併用する。配置・初期状態・実行方法は対象アプリの既存規約を優先する
+
+### ドキュメント・Web検索
+
 - ライブラリ/API のドキュメントは `find-docs` スキルで参照する
 - Web検索・ページ取得は一次情報（公式ドキュメント、API リファレンス）を優先し、検索/取得ツールの失敗時・未提供時や `403` エラーの場合は `agent-browser` をフォールバックに使う
