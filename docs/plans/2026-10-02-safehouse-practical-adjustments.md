@@ -10,7 +10,9 @@
 - OpenHandsは未使用なので例外を追加せず、アンインストールもしない。原因未確定のnice/cwdエラー、テスト用.env領域の新設、OS権限/TCC変更を今回へ追加しない。
 - 通常rmは普段のfish、子shell、エージェント、Hermesサービスでgomiへ転送する。OSのrmは改変せず、実rmへのfallback、コピー＋元データ削除、永久削除の自動化は行わない。絶対パスrm、言語API、Git、上書きによるデータ損失まで保証しない。
 - dotenvxの共通注入を維持する。共通キーにTYPESAFE_API_KEYを含め、Git管理するテンプレートは空値のみ。実秘密の移行・暗号化・実鍵の登録・バックアップはユーザー操作とする。復号済みの値はエージェントと子プロセスから利用できることを許容する。
-- 既存TMPDIR補正、HISTFILE、workdir、各CLI引数、mise/venv、Hermes待受設定と正規停止、サービス間の意図したfeature差分を保持する。他者の変更・既存実ファイルは上書きしない。
+- 既存TMPDIR補正、HISTFILE、workdir、CLIにユーザーが明示した引数、mise/venv、Hermes待受設定と正規停止、サービス間の意図したfeature差分を保持する。他者の変更・既存実ファイルは上書きしない。
+
+- 追加合意「それでOK」により、対話CLIへ承認・sandboxモードの強制引数を追加しない。Claudeの`--permission-mode bypassPermissions`、Codexの`--dangerously-bypass-approvals-and-sandbox`、Geminiの`--yolo`を外し、Hermes/pi/OpenCodeと同様にユーザー指定の引数だけ渡す。Safehouse・dotenvx・既存env処理とHermesサービス専用の起動引数は維持する。各CLI内部の動作は設定・既定値に従い、内蔵sandboxとの互換性は配布後の実CLI確認に残す。
 
 ## Implementation Decisions
 
@@ -49,6 +51,7 @@
   - `0113a7f`でcommit済み。rmは167→157行、gomi設定は75→27行。外部trash探索、legacy/UI配色/空フィルター/debug設定を削除し、signal状態を子実行中のローカルhandlerへ整理。SIGHUPの追加保証テストを除き、INT/TERM・子FD継承・frRvid/--は維持。全20 tests（rm14/runtime5/TMPDIR1）が24.032秒で通過。`PRACTICAL_GOMI_DONE=0`でproduction policy内Put、隔離TUIの一覧/確認/復元、4並列同名保存を確認。
 - [x] **運用文書と注入確認**: `README.md`とルート`AGENTS.md`の今回の箇所だけ更新し、旧計画へ本補足計画の優先を明記する。`config/.config/.env.example`には追加済みの`TYPESAFE_API_KEY=`を含める。共通loaderをキー名ごとに改修せず、任意キーの継承を既存runtimeテストで確認する。
   - `39207c2`までにcommit済み。READMEは他者のNode/npm・agent-device 2 hunkを保持。旧計画に補足計画の優先を記し、通常rmの範囲とCtrl-Cのexit 1許容を文書化。TYPESAFE_API_KEYは空値1件、テンプレート内全値が空であることを確認。READMEは既存部分込み646行のためdoc-updaterの300行超警告に該当するが、全体整理は対象外。
+- [x] **対話CLIの引数透過**: `claude.fish`、`codex.fish`、`gemini.fish`から強制引数だけを削除し、READMEに記載。`test_agent_runtime.py`で6 CLIを実fish→共通loader→stub Safehouseまで通し、無引数・空白/空文字を含む引数の完全一致を検証。変更前に3 CLI×2ケースの失敗を確認し、変更後はruntime全6 testsと全体21 tests（26.949秒）、変更した3 fishの構文・差分検査を通過。env/TMPDIR等や実CLIの設定ファイルは変更していない。
 - [ ] **配布と実動作確認**: 不足する`compatibility.sb`、共通loader、rm等を含む配置を揃え、新規起動で確認する。既存の`~/.config/gomi/config.yaml`は実ファイルなので、設定内容・用途の確認と退避の承認後に置き換える。実秘密の移行前に既存CLI/サービスを壊す中途半端な配布・再起動をしない。
 
 ## Final Validation
