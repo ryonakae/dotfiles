@@ -45,8 +45,8 @@
 
 - [x] **狭い例外の追加**: `local-overrides.sb`と`scripts/tests/check_safehouse_runtime.py`に2例外と隣接する保護対象の回帰確認を加える。既存profileに必要以上の整理・許可を追加しない。
   - 実装・検証済み。Red: `.secrets` stat拒否、debug.keystore作成拒否をそれぞれnative再現。Green: `PRACTICAL_POLICY_FINAL=0`、73 checks通過。Gitのstatus/add/diff/checkout-index、隣接秘密のread/write/unlink拒否、通常keystoreと.envを指すalias拒否、既存例外・trash Putを確認。初回のregex候補はescapeの誤りで不一致だったため、既存のSBPL記法に修正した。
-- [ ] **rm/gomiの簡素化**: `config/.local/bin/rm`、`config/.config/gomi/config.yaml`、`scripts/tests/test_rm_trash.py`、必要なら`check_gomi_runtime.py`を上記の契約に合わせる。既存のfish→PATH転送は維持する。廃止した探索・過剰保証だけを検証するテストは整理し、保存・失敗・並行実行のテストを残す。
-  - 実装・検証済み、commit待ち。rmは167→157行、gomi設定は75→27行。外部trash探索、legacy/UI配色/空フィルター/debug設定を削除し、signal状態を子実行中のローカルhandlerへ整理。SIGHUPの追加保証テストを除き、INT/TERM・子FD継承・frRvid/--は維持。全20 tests（rm14/runtime5/TMPDIR1）が24.032秒で通過。`PRACTICAL_GOMI_DONE=0`でproduction policy内Put、隔離TUIの一覧/確認/復元、4並列同名保存を確認。
+- [x] **rm/gomiの簡素化**: `config/.local/bin/rm`、`config/.config/gomi/config.yaml`、`scripts/tests/test_rm_trash.py`、必要なら`check_gomi_runtime.py`を上記の契約に合わせる。既存のfish→PATH転送は維持する。廃止した探索・過剰保証だけを検証するテストは整理し、保存・失敗・並行実行のテストを残す。
+  - 実装・検証済み。rmは167→157行、gomi設定は75→27行。外部trash探索、legacy/UI配色/空フィルター/debug設定を削除し、signal状態を子実行中のローカルhandlerへ整理。SIGHUPの追加保証テストを除き、INT/TERM・子FD継承・frRvid/--は維持。全20 tests（rm14/runtime5/TMPDIR1）が24.032秒で通過。`PRACTICAL_GOMI_DONE=0`でproduction policy内Put、隔離TUIの一覧/確認/復元、4並列同名保存を確認。
 - [ ] **運用文書と注入確認**: `README.md`とルート`AGENTS.md`の今回の箇所だけ更新し、旧計画へ本補足計画の優先を明記する。`config/.config/.env.example`には追加済みの`TYPESAFE_API_KEY=`を含める。共通loaderをキー名ごとに改修せず、任意キーの継承を既存runtimeテストで確認する。
   - 更新済み、commit待ち。READMEは他者のNode/npm・agent-device 2 hunkを保持。旧計画に補足計画の優先を記し、通常rmの範囲とCtrl-Cのexit 1許容を文書化。TYPESAFE_API_KEYは空値1件、テンプレート内全値が空であることを確認。READMEは既存部分込み646行のためdoc-updaterの300行超警告に該当するが、全体整理は対象外。
 - [ ] **配布と実動作確認**: 不足する`compatibility.sb`、共通loader、rm等を含む配置を揃え、新規起動で確認する。既存の`~/.config/gomi/config.yaml`は実ファイルなので、設定内容・用途の確認と退避の承認後に置き換える。実秘密の移行前に既存CLI/サービスを壊す中途半端な配布・再起動をしない。

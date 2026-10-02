@@ -18,23 +18,22 @@ class Cancelled(Exception):
     self.signum = signum
 
 
-interrupted = 0
-active = False
-child = None
-
-
 def cancel(signum, frame):
-  global interrupted
-  interrupted = signum
-  if child is not None:
-    child.send_signal(signum)
-  elif not active:
-    raise Cancelled(signum)
+  raise Cancelled(signum)
 
 
 def run_gomi(command, lock_fd):
-  global active, child
-  active = True
+  interrupted = 0
+  child = None
+
+  def cancel_child(signum, frame):
+    nonlocal interrupted
+    interrupted = signum
+    if child is not None:
+      child.send_signal(signum)
+
+  signals = (signal.SIGINT, signal.SIGTERM)
+  handlers = {signum: signal.signal(signum, cancel_child) for signum in signals}
   try:
     # The child keeps the same flock alive even if this process is killed.
     child = subprocess.Popen(command, pass_fds=(lock_fd,))
@@ -42,8 +41,8 @@ def run_gomi(command, lock_fd):
       child.send_signal(interrupted)
     status = child.wait()
   finally:
-    child = None
-    active = False
+    for signum, handler in handlers.items():
+      signal.signal(signum, handler)
   if interrupted:
     raise Cancelled(interrupted)
   return status
@@ -73,7 +72,7 @@ def parse_args(args):
 
 
 def main():
-  for signum in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+  for signum in (signal.SIGINT, signal.SIGTERM):
     signal.signal(signum, cancel)
   options, operands = parse_args(sys.argv[1:])
   if not operands:
@@ -99,20 +98,11 @@ def main():
 def check_protected_path(operand):
   home = Path(os.environ['HOME'])
   data = Path(os.environ.get('XDG_DATA_HOME') or home / '.local/share')
-  roots = [home / '.local/share/Trash', data / 'Trash', home / '.trash',
-           home / '.gomi', Path('/tmp/Trash'), Path('/var/tmp/Trash'),
+  roots = [home / '.local/share/Trash', data / 'Trash',
            home / '.local/share/.rm-gomi.lock']
   target = Path(os.path.abspath(operand))
   # Resolve the parent, not the final symlink: rm targets the link itself.
   targets = {target, target.parent.resolve() / target.name}
-  for form in targets:
-    for ancestor in (form, *form.parents):
-      if ancestor.name in ('.Trash', f'.Trash-{os.getuid()}'):
-        roots.append(ancestor)
-      for external in (ancestor / '.Trash' / str(os.getuid()),
-                       ancestor / f'.Trash-{os.getuid()}'):
-        if external.is_dir():
-          roots.append(external)
   for root in roots:
     for protected in (Path(os.path.abspath(root)), root.resolve()):
       for form in targets:
