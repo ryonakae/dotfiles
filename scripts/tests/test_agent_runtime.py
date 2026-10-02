@@ -90,6 +90,24 @@ class AgentRuntimeTests(unittest.TestCase):
                          ['--append-profile=' + str(runtime / 'compatibility.sb'),
                           '--append-profile=' + str(runtime / 'local-overrides.sb')])
 
+  def test_cli_wrappers_forward_only_user_arguments(self):
+    self.install_runtime()
+    self.program('safehouse', (self.bin / 'probe').read_text())
+    fish_dir = ROOT / 'config/.config/fish/functions'
+    for name in ['claude', 'codex', 'gemini', 'hermes', 'pi', 'opencode']:
+      for arguments in [[], ['--model', 'model with spaces', '']]:
+        with self.subTest(wrapper=name, arguments=arguments):
+          command = [shutil.which('fish'), '--no-config', '-c',
+                     'source "$argv[1]/__safehouse_args.fish"; '
+                     'source "$argv[1]/safe.fish"; '
+                     'source "$argv[1]/$argv[2].fish"; $argv[2] $argv[3..-1]',
+                     str(fish_dir), name, *arguments]
+          result = subprocess.run(command, env=self.env, capture_output=True,
+                                  text=True, timeout=15)
+          self.assertEqual(result.returncode, 23, result.stderr)
+          args = json.loads(result.stdout)['args']
+          self.assertEqual(args[args.index('--') + 1:], [name, *arguments])
+
   def test_missing_protection_profile_prevents_sandbox_start(self):
     runtime = self.install_runtime()
     (runtime / 'local-overrides.sb').unlink()

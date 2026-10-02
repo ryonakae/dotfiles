@@ -70,6 +70,8 @@ fishでは`brew shellenv`でHomebrewを優先する。ただし通常の`rm`は`
 
 開発ツールの互換性を優先し、HOMEの読み書き、環境変数の全継承、IPC・Macサービス・ホストプロセス操作を許可する。Documents・Music/Musics・Movies・Downloads・Picturesには追加の制限を設けない。機密ファイルと人間用ブラウザ等への直接アクセスは、後段の`local-overrides.sb`で拒否する。
 
+対話CLIのラッパーは、CLI本体へユーザーが指定した引数だけを渡す。承認モードや内蔵sandboxを切り替える引数は自動追加せず、各CLIの設定・既定値に任せる。Safehouse・dotenvxと既存の環境変数設定は維持する。
+
 Git操作のため、`.secrets`の一覧・メタデータと直下の`.gitkeep`は許可する。他のファイルの内容・変更・削除は保護するが、ファイル名と属性は見える。Androidは`~/.android/debug.keystore`だけを許可し、その他の署名鍵の保護は維持する。
 
 SwiftPM/Flutterの二重sandboxはこの許可だけでは解決しない。内側sandboxを無効にできる起動経路か、承認したsandbox外ビルドで対応する。ホスト連携を含む全経路の隔離は保証しない。
