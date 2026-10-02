@@ -11,7 +11,8 @@ function safe --description "Run a command through Agent Safehouse"
     end
 
     set -l safehouse_args (__safehouse_args)
+    or return $status
 
-    command safehouse $safehouse_args -- $argv
+    command "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse $safehouse_args -- $argv
     return $status
 end

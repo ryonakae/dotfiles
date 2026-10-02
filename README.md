@@ -48,7 +48,7 @@ $ brew bundle -v
 
 ### Homebrew でインストールしたやつを優先的に利用する
 
-fish を使うなら `config.fish` 内の `brew shellenv` と `fish_add_path --move` で Homebrew のパスが先頭側に来る。
+fishでは`brew shellenv`でHomebrewを優先する。ただし通常の`rm`は`~/.local/bin/rm`のgomi転送を優先し、エージェントやサービスの起動処理でもPATHを揃える。
 
 それでも GUI アプリや他の shell で `/usr/bin` が先に来る警告が出る場合は、`/etc/paths` の順番を入れ替える。
 
@@ -65,6 +65,41 @@ fish を使うなら `config.fish` 内の `brew shellenv` と `fish_add_path --m
 ```
 
 設定後に `exec fish` またはターミナル再起動で反映される
+
+## 通常のrmをごみ箱へ転送する（gomi）
+
+fishの`rm`と、PATHを継承するbash/sh・エージェント・Hermesサービスは`~/.local/bin/rm`を使う。ラッパーは一つの共有ロックで対象を順にgomiへ渡す。`/bin/rm`自体は変更しない。
+
+導入はsandbox外で行う。既存の`~/.local/bin/rm`やgomi設定が実ファイルなら、内容と用途を自分で確認して一意な名前へ退避し、配布スクリプトがスキップしたままにしない。既存ファイルを自動で上書きしない。
+
+```fish
+brew install gomi
+uv run --no-project python -c 'pass'
+sh scripts/create-symlink.sh
+command -s rm
+```
+
+`uv`でPythonを初回準備しておく。設定は`config/.config/gomi/config.yaml`が正本で、ラッパーは`~/.config/gomi/config.yaml`を明示して読む。XDG方式・`home_fallback: false`のため、直接renameできない場合は元データを残してエラーになる。コピーしてから元データを消すfallbackや、実rmへの切替はしない。
+
+- 標準の保存先は`~/.local/share/Trash`。`XDG_DATA_HOME`を指定していればその`Trash`を使う。Finderのごみ箱とは別で、復元にはgomiを使う。
+- `-f/-r/-R/-d/-v/--`に対応する。`-d`は空directoryだけ。`-i`は対象全体の転送を端末で確認し、非対話では失敗する。未対応optionとgomi専用optionは操作前に拒否する。
+- gomi 1.6.5の制約で、壊れたsymlinkは移動せずエラーにする。通常のsymlinkはリンク自体を移す。複数対象は部分成功があり得る。
+- 通常rmではHOME/指定XDGごみ箱と、対象の祖先/直下で検出できる外部ごみ箱を巻き込む操作を拒否する。深い位置のマウント先まで探索する保証はない。
+- `Trash`・`.Trash`・`.Trash-<uid>`などのごみ箱ルート名は、sandbox内でのrenameを拒否する。これらの予約名を通常directoryに使う場合も移動が制限される。payloadの内容はsandbox内から読み書きできず、metadataとrenameによる転送は可能。既存の`~/.hermes`信頼境界は例外。
+
+### 復元と手動掃除
+
+エージェントの転送が終わってから、sandbox外の端末で復元する。
+
+```fish
+gomi --config "$HOME/.config/gomi/config.yaml" --restore
+```
+
+一覧で対象を選び、Enterで復元、確認に回答する。元のパスに既存データがある場合は、先にそちらを退避して復元先を確認する。直接起動したgomiはrmラッパーのロックを共有しないので、復元・掃除中に別のrmやgomiを並行実行しない。
+
+自動掃除は設定しない。TUIの永久削除は無効。容量を空ける手動掃除は、人間が復元・バックアップを確認した後にsandbox外で行う。gomiの`--prune`は復元不能な操作なので、`gomi --help`で対象条件を確認して明示的に実行する。通常のrmからは呼べない。
+
+絶対パスrm、独自PATH、言語APIでの直接削除、Gitの破壊的操作、上書き・切り詰めは転送対象外。Hostプロセス・GUI・MCP・Docker等の許可もあるため、完全な隔離や全操作の復元を保証するものではない。
 
 ## 共通ツール用の秘密（dotenvx）
 
@@ -84,11 +119,17 @@ dotenvx encrypt --quiet --no-armor -f "$HOME/.config/.env"
 dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
 ```
 
-`encrypt`はOSのsecret storeを標準で利用する。`native up`でKeychainへの保存を確認し、鍵ファイルが残る場合や保存エラーは放置しない。鍵の欠落・Keychainの取得失敗で復号できなければ、起動処理はエラーで止める。鍵ファイル方式への自動切替はしない。
+`encrypt`はOSのsecret storeを標準で利用する。`native up`でKeychainへの保存を確認し、鍵ファイルが残る場合や保存エラーは放置しない。鍵の欠落・Keychainの取得失敗で復号できなければ、起動処理はエラーで止める。鍵ファイル方式への自動切替はしない。起動時の`-fk /dev/null`で`.env.keys`からの暗黙の復号を避ける。
 
 移行後は実`config.fish`から`CONTEXT7_API_KEY`と`HOMEBREW_GITHUB_API_TOKEN`のexportを自分で削除する。dotenvxは既存の環境変数を優先するため、現在のfishでもそれぞれ`set -e CONTEXT7_API_KEY`と`set -e HOMEBREW_GITHUB_API_TOKEN`で残存値を消す。エージェント外のツールでキーが必要な場合も、dotenvxでそのコマンドへ注入する。
 
 暗号化した実.envとlogin Keychainの両方を、暗号化されたmacOSバックアップに含める。OS移行時はKeychainの復元も必要で、暗号化ファイルだけでは復号できない。Keychainの同期だけをバックアップとせず、ユーザーがバックアップ・復元方法を確認する。実値の移行、実鍵の登録、バックアップはユーザー側で行う。
+
+### 起動の確認と戻し方
+
+秘密の初期移行が済んだら、新しい端末でCLIを確認し、Hermesは`hermes-gateway restart`／`hermes-dashboard restart`で正規再起動する。復号失敗やprofile/rmラッパーの欠落は、秘密注入なしで続行せず起動を止める。
+
+問題があれば追加の再起動を止め、sandbox外で管理ファイルを変更前の版へ戻してから新しい端末で読み直す。rm転送を外す場合は、今回追加した`~/.local/bin/rm`・fishの`rm.fish`・`conf.d/gomi.fish`のsymlinkだけを確認して退避し、他の実体は削除しない。暗号化`.env`・Keychain項目・ごみ箱のデータは残す。既存サービスを戻す際も管理関数を使い、Keychainのdefaultやアクセス設定を変更しない。
 
 ## fish の設定
 
@@ -136,7 +177,7 @@ hdr delete [SESSION...]
 ### HOMEBREW_GITHUB_API_TOKEN の設定
 
 - https://github.com/settings/tokens にアクセスして、Homebrew 用のトークンを作成 (既にあれば Regenerate)
-- トークンを config.fish の HOMEBREW_GITHUB_API_TOKEN の箇所にコピペ
+- トークンは共通ツール用の暗号化`.env`へ設定する（上記「共通ツール用の秘密」）。`config.fish`へ平文exportを追加しない
 
 ## Vim の設定
 
@@ -302,7 +343,8 @@ gateway / dashboard はホスト（launchd + agent-safehouse）で動かし、hi
 - `config/.hermes/hindsight/.env.example` — hindsight LLM 設定テンプレート
 - `config/.config/agent-safehouse/safe-hermes-gateway.sh` — gateway launchd 用 safehouse ラッパー
 - `config/.config/agent-safehouse/safe-hermes-dashboard.sh` — dashboard launchd 用 safehouse ラッパー
-- `config/.config/fish/functions/__safehouse_args.fish` — 共通 safehouse 引数。`~/.config`, `~/.local`, `~/.cache`, `~/Library/Caches`, `~/dotfiles`, `~/Dev`, `~/.shepherd` を allowlist に含め、Herdr から起動したエージェントへ `HERDR_ENV` / `HERDR_SOCKET_PATH` / `HERDR_WORKSPACE_ID` / `HERDR_TAB_ID` / `HERDR_PANE_ID` を渡す
+- `config/.config/fish/functions/__safehouse_args.fish` — HOME全体の許可と環境変数の全継承。`compatibility.sb` → `local-overrides.sb`の順でIPCの互換性許可とファイル保護を適用する
+- `config/.config/agent-safehouse/run-with-agent-env.sh` — CLIとHermesサービスの共通dotenvx注入・rm優先PATH。サービスではmiseの環境適用後、Safehouseの外で復号する
 - `config/.config/fish/functions/hermes-gateway.fish` — gateway 管理コマンド
 - `config/.config/fish/functions/hermes-dashboard.fish` — dashboard 管理コマンド
 
@@ -351,7 +393,7 @@ curl -sf http://127.0.0.1:9120/api/status >/dev/null && echo "dashboard OK"
 hermes memory status        # Provider: hindsight / Status: available
 ```
 
-ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh` と `config/.config/agent-safehouse/safe-hermes-dashboard.sh`。両方とも `mise -C ~/.hermes exec` でランタイムの環境を適用してから Safehouse を起動し、Hermes 本体は `~/.hermes/hermes-agent/venv/bin/hermes` を使う。初回は `mise -C ~/.hermes install` で指定バージョンを導入する。Python のバージョンを変更した場合は、既存 `venv` の再作成も必要。hermes-gateway が git push などで SSH 秘密鍵を使うため、safehouse ポリシーを通じて SSH_AUTH_SOCK 環境変数を引き継いでいる。Dashboard の runtime plist はマシン固有なので tracked file にはせず、`~/Library/LaunchAgents/ai.hermes.dashboard.plist` に配置する。
+ラッパースクリプトの実体は `config/.config/agent-safehouse/safe-hermes-gateway.sh` と `config/.config/agent-safehouse/safe-hermes-dashboard.sh`。両方とも `mise -C ~/.hermes exec` でランタイムの環境を適用してから Safehouse を起動し、Hermes 本体は `~/.hermes/hermes-agent/venv/bin/hermes` を使う。初回は `mise -C ~/.hermes install` で指定バージョンを導入する。Python のバージョンを変更した場合は、既存 `venv` の再作成も必要。SSH_AUTH_SOCKは他の環境変数とともに継承し、git pushはssh-agentを利用する。SSH秘密鍵のファイル読み取りは拒否したままにする。Dashboard の runtime plist はマシン固有なので tracked file にはせず、`~/Library/LaunchAgents/ai.hermes.dashboard.plist` に配置する。
 
 Dashboard plist は `Label` を `ai.hermes.dashboard`、`ProgramArguments` を `/Users/ryo.nakae/.config/agent-safehouse/safe-hermes-dashboard.sh` の 1 要素、`WorkingDirectory` を `/Users/ryo.nakae/.hermes/hermes-agent` にする。`EnvironmentVariables` は gateway plist と同じ `PATH` / `VIRTUAL_ENV` / `HERMES_HOME` を使う。
 
@@ -496,7 +538,7 @@ herdr plugin config-dir <plugin_id>
 
 ### worktree は本体機能ではなくプラグインを使う
 
-herdr 本体にも `[worktrees]` と `herdr worktree` があるが、worktree の作成・削除には使わない。本体の作成は `~/.herdr/worktrees` へフラットに配置し（テンプレート変数なし）、worktrunk の `worktree-path`・hooks・ignored ファイルのコピーがどれも効かない。`~/.herdr` は safehouse の allowlist 外でもある。例外は `herdr worktree open` で、これは既存 checkout をサイドバーの workspace として登録するだけなので、`use-worktrunk` スキルの herdr 委譲が wt で作成した worktree の登録に使う。
+herdr 本体にも `[worktrees]` と `herdr worktree` があるが、worktree の作成・削除には使わない。本体の作成は `~/.herdr/worktrees` へフラットに配置し（テンプレート変数なし）、worktrunk の `worktree-path`・hooks・ignored ファイルのコピーがどれも効かない。`~/.herdr`もHOMEの読み書き許可に含まれる。例外は `herdr worktree open` で、これは既存 checkout をサイドバーの workspace として登録するだけなので、`use-worktrunk` スキルの herdr 委譲が wt で作成した worktree の登録に使う。
 
 そのため `keys.new_worktree = ""` で本体のデフォルト（`prefix+shift+g`）を無効化し、同じキーをプラグインへ渡している。`prefix+shift+k` を remove に使うのは、プラグイン README 推奨の `prefix+shift+d` が本体の `close_workspace` と衝突するため。
 

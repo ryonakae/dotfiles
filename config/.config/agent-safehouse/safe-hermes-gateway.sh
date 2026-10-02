@@ -2,7 +2,7 @@
 # launchd から safehouse 経由で hermes gateway を起動するラッパー。
 # hermes.fish + __safehouse_args.fish の bash 版。
 
-OVERRIDES="$HOME/.config/agent-safehouse/local-overrides.sb"
+
 
 # 別ユーザー用の TMPDIR を継承しても Safehouse の mktemp を失敗させない。
 if [ ! -d "${TMPDIR:-}" ] || [ ! -w "$TMPDIR" ] || [ ! -x "$TMPDIR" ]; then
@@ -25,35 +25,21 @@ export AGENT_BROWSER_PROFILE="$HOME/.config/agent-browser/profile"
 
 args=(
   --workdir="$HOME/.hermes"
-  --env-pass=CONTEXT7_API_KEY
-  --env-pass=DISABLE_AUTOUPDATER
-  --env-pass=NO_BROWSER
-  --env-pass=TERM_PROGRAM
-  --env-pass=AGENT_BROWSER_ARGS
-  --env-pass=AGENT_BROWSER_PROFILE
-  --env-pass=SSH_AUTH_SOCK
-  --env-pass=HISTFILE
-  --enable=macos-gui,ssh,agent-browser,docker,all-agents,wide-read,keychain
+  --env
+  --add-dirs="$HOME"
+  --enable=macos-gui,ssh,agent-browser,docker,all-agents,wide-read,keychain,process-control,launch-services
 )
 
-# cwd 外の頻出 path を rw で開ける (__safehouse_args.fish と同期、allowlist 型)。
-# top-level ごとに列挙し、safehouse 既定の ~/.ssh deny 等を保つ。
-# ~/.hermes は信頼境界として deny を貫通させるため local-overrides.sb の allow 側に書く。
-for dir in \
-  "$HOME/.com.moomoo.OpenD" \
-  "$HOME/.config" \
-  "$HOME/.local" \
-  "$HOME/.cache" \
-  "$HOME/.shepherd" \
-  "$HOME/Library/Caches" \
-  "$HOME/dotfiles"; do
-  [ -d "$dir" ] && args+=(--add-dirs="$dir")
+# HOME の許可より後に拒否を適用し、欠落時は起動を止める。
+for profile in compatibility local-overrides; do
+  file="$HOME/.config/agent-safehouse/$profile.sb"
+  if [ ! -r "$file" ]; then
+    printf 'error: required Safehouse profile is missing: %s\n' "$file" >&2
+    exit 1
+  fi
+  args+=(--append-profile="$file")
 done
-[ -d "$HOME/Dev" ] && args+=(--add-dirs="$HOME/Dev")
-
-# 機密ファイルの deny ルール
-[ -f "$OVERRIDES" ] && args+=(--append-profile="$OVERRIDES")
 
 # launchd でも mise のバージョン指定を適用し、Hermes 本体は既存 venv に固定する。
-exec mise -C "$HOME/.hermes" exec -- safehouse "${args[@]}" -- \
+exec mise -C "$HOME/.hermes" exec -- "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse "${args[@]}" -- \
   "$HOME/.hermes/hermes-agent/venv/bin/hermes" --profile default gateway run

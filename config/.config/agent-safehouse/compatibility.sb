@@ -1,0 +1,4 @@
+;; ホストとのIPC・Macサービス連携を優先し、ファイルの許可範囲とは分離する。
+(allow mach-lookup mach-register)
+(allow ipc-posix* ipc-sysv*)
+(allow network* system-socket)

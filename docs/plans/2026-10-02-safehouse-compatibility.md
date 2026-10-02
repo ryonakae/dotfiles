@@ -62,17 +62,23 @@ Keychain検証: `scripts/tests/check_dotenvx_runtime.py`の初版はOS Keychain�
   - `ruby -c brew/Brewfile.example`、`fish --no-execute config/.config/fish/config.fish.example`、`git diff --check`、実.envのGit除外とテンプレートの空値を確認。READMEは既存部分を含め541行（300行超の警告、全体整理は範囲外）。ユーザー承認済みの新規ダミー鍵で暗号化・native up・`run --strict -fk /dev/null`の非対話復号に成功し、鍵ファイル生成なし、ダミーKeychain項目の削除もexit 0。
   - 例ファイルは空の値のみ。既存のcopy/symlinkスクリプトと`.gitignore`を再利用。実.envはユーザーが設定・暗号化を終えてからエージェントを再起動する。
 - [x] **共通のrm転送とgomi設定**:
-  - 担当実装を受領。5ファイルを変更し、rmの15テスト（実gomiのダミーpayload/metadata、stdin確認、並列実行とsignal、設定/保存失敗、fish→sh/bash）を通過と報告。親はコードとテストを確認し、全体の21テストも再実行。実gomiの復元TUIも後述のhost検証で通過。成果物をlocal commitする。実HOMEへの配布と正式な独立レビューはFinal Validationのゲートとして残る。
+  - 担当実装を受領。5ファイルを変更し、rmの15テスト（実gomiのダミーpayload/metadata、stdin確認、並列実行とsignal、設定/保存失敗、fish→sh/bash）を通過と報告。親はコードとテストを確認し、全体の21テストも再実行。実gomiの復元TUIも後述のhost検証で通過。成果物は`d74495a`としてlocal commit済み。実HOMEへの配布と正式な独立レビューはFinal Validationのゲートとして残る。
   - gomi 1.6.5の上流制限: 壊れたsymlinkはリンク先のdevice判定に失敗し、exit 1でリンクを残す。通常のsymlinkの移動は成功する。独自の移動/コピーfallbackは追加していない。外部volumeのtrash親の検出は既知の規約名とoperandの祖先/直下に限定され、深い位置のmount/trashを網羅していない。壊れたsymlinkはリンク保持/エラー、外部trash祖先はAの検出範囲とすることでユーザー承認済み。
   - 親のhost検証 `scripts/tests/check_gomi_runtime.py`はproduction policy内のreal gomi Put、XDG metadata、隔離PTYでの復元確認・元パス/内容/有効symlink、4並列の同名保存のdata/metadata保全を通過（`HOST_GOMI_CONFIRM_FIX=0`）。harness初版のpath比較は`/var`入力を`/private/var`へ期待変換してしまい失敗、絶対入力パスを保持する期待へ修正。TUI確認promptは実際の`OK to restore?`に合わせた。productのfallback変更はしていない。
   - 計画対象: `config/.local/bin/rm`、`config/.config/fish/functions/rm.fish`、`config/.config/fish/conf.d/gomi.fish`、`config/.config/gomi/config.yaml`を追加し、通常rmの引数処理・排他・失敗時のデータ保全を実現する。
   - gomi設定は公式の完全な設定を基に必要箇所を変更し、最小YAMLによって`forbidden_paths`などが失われないようにする。`strategy: xdg`、`home_fallback: false`、TUIの`permanent_delete.enable: false`を指定する。復元一覧の期間・サイズ・除外フィルターで古い/大きいデータが見えなくならないよう設定を確認する。
   - 手動のgomi復元と通常rmが同時にmetadataを操作する場合の扱いを確認し、直接gomiを起動する際は通常rmの排他対象外であることと、復元中の注意をREADMEへ記す。
-- [ ] **Safehouseの互換性許可と保護の再適用**: `__safehouse_args.fish`、`local-overrides.sb`を変更し、`compatibility.sb`を追加する。gateway/dashboardの引数も同じ方針へ揃える。
+- [x] **Safehouseの互換性許可と保護の再適用**:
+  - `compatibility.sb`・HOME許可/全環境継承/順序を各起動経路へ実装。protected path・SSH・browser・vendor/Hermes例外とtrashの修正をnativeダミーで検証済み。修正profileで実gomi転送/復元/4並列も再通過（`CORRECTED_POLICY_GOMI=0`）。成果物をlocal commitする。正式なreviewと実HOME/GUI/サービスの最終ゲートはまだ残る。
+  - 計画対象: `__safehouse_args.fish`、`local-overrides.sb`を変更し、`compatibility.sb`を追加する。gateway/dashboardの引数も同じ方針へ揃える。
   - 現行の特定Mach service・Simulator/fsctl・vendor例外・Hermes信頼境界を失わない。HOMEの追加許可より後の拒否、SSH/socket例外、profile自身の保護まで含む生成profileを確認する。
-- [ ] **dotenvxによるCLI・サービスの自動注入**: `run-with-agent-env.sh`を追加し、`safe.fish`、`hermes.fish`、`safe-hermes-gateway.sh`、`safe-hermes-dashboard.sh`を変更する。各CLI関数の個別オプションは維持し、コマンド引数・終了コード・signalを透過する。
+- [x] **dotenvxによるCLI・サービスの自動注入**:
+  - loaderへ共通PATHとstrict/native/no-armor/`-fk /dev/null`を集約し、CLIとmise後のサービスから呼ぶ。21 tests（runtime 5、TMPDIR 1、rm 15）通過。ダミーの実Keychain/launchd復号は前述のとおり通過。成果物をlocal commitする。本番秘密初期移行・実サービス確認は未実施。
+  - 計画対象: `run-with-agent-env.sh`を追加し、`safe.fish`、`hermes.fish`、`safe-hermes-gateway.sh`、`safe-hermes-dashboard.sh`を変更する。各CLI関数の個別オプションは維持し、コマンド引数・終了コード・signalを透過する。
   - 初期のKeychain検証を実鍵で行わない。ユーザー承認を得たダミー鍵で非対話動作を確認する。既存の鍵やKeychainのアクセス制御を変更・削除しない。
-- [ ] **継続的な回帰検証と運用手順**: 既存の`unittest`を使い、`scripts/tests/test_hermes_tmpdir.py`を新しい起動連鎖に合わせて更新する。新しい振る舞いは`test_agent_runtime.py`と`test_rm_trash.py`など同じディレクトリに最小限追加する。既存のテストがあるため実装は`tdd`スキルで行う。
+- [x] **継続的な回帰検証と運用手順**:
+  - `test_agent_runtime.py`、`test_rm_trash.py`、TMPDIR fixture、明示的なhost check 3本を追加/更新。READMEにrm/gomiの復元/手動掃除/制限/uv初回準備・戻し方を記載し、古いtoken export案内を修正。root AGENTSも新方針へ更新。READMEの別作業hunkは残して部分stageする（ユーザー承認済み）。READMEは300行超の警告、全体整理は範囲外。
+  - 計画対象: 既存の`unittest`を使い、`scripts/tests/test_hermes_tmpdir.py`を新しい起動連鎖に合わせて更新する。新しい振る舞いは`test_agent_runtime.py`と`test_rm_trash.py`など同じディレクトリに最小限追加する。既存のテストがあるため実装は`tdd`スキルで行う。
   - fake dotenvx/safehouse/mise/gomiとダミーHOMEで検証し、実秘密・実Keychain・実サービスを自動テストに使わない。実.env fixtureを現在のsandboxで無理に作らず、注入処理の単体テストはstubで成立させる。
   - `README.md`とroot `AGENTS.md`のallowlist/個別env-passに関する記述を実装に合わせる。AGENTS/CLAUDEの正本・symlinkを確認し、二重編集しない。手順に導入、rmの適用範囲、gomiでの復元/手動掃除、Finderとの違い、ユーザーによる秘密移行・Keychain登録・バックアップ、Hermesの再起動・復旧を含める。
 
