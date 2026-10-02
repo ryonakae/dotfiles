@@ -66,6 +66,30 @@ fish を使うなら `config.fish` 内の `brew shellenv` と `fish_add_path --m
 
 設定後に `exec fish` またはターミナル再起動で反映される
 
+## 共通ツール用の秘密（dotenvx）
+
+共通のAPIキーは`config/.config/.env`にまとめ、dotenvxで暗号化する。Git管理するのは値が空の`.env.example`だけ。`~/.config/.env`は実ファイルへのsymlinkとし、復号鍵はmacOS Keychainへ保存する。プロジェクト・本番環境用の秘密は混ぜず、必要なコマンドだけを`dotenvx run -f <project-env> -- <command>`で実行する。
+
+既存マシンでは、エージェントやHermesサービスを再起動する前に、sandbox外のfishで初期設定する。既存ファイルは上書きしない。
+
+```fish
+brew install gomi
+brew install dotenvx/brew/dotenvx
+cp -n config/.config/.env.example config/.config/.env
+chmod 600 config/.config/.env
+# 自分のエディタで実値を設定する。値をチャットやログへ貼らない。
+$EDITOR config/.config/.env
+sh scripts/create-symlink.sh
+dotenvx encrypt --quiet --no-armor -f "$HOME/.config/.env"
+dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
+```
+
+`encrypt`はOSのsecret storeを標準で利用する。`native up`でKeychainへの保存を確認し、鍵ファイルが残る場合や保存エラーは放置しない。鍵の欠落・Keychainの取得失敗で復号できなければ、起動処理はエラーで止める。鍵ファイル方式への自動切替はしない。
+
+移行後は実`config.fish`から`CONTEXT7_API_KEY`と`HOMEBREW_GITHUB_API_TOKEN`のexportを自分で削除する。dotenvxは既存の環境変数を優先するため、現在のfishでもそれぞれ`set -e CONTEXT7_API_KEY`と`set -e HOMEBREW_GITHUB_API_TOKEN`で残存値を消す。エージェント外のツールでキーが必要な場合も、dotenvxでそのコマンドへ注入する。
+
+暗号化した実.envとlogin Keychainの両方を、暗号化されたmacOSバックアップに含める。OS移行時はKeychainの復元も必要で、暗号化ファイルだけでは復号できない。Keychainの同期だけをバックアップとせず、ユーザーがバックアップ・復元方法を確認する。実値の移行、実鍵の登録、バックアップはユーザー側で行う。
+
 ## fish の設定
 
 ### デフォルトの Shell を fish にする

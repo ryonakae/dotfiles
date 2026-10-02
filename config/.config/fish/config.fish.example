@@ -24,7 +24,6 @@ end
 # --- 2. Environment Variables ---
 # Homebrew Cask
 set -gx HOMEBREW_CASK_OPTS --appdir=/Applications
-set -gx HOMEBREW_GITHUB_API_TOKEN xxxxx
 
 # Android SDK & Java
 set -gx ANDROID_HOME $HOME/Library/Android/sdk
@@ -35,9 +34,6 @@ set -gx PGDATA /usr/local/var/postgres
 
 # Claude Code
 set -gx DISABLE_AUTOUPDATER 1
-
-# Codex
-set -gx CONTEXT7_API_KEY xxxxx
 
 # Agent Safehouse 内で Chrome の内側 sandbox 初期化が失敗するため、
 # agent-browser 経由の Chrome には毎回 --no-sandbox 系を渡す。
