@@ -26,6 +26,7 @@
 - `local-overrides.sb`には、HOME許可で再開放される保護を明示する。対象は現行の.env/credentials/秘密鍵等のパターン、fish実設定と実体、GnuPG/AWS/netrc/Git/Kubernetes credential、SSH秘密鍵、Mail/Messages/人間用ブラウザデータ等。`~/Library`全体を拒否してGUIやキャッシュを壊す構成にはしない。SSHのconfig/known_hosts/socketと`~/.config/agent-browser/profile`は必要な例外を残す。
 - symlinkの実体側にも保護が効くことを確認する。保護ディレクトリやその親のrenameで保護が外れる経路も確認し、必要な親ディレクトリ自体の移動・削除を止める場合も、その配下の通常ファイルの書き込みは広く許可する。
 - 通常のrmラッパー・gomi設定・起動時の秘密注入処理がエージェントから書き換えられないよう、管理ファイルと実体の書き込みを保護する。人間のsandbox外での編集は妨げない。共通.envはsandboxの外でdotenvxに読み込ませるため、そのファイルをsandbox内から読む許可は追加しない。
+- rm転送のtrash祖先検出はHOME/指定XDGと、operandの祖先/直下に存在する既知の外部trashまでとする。深いmountを含む任意のdirectoryの網羅は対象外（実装中にユーザーがAを承認）。既知の外部XDG形式の内容保護は対象外にしない。
 - 人間が捨てた機密ファイルが共有のごみ箱へ移って保護対象外になる点にも対処する。XDGごみ箱のpayloadにはsandbox内からの内容読み取りを許可せず、gomiのPutに必要なmetadataアクセス・書き込みと`.trashinfo`の処理を維持できるか検証する。復元・内容確認は人間がsandbox外で行う。
 
 ### 通常rmの転送
@@ -35,7 +36,7 @@
 - 一つの共有ロックの下で、対象を一つずつgomiへ渡す。gomi自身が複数対象を並列にPutすることと、複数プロセスによる同名の保存先選択・metadata更新の競合を避ける。中断時も生きているgomi子プロセスの処理と次の処理が重ならないよう、ロックの保持とsignal処理を確認する。
 - rm用の引数として解釈してから、ファイル名をgomiの`--`以降へ渡す。`--prune`、`--config`、restore等のgomi専用引数を通常rmから渡さない。`-- --prune=1d`のようなオプション風のファイル名は通常の対象として扱う。
 - よく使う`-f/-r/-R/-v/--`を維持する。gomiでは`-i/-r/-R/-d`の一部がdummyのため、rmとしての確認やディレクトリ判定を黙って省略しない。`-i`は対象を丸ごとごみ箱へ移すことを明示した確認を行い、非対話で確認不能なら削除せず失敗させる。`-f`との優先順位、`-f`かつ対象なし/不存在、ディレクトリへの`-r/-R/-d`の扱いを既存rmの仕様と照合する。サポートできないオプションは操作前に明示的なエラーとし、黙って読み替えない。
-- gomi/uv/管理設定の欠落、不正な設定、移動失敗では非zeroにし、実rmへfallbackしない。設定不存在時にgomiがデフォルト設定を生成するため、ラッパーで管理設定の存在を先に確認する。ごみ箱とその親など、ごみ箱自体を巻き込む削除も拒否する。
+- gomi/uv/管理設定の欠落、不正な設定、移動失敗では非zeroにし、実rmへfallbackしない。gomi 1.6.5が移動できない壊れたsymlinkも、リンクを残して非zeroにする（実装中にユーザー承認済み）。設定不存在時にgomiがデフォルト設定を生成するため、ラッパーで管理設定の存在を先に確認する。ごみ箱とその親など、ごみ箱自体を巻き込む削除も拒否する。
 - 正常時に余計なstdoutを出さず、`-v`やエラー時だけ必要な出力をする。複数対象の途中失敗については部分成功があり得るため、失敗対象と終了コードを報告し、全体がatomicとは表示しない。
 - 既存のHOME全体のrm alias/function/PATHを勝手に上書きしない。対象名に既存のユーザー実体があれば配置を止めて確認する。独立して起動した別シェルやPATHを再構築するツールまで強制適用するためのシステム設定変更はしない。
 
@@ -52,11 +53,19 @@
 
 実装preflight: reviewのbaseは`38b8996b957ed7f63fd461e9503cfbe147955265`。current branchは`master`、upstreamは`origin/master`、開始時点のahead/behindは0/0、staged変更なし。既存の`config/.claude/settings.json`と`config/.pi/agent/settings.json`の変更は今回の対象外。dig logとPlanはこの会話で作成した未追跡ファイルとして保持。現在はSafehouse内（`APP_SANDBOX_CONTAINER_ID=agent-safehouse`、`HERDR_ENV=1`）で、Homebrewへの書き込みと使用中profileの編集が制限される。Herdrのsandbox外ペインを使う確認へユーザーが「ok」と回答し、今回作成した`w3T:p2`で導入とダミー検証を実行。実秘密・実鍵の移行は引き続きユーザー操作とする。
 
+Keychain検証: `scripts/tests/check_dotenvx_runtime.py`の初版はOS Keychain操作にもダミーHOMEを渡し、`failed to save private key to macOS Keychain`と「キーチェーンが見つかりません」のダイアログで失敗した。実HOMEを維持しenvファイルだけ一時領域に置くfixtureへ修正。ユーザーの「ダイアログ出てないですよ」を受け再開し、CLI復号・実launchdの非対話復号・env欠落時の子起動阻止・新規ダミーKeychain項目/jobのcleanupを通過（`HOST_KEYCHAIN_RETRY=0`）。既存Keychainのdefault、アクセス設定、実鍵は変更していない。
+
+現在の停止条件: read-only事前検査 `a440770a-2f95-423` は `Changes Required`。high 2件はtrashルートのrenameによるpayload保護迂回と、外部XDGの`.Trash-<uid>/files`・`.Trash/<uid>/files`の拒否漏れ。親も一時HOMEだけでnative再現し、3ケースとも読めてしまうことを確認した（`/tmp/dotfiles-trash-gap.py`、`HOST_TRASH_GAP=0`は再現プログラム自体の正常終了であり保護通過ではない）。high 2件は修正済み。trashルート/標準share親のrename拒否を追加し、既知の外部XDG形式へpayloadのread/write/unlink拒否を拡張。Redは`TRASH_RENAME_RED=1`（ルートrenameが成功して失敗）と`EXTERNAL_TRASH_RED=1`（外部payloadを読めて失敗）。Greenは`TRASH_RENAME_GREEN=0`と`EXTERNAL_TRASH_GREEN=0`で、標準・custom XDG・`.Trash-<uid>`・`.Trash/<uid>`のpayload読み書き拒否、trashルートrename拒否、metadata読み取り、rename Put、既存SSH/vendor/Hermes例外を確認した。再レビューはまだ実施していない。壊れたsymlinkをエラーで残す受入仕様はユーザーの「ok」で確定。独自の削除/移動やコピーfallbackは追加せず、実gomiでリンク保持と非zero終了を回帰確認する。外部trash祖先の保証範囲はユーザーの「a」でAに確定。HOME/指定XDGと、operandの祖先/直下で検出できる既知の外部trashを保護し、深いmountを含む任意のdirectoryの網羅は対象外。既知の外部XDG形式のpayload拒否とtrashルートのrename迂回は修正する。decision requiredは解決。実gomiのbroken symlink保持/非zeroを回帰テストに追加し、rmの15テストを通過。`README.md`に別作業のagent-device節とNode/npm環境の変更が混在していたため停止し、他者変更を残して今回の箇所だけ編集/部分stageする扱いをユーザーの「ok」で承認された。別作業のhunkはstageせず残す。正式な独立レビューは成果物commit・residue整理・必須検証後に同じreview contextへ再依頼する。全体実装・HOME配布・実秘密移行・既存サービス確認・archive/pushは未完了。別操作で追加された`config/.agents/AGENTS.md`、`config/skills-lock.json`、`config/.agents/agent-device-tests.md`も今回の対象外として保持する。新たな`config/.config/mise/config.toml`、`config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`、`config/.agents/skills/use-agent-device/`も対象外。他者変更の増減は引き続き確認し、勝手にstageしない。
+
 - [x] **導入と初期設定のひな形**: `brew/Brewfile.example`に`gomi`と`dotenvx/brew/dotenvx`を追加し、`config/.config/.env.example`を追加。`config/.config/fish/config.fish.example`のContext7/Homebrew token exportをひな形へ移し、README/AGENTSにユーザー側の初期移行手順を記載。
   - `brew install gomi`と`brew install dotenvx/brew/dotenvx`はsandbox外でexit 0。導入版はgomi 1.6.5、dotenvx 2.32.4。実Brewfile/実config.fish/実.envは読まず変更していない。gomiの初回起動は管理設定を要するため、保存方式と実動作は次のタスクで検証する。
   - `ruby -c brew/Brewfile.example`、`fish --no-execute config/.config/fish/config.fish.example`、`git diff --check`、実.envのGit除外とテンプレートの空値を確認。READMEは既存部分を含め541行（300行超の警告、全体整理は範囲外）。ユーザー承認済みの新規ダミー鍵で暗号化・native up・`run --strict -fk /dev/null`の非対話復号に成功し、鍵ファイル生成なし、ダミーKeychain項目の削除もexit 0。
   - 例ファイルは空の値のみ。既存のcopy/symlinkスクリプトと`.gitignore`を再利用。実.envはユーザーが設定・暗号化を終えてからエージェントを再起動する。
-- [ ] **共通のrm転送とgomi設定**: `config/.local/bin/rm`、`config/.config/fish/functions/rm.fish`、`config/.config/fish/conf.d/gomi.fish`、`config/.config/gomi/config.yaml`を追加し、通常rmの引数処理・排他・失敗時のデータ保全を実現する。
+- [x] **共通のrm転送とgomi設定**:
+  - 担当実装を受領。5ファイルを変更し、rmの15テスト（実gomiのダミーpayload/metadata、stdin確認、並列実行とsignal、設定/保存失敗、fish→sh/bash）を通過と報告。親はコードとテストを確認し、全体の21テストも再実行。実gomiの復元TUIも後述のhost検証で通過。成果物をlocal commitする。実HOMEへの配布と正式な独立レビューはFinal Validationのゲートとして残る。
+  - gomi 1.6.5の上流制限: 壊れたsymlinkはリンク先のdevice判定に失敗し、exit 1でリンクを残す。通常のsymlinkの移動は成功する。独自の移動/コピーfallbackは追加していない。外部volumeのtrash親の検出は既知の規約名とoperandの祖先/直下に限定され、深い位置のmount/trashを網羅していない。壊れたsymlinkはリンク保持/エラー、外部trash祖先はAの検出範囲とすることでユーザー承認済み。
+  - 親のhost検証 `scripts/tests/check_gomi_runtime.py`はproduction policy内のreal gomi Put、XDG metadata、隔離PTYでの復元確認・元パス/内容/有効symlink、4並列の同名保存のdata/metadata保全を通過（`HOST_GOMI_CONFIRM_FIX=0`）。harness初版のpath比較は`/var`入力を`/private/var`へ期待変換してしまい失敗、絶対入力パスを保持する期待へ修正。TUI確認promptは実際の`OK to restore?`に合わせた。productのfallback変更はしていない。
+  - 計画対象: `config/.local/bin/rm`、`config/.config/fish/functions/rm.fish`、`config/.config/fish/conf.d/gomi.fish`、`config/.config/gomi/config.yaml`を追加し、通常rmの引数処理・排他・失敗時のデータ保全を実現する。
   - gomi設定は公式の完全な設定を基に必要箇所を変更し、最小YAMLによって`forbidden_paths`などが失われないようにする。`strategy: xdg`、`home_fallback: false`、TUIの`permanent_delete.enable: false`を指定する。復元一覧の期間・サイズ・除外フィルターで古い/大きいデータが見えなくならないよう設定を確認する。
   - 手動のgomi復元と通常rmが同時にmetadataを操作する場合の扱いを確認し、直接gomiを起動する際は通常rmの排他対象外であることと、復元中の注意をREADMEへ記す。
 - [ ] **Safehouseの互換性許可と保護の再適用**: `__safehouse_args.fish`、`local-overrides.sb`を変更し、`compatibility.sb`を追加する。gateway/dashboardの引数も同じ方針へ揃える。
@@ -71,8 +80,8 @@
 
 この計画作成時点では以下は未実行。シェルコマンドの提示はfish構文にする。
 
-- [ ] **継続的なテスト**: `uv run python -m unittest discover -s scripts/tests -p 'test_*.py'` → 通過。起動処理のargv境界、空白を含むパス、全環境継承、共通ファイルの明示パス、rm優先PATH、CLI引数/終了コード、既存TMPDIR補正が保たれる。stubの復号失敗・依存欠落では後続コマンドを起動せず、ログにsentinelの秘密値を出さない。
-- [ ] **rmの通常動作と失敗経路**: 単体テストで`-rf/-R/-v/--`、`-i`確認、`-f`と不存在/対象なし、オプション風ファイル名、空のdirectory/non-recursive directory、symlink、不正オプションを確認する。fake gomiの移動失敗・設定/実行ファイル不存在で実rmへfallbackしない。複数対象/同名の並列呼び出しは一つずつ処理され、signal後も排他が破れない。
+- [x] **継続的なテスト**: `uv run python -m unittest discover -s scripts/tests -p 'test_*.py'` → 通過。起動処理のargv境界、空白を含むパス、全環境継承、共通ファイルの明示パス、rm優先PATH、CLI引数/終了コード、既存TMPDIR補正が保たれる。stubの復号失敗・依存欠落では後続コマンドを起動せず、ログにsentinelの秘密値を出さない。
+- [x] **rmの通常動作と失敗経路**: 単体テストで`-rf/-R/-v/--`、`-i`確認、`-f`と不存在/対象なし、オプション風ファイル名、空のdirectory/non-recursive directory、symlink、不正オプションを確認する。fake gomiの移動失敗・設定/実行ファイル不存在で実rmへfallbackしない。複数対象/同名の並列呼び出しは一つずつ処理され、signal後も排他が破れない。
 - [ ] **シェルと配布の確認**: 変更対象のfishに`fish --no-execute`、bash/shに構文チェック、Pythonに構文チェック、差分に`git diff --check`を行う。`.env.example`を一時的な配置先へコピー・symlinkし、Git管理外の実体と参照先が正しく対応することを確認する。ユーザーの既存実体は上書きしない。
 - [ ] **実際のrm解決**: 配布後の新しいfish、そこから起動したbash/sh、エージェント、miseを通るサービスで`command -v rm`とダミー対象の削除を確認する → 共通ラッパーを使う。人間の実config.fishによるPATH上書きがあれば、秘密を読まずユーザーに調整を依頼する。
 - [ ] **gomiでのデータ保全・復元**: 空白・オプション風の名前、directory、symlink、同名の複数対象を含むダミーだけを実gomiでごみ箱化し、人間の復元操作で元のパス・内容が戻る。並列呼び出しでも全データとmetadataを保持する。移動先が使えない場合やコピーが必要な場合はエラーで元データを保持し、永久削除経路へ進まない。異なるvolumeの確認はユーザーが許可したダミーvolumeだけで行い、実データやpruneを使わない。
