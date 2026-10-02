@@ -43,10 +43,11 @@ config/
 - Pi の extension 一覧は `config/.pi/agent/settings.json`、extension 個別設定は原則 `config/.pi/agent/extensions/<extension-name>/`、subagent 定義は `config/.pi/agent/agents/*.md` に置く。保存先を固定する外部 extension は実装に従う。`hooks/` というディレクトリ名は Pi extension として自動読み込みされるため使わない
 - Pi のサブエージェント設定は `config/.pi/agent/subagents.json`、親によるモデル・thinking 選定方針と比較データは同ディレクトリの `agent-tool-description.md` で管理する。構成・更新方法は README の「Pi の拡張・MCP」を参照
 - エージェント CLI は fish 関数（`safe`, `claude`, `gemini`, `codex`, `hermes` など）経由で agent-safehouse サンドボックス内で起動する
-- wrapper で export した環境変数を Safehouse 内へ渡すには、`__safehouse_args.fish` の `--env-pass` にも追加する。例: `pi.fish` の `GIT_OPTIONAL_LOCKS=0` は footer の Git 参照によるロック競合を抑える
-- 共通 sandbox 引数は `config/.config/fish/functions/__safehouse_args.fish`。`--add-dirs` で top-level（`~/.config`, `~/.local`, `~/.cache`, `~/Library/Caches`, `~/dotfiles`, `~/Dev`, `~/.shepherd` 等）を列挙する allowlist 型ポリシー。列挙外は safehouse default deny + `--enable=...` の組み合わせで暗黙に閉じる。allow 領域内の機密ファイル名（`.env`, `credentials.json`, 秘密鍵類）と、wide-read で見えるホスト credential（`~/.gnupg`, `~/.aws/credentials` 等）だけを `local-overrides.sb` で後勝ち deny する
+- 環境変数は `--env` で全継承する。共通dotenvx注入とrmの優先PATHは `config/.config/agent-safehouse/run-with-agent-env.sh`。復号失敗、rmラッパーや保護profileの欠落では起動を止める
+- 共通sandbox引数は `config/.config/fish/functions/__safehouse_args.fish`。HOMEを原則読み書き可能にし、`compatibility.sb`でファイル以外のIPCを緩和した後、`local-overrides.sb`で秘密・私的データを拒否する。管理wrapperの書き換えや、保護対象の親の移動も拒否する。policy変更はSandbox外で行い、`scripts/tests/check_safehouse_runtime.py`でダミーHOMEの実効保護を確認する
+- 通常のrmは `config/.local/bin/rm` でgomiへ転送する。実rmへfallbackしない。ごみ箱の内容の読み取り・変更・削除はSandbox内では拒否し、復元/手動掃除は人間がSandbox外で行う。絶対パスrm、言語API、Git等による削除・上書きは転送対象外
 - 機密ファイルの deny ルール、vendor 配下の例外 allow、`~/.hermes` の信頼境界 allow は `config/.config/agent-safehouse/local-overrides.sb` に集約。`~/.hermes` は Hermes Agent の workdir かつ信頼境界として、汎用 deny（`.env` 等）を後勝ちで貫通させる
-- **`__safehouse_args.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の `--add-dirs` / `--enable` リストは原則同期する**。`~/.shepherd` を追加したら 3 か所とも揃える。ただし gateway / dashboard は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
+- **`__safehouse_args.fish` と `config/.config/agent-safehouse/safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` のHOME許可・全環境継承・profile順と `--enable` リストは原則同期する**。ただし gateway / dashboard は自律実行向けに `clipboard` / `cleanshot` など対話用 feature を意図的に省く場合がある。片方を変更したら、差分が意図したものか必ず確認する
 - Hermes gateway の launchd 操作は `hermes-gateway {start|stop|restart|status|update}` に統一する（`bootout` / `bootstrap` 直叩きはしない）
 
 ## Hermes Agent 固有メモ

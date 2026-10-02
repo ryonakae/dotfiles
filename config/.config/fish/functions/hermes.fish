@@ -14,7 +14,8 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     end
 
     set -l safehouse_args (__safehouse_args)
+    or return $status
 
-    command safehouse $safehouse_args -- hermes $argv
+    command "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse $safehouse_args -- hermes $argv
     return $status
 end

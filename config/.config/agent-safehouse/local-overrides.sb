@@ -2,9 +2,7 @@
 ;; 生成ポリシーの後に読み込まれるため、ここでの deny/allow が最終的な優先権を持つ。
 ;; 通常の共有アクセスには --add-dirs-ro/--add-dirs を使い、ホスト固有のルールをここに書く。
 
-;; allow 済みパス（workdir, --add-dirs 列挙先, /tmp 等）内の機密ファイルをファイル名パターンで deny する。
-;; ~/.ssh/id_* 等は Safehouse の deny default で保護済みだが、workdir にコピーされた
-;; 機密ファイルはカバーされないため、ここで包括的に塞ぐ。
+;; HOMEの広い許可より後に、コピーされた秘密もファイル名で保護する。
 ;;
 ;; スコープの使い分け:
 ;;   .* (全パス)   — システムパスに同名ファイルが存在しないパターン
@@ -12,6 +10,7 @@
 (deny file-read* file-write*
     ;; 環境変数 / 設定ファイル
     (regex #".*/\.env$")
+    (regex #".*/\.env\.keys$")
     (regex #".*/\.env\.local$")
     (regex #".*/\.env\.development$")
     (regex #".*/\.env\.development\.local$")
@@ -31,7 +30,7 @@
     (regex #".*/[^/]*-credentials\.json$")
     (regex #".*/firebase-adminsdk[^/]*\.json$")
 
-    ;; SSH 秘密鍵（workdir/tmp にコピーされたものを想定。~/.ssh は deny default で保護済み）
+    ;; workdir/tmpにコピーされたSSH秘密鍵も対象にする。
     (regex #".*/id_rsa$")
     (regex #".*/id_ed25519$")
     (regex #".*/id_ecdsa$")
@@ -69,7 +68,7 @@
 )
 
 ;; Flutter SDK / pub cache / analysis server / Android SDK manager の状態は同じワークフローで必要になる。
-;; いずれも wrapper の --add-dirs top-level 列挙の外なので、ここで明示 allow する。
+;; HOME以外へsymlinkされる場合も既存のSDKアクセスを維持する。
 (allow file-read* file-write*
     (home-subpath "/.local/share/mise/installs/flutter")
     (home-subpath "/.pub-cache")
@@ -100,13 +99,93 @@
 )
 
 ;; ホスト上の各種クレデンシャル。wide-read で / 全 read 開放しているため、
-;; 列挙ベースで個別に塞ぐ。~/.ssh は safehouse default で deny 済みなので含めない。
+;; HOMEの後勝ち許可でも各credentialを再開放しない。
 (deny file-read* file-write*
     (home-subpath "/.gnupg")
     (home-literal "/.aws/credentials")
     (home-literal "/.netrc")
     (home-literal "/.git-credentials")
     (home-literal "/.kube/config")
+)
+
+;; HOMEのlate grantがSSHの標準denyを上書きするため、例外ごと再適用する。
+(deny file-read* file-write*
+    (home-subpath "/.ssh")
+    (home-subpath "/Library/Mail")
+    (home-subpath "/Library/Messages")
+    (home-subpath "/Library/Safari")
+    (home-subpath "/Library/Containers/com.apple.mail")
+    (home-subpath "/Library/Group Containers/group.com.apple.mail")
+    (home-subpath "/Library/Application Support/Google/Chrome")
+    (home-subpath "/Library/Application Support/Chromium")
+    (home-subpath "/Library/Application Support/Firefox/Profiles")
+    (home-subpath "/Library/Application Support/Microsoft Edge")
+    (home-subpath "/Library/Application Support/BraveSoftware")
+    (home-subpath "/Library/Application Support/Arc")
+    (home-subpath "/Library/Application Support/Dia")
+)
+(allow file-read-metadata (home-literal "/.ssh") (home-literal "/.ssh/agent"))
+(allow file-read*
+    (home-literal "/.ssh/config")
+    (home-subpath "/.ssh/config.d")
+    (home-literal "/.ssh/known_hosts")
+    (home-literal "/.ssh/allowed_signers")
+)
+(allow file-write*
+    (home-literal "/.ssh/known_hosts")
+    (home-literal "/.ssh/known_hosts.old")
+)
+(allow file-read* file-write* file-read-metadata (home-subpath "/.ssh/agent"))
+
+;; 親のrenameで絶対パスの保護を外さず、配下の通常の書き込みは制限しない。
+(deny file-write-unlink
+    (literal HOME_DIR)
+    (home-literal "/.config")
+    (home-literal "/.config/fish")
+    (home-literal "/.config/fish/functions")
+    (home-literal "/.config/fish/conf.d")
+    (home-literal "/.config/agent-safehouse")
+    (home-literal "/.config/gomi")
+    (home-literal "/.local")
+    (home-literal "/.local/bin")
+    (home-literal "/.local/share")
+    (home-literal "/.aws")
+    (home-literal "/.kube")
+    (home-literal "/Library")
+    (home-literal "/Library/Containers")
+    (home-literal "/Library/Group Containers")
+    (home-literal "/Library/Application Support")
+    (home-literal "/Library/Application Support/Google")
+    (home-literal "/Library/Application Support/Firefox")
+    (home-literal "/dotfiles")
+    (home-literal "/dotfiles/config")
+    (home-literal "/dotfiles/config/.config")
+    (home-literal "/dotfiles/config/.config/fish")
+    (home-literal "/dotfiles/config/.config/fish/functions")
+    (home-literal "/dotfiles/config/.config/fish/conf.d")
+    (home-literal "/dotfiles/config/.config/agent-safehouse")
+    (home-literal "/dotfiles/config/.config/gomi")
+    (home-literal "/dotfiles/config/.local")
+    (home-literal "/dotfiles/config/.local/bin")
+)
+;; 転送・注入の処理をsandbox内から書き換えて保護を無効化しない。
+(deny file-write*
+    (home-literal "/.local/bin/rm")
+    (home-subpath "/.config/gomi")
+    (home-subpath "/.config/agent-safehouse")
+    (home-literal "/.config/fish/functions/__safehouse_args.fish")
+    (home-literal "/.config/fish/functions/safe.fish")
+    (home-literal "/.config/fish/functions/hermes.fish")
+    (home-literal "/.config/fish/functions/rm.fish")
+    (home-literal "/.config/fish/conf.d/gomi.fish")
+    (home-literal "/dotfiles/config/.local/bin/rm")
+    (home-subpath "/dotfiles/config/.config/gomi")
+    (home-subpath "/dotfiles/config/.config/agent-safehouse")
+    (home-literal "/dotfiles/config/.config/fish/functions/__safehouse_args.fish")
+    (home-literal "/dotfiles/config/.config/fish/functions/safe.fish")
+    (home-literal "/dotfiles/config/.config/fish/functions/hermes.fish")
+    (home-literal "/dotfiles/config/.config/fish/functions/rm.fish")
+    (home-literal "/dotfiles/config/.config/fish/conf.d/gomi.fish")
 )
 
 ;; ~/.hermes は Hermes Agent の workdir かつ信頼境界。
@@ -146,4 +225,22 @@
 ;; ホスト側のCuaDriverデーモンへの接続だけを許可する。
 (allow network-outbound
     (home-literal "/Library/Caches/cua-driver/cua-driver.sock")
+)
+
+;; 元の保護パスから人間が移した秘密をtrash経由で読み取らせない。
+;; renameによるPutは内容を読まず、metadataと書き込みは維持する。
+(deny file-read-data file-write-data file-write-unlink
+    (require-all
+        (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")
+        (require-not (home-subpath "/.hermes"))
+    )
+    (home-subpath "/.Trash")
+)
+
+;; XDGの保存先が変わっても、ルートのrenameでpayloadのパス拒否を外さない。
+(deny file-write-unlink
+    (require-all
+        (regex #".*/(Trash|\.Trash(-[0-9]+)?|\.Trash/[0-9]+)$")
+        (require-not (home-subpath "/.hermes"))
+    )
 )
