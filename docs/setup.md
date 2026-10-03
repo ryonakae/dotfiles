@@ -267,7 +267,16 @@ herdr plugin install devashish2203/herdr-worktrunk --ref a3107ca566bafcd463bc138
 
 Agent Context の installer は release binary と同じ release の checksum を取得するため、ネットワークが必要。source commit の固定は binary の Nix 固定出力管理とは異なる。Shepherd 本体と plugin は復元対象から外す。既存の実機導入物・稼働中 daemon・保存データの停止や削除は、移行宣言の変更と分けて行う。
 
-`zerdr` は Zerdr 本体が `~/Library/Application Support/dev.ryonakae.zerdr/` に配置するローカルプラグインを使う。復元時は採用する本体の `zerdr setup install` で生成・登録し、古い絶対パスを含む manifest をコピーしない。この操作は Zed tasks も更新する。現在の manifest は開発版を参照しているため、移行先本体の確認後に行い、Homebrew 版へ無断で置換しない。Zed tasks は Nix 管理に追加していない。
+Zerdr は Homebrew 版を使う。導入対象は nix-darwin の Homebrew 設定で宣言するが、本体は Homebrew が管理し、`flake.lock` による版固定・ロールバックの対象にはならない。
+
+Zerdr のローカルプラグインは本体が `~/Library/Application Support/dev.ryonakae.zerdr/` に配置する。切替時は、開発版を拾わないよう Homebrew 版のパスを明示して生成・登録する。古い絶対パスを含む manifest をコピーしない。
+
+```fish
+set -l zerdr_bin (brew --prefix ryonakae/tap/zerdr)/bin/zerdr
+$zerdr_bin setup install
+```
+
+この操作は Herdr の登録と Zed tasks を更新するため、切替時に実行する。現在の開発版への登録はまだ変更していない。Zed tasks は Nix 管理に追加していない。
 worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
 導入後は `herdr plugin list` で確認する。
 
