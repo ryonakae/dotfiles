@@ -317,6 +317,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 ### Herdr plugin の調査・固定手順
 
+- `3af1942..0702bb5` の復元手順・判断事項を独立した read-only reviewer が確認し、新規の blocking/high・decision required・medium/low 指摘なし。既知の補完・本体・実行元の判断は未解決のまま保持。公開ソース・実 metadata の検証は親側が担当。
 - 固定 Herdr 0.9.1 の source で `--ref` checkout、registry 保存、再 install、config/state 分離を確認。現 Git plugin 3件は通常の untracked を含め clean。registry 上はこの3件と Zerdr の全4件が enabled。ignored build artifact の健全性は保証せず、公開 commit archive の manifest・主要7ファイルと現実体の一致を別途確認した。
 - tracked config 2件は Agent Context の read/mtime監視と Worktrunk の設定読取だけで、本番の書込処理は別state領域。書き込み可能にする根拠はなく、既存T4配置を変更しない。
 - 公開 Zerdr v0.8.0 source では、標準 setup が実行元を含む manifest を生成して Herdr に link し、Zed tasks を merge する。現manifestの開発版と PATH の Homebrew 版の違いは未解決。実plugin install・link・setup・サービス操作・テストは行っていない。
