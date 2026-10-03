@@ -205,6 +205,7 @@ Python のバージョンを変更した場合は、Hermes 本体の `venv` も�
 
 gateway は `hermes-gateway`、dashboard は `hermes-dashboard` で操作する。
 停止時の処理を飛ばさないよう、`launchctl` を直接使わない。
+`hermes-gateway` の停止待ちがタイムアウトした場合、stop / restart / update は失敗として中止する。そのまま切替や更新を続けたり強制終了したりせず、終了していないプロセスを確認する。
 
 ```fish
 hermes-gateway update

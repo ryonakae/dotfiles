@@ -30,7 +30,7 @@ function __hermes_gateway_wait_pid_die --description 'Wait for hermes gateway PI
     end
 
     set_color yellow
-    echo "hermes-gateway: PID $pid still alive after $max_wait s — proceeding anyway" >&2
+    echo "hermes-gateway: PID $pid still alive after $max_wait s — aborting" >&2
     set_color normal
-    return 0
+    return 1
 end
