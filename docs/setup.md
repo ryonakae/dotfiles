@@ -3,6 +3,29 @@
 [README](../README.md) の配布後に、使う機能だけ設定する。
 秘密の登録とサービスの初期設定は、人間が sandbox 外の fish で行う。
 
+## Nix の初回導入
+
+Nix 移行は準備中。以下は Nix 本体の導入のみで、dotfiles や Homebrew の切替は行わない。
+Apple Silicon Mac の通常のユーザーアカウントから、人間が Safehouse 外のターミナルで実行する。
+
+```fish
+cd ~/dotfiles
+bash scripts/bootstrap-nix.sh --install
+```
+
+公式の版固定済み配布物を checksum 検証してから、multi-user インストーラを起動する。Flakes を使うため、従来の channel は追加しない。
+APFS volume、mount 設定、build users、daemon、shell 初期化を変更し、必要に応じて sudo と、FileVault 利用時のシステム Keychain 操作を伴う。表示される変更内容を確認して進める。
+既存の Nix や残存パスを検出した場合は、自動で上書き・修復しない。
+
+完了後、新しいターミナルで次を確認する。初期状態で PATH にない場合は、インストーラが案内した shell 初期化を反映してから再確認する。
+
+```fish
+nix --version
+```
+
+この時点では既存のツール・設定は切り替えず、Nix の事前ビルドへ進む。
+導入失敗時は出力を確認し、残存 volume やシステム設定を無断で削除して再実行しない。
+
 ## 共通ツール用の秘密
 
 共通 API キーは `config/.config/.env` にまとめ、dotenvx で暗号化し、復号鍵を macOS Keychain に保存する。

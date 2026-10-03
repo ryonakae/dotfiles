@@ -19,6 +19,7 @@ macOS 用の個人設定。導入は [README.md](README.md)、手動の初期設
 - 文書: 参照パス・リンクと `git diff --check`。
 
 `remove-broken-symlinks.sh` は削除を伴うため、読み取り専用の検証には使わない。
+Nix の bootstrap は人間が sandbox 外で実行する。[初回導入](docs/setup.md#nix-の初回導入)に従い、検証目的に実インストーラを起動しない。
 
 ## スキル
 
