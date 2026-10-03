@@ -46,14 +46,16 @@ bash scripts/dotfiles.sh build
 別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
-依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+依存の更新は別操作で行い、lock とパッケージ定義の差分を確認して再ビルドする。
 
 ```fish
 bash scripts/dotfiles.sh update nixpkgs
+bash scripts/dotfiles.sh update pi-coding-agent
+bash scripts/dotfiles.sh update ai
 bash scripts/dotfiles.sh update all
 ```
 
-個別更新できるのは公開 input の名前であり、nixpkgs 内の任意パッケージ名ではない。`switch` と AI ツール群の更新は、移行対象の保護・サービス・package 定義が揃うまで未提供。
+個別更新できるのは公開 input または `config/nix/packages/` の独立定義の名前。nixpkgs 内の任意パッケージ名ではない。`ai` は実装済みの AI パッケージを列挙して更新し、`all` は公開 input と独立定義の両方を更新する。更新は適用・起動を行わず、途中で失敗した場合は残った差分を確認してから再ビルドする。`switch` はサービス・残りの設定の移行が揃うまで未提供。
 
 fish の生成設定は管理済み example を基にした共通設定で、Git 外の実 `config.fish` のコピーではない。切替前に、人間が秘密の移行と必要な非秘密の差分を確認する。既存の Fisher 配置・リンクも退避してから移し、二重読み込みさせない。`fish_variables` と履歴は Nix で管理しない。
 

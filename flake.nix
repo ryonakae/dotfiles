@@ -21,6 +21,10 @@
       ...
     }:
     let
+      pkgs = import inputs.nixpkgs {
+        system = "aarch64-darwin";
+        config.allowUnfreePredicate = pkg: inputs.nixpkgs.lib.getName pkg == "claude-code";
+      };
       hostFile =
         if builtins.pathExists "${host}/host.json" then
           "${host}/host.json"
@@ -29,13 +33,20 @@
       machine = builtins.fromJSON (builtins.readFile hostFile);
     in
     {
-      formatter.aarch64-darwin = inputs.nixpkgs.legacyPackages.aarch64-darwin.nixfmt;
+      formatter.aarch64-darwin = pkgs.nixfmt;
+      packages.aarch64-darwin = import ./config/nix/packages { inherit pkgs; };
+      apps.aarch64-darwin.nix-update = {
+        type = "app";
+        meta.description = "Update independent AI package sources and dependency hashes";
+        program = "${pkgs.nix-update}/bin/nix-update";
+      };
       darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit inputs machine; };
         modules = [
           ./config/nix/darwin
           home-manager.darwinModules.home-manager
           {
+            nixpkgs.pkgs = pkgs;
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs machine; };

@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, inputs, ... }:
 {
   home.packages = with pkgs; [
     actionlint
@@ -36,5 +36,10 @@
     nodejs_22
     python311
     ruby_3_3
+
+    inputs.self.packages.aarch64-darwin.claude-code
+    inputs.self.packages.aarch64-darwin.codex
+    inputs.self.packages.aarch64-darwin.opencode
+    inputs.self.packages.aarch64-darwin.pi-coding-agent
   ];
 }
