@@ -109,7 +109,9 @@ rm 転送を外す場合は `~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gom
 
 `npx skills` はホームで実行する。`-g` と `update` は使わず、追加・更新の配布先を `-a claude-code` に絞る。
 自作スキルは dotfiles 側で管理し、外部スキルの実体は `~/.agents/skills/` に置く。
-Nix への切替後は自作スキルを Home Manager で個別配置し、旧 `create-skills-symlink.sh` を併用しない。初回は既知の自作リンクだけを確認・退避し、外部スキルや Claude の他のディレクトリは保持する。外部スキルの固定復元は移行中であり、以下の取得手順とは区別する。
+Nix への切替後は、自作スキルと `config/nix/home/external-skills.nix` で固定した外部スキルを Home Manager で個別配置する。旧 `create-skills-symlink.sh` や、以下の `experimental_install` による上書きを併用しない。外部スキルの更新は revision / hash を明示して変更し、build 後に適用する。
+
+初回は既知の自作リンクと、Nix 管理対象となる外部スキルの実ディレクトリを個別に確認・退避する。未管理スキルや Claude の `synced` は保持し、親ディレクトリ全体を置き換えない。Python キャッシュ等の実行時生成物は復元対象に含めない。旧 `skills-lock.json` だけに残る未配置スキルの判断は移行中の残作業。以下は切替前の旧配布手順であり、Nix 管理対象の復元には使わない。
 
 新規マシンで lock の登録内容を取得する場合:
 
