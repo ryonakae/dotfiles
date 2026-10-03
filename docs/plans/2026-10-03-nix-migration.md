@@ -12,7 +12,7 @@
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
-3. **次は T5 の Herdr 拡張・statusline 依存、T6 の起動経路を進める。** Pi の可変設定3件、静的ファイル7件、自作12＋現行外部13スキルを接続済み。外部スキルは現行内容に一致する commit と hash を固定した。Pi 拡張は本体版を固定したが、新規取得時の推移依存・全機能の復元検証は残る。
+3. **次は T5 の Herdr 外部 plugin、T6 の起動経路を進める。** Pi の可変設定・指示文、自作12＋現行外部13スキル、Claude の Herdr hook と statusline 版固定を接続済み。Pi 拡張の新規取得・推移依存・全機能の復元検証は残る。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
@@ -56,7 +56,7 @@
 - [x] `home/files.nix`: Ghostty / Worktrunk / Husky / Yazi、共通 AGENTS の各エージェントへの参照、共通・CLI 別通知スクリプトを配置。`d6159ed`。Yazi の git / smart-enter / full-border は `pkgs.yaziPlugins`、smart-leave は既存 Lua。
 - [x] Vim は「ほぼ使わないため管理しやすさ優先」というユーザー承認に従い、外部プラグインなしの最小構成へ変更。既存の標準 `pkgs.vim` と `home/files.nix` による `.vimrc` の配置だけを使用する。NeoBundle / NeoComplete / Copilot 等の専用設定、試作の `home/vim.nix` と限定 unfree 許可を除去。基本の表示・検索・インデント設定を残した。review base は `7785d62`。現行 HOME も `.vimrc` の正本へリンクしているため、次回起動から最小設定になる。旧 `~/.vim/bundle` の実体は未削除。
 - [x] Zellij / ZAM は未使用のため削除するユーザー承認を取得。Nix・Brewfile example の導入宣言、Zellij config / dev layout、fish の `zl` 関数を削除。生成環境に本体・設定・関数が含まれないことを確認。Ghostty の Option 設定値は維持し、コメントだけ汎用化。review base は `f99a92c`。実機の本体・保存セッション・ZAM の私的プロジェクトは削除せず、汎用 `use-zellij` スキルと無効化済みの Pi 命名設定も残す。
-- [x] Zed / Claude / OpenCode / pi-auto-name の設定を `home/files.nix` から既存ファイルのまま配置。通常の `home.file` / `xdg.configFile` を使用し、生成された4ファイルと正本の一致を確認。アプリ内からの永続設定変更の扱いは切替前に確認する。Claude の Herdr hook・statusline 依存は T5 に残す。
+- [x] Zed / Claude / OpenCode / pi-auto-name の設定を `home/files.nix` から既存ファイルのまま配置。通常の `home.file` / `xdg.configFile` を使用し、生成された4ファイルと正本の一致を確認。アプリ内からの永続設定変更の扱いは切替前に確認する。Claude の Herdr hook・statusline 依存は T5 で接続済み。
 - [x] Pi の `settings.json` は `home/pi.nix` から標準 `mkImpureConfigMerger` で書き込み可能な実ファイルへ配置する構成を追加。起動時・`/settings` の書き込みを妨げる store symlink は作らない。実際の適用は T9・T10。
 - [x] Herdr の `config.toml`、plugin 設定2ファイル、補助スクリプト2ファイルを個別に接続。生成された5ファイルとの一致と shell script の実行権限を確認。plugin 本体・tests・session・log は含めない。plugin 本体は T5、サーバーへの設定反映は T9・T10 と分ける。
 - 完了条件: T1 で確認した config ファイルすべてに配置・例外対応・不要・手動のいずれかの扱いが付き、必要な生成物を確認できる。具体的な支障があるファイルの例外対応と、拡張の完了判定は T5。
@@ -67,7 +67,8 @@
 - [x] Zed / Pi の標準 HM モジュールを調査。Zed は `mutableUserSettings` がある一方、Pi は設定を store にリンクする方式。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。
 - [x] Pi の `settings.json`、`extensions/pi-footer.json`、`extensions/pi-gpt-fast-mode/config.json` に実際の書き込み経路を確認し、標準 `lib.hm.generators.mkImpureConfigMerger` を接続。固定済み HM の experimental API を使い、独自 merge は作らない。再適用時は定義値が優先、未定義キーは保持、配列は定義値に置換。新規ファイルは600、既存の mode は保持。設定削除は実ファイルのキー削除を意味しない。
   - `checkPiConfigPaths` は write boundary より前に、対象と親ディレクトリが別の実体へリンクしていれば中止する。既存リンクを通じて正本や store を書き換えない。初回は T9 で旧リンクを退避し、アプリを止めて書き込み可能な実ファイルを準備する。標準 merger は完全なロックではないため、再適用時も Pi 停止が必要。review base は `c7855a0`。
-- [ ] Claude 設定が参照する `~/.claude/hooks/herdr-agent-state.sh` の Herdr 側の生成・復元経路と、`npx -y ccstatusline@latest` の固定方法を接続する。hook は Git 管理に存在しないため、今回の配置には含めていない。T9 の完成構成では未復元の参照を残さない。
+- [x] Claude の `herdr-agent-state.sh` を `pkgs.herdr.src` の公式 asset から executable として配置。本体と同じ nixpkgs lock に従い、独自生成・転載・版別 override は作らない。Herdr の installer は hook / settings に書き込むので、Nix 管理へ切替後の Claude integration には併用しない。
+- [x] statusline は標準 npm 経路のまま、現行キャッシュと一致する `ccstatusline@2.2.30` に固定。固定 nixpkgs には未収録、公開 metadata は runtime dependency なし。npm tarball の integrity と現行4ファイルの byte 一致を確認。初回 npx 取得は runtime に残り、Nix build / activation ではインストールしない。Claude の別プロセス変更は保持し、この command 1行だけを index へ取り込む。
 - [x] `home/skills.nix` で自作12スキルを共通・Claude 向けの個別ディレクトリとして配置。Claude 固有の同名優先とドット始まり除外を維持。親ディレクトリ全体や `synced` を置き換えない。Antigravity は既存どおり共通置き場への参照リンクで、正本自体は store に配置。
 - [x] `home/external-skills.nix` で現行の外部13スキル（12 repo）を commit と展開後 hash で固定し、標準 `fetchFromGitHub` と個別 `home.file` で接続。公開 HEAD と一致する9件に加え、herdr / tdd / worktrunk / readme-creator は現行内容に一致する過去 commit を特定した。内容の更新や別スキルへの置換はしない。skill-creator の `.pyc` 2件だけは生成キャッシュとして復元しない。
 - [ ] `config/skills-lock.json` は14登録・13 repoで、うち `cua-driver` は現行 HOME に未配置。復元対象へ戻すかを確認し、旧 lock の廃止は T11 で行う。computedHash は revision / Nix hash として使わない。
@@ -231,9 +232,9 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi の可変設定・自作12＋外部13スキル配置と gateway 待機 timeout 修正までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/4gqw4shkjk9hr3rg2a4nq0j92jvcj0jw-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/yp8qss9v3b3d54fnlcnrgqvy0fvx9w91-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存配置と gateway 待機 timeout 修正までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/iy8myc09vvq61n0dqyd6xs54jnvz653g-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/jizf1lsbvndqwjhl7rz60wr80w4vj3wp-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -275,9 +276,15 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 ### 外部スキルの検証記録
 
+- `4273041..d7421c1` を独立した read-only reviewer が確認し、新規の blocking/high・medium/low 指摘なし。cua-driver の既知の判断待ちは現行13件の固定を妨げないこと、優先順位・個別配置・取得元とサブパスの整合を確認。外部取得・内容一致の検証は親側が担当。
 - 公開 Git と commit 指定アーカイブで現行13スキルを照合。HEAD と不一致の4件は depth=256 の blob-filtered clone で過去 tree を比較し、一致 commit のアーカイブでも全ファイル・実行ビット一致を確認。GitHub API は匿名 rate limit の403だったため公開 Git を利用し、認証・権限は変更していない。
 - 固定 lock の通常 build が全12ソースの `fetchFromGitHub` を含め成功。生成された共通・Claude 各25スキルのうち外部13件・延べ140ファイルが現行配布内容と byte / 実行ビット一致。親ディレクトリ全体を置き換えず、`.disabled`・Python cacheを含めないことを確認。Nix format・差分検査も成功。
 - 実 HOME の外部スキル実体は未変更。初回の衝突解消・退避・参照更新、未配置 cua-driver の判断、旧取得手順の廃止は未完了。スキル内部の CLI コマンド実行・回帰テスト・fixture・stub は実施していない。
+
+### Claude 依存の検証記録
+
+- 固定 lock の通常 build 成功。生成 hook は標準 Herdr 0.9.1 の公式 asset と byte 一致・実行可能で、`sh -n` と埋め込み Python の構文検査が成功。生成 settings は正本と一致し、statusline の固定版指定を確認。npm 公開 tarball は registry integrity を検証し、現行キャッシュの4ファイルと一致。JSON parse・Nix format・差分検査も成功。
+- Herdr install / hook 実行 / Claude 再起動 / npx 再インストール / 実機適用は行っていない。ビルドは他プロセスの Claude 設定差分も含むが、コミットは statusline の1行だけで、その他は未コミットのまま保持する。
 
 ### 残る最終確認
 
