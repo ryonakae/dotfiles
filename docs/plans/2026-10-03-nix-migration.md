@@ -6,11 +6,13 @@
 
 追加変更: ユーザーの「回帰テストとかもいらない」「管理が楽な方にして」により、本移行ではテストの追加・再実行を行わず、構文・差分・Nix の評価とビルドで進める。gomi / dotenvx / Agent Safehouse は現行版維持と独立更新を要件から外し、共通 nixpkgs の標準定義を使う。以下の既存テスト結果は過去の実行記録であり、再実行の承認待ちではない。
 
+最新の管理方針: ユーザーの「可能な限り標準管理に統一。どうしてもそれが難しいというものだけは相談」により、AI ツールも共通 nixpkgs の標準パッケージを優先する。以前の個別・AI グループ更新の要件は撤回。本体と設定配置を分け、現行版への一致や単独更新のためだけの override・配布物定義・専用 updater は作らない。標準管理が難しい対象は理由と代案を提示し、採用前に相談する。
+
 ## Requirements
 
 - 現在と今後の Apple Silicon Mac を、ツール・アプリ・ユーザー設定・macOS 設定を含めて再構築できるようにする。実機で意図的に導入されたものを基準とし、Brewfile.example だけを移す構成にしない。依存ライブラリと直接利用するツール、名称変更・別系列を区別する。
 - upstream Nix の multi-user daemon、Flakes、nix-darwin、統合した Home Manager を構成の中心にする。ツールは原則 Nix、macOS 対応・保守負担に問題があるものは Homebrew / App Store 等で補完し、導入一覧の正本を Nix に集約する。
-- 共通 Nixpkgs は rolling 系列を使い、通常の適用は固定済み依存から行う。Claude Code・Codex・Pi・OpenCode・Hermes 等と Herdr・agent-device は個別・グループ更新可能にする。外部拡張・プラグイン・スキルも取得元と版を固定する。一般 GUI アプリの自動更新は許容し、flake.lock による同一版復元とは区別する。
+- 共通 nixpkgs は rolling 系列を使い、通常の適用は flake.lock で固定済みの標準パッケージから行う。AI ツールも原則として nixpkgs 単位でまとめて更新し、個別・AI グループ更新は必須にしない。外部拡張・プラグイン・スキルの固定にも既存の標準管理を優先する。一般 GUI アプリの自動更新は許容し、flake.lock による同一版復元とは区別する。
 - 設定はリポジトリを編集して適用する方式を基本にする。元の形式の設定・スクリプトも利用でき、全内容を Nix 記法へ翻訳する必要はない。既存の即時反映方式を残すためだけの out-of-store link は使わない。
 - Node / Python / Ruby / Bun の共通環境は Nix に移す。mise は既存プロジェクトが必要とする用途に限る。別プロジェクトの設定を無断で変更しない。
 - dotenvx + Keychain + Safehouse を維持する。機密ファイルの直接アクセスを拒否し、共通ツール用の値は sandbox 外で復号して起動時に注入する。注入済み環境変数の利用は許容し、完全隔離を追加要件にしない。プロジェクト用秘密を共通ファイルへ混ぜない。
@@ -23,7 +25,7 @@
 
 ### 1. 構成と管理境界
 
-- ルートに `flake.nix` / `flake.lock` を置き、設定の正本は `config/nix/` と既存 `config/` の明示したファイルにする。`config/nix/darwin/` は OS・Homebrew、`config/nix/home/` はユーザー環境、`config/nix/packages/` は独立版定義を担当する。汎用フレームワークや全パッケージの独自再実装は作らない。
+- ルートに `flake.nix` / `flake.lock` を置き、設定の正本は `config/nix/` と既存 `config/` の明示したファイルにする。`config/nix/darwin/` は OS・Homebrew、`config/nix/home/` は標準パッケージの選択とユーザー設定の配置を担当する。専用の package 定義ディレクトリは設けない。汎用フレームワークや全パッケージの独自再実装は作らない。
 - 基本入力は `nixpkgs-unstable`、nix-darwin `master`、Home Manager `master`。後二者の nixpkgs は共通入力へ follows する。上流 Flake の独自依存は、互換性を確認せず一律 follows しない。初回に解決した revision を lock し、適用時に更新しない。
 - 通常 build / switch は、公開 input の lock 追加・再解決が必要なら中止する。`--no-write-lock-file` 単独を固定の保証にしない。まず host override なしの `nix flake metadata --no-update-lock-file --json` で基準 lock の整合を確認する。次に非 Flake の host 入力だけを明示 override した解決済み metadata の lock graph を基準と照合し、host leaf 以外の node / edge / revision / hash に差があれば中止する。検査したソースとホストの store snapshot を build / switch で共用し、再評価による別入力への切替を避ける。公開依存の変更は明示的 update に限定する。
 - `nixpkgs.hostPlatform = "aarch64-darwin"`、`home-manager.useGlobalPkgs` / `useUserPackages` を利用する。system / home の stateVersion は初回採用時の互換性基準として固定し、更新のたびに最新値へ変えない。unfree は必要なパッケージへ限定する。
@@ -33,28 +35,28 @@
 ### 2. パッケージと更新
 
 - 初期の移行表を本計画のタスク内へ記録し、各直接導入対象について「現在の導入元・移行先・固定単位・例外理由」を確定してから切替する。別の恒久的な手書きパッケージ一覧は増やさず、導入後の正本は Nix 定義とする。
-- 一般 CLI は nixpkgs の既存定義を優先する。独立更新対象は既存の上流 Flake、公式配布物、既存 nixpkgs のパッケージ関数・patch を利用し、版とソースだけでなく依存 hash / 補助配布物も固定する。各ツール用に nixpkgs 全体の入力を複製しない。
-- Hermes / Herdr は Darwin 対応の上流 Flake を第一候補にする。gomi / dotenvx / Agent Safehouse は保守の容易さを優先し、共通 nixpkgs の標準定義に揃える。実機の現行版と一致させる override は作らない。
-- agent-device は npm 配布物と依存を固定し、Apple helper・署名・XCUITest の実動作を確認する。CLI に同梱された配布物を壊さない方法を優先し、未確認のまま store 内へ runtime install / codesign を行わせない。Nix 化が困難なら補完方式を提示し、個別版固定を失う変更は確認する。
+- AI を含む CLI は共通 nixpkgs の標準定義を優先する。本体のバージョン・hash・依存解決はパッケージ側に任せ、設定ファイルの配布とは分離する。個別更新のためにソース・バイナリ配布物・nixpkgs input をツール別に持たない。
+- Herdr も nixpkgs 標準定義を使う。gomi / dotenvx / Agent Safehouse を含め、現行版と一致させる override は作らない。Hermes など未収録・非対応の対象は、公式 Flake や Homebrew 等の補完方法を調べ、難しい理由と代案を示して相談する。
+- agent-device も標準パッケージ管理での対応を先に調べる。未収録なら npm 等の公式導入方法を候補にし、独自 Nix 定義を作る前に相談する。Apple helper の runtime install / codesign が store 内へ書き込む構成は採用せず、署名・権限操作は導入とは分ける。
 - GUI / App Store アプリと Xcode / SDK は macOS の配布経路を利用する。mosh は現行の firewall 手順が実体へ署名を書き込むため、今回は Homebrew 補完とし、store の変更を伴う方法へ移さない。権限・署名・firewall 設定は自動適用へ紛れ込ませない。
 - Homebrew は nix-darwin の homebrew 定義を正本にする。通常適用では `onActivation.autoUpdate = false`、`upgrade = false`、`cleanup = "none"`。導入一覧にないものの自動 uninstall / zap はしない。Homebrew 自体がない新規 Mac では、公式 bootstrap を先に行う手順を用意する。
 - 共通ランタイムは既存の必要な major / minor とツール要件を確認して選ぶ。単に現行 mise の古い patch と一致させるための独自ビルドは増やさない。プロジェクト指定を尊重し、特定ツール専用ランタイムはそのパッケージへ閉じる。
-- `scripts/dotfiles.sh` に小さな操作入口を用意する。`build` は固定構成の事前ビルド、`switch` は固定構成の適用、`update [all|ai|tool]` は対象の版定義 / lock の更新のみ。存在しない対象はエラーにし、一般 nixpkgs 内の任意パッケージを個別更新できるようには見せない。`ai` の実対象を表示する。
+- `scripts/dotfiles.sh` に小さな操作入口を用意する。`build` は固定構成の事前ビルド、`switch` は固定構成の適用、`update [all|input]` は公開 input の lock 更新のみ。`update nixpkgs` で標準パッケージ群をまとめて更新する。存在しない対象はエラーにし、`update ai` やツール名での単独更新は提供しない。
 - 全体更新を一連で実行する手順は、明示的な update → build → 確認付き switch と、Homebrew 側の明示的更新をまとめる。通常 switch に更新を隠さない。Nix 管理した本体の自己更新や既存 installer は使わず、Herdr server 等の再起動は適用と区別する。
 
 ### 3. 設定・拡張・秘密
 
-- Home Manager の既存モジュールで表現できる設定はそれを使い、独自スクリプト・指示・スキルは元の形式で store から配置する。共通 AGENTS の正本を増やさず、各エージェントの参照関係を維持する。
+- 本体はパッケージ管理、設定・スクリプトの配布は Home Manager と役割を分ける。Home Manager の既存モジュールで表現できる設定はそれを使い、それ以外は元の形式のファイルを配置する。設定を配布するために本体パッケージを独自化しない。共通 AGENTS の正本を増やさず、各エージェントの参照関係を維持する。
 - アプリが書き込まないファイルは通常の宣言的配置とする。`fish_variables`、Pi の設定保存、Hermes の設定編集等は書き込み箇所を確認して扱いを分ける。ネイティブの設定 / state 分離を優先し、存在しない overlay 機能を仮定しない。
 - 同一ファイルに固定設定と実行時変更が混在するものは、ファイル単位で所有権と再適用時の意味を記録する。必要なら非秘密の宣言から可変ファイルを生成するが、元ファイルを退避し、未知のキー・実秘密を黙って削除しない。汎用の独自 merge 基盤は作らない。アプリの永続設定変更を制限する必要がある場合は、その具体的な操作への影響を切替前に確認する。
 - 外部スキルは取得元 revision と内容 hash を固定して `~/.agents/skills/` へ配置し、現行の利用先から参照する。Claude 固有スキルの同名優先、`.disabled` 等の非配布、Antigravity の共通参照を保ち、ディレクトリ全体の置換で他のスキルを隠さない。`skills-lock.json` の computedHash だけを再現用 lock と扱わず、最新版を取り直す experimental_install を新規 Mac の復元手順から外す。自作スキルと Hermes の自己更新データは区別する。
-- Pi は固定した拡張パッケージをローカルパスとして参照する構成を優先し、依存を Nix 側で解決する。Herdr は3つの外部プラグインの revision を固定し、Zerdr 提供のローカルプラグインはアプリとの対応を保つ。書き込みを要求するプラグインは状態の保存先を分離する。
+- Pi / Herdr の拡張は標準の拡張管理と、その参照設定の配布を優先する。版・revision の固定が標準機能で可能か確認し、独自ビルドや専用の配布処理が必要になる場合は相談する。Zerdr 提供のローカルプラグインはアプリとの対応を保つ。書き込みを要求するプラグインは状態の保存先を分離する。
 - `.env`・復号鍵・OAuth 認証を Nix の値、`home.file.source`、環境変数の静的定義、ソース入力に渡さない。dotenvx は runtime のファイルパスを読み、Keychain 失敗時は起動を止める。新しい配置でも元パス・symlink 実体・復号鍵の直接アクセス保護を維持する。
 - shell / 非対話 / launchd のすべてで、安全な rm wrapper が通常 rm として解決される PATH を作る。Nix profile、Homebrew、mise の activation が優先順位を上書きしないことを確認する。保護 wrapper の実装を複数の起動経路へ重複させない。
 
 ### 4. Hermes と常駐サービス
 
-- 本体パッケージとサービスの所有権を分離する。上流 Flake のパッケージを使い、gateway / dashboard の定義は Home Manager 側の一か所で所有する。既存の `hermes gateway install` による plist 再生成とは併用しない。
+- 本体パッケージとサービスの所有権を分離する。標準管理が難しい場合の導入方法は別途相談し、gateway / dashboard の定義は Home Manager 側の一か所で所有する。既存の `hermes gateway install` による plist 再生成とは併用しない。
 - 上流 services モジュールは Safehouse / dotenvx と停止順序をそのまま満たさないため、全面採用を前提にしない。パッケージを利用して既存の安全な起動契約を HM の launchd 定義へ移す方法を基本とし、独自のサービス管理基盤は作らない。
 - build は停止せず先に完了させる。この Mac には Hermes の既存環境がないため、パッケージ / 起動定義を用意し、停止・データ移行・自動起動は行わない。初期設定は利用開始時に行う。別の Mac の稼働中環境へ適用するときは、利用者確認 → 正規停止 → 終了確認 → 必要な DB バックアップ → 切替 → 起動確認の順にする。旧本体と新本体が同じ DB を同時に開く時間を作らない。
 - 現行 wait helper の「タイムアウトでも成功扱いで続行」は採用しない。停止失敗・待機時間超過なら切替を中止し、強制終了や継続を自動選択しない。既存の管理関数を移行時にも利用・更新し、外から launchctl を直接呼んで停止処理を飛ばさない。
@@ -80,20 +82,19 @@
 - [ ] **Flake と bootstrap**: `flake.nix`、`flake.lock`、`config/nix/`、`scripts/bootstrap-nix.sh`、`scripts/dotfiles.sh` を作る。
   - まず root flake、共通 / ホスト分離、HM 統合、通常 build / switch の依存固定を成立させる。bootstrap は破壊的な自動修復を持たせず、再実行時は既存状態を検出する。
   - bootstrap を先行実装。公式 Nix 2.34.0 / aarch64-darwin の配布物と SHA-256 を固定し、実ダウンロードの checksum 一致を確認。`scripts/tests/test_bootstrap_nix.py` の8件と `bash -n scripts/bootstrap-nix.sh` が通過。Safehouse 拒否・明示実行・OS / CPU・既存状態・checksum / download 失敗・daemon / no-channel-add 引数をダミーの外部コマンドで検証した。その後、人間が Safehouse 外で導入し、`nix (Nix) 2.34.0` を確認。途中の `vifs` 待ちは macOS の許可ダイアログ待ちで、利用者の許可後に進行した。
-  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。公開 direct input の個別更新・all を実装。標準3ツール向けの独立更新の試作は撤回。その後、Claude Code / Codex / Pi / OpenCode の独立定義へ `update tool / ai / all` を接続した。switch は保護・サービス定義の統合後に接続するため現時点では公開しない。
+  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。公開 direct input の個別更新・all を実装。独立したツール更新は一度実装したが、最新方針により削除。現在の更新入口は公開 input と all のみ。switch は保護・サービス定義の統合後に接続するため現時点では公開しない。
   - 実 Nix を使う `scripts/tests/test_dotfiles_cli.py` の4件が通過。host 差替え、通常 build の lock 不変、未追跡ファイルの非混入、公開 URL 変更・lock entry 欠落の拒否、明示 update を確認。ダミー `.env` 作成は Safehouse に拒否されたため、その拒否を回避せず通常名の未追跡ダミーで非混入を検証した。
   - 実機の非秘密 host 値を `/tmp/dotfiles-machine.SyCOAn6p/host.json` に限定して事前ビルド。最小構成の flake check / build が通過し、`/nix/store/ysxr12iyc0c9h1wsjniq3kfilwkjqf25-darwin-system-26.11.4cff07d` を生成。activation は未実行。固定 nixpkgs が選ぶ Nix は 2.34.8 で、現在稼働中の 2.34.0 をまだ置き換えていない。
   - `AGENTS.md` は新しい正本・配布境界と食い違う箇所だけ更新する。共通エージェント指示の内容を移行に便乗して変更しない。
-- [ ] **パッケージと更新単位**: `config/nix/packages/`、`config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix` に確定した導入対象を実装し、操作入口へ更新対象を接続する。
-  - 安定して利用できる既存定義を使い、Nix 導入と最新機能への一斉アップグレードを混同しない。採用版の互換性と独立更新の成立を事前ビルドで確認する。
+- [ ] **パッケージと更新単位**: `config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix` に確定した導入対象を実装し、操作入口へ更新対象を接続する。
+  - 安定して利用できる既存定義を使い、Nix 導入と最新機能への一斉アップグレードを混同しない。標準定義を選択し、事前ビルドで評価・ビルドの成立を確認する。
   - 一般 CLI 30件と共通ランタイム4件を `config/nix/home/packages.nix` へ追加。`config/nix/darwin/homebrew.nix` に55 cask、実機 `mas list` の22アプリ、補完 formula 7件を宣言。Homebrew は自動更新・upgrade・cleanup を無効にし、PostgreSQL の start/restart も無効にした。生成された activation の `HOMEBREW_NO_AUTO_UPDATE=1` / `--no-upgrade` と cleanup 指定なしを確認した。
   - `dotfiles build` が通過し、`/nix/store/9zjhm0kd3ki51h06v8yvbvawpvhddykb-darwin-system-26.11.4cff07d` を生成。生成 profile の fish 4.9.3 / Git 2.55.0 / Node 22.23.3 / Python 3.11.16 / Ruby 3.3.10 / Bun 1.4.2 / uv 0.12.17 / jq 1.8.2 の起動を確認。Bun は旧1.3.13からの minor 更新候補であり、利用互換性は切替前の確認対象。Homebrew bundle・activation・サービス操作は未実行。
   - gomi / dotenvx / Agent Safehouse の独立定義を試作したが、現行版維持は不要とのユーザー判断で撤回。3つとも `home/packages.nix` の標準パッケージへ統合し、個別 hash と nix-update 用の試作コード・追加テストを除去した。通常 build が成功し、`/nix/store/my4x19v9lcgvhmwai98r56bncdwah49y-darwin-system-26.11.4cff07d` を生成。共通 nixpkgs の更新で一緒に更新する。
   - 以前実行した全36テストは Safehouse のダミーごみ箱保護で2ケース・4 errors（`/tmp/dotfiles-tests.log`）。ユーザー指示により再実行はせず、今後の受入ゲートから外す。保護設定は変更していない。後片付けが拒否された一時ディレクトリ（`tmp8ud28y15`、`tmpgumdah3_`）は残したまま。
-  - Claude Code 2.1.285 / Codex 0.159.1 / Pi 1.0.0 / OpenCode 1.18.33 を `config/nix/packages/` に追加。Claude と Pi は共通 nixpkgs の recipe を再利用し、Codex と OpenCode は公式配布物を固定して配置する。Codex は CLI 単体ではなく補助バイナリ・音声リソースを含む公式 package archive を採用し、Rust / V8 の独自ビルド管理を避けた。unfree は Claude Code のみに許可。
-  - Pi はソース・npm 依存・モデル一覧の3 hash を固定。初期 hash の同一 placeholder を nix-update がまとめて置換したため最初の build は不一致で失敗したが、取得値をそれぞれ固定して修正。OpenCode は installPhase の行継続を修正した。最終 build は成功し、`/nix/store/jyj6jhjsa9b3pgy3r767wv2k2a2rqj3f-darwin-system-26.11.4cff07d` を生成した。起動・切替は未実行。
-  - 更新入口は nix-update を使用し、Pi のモデル一覧も更新対象にする。通常 build は固定値のみを使用。Python 構文、Nix format、差分を確認した。回帰テストは追加・実行していない。
-  - Hermes / Herdr の公式 Flake の読み取り調査を実施し、package 単独採用が可能と確認。Hermes の default は optional integrations を含み、配布契約で自己更新を external と扱う。Herdr は Rust / Zig を使う公式 build 定義を持つ。独自依存を無検証で follows せず、lock へ保持する。まだ root input への追加・実ビルドは行っていない。
+  - 過去の試作（撤回済み）: `b9f7ab5` で Claude Code / Codex / Pi / OpenCode の独立定義と nix-update を追加してビルドしたが、標準管理を優先する追加指示により全て削除した。これらの定義や更新処理を今後の実装の前提にしない。
+  - 現在: Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準パッケージへ統一。unfree は Claude Code と Antigravity CLI のみ許可。`update ai`・ツール別更新・nix-update app・`config/nix/packages/` を削除した。通常 build が成功し、`/nix/store/9sx7nbk5gl04j7j4i6zv4hsx05hng9lz-darwin-system-26.11.4cff07d` を生成。実機には未適用。
+  - Hermes / agent-device は採用中の nixpkgs に標準定義が見つかっておらず、導入方法を確定していない。Hermes の公式 Flake はパッケージ単独採用が可能と調査済みだが未採用。Herdr は標準定義があるため、調査済みの上流 Flake は使わない。例外の採用は理由・代案を提示して相談する。
 - [ ] **ユーザー設定と拡張の配置**: `config/nix/home/` と既存 `config/` の設定を接続し、共通指示、fish、エディタ、端末、エージェント設定、外部スキル / 拡張 / プラグインを配置する。
   - `fish_variables` は store 外の可変状態とし、宣言する PATH と旧 universal PATH の重複を整理する。実機の universal 値を無断で削除しない。fish plugin も revision を固定し、非Aqua shell の SSH socket 補完を保つ。書き換えられるアプリ設定の所有権を具体化し、新規配布先や duplicate plugin load を増やさない。未知の実ファイルに force overwrite しない。
   - `home/fish.nix` と `home/protection.nix` を追加。既存の fish 関数・補完・SSH socket 補完をファイル単位で配置し、bobthefish / fzf plugin は共通 nixpkgs の固定 source を使う。mise のグローバル tools をなくしてプロジェクト用途へ限定し、共通ランタイムは Nix profile を優先する。PATH の変更時にも `.local/bin` を先頭へ戻す handler を配置する。
@@ -121,8 +122,9 @@
 | actionlint, age, awscli, cocoapods, fastlane, fd, ffmpeg, fish, fzf, gh, git, git-lfs, gomi, imagemagick, jq, mas, mkcert, terminal-notifier, tmux, tree, uv, vim, worktrunk, yazi, zellij, zoxide | 共通 nixpkgs | Darwin 対応と実際のコマンド互換性 |
 | agent-browser, ctx7, keifu, usage, zerdr | 既存 Nix 定義を優先、困難なら補完 | 現行版との差、配布・署名・プラグイン連携 |
 | dotenvx, agent-safehouse | 共通 nixpkgs | gomi と合わせて現行版の維持より標準定義での管理を優先する |
-| herdr 0.9.0, opencode 1.18.32, pi-coding-agent 1.0.0 | 独立した版定義 / 上流 Flake | 現行機能を落とす downgrade はしない |
-| claude-code@latest, codex, antigravity-cli（cask） | 独立した CLI 配布物 | GUI cask と区別し、自己更新と固定を整合 |
+| herdr, opencode, pi-coding-agent | 共通 nixpkgs の標準定義 | 本体と設定配置を分離し、現行版維持の override は作らない |
+| claude-code@latest, codex, antigravity-cli（cask） | 共通 nixpkgs の標準定義 | GUI cask と区別し、旧 CLI 導入物の整理は切替後 |
+| Hermes, agent-device | 未確定・相談対象 | 標準定義が見つからないため、補完方法を調べてから相談 |
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
 | mise | Nix の CLI、プロジェクト用途のみ | 共通ランタイムの二重管理を解消 |
 | fisher | Home Manager の fish plugin 宣言 | plugin revision を固定 |
@@ -160,7 +162,7 @@
 
 - 現在の作業環境は Safehouse 内、HERDR_ENV=1。Nix は人間による初回導入済み。現在のエージェント PATH にはないため `/nix/var/nix/profiles/default/bin/nix` を使い、daemon 接続と通常ビルドを確認済み。実機は macOS 26.2 / arm64。権限・セキュリティ設定変更、秘密操作をこの sandbox から試さない。必要な人間の sandbox 外操作と承認範囲を実行前に明示する。
 - 既存未コミット変更は `config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`、`config/.pi/agent/settings.json`。実装前に再確認し、対象に競合があれば勝手に上書きしない。
-- 実装方式で要件を満たせない場合は停止して相談する。特に秘密保護の緩和、独立版固定の断念、サービスの強制停止、既存データの破棄を内部詳細として処理しない。
+- 実装方式で要件を満たせない場合は停止して相談する。特に標準管理から外れる導入方法、秘密保護の緩和、サービスの強制停止、既存データの破棄を内部詳細として処理しない。
 - [nix-darwin README](https://github.com/nix-darwin/nix-darwin/blob/master/README.md): rolling 系列、upstream Nix の管理、installer と interpreter の区別。公式はアンインストールの容易さから Lix installer を推奨しているが、本計画では合意済み upstream Nix の公式配布を使い、通常復旧をアンインストールに依存させない。
 - [Nix binary installation](https://nix.dev/manual/nix/stable/installation/installing-binary): macOS multi-user、版固定配布、APFS / mount / daemon の変更範囲。本実装では macOS 26.2 で人間による導入と Nix 2.34.0 の応答を確認済み。
 - [Nix flake metadata](https://nix.dev/manual/nix/stable/command-ref/new-cli/nix3-flake-metadata): JSON の lock graph、no-update と no-write の相違、override-input の意味を確認。

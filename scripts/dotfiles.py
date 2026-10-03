@@ -2,7 +2,6 @@
 import argparse
 import copy
 import json
-import os
 from pathlib import Path
 import re
 import shutil
@@ -12,21 +11,14 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PACKAGE_UPDATE_ARGS = {
-  "claude-code": ["--url", "https://github.com/anthropics/claude-code"],
-  "codex": ["--use-github-releases", "--version-regex", r"^rust-v(\d+\.\d+\.\d+)$"],
-  "pi-coding-agent": ["--custom-dep", "modelData"],
-}
 
 
 def nix(*args, json_output=False):
   executable = shutil.which("nix") or "/nix/var/nix/profiles/default/bin/nix"
-  env = dict(os.environ)
-  # nix-update also invokes Nix through child processes.
-  env["NIX_CONFIG"] = env.get("NIX_CONFIG", "") + "\nextra-experimental-features = nix-command flakes\n"
+
   result = subprocess.run(
     [executable, "--extra-experimental-features", "nix-command flakes", *args],
-    cwd=ROOT, env=env, stdout=subprocess.PIPE, text=True,
+    cwd=ROOT, stdout=subprocess.PIPE, text=True,
   )
   if result.returncode:
     print(result.stdout, end="", file=sys.stderr)
@@ -80,26 +72,11 @@ def main():
     target = args.target or "all"
     graph = json.loads((ROOT / "flake.lock").read_text())
     public = set(graph["nodes"][graph["root"]]["inputs"]) - {"host"}
-    if target == "all" or target in public:
-      targets = [] if target == "all" else [target]
-      print("Updating inputs: " + ", ".join(sorted(public) if target == "all" else targets), flush=True)
-      nix("flake", "update", *targets, "--flake", str(ROOT))
-      if target != "all":
-        return
-    packages = set(nix("eval", str(ROOT) + "#packages.aarch64-darwin",
-                       "--apply", "builtins.attrNames", "--no-update-lock-file",
-                       "--json", json_output=True))
-    if target not in {"all", "ai"} and target not in packages:
-      parser.error("unknown update target; available: all, ai, " + ", ".join(sorted(public | packages)))
-    selected = sorted(packages) if target in {"all", "ai"} else [target]
-    print("Updating AI packages: " + ", ".join(selected), flush=True)
-    for package in selected:
-      definition = ROOT / "config/nix/packages" / (package + ".nix")
-      if not definition.is_file():
-        raise ValueError(f"missing version definition for {package}")
-      extra = PACKAGE_UPDATE_ARGS.get(package, [])
-      print(nix("run", str(ROOT) + "#nix-update", "--no-update-lock-file", "--",
-                package, "--flake", "--override-filename", str(definition), *extra))
+    if target != "all" and target not in public:
+      parser.error("unknown update target; available: all, " + ", ".join(sorted(public)))
+    targets = [] if target == "all" else [target]
+    print("Updating inputs: " + ", ".join(sorted(public) if target == "all" else targets), flush=True)
+    nix("flake", "update", *targets, "--flake", str(ROOT))
     return
   if args.target:
     parser.error("build does not accept an update target")
