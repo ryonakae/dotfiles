@@ -1,0 +1,222 @@
+# 手動セットアップと復元
+
+[README](../README.md) の配布後に、使う機能だけ設定する。
+秘密の登録とサービスの初期設定は、人間が sandbox 外の fish で行う。
+
+## 共通ツール用の秘密
+
+共通 API キーは `config/.config/.env` にまとめ、dotenvx で暗号化し、復号鍵を macOS Keychain に保存する。
+プロジェクト・本番環境の秘密や各エージェント自身の認証は混ぜない。
+
+```fish
+cd ~/dotfiles
+cp -n config/.config/.env.example config/.config/.env
+chmod 600 config/.config/.env
+```
+
+エディタで実値を入力する。既存ファイルは上書きせず、値をチャットやログに貼らない。
+`~/.config/.env` がこのファイルへのリンクであることを確認してから暗号化する。
+
+```fish
+ls -l ~/.config/.env
+dotenvx encrypt --quiet --no-armor -f "$HOME/.config/.env"
+dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
+```
+
+Keychain への保存を確認し、鍵ファイルが残る場合や保存エラーは解消してからエージェントを起動する。
+起動処理は鍵ファイルへ自動で切り替えないため、Keychain から復号できないと停止する。
+以前 `config.fish` にキーを export していた場合は、その設定と現在のシェルに残る値を除く。既存の環境変数が dotenvx より優先されるため。
+
+暗号化した `.env` と login Keychain の両方を、暗号化されたバックアップに含める。
+OS 移行時は Keychain も復元する。暗号化ファイルだけでは復号できない。
+初期設定後は新しい端末で CLI を起動し、常駐中の Hermes は管理関数から再起動する。
+
+起動できなくなったら再起動を繰り返さず、sandbox 外で変更した管理ファイルを以前の版へ戻す。
+暗号化 `.env`、Keychain 項目、ごみ箱データは削除しない。
+
+## 削除したファイルの復元
+
+rm 転送用のごみ箱は通常 `~/.local/share/Trash`。`XDG_DATA_HOME` 指定時はその配下の `Trash` を使う。
+Finder のごみ箱とは別で、復元は gomi から行う。
+
+```fish
+gomi --config "$HOME/.config/gomi/config.yaml" --restore
+```
+
+エージェントの削除操作が終わってから、sandbox 外で実行する。
+一覧から対象を選び、Enter で復元する。元の場所に別のデータがある場合は、先に退避して復元先を確認する。
+復元・掃除中は別の rm / gomi を並行実行しない。
+容量を空けるための永久削除は、人間が復元・バックアップを確認してから行う。自動掃除は設定しない。
+
+rm 転送を外す場合は `~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gomi.fish` のリンクだけを確認して退避する。
+ごみ箱の実体は残す。
+
+## 外部スキル
+
+`npx skills` はホームで実行する。`-g` と `update` は使わず、追加・更新の配布先を `-a claude-code` に絞る。
+自作スキルは dotfiles 側で管理し、外部スキルの実体は `~/.agents/skills/` に置く。
+
+新規マシンで lock の登録内容を取得する場合:
+
+```fish
+cd ~
+npx skills experimental_install -a claude-code
+```
+
+これは固定版の再現ではなく、取得元の最新版を取り直す操作で、lock のハッシュも変わる。通常の更新には使わない。
+個別の追加・更新は、取得元とスキル名を指定して `add` を再実行する。例:
+
+```fish
+cd ~
+npx skills add callstack/agent-device -s agent-device -a claude-code -y
+```
+
+取得後は次を確認する。
+
+1. 単一エージェントへの配布で `~/.claude/skills/` に実体コピーができた場合は、取得した最新版を `~/.agents/skills/` へ移し、Claude 側を symlink に戻す。既存実体は退避し、古い内容で最新版を上書きしない。
+2. Antigravity CLI は `~/.agents/skills/` へのディレクトリリンクで参照する。Hermes や Pi 専用ディレクトリなど、配布対象外に余分なリンクを残さない。
+3. `config/skills-lock.json` の差分を確認する。削除時も、配布ファイルと lock の両方から登録が消えたことを確認する。
+
+## Pi
+
+OpenAI は Pi 内の `/login openai` から `Sign in with ChatGPT` を選んで認証する。
+MCP の個人設定は `~/.pi/agent/mcp.json` に置く。OAuth が必要なサーバーには `pi mcp login <server>` を使う。
+
+## Hermes Agent
+
+gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。
+同じ `~/.hermes` を使う Docker dashboard をホスト版と同時起動しない。
+共通ツール用の秘密を設定し、Docker を起動してから進める。
+
+### 初回設定
+
+[Hermes の公式手順](https://github.com/NousResearch/hermes-agent)で本体を導入し、ランタイムと plist を準備する。
+
+```fish
+mise -C ~/.hermes install
+command hermes gateway install
+```
+
+`~/Library/LaunchAgents/ai.hermes.gateway.plist` の `ProgramArguments` を、`~/.config/agent-safehouse/safe-hermes-gateway.sh` の**絶対パス1要素**へ完全置換する。
+元の Python 起動引数は残さない。plist 内では `~` や `$HOME` を展開しない。
+`~/.hermes/.env` に `API_SERVER_ENABLED=true` を設定する。
+
+dashboard の plist は Git 管理外の `~/Library/LaunchAgents/ai.hermes.dashboard.plist` に作成する。
+
+| 項目 | 値 |
+|---|---|
+| `Label` | `ai.hermes.dashboard` |
+| `ProgramArguments` | `~/.config/agent-safehouse/safe-hermes-dashboard.sh` の絶対パス1要素 |
+| `WorkingDirectory` | `~/.hermes/hermes-agent` の絶対パス |
+| `EnvironmentVariables` | gateway と同じ `PATH` / `VIRTUAL_ENV` / `HERMES_HOME` |
+
+Hindsight の `.env` は dotfiles 側で編集し、認証を準備する。
+`openai-codex` provider を使う場合は、ホストの `~/.codex` の認証も必要。
+
+```fish
+cd ~/.hermes/services
+docker compose up -d hindsight
+hermes memory setup
+```
+
+memory provider に Hindsight を選ぶ。plist の構文を確認してからサービスを起動する。
+
+```fish
+plutil -lint ~/Library/LaunchAgents/ai.hermes.gateway.plist
+plutil -lint ~/Library/LaunchAgents/ai.hermes.dashboard.plist
+hermes-gateway start
+hermes-dashboard start
+```
+
+起動後に状態を確認する。
+
+```fish
+hermes-gateway status
+hermes-dashboard status
+hermes memory status
+```
+
+Python のバージョンを変更した場合は、Hermes 本体の `venv` も再作成する。
+`hermes gateway install --force` / `start` / `setup` で plist を再生成した場合は、wrapper への差し替えをやり直す。
+`setup` のサービス導入・即時起動の質問には No を選び、起動は管理関数で行う。
+
+### 更新・停止
+
+gateway は `hermes-gateway`、dashboard は `hermes-dashboard` で操作する。
+停止時の処理を飛ばさないよう、`launchctl` を直接使わない。
+
+```fish
+hermes-gateway update
+```
+
+停止する場合:
+
+```fish
+hermes-dashboard stop
+hermes-gateway stop
+cd ~/.hermes/services
+docker compose down
+```
+
+### リモートアクセス
+
+dashboard は `0.0.0.0:9120 --insecure` で待ち受けるため、信頼できる LAN 内でのみ動かす。
+iPhone からのアクセス用に Tailscale Serve を設定する。
+
+```fish
+tailscale serve --bg --https=9119 http://127.0.0.1:9120
+tailscale serve --bg --https=9999 http://127.0.0.1:9999
+tailscale serve status
+```
+
+表示されたホスト名の `:9119` が Hermes、`:9999` が Hindsight の dashboard。
+
+### Google Workspace
+
+人間用の `~/.config/gws` と認証を共有せず、Hermes 用に必要な権限だけを付与する。
+初回ログインは sandbox 外で行う。
+
+```fish
+env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
+    GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file \
+    gws auth login
+hermes-gateway restart
+```
+
+## Herdr
+
+プラグインには復元用 lock がないため、新規マシンでは個別に導入する。
+
+```fish
+herdr plugin install ryonakae/herdr-agent-context --yes
+herdr plugin install ryonakae/shepherd/packages/shepherd-herdr-plugin --yes
+herdr plugin install devashish2203/herdr-worktrunk --yes
+```
+
+`zerdr` は Zerdr 本体が `~/Library/Application Support/dev.ryonakae.zerdr/` に配置するローカルプラグインを使う。
+worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
+導入後は `herdr plugin list` で確認する。
+
+worktree の作成・削除には Worktrunk を使う。Herdr 本体の作成機能では Worktrunk の配置・hooks・ignored ファイルのコピーを引き継げない。
+`herdr worktree open` は既存 checkout の登録に限って使う。
+設定変更後は `herdr config check` で検査し、`herdr server reload-config` で反映する。
+
+## ランタイム
+
+`~/.local/bin` に Node / npm のリンクを置く場合は、Hermes 専用の実体ではなく mise の shim を参照させる。
+Node の問題を直すためにこのディレクトリの PATH 優先順位を下げない。rm 転送にも影響するため。
+
+## Vim
+
+同梱の Vim 設定を使う場合は、新しい Mac で NeoBundle を導入する。
+
+```fish
+mkdir -p ~/.vim/bundle
+git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
+```
+
+Vim を開いて `:NeoBundleInstall` を実行する。
+
+## アプリ設定
+
+Git 管理していないアプリ設定は `Dropbox/App` にも保存している。新しい Mac では必要なものを個別にインポートする。
