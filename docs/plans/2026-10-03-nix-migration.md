@@ -11,7 +11,7 @@
 次のセッションは以下から再開する。
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
-2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
+2. **Hermes の公式 Flake パッケージのみの採用・固定ビルドは完了。agent-device は未回答。** ユーザー承認の Herdr 別ペイン（sandbox 外）で固定構成をビルドし、生成物を確認した。Hermes の起動・サービス接続・実機適用は未実施。T6・T7 の接続と残る補完判断から再開する。
 3. **残る判断は T3 の補完、Shepherd 本体、Zerdr の実行元、未配置 cua-driver。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。T6・T7 は本体／起動元の確定後に接続する。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
@@ -45,7 +45,7 @@
 - [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `config/nix/home/packages.nix` と `config/nix/darwin/homebrew.nix`。
 - [x] gomi / dotenvx / Agent Safehouse、Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準定義へ統一。`44688a4`、`23a7c38`。独自 package 定義・専用 updater は削除済み。
 - [x] 55 cask・22 App Store アプリ・補完 formula 7件を宣言し、生成物を確認。Homebrew の自動更新・upgrade・cleanup と PostgreSQL の start/restart は無効。**宣言とビルドのみで、Homebrew bundle は未実行。**
-- [ ] **承認待ち: Hermes** — 公式 Flake の `packages.aarch64-darwin.default` をパッケージのみ採用する案。root lock で入力を固定し、サービスモジュールは取り込まない。承認後に input 追加・評価・ビルドを行う。独自依存を未検証で共通 nixpkgs へ follows しない。
+- [x] **Hermes パッケージの採用・固定ビルド** — 公式 Flake の `packages.aarch64-darwin.default` のみを `home.packages` へ追加し、input と root lock を接続した。サービスモジュール・独自 package 定義は追加せず、独自依存を未検証で共通 nixpkgs へ follows しない。既存4 input の内容保持、構文、固定 snapshot の評価・ビルド、生成 CLI の参照先を確認。Safehouse の公開ソース参照拒否後、ユーザー承認の Herdr 別ペインで検証した。review base は `f71f25d`。サービス接続・実起動は T6・T7 に残る。
 - [ ] **承認待ち: agent-device** — 既存 mise の npm backend を残す案。0.21.19 の macOS helper はパッケージ配下で Swift ビルドするため、単純な Nix store 配置はできない。承認後に native TOML の宣言、Node 要件、導入手順を接続する。npm の版固定と推移依存全体の固定を同一視しない。
 - [ ] **追加で判明: Shepherd 本体** — 現行は npm の `@ryonakae/shepherd@0.5.0` で、`~/.local/bin/shepherd` が mise の Node 24.18.0 と npm 実体を直接指す wrapper。package metadata の Node 要件は `>=24.18.0`（pnpm は `>=11.9.0`）。Nix 共通 Node 22 と単純には置換できない。本体の補完・runtime 所有権を確定するまで、plugin の固定だけで全機能復元済みとしない。
 - [ ] **追加で判明: Zerdr 実行元** — PATH の CLI は Homebrew 0.8.0 だが、現 Herdr manifest は開発 checkout の release executable を指す。どちらを移行先とするか確認し、開発版を公開版へ無断で置換しない。
@@ -92,7 +92,7 @@
 
 ### T7. Hermes サービス・Hindsight — 停止待機のみ修正済み
 
-Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサービスを起動しない構成を作る。
+Hermes 本体の採用と T3 の構成評価・ビルドは完了。ここではこの Mac のサービスを起動しない構成を作る。
 
 - [ ] `config/nix/home/hermes.nix` と既存 gateway / dashboard wrapper・管理関数を接続し、plist の所有者を一つにする。現在の wrapper は `~/.hermes/hermes-agent/venv/bin/hermes` 前提なので、パッケージ追加だけで済ませない。
 - [x] `__hermes_gateway_wait_pid_die.fish` のタイムアウトを失敗に変更し、stop / restart / update の全3呼び出しで後続の bootout / bootstrap / 本体更新を中止する。source・生成配置の fish 構文、byte 一致、差分、固定 lock ビルドで確認。実サービス・待機の動作検証や回帰テストは実施していない。
@@ -208,7 +208,8 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 | dotenvx, agent-safehouse | 共通 nixpkgs | gomi と合わせて現行版の維持より標準定義での管理を優先する |
 | herdr, opencode, pi-coding-agent | 共通 nixpkgs の標準定義 | 本体と設定配置を分離し、現行版維持の override は作らない |
 | claude-code@latest, codex, antigravity-cli（cask） | 共通 nixpkgs の標準定義 | GUI cask と区別し、旧 CLI 導入物の整理は切替後 |
-| Hermes, agent-device | 補完案の承認待ち | 調査済み。未回答の提案と採用条件は T3 |
+| Hermes | 公式 Flake のパッケージのみ | 採用・固定ビルド済み。サービス接続は T7 |
+| agent-device | 補完案の承認待ち | 未回答の提案と採用条件は T3 |
 | @ryonakae/shepherd（npm） | 本体・Node 24 runtime の扱いが未確定 | plugin から実依存を確認。共通 Node 22 だけでは不足 |
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
 | mise | Nix の CLI、プロジェクト用途のみ | 共通ランタイムの二重管理を解消 |
@@ -238,9 +239,9 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/y61zyqbiaippkp53347vm1wp5hpglw8m-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/jizf1lsbvndqwjhl7rz60wr80w4vj3wp-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成に加え、Hermes 本体も同じ lock 検査・snapshot・check/build 処理で検証 |
+| 最新 Darwin 成果物 | `/nix/store/1lq48zdz3dp47fx32b4vwfalmab0g863-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/lark5ra4l1ca7zszjj4s2s5xq7wygj68-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -321,6 +322,17 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - 固定 Herdr 0.9.1 の source で `--ref` checkout、registry 保存、再 install、config/state 分離を確認。現 Git plugin 3件は通常の untracked を含め clean。registry 上はこの3件と Zerdr の全4件が enabled。ignored build artifact の健全性は保証せず、公開 commit archive の manifest・主要7ファイルと現実体の一致を別途確認した。
 - tracked config 2件は Agent Context の read/mtime監視と Worktrunk の設定読取だけで、本番の書込処理は別state領域。書き込み可能にする根拠はなく、既存T4配置を変更しない。
 - 公開 Zerdr v0.8.0 source では、標準 setup が実行元を含む manifest を生成して Herdr に link し、Zed tasks を merge する。現manifestの開発版と PATH の Homebrew 版の違いは未解決。実plugin install・link・setup・サービス操作・テストは行っていない。
+
+### Hermes パッケージ追加の検証記録
+
+- ユーザーの「hermesはそれでok」で公式 Flake のパッケージのみの採用を承認。`flake.nix` / `flake.lock` / `home/packages.nix` と更新手順を変更。`home-manager.extraSpecialArgs` の既存 `inputs` を使用し、公式サービスモジュールは import していない。wrapper・plist・実 HOME は未変更。
+- root lock の Hermes は `3251a180f01ad21ae059862997307bf75f3e3f0a`。Nix が既存 nixpkgs / HM の node 名を変更したが、root から解決した既存4 input の内容は変更前と完全一致。通常 build と同じ `locked_source` の host leaf 以外の不変検査も通過。
+- 当初は空き容量約3.1 GiBと Safehouse の参照拒否で中断。ユーザーが容量を確保し、sandbox 外での評価、続いて実ビルドを承認した。実ビルド前の空きは約34 GiB。現 lock の構成は dry-run で1,261 derivation と807取得 path（712.4 MiB download / 2.7 GiB unpacked）を要求した。
+- 現 lock の固定 source snapshot と非秘密 host で `darwinConfigurations.mac.system.drvPath` を評価したところ、`/nix/store/kgy3pr5z9l4cangknb37d3aalx5lp0vz-source/.envrc` の参照が `Operation not permitted` で失敗。権限・policy を変更せず、その時点では評価を中断した。Nix format・差分検査は成功。
+- 承認された sandbox 外の評価は `allow-import-from-derivation=false` で成功。続く実ビルドも、通常入口の `locked_source` による host leaf 以外の不変検査を通し、同じ snapshot に `flake check` / `build --no-link` を実行して成功。root lock の byte 不変も確認。snapshot は `/nix/store/hkajg0vfb9sa2ay32sbzy7vlf6310jjf-source`、ログと結果は `/tmp/dotfiles-hermes-build.F14YGKOK/`。現行 Claude の未コミット設定も snapshot に含むが、コミット対象からは除外する。
+- HM の `hermes` / `hermes-agent` / `hermes-acp` は `/nix/store/6rpwq8raqms4pqzac6v5gb3jxykqcx6n-hermes-agent-0.0.0/bin/` を参照。公式の install stamp は固定 commit・`distribution=nix`・`updateMechanism=external`。表示版 `0.0.0` は上流定義のままで、独自 override はせず commit を識別子にする。3 wrapper と Darwin / HM activation の指定 shell による構文検査を通過。生成 launch agent は0件。
+- `f71f25d` からの5ファイルは事前に独立した read-only reviewer が静的確認し、新規の blocking/high・decision required・medium/low 指摘なし。既存 input の保持と package-only の接続を確認。評価・ビルド・生成物の確認は親側が担当した。
+- 実 HOME への適用、Hermes の初期化・起動、サービス操作、回帰テスト、GC・データ削除は未実施。T6・T7 のサービス接続と T9・T10 の切替は別途残す。
 
 ### 残る最終確認
 
