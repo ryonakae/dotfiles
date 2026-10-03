@@ -12,7 +12,7 @@
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
-3. **次は T5 の外部スキル固定と Herdr 拡張、T6 の起動経路を進める。** Pi の可変設定3件、静的ファイル7件、自作スキル12件を接続済み。通常の config 配置を基本とし、具体的な書き込みがある Pi 設定だけ標準 merger を使用。外部拡張の本体版は固定したが、新規取得時の推移依存・全機能の復元検証は残る。
+3. **次は T5 の Herdr 拡張・statusline 依存、T6 の起動経路を進める。** Pi の可変設定3件、静的ファイル7件、自作12＋現行外部13スキルを接続済み。外部スキルは現行内容に一致する commit と hash を固定した。Pi 拡張は本体版を固定したが、新規取得時の推移依存・全機能の復元検証は残る。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
@@ -69,7 +69,8 @@
   - `checkPiConfigPaths` は write boundary より前に、対象と親ディレクトリが別の実体へリンクしていれば中止する。既存リンクを通じて正本や store を書き換えない。初回は T9 で旧リンクを退避し、アプリを止めて書き込み可能な実ファイルを準備する。標準 merger は完全なロックではないため、再適用時も Pi 停止が必要。review base は `c7855a0`。
 - [ ] Claude 設定が参照する `~/.claude/hooks/herdr-agent-state.sh` の Herdr 側の生成・復元経路と、`npx -y ccstatusline@latest` の固定方法を接続する。hook は Git 管理に存在しないため、今回の配置には含めていない。T9 の完成構成では未復元の参照を残さない。
 - [x] `home/skills.nix` で自作12スキルを共通・Claude 向けの個別ディレクトリとして配置。Claude 固有の同名優先とドット始まり除外を維持。親ディレクトリ全体や `synced` を置き換えない。Antigravity は既存どおり共通置き場への参照リンクで、正本自体は store に配置。
-- [ ] 外部スキルの取得元 revision/hash を固定して接続。`config/skills-lock.json` の14登録は12リポジトリ由来だが、revision がない。ホームには13実体があり `cua-driver` は未配置。公開ソースとの照合を進め、未取得・差分を判断する。computedHash を revision / Nix hash として扱わない。
+- [x] `home/external-skills.nix` で現行の外部13スキル（12 repo）を commit と展開後 hash で固定し、標準 `fetchFromGitHub` と個別 `home.file` で接続。公開 HEAD と一致する9件に加え、herdr / tdd / worktrunk / readme-creator は現行内容に一致する過去 commit を特定した。内容の更新や別スキルへの置換はしない。skill-creator の `.pyc` 2件だけは生成キャッシュとして復元しない。
+- [ ] `config/skills-lock.json` は14登録・13 repoで、うち `cua-driver` は現行 HOME に未配置。復元対象へ戻すかを確認し、旧 lock の廃止は T11 で行う。computedHash は revision / Nix hash として使わない。
 - [x] Pi の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `subagents.json` / agent 定義3件 / 通知拡張を通常配置。`subagents.json` は上流がユーザー側を読み取り、UI の保存はプロジェクト側に行うことを確認。npm 7件は既存導入版、pi-subagents は導入済み commit `be898c753e9eb32cf1315f63b1c1f5ef0cf6f782` に native settings で固定し、公開取得可能性を確認。
 - [ ] Pi 外部拡張の新規取得・実行時機能の復元を確認する。標準 Pi は npm / Git の可変インストール先を使用し、activation からネットワーク取得や自己更新は実行しない。トップレベルの版固定は推移依存全体の固定ではない。現行の導入実体は Nix Pi 0.99.1 の loader で10 entry point をエラー・警告なしに読み込めたが、新規依存解決・認証付き機能は未検証。
 - [ ] Herdr の外部 plugin 3つと Zerdr 提供 plugin を接続。取得 revision、アプリとの対応、可変状態を確認する。plugin 実体・session・log を Git 管理へ追加しない。
@@ -106,7 +107,7 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 - [ ] T6・T7 と整合する `switch` を `scripts/dotfiles.{sh,py}` に実装。build と同じ lock 検査・snapshot を使い、未停止サービスや危険な衝突があれば適用を中止する。
 - [ ] 配置先のファイル種別・リンク先・所有権を確認し、旧リンク・実ファイル・Fisher / Yazi plugin・shell 初期化・plist の退避先と復旧先を決める。未知のファイルを force overwrite しない。
   - Zellij 削除後、`~/.config/fish/functions/zl.fish` と `~/.config/zellij/config.kdl` に削除済み正本へのリンクを確認。ホーム側は未変更。切替時にこの既知の旧リンクの整理を確認する。Brewfile の実ファイル、インストール済み本体、保存セッション・履歴は今回変更していない。
-- [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。既存外部スキル実体や Claude の `synced` はまとめて置き換えない。Pi の設定保存と適用の競合を避ける停止手順も含める。
+- [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。外部13スキルの既存実ディレクトリは個別に確認・退避し、未管理スキルや Claude の `synced` はまとめて置き換えない。Pi の設定保存と適用の競合を避ける停止手順も含める。
 - [ ] 人間に実 `config.fish` との差分を確認してもらい、旧 universal PATH・PGDATA 等の未確認値を整理する。
 - [ ] T1〜T8 の準備完了後、完成構成をビルドし、生成物・OS 変更範囲・初回の非 Nix 構成への復旧手順を確認する。
 - 完了条件: 切替時に変更するものと戻し方をユーザーへ具体的に提示できる。`switch` の実行は T10 の承認後。
@@ -230,9 +231,9 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi の可変設定・自作スキル配置と gateway 待機 timeout 修正までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/shnhnv9mzdg48n7qyf60q9h8n2d6l6ar-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/fv8hskbg9ndifaiw9v2m9gjs8zc3w3zd-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi の可変設定・自作12＋外部13スキル配置と gateway 待機 timeout 修正までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/4gqw4shkjk9hr3rg2a4nq0j92jvcj0jw-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/yp8qss9v3b3d54fnlcnrgqvy0fvx9w91-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -249,6 +250,8 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 - `0b581d3..1f56deb` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。既存の hook / plugin / 可変設定の残作業を含む全移行の完了承認ではない。
 - Vim はプラグイン維持から最小構成へ方針変更を承認済み。`7785d62..505c0a0` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。ビルド・構文・生成物の確認も成功。Zellij / ZAM は削除方針へ変更済みで、取得方法の判断は不要。push・実機適用・Plan archive は未実施。
+
+- `c7855a0..b811f39`（Pi・自作スキル）と `b811f39..4273041`（gateway timeout）を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。標準 merger 実装・生成物の動作や実サービスはレビュー側では再実行せず、親側のビルド・ソース確認と区別する。gateway の既存の停止コマンド失敗・PID取得失敗は T7 の残作業。
 
 ### Vim の検証記録
 
@@ -269,6 +272,12 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - 自作12スキルの共通・Claude 配置を確認し、Git 管理ファイル延べ226件が byte 一致。`.disabled` を含めず、親全体を symlink にしないこと、Antigravity が共通置き場を参照することを確認。Nix format・JSON parse・差分検査も成功。
 - Pi の固定候補は導入済み metadata と npm 公開 version / integrity、Git 公開 HEAD を照合。Nix Pi 0.99.1 の loader を一時 HOME・空環境・offline で使用し、外部8パッケージ＋通知拡張の10 entry point を errors/warnings なしでロード。現在の依存実体での初期化確認であり、取得からの完全復元・UI 操作・認証付き動作を保証しない。
 - merger の実 HOME への適用、停止・再起動、外部パッケージの再インストール、回帰テスト・fixture・stub は実施していない。現行 Claude の未コミット差分もビルド snapshot に含まれるが、コミット対象からは除外する。
+
+### 外部スキルの検証記録
+
+- 公開 Git と commit 指定アーカイブで現行13スキルを照合。HEAD と不一致の4件は depth=256 の blob-filtered clone で過去 tree を比較し、一致 commit のアーカイブでも全ファイル・実行ビット一致を確認。GitHub API は匿名 rate limit の403だったため公開 Git を利用し、認証・権限は変更していない。
+- 固定 lock の通常 build が全12ソースの `fetchFromGitHub` を含め成功。生成された共通・Claude 各25スキルのうち外部13件・延べ140ファイルが現行配布内容と byte / 実行ビット一致。親ディレクトリ全体を置き換えず、`.disabled`・Python cacheを含めないことを確認。Nix format・差分検査も成功。
+- 実 HOME の外部スキル実体は未変更。初回の衝突解消・退避・参照更新、未配置 cua-driver の判断、旧取得手順の廃止は未完了。スキル内部の CLI コマンド実行・回帰テスト・fixture・stub は実施していない。
 
 ### 残る最終確認
 

@@ -1,4 +1,9 @@
-{ config, lib, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   skillSources =
     directory:
@@ -10,7 +15,7 @@ let
       )
     else
       { };
-  shared = skillSources ../../.agents/skills;
+  shared = (import ./external-skills.nix { inherit pkgs; }) // skillSources ../../.agents/skills;
   claude = shared // skillSources (../../.claude + "/skills");
 in
 {
