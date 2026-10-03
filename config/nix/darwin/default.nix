@@ -1,6 +1,9 @@
 { machine, ... }:
 {
-  imports = [ ./homebrew.nix ];
+  imports = [
+    ./homebrew.nix
+    ./preferences.nix
+  ];
 
   nixpkgs.hostPlatform = "aarch64-darwin";
   system.stateVersion = 6;
