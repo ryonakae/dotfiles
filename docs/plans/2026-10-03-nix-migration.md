@@ -10,18 +10,15 @@
 
 次のセッションは以下から再開する。
 
-1. `git status --short` と直近の差分を確認する。保持する既存変更は下記の Pi 2ファイルと、コミット後に再更新された Claude 設定。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
+1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
-3. **次は T5 の Pi 設定・拡張を接続する。** Zellij / ZAM は未使用とのユーザー指示で移行対象から削除済み。 Vim はユーザー承認により外部プラグインなしへ簡素化し、配置・ビルドを確認済み。 Zed / Claude / OpenCode / pi-auto-name と Herdr の設定配置は完了。最新の合意は「基本は config ファイルを管理して配布する」。全設定の分類・分割や可変設定の設計を先行ゲートにしない。書き込みが確認された Pi 設定は T5 で扱う。T1・T8 の調査も独立して進められる。
+3. **次は T5 の外部スキル固定と Herdr 拡張、T6 の起動経路を進める。** Pi の可変設定3件、静的ファイル7件、自作スキル12件を接続済み。通常の config 配置を基本とし、具体的な書き込みがある Pi 設定だけ標準 merger を使用。外部拡張の本体版は固定したが、新規取得時の推移依存・全機能の復元検証は残る。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
 
-- 既存未コミット変更:
-  - `config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`: `desired: true → false`
-  - `config/.pi/agent/settings.json`: `lastChangelogVersion: 0.99.2 → 1.0.0`
-  - 現在値を維持して移行へ取り込む承認は取得済みだが、まだ未コミット。動作中の Pi が更新するため、対象を編集・取り込む直前にも差分を確認し、上書き・巻き戻し・一括 stage をしない。
-- 再開中に検出した `config/.claude/settings.json` の `model: "fable"` 追加と `permissions` の順序変更は、ユーザーの `ok` により `1f56deb` へ取り込み済み。その後の `modelSettings.claude-fable-5-1.effortLevel: "high"` 追加と `model` の順序変更は別プロセスによる新しい未コミット差分。今回のビルド・commit には含めておらず、上書きしない。
+- Pi の承認済み変更（fast-mode の `desired: false`、settings の `lastChangelogVersion: 1.0.0`）は T5 の実装へ取り込んだ。動作中の Pi が更新するため、以降も編集・stage の直前に差分を確認し、他プロセスの変更を上書き・巻き戻し・一括 stage しない。
+- Claude 設定の初回 `model: "fable"` 追加は `1f56deb` へ取り込み済み。その後の未コミット差分は他プロセスによるものとして保持する。最新の確認では `modelSettings.claude-fable-5-1.effortLevel: "high"` 追加と `model` の削除がある。今回のコミット対象に含めず、差分を再確認する。
 - 最後に確認した環境は Safehouse 内・`HERDR_ENV=1`、macOS 26.2 / arm64。新セッションでは環境を再確認する。Nix は `/nix/var/nix/profiles/default/bin/nix` で利用できる。
 - ユーザー指示により **回帰テスト・fixture・stub の追加と再実行はしない**。構文、差分、ソース・生成物の確認、Nix 評価・ビルドで検証する。
 - この Mac に Hermes の既存環境はない。ここで停止・データ移行・初期化・自動起動をしない。別 Mac の稼働環境の移行は、その Mac で承認・停止・バックアップを確認する。
@@ -60,18 +57,21 @@
 - [x] Vim は「ほぼ使わないため管理しやすさ優先」というユーザー承認に従い、外部プラグインなしの最小構成へ変更。既存の標準 `pkgs.vim` と `home/files.nix` による `.vimrc` の配置だけを使用する。NeoBundle / NeoComplete / Copilot 等の専用設定、試作の `home/vim.nix` と限定 unfree 許可を除去。基本の表示・検索・インデント設定を残した。review base は `7785d62`。現行 HOME も `.vimrc` の正本へリンクしているため、次回起動から最小設定になる。旧 `~/.vim/bundle` の実体は未削除。
 - [x] Zellij / ZAM は未使用のため削除するユーザー承認を取得。Nix・Brewfile example の導入宣言、Zellij config / dev layout、fish の `zl` 関数を削除。生成環境に本体・設定・関数が含まれないことを確認。Ghostty の Option 設定値は維持し、コメントだけ汎用化。review base は `f99a92c`。実機の本体・保存セッション・ZAM の私的プロジェクトは削除せず、汎用 `use-zellij` スキルと無効化済みの Pi 命名設定も残す。
 - [x] Zed / Claude / OpenCode / pi-auto-name の設定を `home/files.nix` から既存ファイルのまま配置。通常の `home.file` / `xdg.configFile` を使用し、生成された4ファイルと正本の一致を確認。アプリ内からの永続設定変更の扱いは切替前に確認する。Claude の Herdr hook・statusline 依存は T5 に残す。
-- [ ] Pi の `config/.pi/agent/settings.json` は T5 へ移して対応する。起動に伴う `lastChangelogVersion` の更新が既存差分に現れており、`/settings` による保存もある。単純な store symlink では書き込み先を確保できないため、接続は未実装。
+- [x] Pi の `settings.json` は `home/pi.nix` から標準 `mkImpureConfigMerger` で書き込み可能な実ファイルへ配置する構成を追加。起動時・`/settings` の書き込みを妨げる store symlink は作らない。実際の適用は T9・T10。
 - [x] Herdr の `config.toml`、plugin 設定2ファイル、補助スクリプト2ファイルを個別に接続。生成された5ファイルとの一致と shell script の実行権限を確認。plugin 本体・tests・session・log は含めない。plugin 本体は T5、サーバーへの設定反映は T9・T10 と分ける。
 - 完了条件: T1 で確認した config ファイルすべてに配置・例外対応・不要・手動のいずれかの扱いが付き、必要な生成物を確認できる。具体的な支障があるファイルの例外対応と、拡張の完了判定は T5。
 - 移行中の注意: `fish_variables` は追跡から除外済みだが実ファイルを保持。旧 mise `config.toml` は現行環境用として未変更。新しい `config.base.toml` は適用後に HOME 側の `mise/config.toml` となる。旧ファイルの整理は T10・T11。
 
-### T5. 配布の例外対応・拡張・スキル — 調査中、配置は未実装
+### T5. 配布の例外対応・拡張・スキル — 進行中
 
 - [x] Zed / Pi の標準 HM モジュールを調査。Zed は `mutableUserSettings` がある一方、Pi は設定を store にリンクする方式。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。
-- [ ] T4 で具体的な書き込みの必要性・支障が確認されたファイルだけ、標準機能による対応を確認する。最初の対象は Pi の `settings.json`（起動時の changelog 更新・`/settings` の保存）。対象ファイル、支障の出る操作、根拠、再適用時の扱いを記録する。全アプリの設定を事前に細分化したり、独自 merge 処理を作ったりしない。通常配置だけで済むファイルには例外対応を設けない。
+- [x] Pi の `settings.json`、`extensions/pi-footer.json`、`extensions/pi-gpt-fast-mode/config.json` に実際の書き込み経路を確認し、標準 `lib.hm.generators.mkImpureConfigMerger` を接続。固定済み HM の experimental API を使い、独自 merge は作らない。再適用時は定義値が優先、未定義キーは保持、配列は定義値に置換。新規ファイルは600、既存の mode は保持。設定削除は実ファイルのキー削除を意味しない。
+  - `checkPiConfigPaths` は write boundary より前に、対象と親ディレクトリが別の実体へリンクしていれば中止する。既存リンクを通じて正本や store を書き換えない。初回は T9 で旧リンクを退避し、アプリを止めて書き込み可能な実ファイルを準備する。標準 merger は完全なロックではないため、再適用時も Pi 停止が必要。review base は `c7855a0`。
 - [ ] Claude 設定が参照する `~/.claude/hooks/herdr-agent-state.sh` の Herdr 側の生成・復元経路と、`npx -y ccstatusline@latest` の固定方法を接続する。hook は Git 管理に存在しないため、今回の配置には含めていない。T9 の完成構成では未復元の参照を残さない。
-- [ ] 外部・自作スキルの取得元固定と配置を接続。`config/skills-lock.json` には取得可能な revision がなく、そのままでは再現用 lock にならない。Claude 同名優先、`.disabled` 除外、Antigravity の参照を維持する。
-- [ ] Pi の拡張、`config/.pi/agent/` の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `agents/` / `subagents.json` を接続。現在の settings は版なし npm / Git master 参照を含む。標準の拡張管理で固定し、実行時書き込み先を分離する。既存 Pi 2ファイルの変更は冒頭の扱いに従う。
+- [x] `home/skills.nix` で自作12スキルを共通・Claude 向けの個別ディレクトリとして配置。Claude 固有の同名優先とドット始まり除外を維持。親ディレクトリ全体や `synced` を置き換えない。Antigravity は既存どおり共通置き場への参照リンクで、正本自体は store に配置。
+- [ ] 外部スキルの取得元 revision/hash を固定して接続。`config/skills-lock.json` の14登録は12リポジトリ由来だが、revision がない。ホームには13実体があり `cua-driver` は未配置。公開ソースとの照合を進め、未取得・差分を判断する。computedHash を revision / Nix hash として扱わない。
+- [x] Pi の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `subagents.json` / agent 定義3件 / 通知拡張を通常配置。`subagents.json` は上流がユーザー側を読み取り、UI の保存はプロジェクト側に行うことを確認。npm 7件は既存導入版、pi-subagents は導入済み commit `be898c753e9eb32cf1315f63b1c1f5ef0cf6f782` に native settings で固定し、公開取得可能性を確認。
+- [ ] Pi 外部拡張の新規取得・実行時機能の復元を確認する。標準 Pi は npm / Git の可変インストール先を使用し、activation からネットワーク取得や自己更新は実行しない。トップレベルの版固定は推移依存全体の固定ではない。現行の導入実体は Nix Pi 0.99.1 の loader で10 entry point をエラー・警告なしに読み込めたが、新規依存解決・認証付き機能は未検証。
 - [ ] Herdr の外部 plugin 3つと Zerdr 提供 plugin を接続。取得 revision、アプリとの対応、可変状態を確認する。plugin 実体・session・log を Git 管理へ追加しない。
 - 完了条件: 認証・状態を store に入れず、必要な設定と拡張を復元できる。永続設定変更を制限する場合は、その具体的な影響を切替前に説明・確認する。
 
@@ -105,6 +105,7 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 - [ ] T6・T7 と整合する `switch` を `scripts/dotfiles.{sh,py}` に実装。build と同じ lock 検査・snapshot を使い、未停止サービスや危険な衝突があれば適用を中止する。
 - [ ] 配置先のファイル種別・リンク先・所有権を確認し、旧リンク・実ファイル・Fisher / Yazi plugin・shell 初期化・plist の退避先と復旧先を決める。未知のファイルを force overwrite しない。
   - Zellij 削除後、`~/.config/fish/functions/zl.fish` と `~/.config/zellij/config.kdl` に削除済み正本へのリンクを確認。ホーム側は未変更。切替時にこの既知の旧リンクの整理を確認する。Brewfile の実ファイル、インストール済み本体、保存セッション・履歴は今回変更していない。
+- [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。既存外部スキル実体や Claude の `synced` はまとめて置き換えない。Pi の設定保存と適用の競合を避ける停止手順も含める。
 - [ ] 人間に実 `config.fish` との差分を確認してもらい、旧 universal PATH・PGDATA 等の未確認値を整理する。
 - [ ] T1〜T8 の準備完了後、完成構成をビルドし、生成物・OS 変更範囲・初回の非 Nix 構成への復旧手順を確認する。
 - 完了条件: 切替時に変更するものと戻し方をユーザーへ具体的に提示できる。`switch` の実行は T10 の承認後。
@@ -228,9 +229,9 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。アプリ・Herdr・最小 Vim 設定と Zellij / ZAM 削除までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/551khmqx9xlncsjad2xfrnvgipbrmdg7-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/fh4r5niaj91h2d5r22a2vb4r45sj7dcj-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi の可変設定・指示文と自作スキル配置までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/d9j6i0frk5pw53hnd5qh3i6a6cdggfn1-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/ip6x4xhgmx3fxvj26cj6i8zmpjc456yj-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -260,6 +261,13 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - 固定 lock の通常 build 成功。上表の HM 成果物に `home-path/bin/zellij`、`home-files/.config/fish/functions/zl.fish`、`home-files/.config/zellij` が存在しないことを確認。
 - 生成 Ghostty 設定は正本と一致し、Option 設定値は変更なし。生成 fish 設定の `fish --no-execute`、Brewfile example の `ruby -c`、Nix format、差分検査を通過。
 - 汎用スキル・履歴・無効化済みの Pi 命名設定を除き、管理中の設定・スクリプト・導入宣言に Zellij / ZAM / `zl` の実行参照が残らないことを確認。回帰テスト追加・再実行、配布・サービス操作・実機アンインストールは未実施。
+
+### Pi・自作スキルの検証記録
+
+- 固定 lock の通常 build 成功。Pi 静的7ファイルは正本と一致し、可変3ファイルは `home-files` の store symlink 対象にない。生成 activation は旧リンク検査 → write boundary → linkGeneration → merger の順で、shebang の Nix Bash 5.3 で構文検査成功。macOS 既定 Bash 3 では HM 既存の `-v` 構文を解釈できないため、生成物の指定 shell を使う。
+- 自作12スキルの共通・Claude 配置を確認し、Git 管理ファイル延べ226件が byte 一致。`.disabled` を含めず、親全体を symlink にしないこと、Antigravity が共通置き場を参照することを確認。Nix format・JSON parse・差分検査も成功。
+- Pi の固定候補は導入済み metadata と npm 公開 version / integrity、Git 公開 HEAD を照合。Nix Pi 0.99.1 の loader を一時 HOME・空環境・offline で使用し、外部8パッケージ＋通知拡張の10 entry point を errors/warnings なしでロード。現在の依存実体での初期化確認であり、取得からの完全復元・UI 操作・認証付き動作を保証しない。
+- merger の実 HOME への適用、停止・再起動、外部パッケージの再インストール、回帰テスト・fixture・stub は実施していない。現行 Claude の未コミット差分もビルド snapshot に含まれるが、コミット対象からは除外する。
 
 ### 残る最終確認
 
