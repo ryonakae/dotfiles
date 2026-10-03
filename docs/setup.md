@@ -46,7 +46,7 @@ bash scripts/dotfiles.sh build
 別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
-本体は nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+本体は nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
 
 ```fish
 bash scripts/dotfiles.sh update nixpkgs

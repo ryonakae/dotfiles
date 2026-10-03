@@ -13,7 +13,7 @@
 - 現在と今後の Apple Silicon Mac を、ツール・アプリ・ユーザー設定・macOS 設定を含めて再構築できるようにする。実機で意図的に導入されたものを基準とし、Brewfile.example だけを移す構成にしない。依存ライブラリと直接利用するツール、名称変更・別系列を区別する。
 - upstream Nix の multi-user daemon、Flakes、nix-darwin、統合した Home Manager を構成の中心にする。ツールは原則 Nix、macOS 対応・保守負担に問題があるものは Homebrew / App Store 等で補完し、導入一覧の正本を Nix に集約する。
 - 共通 nixpkgs は rolling 系列を使い、通常の適用は flake.lock で固定済みの標準パッケージから行う。AI ツールも原則として nixpkgs 単位でまとめて更新し、個別・AI グループ更新は必須にしない。外部拡張・プラグイン・スキルの固定にも既存の標準管理を優先する。一般 GUI アプリの自動更新は許容し、flake.lock による同一版復元とは区別する。
-- 設定はリポジトリを編集して適用する方式を基本にする。元の形式の設定・スクリプトも利用でき、全内容を Nix 記法へ翻訳する必要はない。既存の即時反映方式を残すためだけの out-of-store link は使わない。
+- 設定はリポジトリを編集して適用する方式を基本にする。通常の設定・スクリプト本文は .fish / .toml / .json 等の元の形式で管理する。Nix は導入・連携・配置の指定を中心とし、Nix 固有の値や OS 宣言を除いて本文を埋め込まない。既存の即時反映方式を残すためだけの out-of-store link は使わない。
 - Node / Python / Ruby / Bun の共通環境は Nix に移す。mise は既存プロジェクトが必要とする用途に限る。別プロジェクトの設定を無断で変更しない。
 - dotenvx + Keychain + Safehouse を維持する。機密ファイルの直接アクセスを拒否し、共通ツール用の値は sandbox 外で復号して起動時に注入する。注入済み環境変数の利用は許容し、完全隔離を追加要件にしない。プロジェクト用秘密を共通ファイルへ混ぜない。
 - 通常 rm の gomi 転送、失敗時に実 rm へ戻さないこと、Hermes の正規停止と DB 保全を維持する。互換性優先の Safehouse 設計と既存の意図的な例外を狭めず、対話 CLI に承認モード・内蔵 sandbox の強制引数を追加しない。
@@ -46,7 +46,7 @@
 
 ### 3. 設定・拡張・秘密
 
-- 本体はパッケージ管理、設定・スクリプトの配布は Home Manager と役割を分ける。Home Manager の既存モジュールで表現できる設定はそれを使い、それ以外は元の形式のファイルを配置する。設定を配布するために本体パッケージを独自化しない。共通 AGENTS の正本を増やさず、各エージェントの参照関係を維持する。
+- 本体はパッケージ管理、設定・スクリプトの配布は Home Manager と役割を分ける。通常の設定本文は元の形式のファイルを正本にし、Home Manager はそれを読み込み・配置する。既存モジュールはパッケージ・プラグインの導入、shell 連携等に利用する。Nix profile や interpreter の store パス、nix-darwin の OS 宣言は Nix に残す。設定を配布するために本体パッケージを独自化しない。共通 AGENTS の正本を増やさず、各エージェントの参照関係を維持する。
 - アプリが書き込まないファイルは通常の宣言的配置とする。`fish_variables`、Pi の設定保存、Hermes の設定編集等は書き込み箇所を確認して扱いを分ける。ネイティブの設定 / state 分離を優先し、存在しない overlay 機能を仮定しない。
 - 同一ファイルに固定設定と実行時変更が混在するものは、ファイル単位で所有権と再適用時の意味を記録する。必要なら非秘密の宣言から可変ファイルを生成するが、元ファイルを退避し、未知のキー・実秘密を黙って削除しない。汎用の独自 merge 基盤は作らない。アプリの永続設定変更を制限する必要がある場合は、その具体的な操作への影響を切替前に確認する。
 - 外部スキルは取得元 revision と内容 hash を固定して `~/.agents/skills/` へ配置し、現行の利用先から参照する。Claude 固有スキルの同名優先、`.disabled` 等の非配布、Antigravity の共通参照を保ち、ディレクトリ全体の置換で他のスキルを隠さない。`skills-lock.json` の computedHash だけを再現用 lock と扱わず、最新版を取り直す experimental_install を新規 Mac の復元手順から外す。自作スキルと Hermes の自己更新データは区別する。
@@ -100,6 +100,8 @@
   - `home/fish.nix` と `home/protection.nix` を追加。既存の fish 関数・補完・SSH socket 補完をファイル単位で配置し、bobthefish / fzf plugin は共通 nixpkgs の固定 source を使う。mise のグローバル tools をなくしてプロジェクト用途へ限定し、共通ランタイムは Nix profile を優先する。PATH の変更時にも `.local/bin` を先頭へ戻す handler を配置する。
   - rm の処理は既存実装を再利用し、生成物の shebang だけ Nix の Python に固定。gomi 設定と Safehouse の共通 wrapper / profile も store から配置する。秘密・認証・既存サービスを実行していない。`fish_variables` は追跡から除外したが、実ファイルは保持した。実機 config.fish は秘密を含む保護対象なので読まず、example 由来の共通設定との差分確認は切替前の人間の作業として残す。example の PGDATA は実機の DB 保存先と確認できないため採用しない。
   - 通常 build が成功し、`/nix/store/ddk55bg4jffh0xi2hmdggqmc1dpqqgkw-darwin-system-26.11.4cff07d` を生成。生成された33件の fish ファイルと共通 wrapper の構文、rm の Python 構文と interpreter を確認した。回帰テスト・ダミー試験は実行していない。その他の設定、AI 本体・拡張、Hermes のサービス統合は引き続き未完了で、実機へは未適用。
+  - 設定本文を Nix に埋め込まない追加方針を反映。fish の共通初期化・テーマ・rm 用 PATH handler を `config/.config/fish/{shell-init,interactive-init}.fish`、mise の共通設定を `config/.config/mise/config.base.toml` へ分離した。`home/fish.nix` は導入・連携・ファイル参照と Nix profile のパス指定に限定。gomi / Safehouse / rm は既に外部ファイルが正本で、rm の interpreter 固定のみ Nix で行う。
+  - 旧 mise `config.toml` は現行環境で参照され得るため変更せず、切替後は `config.base.toml` を HOME 側の `mise/config.toml` として配置する。旧ファイル・配布経路は集中切替時に整理し、二重管理を残さない。新しい設定の fish / TOML 構文と生成物を確認し、通常 build が成功（`/nix/store/7v6w1yiij5a73svjxhpvdyn2fn15hgrg-darwin-system-26.11.4cff07d`）。実機には未適用。
 - [ ] **保護・起動・PATH の統合**: `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数、gateway / dashboard wrapper、rm wrapper の参照先を Nix 環境へ接続する。
   - 共通ロジックとサービス固有の feature 差分を保つ。Safehouse の HOME / profile 順・秘密保護・TMPDIR 補正・環境継承・引数透過は既存実装と生成物を確認して維持する。共通ランタイム移行に伴う mise / Homebrew 固定パスを解消する。
 - [ ] **Hermes のサービスと安全な適用**: `config/nix/home/hermes.nix`、`hermes-gateway.fish`、`hermes-dashboard.fish`、待機 helper へ、固定パッケージ・単一の plist 所有者・停止確認・起動失敗時の扱いを実装する。
