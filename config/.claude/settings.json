@@ -1,5 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
   "hooks": {
     "Notification": [
       {
@@ -25,9 +28,6 @@
       }
     ]
   },
-  "permissions": {
-    "defaultMode": "bypassPermissions"
-  },
   "workflowKeywordTriggerEnabled": false,
   "statusLine": {
     "type": "command",
@@ -44,5 +44,6 @@
   "autoMemoryEnabled": false,
   "showThinkingSummaries": true,
   "skipDangerousModePermissionPrompt": true,
-  "skipAutoPermissionPrompt": true
+  "skipAutoPermissionPrompt": true,
+  "model": "fable"
 }

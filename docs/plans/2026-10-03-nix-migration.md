@@ -4,7 +4,7 @@
 
 **実装承認済み・移行準備中。基盤は完了、設定・拡張の移行が途中。upstream Nix 自体は導入済みだが、nix-darwin / Home Manager の構成は一度も実機へ適用していない。**
 
-- 確認基準: `master` の `a755571`。実装の最新追加は `d6159ed`、その後は調査記録の更新。本ファイルの今回の整理と設定配布方針の更新は、この確認基準以降の文書変更。ユーザーから既存の移行コミットを含む commit / push の依頼を受けている。リモートとの同期状態は再開時に `git status -sb` で確認する。
+- 今回の再開・review base: `0b581d340f06567478a7e86595d31affab885921`。開始時は `master` と `origin/master` が同期。T4 のアプリ設定・Herdr 設定の配置を追加し、部分構成のビルドと生成物を確認した。ユーザーから既存の移行コミットを含む commit / push の依頼を受けている。リモートとの同期状態は再開時に `git status -sb` で確認する。
 - 実装・検証・承認状態の正本はこのプラン。[dig log](../dig/2026-10-03-nix-migration.md) は合意と調査の出典であり、調査当初の「Nix 未導入」等を現在の状態として扱わない。
 - **進捗の更新場所は下の Tasks。** `[x]` は記載した成果物とその検証の完了を表し、実機適用の完了ではない。未完了項目には残作業・完了条件を記載する。撤回済みの試作は末尾の履歴に隔離した。
 
@@ -12,7 +12,7 @@
 
 1. `git status --short` と直近の差分を確認する。保持する既存変更は下記の2ファイル。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
-3. **次は T4 の残りの config ファイルを、元の形式のまま Home Manager で配置する。** 最新の合意は「基本は config ファイルを管理して配布する」。全設定の分類・分割や可変設定の設計を先行ゲートにしない。読み取り専用配置で具体的な支障が確認されたファイルだけ T5 の例外対応へ回す。その後に拡張・スキルを接続する。T1・T8 の調査も独立して進められる。
+3. **次は T4 の Vim / Zellij の依存と、T5 の Pi 設定・拡張を接続する。** Zed / Claude / OpenCode / pi-auto-name と Herdr の設定配置は完了。最新の合意は「基本は config ファイルを管理して配布する」。全設定の分類・分割や可変設定の設計を先行ゲートにしない。書き込みが確認された Pi 設定は T5 で扱う。T1・T8 の調査も独立して進められる。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
@@ -21,6 +21,7 @@
   - `config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`: `desired: true → false`
   - `config/.pi/agent/settings.json`: `lastChangelogVersion: 0.99.2 → 1.0.0`
   - 現在値を維持して移行へ取り込む承認は取得済みだが、まだ未コミット。動作中の Pi が更新するため、対象を編集・取り込む直前にも差分を確認し、上書き・巻き戻し・一括 stage をしない。
+- 再開中に検出した `config/.claude/settings.json` の `model: "fable"` 追加と `permissions` の順序変更は、ユーザーの `ok` により現在値の取り込みを承認済み。T4 の配置追加と合わせて取り込む。
 - 最後に確認した環境は Safehouse 内・`HERDR_ENV=1`、macOS 26.2 / arm64。新セッションでは環境を再確認する。Nix は `/nix/var/nix/profiles/default/bin/nix` で利用できる。
 - ユーザー指示により **回帰テスト・fixture・stub の追加と再実行はしない**。構文、差分、ソース・生成物の確認、Nix 評価・ビルドで検証する。
 - この Mac に Hermes の既存環境はない。ここで停止・データ移行・初期化・自動起動をしない。別 Mac の稼働環境の移行は、その Mac で承認・停止・バックアップを確認する。
@@ -57,15 +58,17 @@
 - [x] `home/protection.nix`: rm / gomi / Safehouse 共通 wrapper・profile を既存ファイルから配置。rm は shebang のみ Nix Python に固定。PATH 変更後も `.local/bin` を先頭へ戻す処理を配置。
 - [x] `home/files.nix`: Ghostty / Worktrunk / Husky / Yazi、共通 AGENTS の各エージェントへの参照、共通・CLI 別通知スクリプトを配置。`d6159ed`。Yazi の git / smart-enter / full-border は `pkgs.yaziPlugins`、smart-leave は既存 Lua。
 - [ ] `config/.vimrc` の NeoBundle と旧 plugin、Zellij の `zam.wasm` の導入方法を確定し、設定と依存を揃えて配置する。ファイルだけ配置して完了としない。標準管理が難しい部分だけ相談する。
-- [ ] Zed の `config/.config/zed/settings.json`、Pi の `config/.pi/agent/settings.json`、Claude の `config/.claude/settings.json`、OpenCode の `config/.config/opencode/opencode.json`、`config/.config/pi-auto-name/config.json` を、既存ファイルを正本として接続する。通常は `home.file` / `xdg.configFile` の標準配置を使う。書き込みが必要で読み取り専用では具体的な支障が出るファイルだけ T5 で扱い、他の配置を止めない。
-- [ ] Herdr の `config/.config/herdr/config.toml`、`plugins/config/`、`scripts/` を接続する。plugin 本体は T5、サーバーへの設定反映は T9・T10 と分ける。
+- [x] Zed / Claude / OpenCode / pi-auto-name の設定を `home/files.nix` から既存ファイルのまま配置。通常の `home.file` / `xdg.configFile` を使用し、生成された4ファイルと正本の一致を確認。アプリ内からの永続設定変更の扱いは切替前に確認する。Claude の Herdr hook・statusline 依存は T5 に残す。
+- [ ] Pi の `config/.pi/agent/settings.json` は T5 へ移して対応する。起動に伴う `lastChangelogVersion` の更新が既存差分に現れており、`/settings` による保存もある。単純な store symlink では書き込み先を確保できないため、接続は未実装。
+- [x] Herdr の `config.toml`、plugin 設定2ファイル、補助スクリプト2ファイルを個別に接続。生成された5ファイルとの一致と shell script の実行権限を確認。plugin 本体・tests・session・log は含めない。plugin 本体は T5、サーバーへの設定反映は T9・T10 と分ける。
 - 完了条件: T1 で確認した config ファイルすべてに配置・例外対応・不要・手動のいずれかの扱いが付き、必要な生成物を確認できる。具体的な支障があるファイルの例外対応と、拡張の完了判定は T5。
 - 移行中の注意: `fish_variables` は追跡から除外済みだが実ファイルを保持。旧 mise `config.toml` は現行環境用として未変更。新しい `config.base.toml` は適用後に HOME 側の `mise/config.toml` となる。旧ファイルの整理は T10・T11。
 
 ### T5. 配布の例外対応・拡張・スキル — 調査中、配置は未実装
 
 - [x] Zed / Pi の標準 HM モジュールを調査。Zed は `mutableUserSettings` がある一方、Pi は設定を store にリンクする方式。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。
-- [ ] T4 で具体的な書き込みの必要性・支障が確認されたファイルだけ、標準機能による対応を確認する。対象ファイル、支障の出る操作、根拠、再適用時の扱いを記録する。全アプリの設定を事前に細分化したり、独自 merge 処理を作ったりしない。通常配置だけで済むファイルには例外対応を設けない。
+- [ ] T4 で具体的な書き込みの必要性・支障が確認されたファイルだけ、標準機能による対応を確認する。最初の対象は Pi の `settings.json`（起動時の changelog 更新・`/settings` の保存）。対象ファイル、支障の出る操作、根拠、再適用時の扱いを記録する。全アプリの設定を事前に細分化したり、独自 merge 処理を作ったりしない。通常配置だけで済むファイルには例外対応を設けない。
+- [ ] Claude 設定が参照する `~/.claude/hooks/herdr-agent-state.sh` の Herdr 側の生成・復元経路と、`npx -y ccstatusline@latest` の固定方法を接続する。hook は Git 管理に存在しないため、今回の配置には含めていない。T9 の完成構成では未復元の参照を残さない。
 - [ ] 外部・自作スキルの取得元固定と配置を接続。`config/skills-lock.json` には取得可能な revision がなく、そのままでは再現用 lock にならない。Claude 同名優先、`.disabled` 除外、Antigravity の参照を維持する。
 - [ ] Pi の拡張、`config/.pi/agent/` の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `agents/` / `subagents.json` を接続。現在の settings は版なし npm / Git master 参照を含む。標準の拡張管理で固定し、実行時書き込み先を分離する。既存 Pi 2ファイルの変更は冒頭の扱いに従う。
 - [ ] Herdr の外部 plugin 3つと Zerdr 提供 plugin を接続。取得 revision、アプリとの対応、可変状態を確認する。plugin 実体・session・log を Git 管理へ追加しない。
@@ -222,11 +225,11 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。最新の実装追加 `d6159ed` に対応 |
-| 最新 Darwin 成果物 | `/nix/store/1vqp2n0qn3wjmri3kz9wl7vsaanywwaj-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/25f1qlyj920c1v22hgz5ki8if8z2lixk-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。今回のアプリ設定・Herdr 設定追加までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/8w2bbfdyc55fljch83q9413mzih2whab-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/i463kii3lzf3kyymjhvdm1g96c8b4jam-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
-| `home/files.nix` の配置 | 生成ファイルと正本の一致、共通 AGENTS の参照、Yazi plugin の `main.lua` 配置を確認 |
+| `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
 
 同じ実機でのビルドに使用したコマンド:
