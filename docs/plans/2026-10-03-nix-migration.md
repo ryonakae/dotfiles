@@ -12,7 +12,7 @@
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **Hermes の公式 Flake パッケージのみの採用・固定ビルドは完了。agent-device は npx 実行へ変更し、Shepherd は復元対象から除外する方針を承認済み。** ユーザー承認の Herdr 別ペイン（sandbox 外）で固定構成をビルドし、生成物を確認した。Hermes の起動・サービス接続・実機適用は未実施。T6・T7 の接続と残る補完判断から再開する。
-3. **残る判断は Zerdr の実行元、未配置 cua-driver。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。T6・T7 は本体／起動元の確定後に接続する。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
+3. **Zerdr は Homebrew 版、cua-driver スキルは復元する方針で承認済み。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。T6・T7 は本体／起動元の確定後に接続する。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
@@ -40,7 +40,7 @@
 - [x] `scripts/dotfiles.{sh,py}` の `build` と `update [all|input]` を実装。通常 build は公開依存の lock を検査し、host leaf 以外の変更を拒否して同じ snapshot を check / build する。現在の構成でビルド成功。
 - `switch` は **未実装・未公開**であり、T9 の残作業。この項目の完了に含めない。
 
-### T3. パッケージと更新単位 — 進行中・Zerdr の実行元に判断待ち
+### T3. パッケージと更新単位 — 実装済み対象の宣言・ビルド完了、棚卸しは T1
 
 - [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `config/nix/home/packages.nix` と `config/nix/darwin/homebrew.nix`。
 - [x] gomi / dotenvx / Agent Safehouse、Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準定義へ統一。`44688a4`、`23a7c38`。独自 package 定義・専用 updater は削除済み。
@@ -48,7 +48,7 @@
 - [x] **Hermes パッケージの採用・固定ビルド** — 公式 Flake の `packages.aarch64-darwin.default` のみを `home.packages` へ追加し、input と root lock を接続した。サービスモジュール・独自 package 定義は追加せず、独自依存を未検証で共通 nixpkgs へ follows しない。既存4 input の内容保持、構文、固定 snapshot の評価・ビルド、生成 CLI の参照先を確認。Safehouse の公開ソース参照拒否後、ユーザー承認の Herdr 別ペインで検証した。review base は `f71f25d`。サービス接続・実起動は T6・T7 に残る。
 - [x] **agent-device のグローバル管理を廃止** — ユーザー指示で mise の `npm:agent-device` 宣言を削除し、自作 `use-agent-device` スキルと `.ad` 実行例を `npx --yes agent-device` へ変更。独自の版固定・更新制限は設けない。Node は npx とは別に要件を満たすものを選ぶ。外部の公式スキルは変更せず、そこでの CLI 表記も npx に読み替える。npm cache・状態は残る。実機の既存導入物は未アンインストール。
 - [x] **Shepherd を復元対象から除外** — ユーザー指示で本体・専用 Node runtime の補完を取りやめ、Herdr plugin の復元コマンドを削除。本体の既存 wrapper、稼働 daemon、実 registry / checkout / state は未変更。無効化済みの team スキルと調査履歴は配布対象外のまま保持する。
-- [ ] **追加で判明: Zerdr 実行元** — PATH の CLI は Homebrew 0.8.0 だが、現 Herdr manifest は開発 checkout の release executable を指す。どちらを移行先とするか確認し、開発版を公開版へ無断で置換しない。
+- [x] **Zerdr は Homebrew 版を採用** — ユーザー承認により既存の `ryonakae/tap/zerdr` 宣言を維持。復元手順で `brew --prefix` から本体のパスを明示し、開発版を拾わないようにした。nix-darwin が導入対象を宣言し、実体・更新は Homebrew が管理する。現 Herdr manifest の開発 checkout 参照は未変更で、切替時の再登録は T5・T10 に残す。
 - 補完案の根拠・公式出典は [dig log](../dig/2026-10-03-nix-migration.md) 冒頭。調査済みであり、同じ候補調査を最初からやり直す必要はない。
 
 ### T4. config ファイルの配置 — 進行中
@@ -72,13 +72,13 @@
 - [x] Claude の `herdr-agent-state.sh` を `pkgs.herdr.src` の公式 asset から executable として配置。本体と同じ nixpkgs lock に従い、独自生成・転載・版別 override は作らない。Herdr の installer は hook / settings に書き込むので、Nix 管理へ切替後の Claude integration には併用しない。
 - [x] statusline は標準 npm 経路のまま、現行キャッシュと一致する `ccstatusline@2.2.30` に固定。固定 nixpkgs には未収録、公開 metadata は runtime dependency なし。npm tarball の integrity と現行4ファイルの byte 一致を確認。初回 npx 取得は runtime に残り、Nix build / activation ではインストールしない。Claude の別プロセス変更は保持し、この command 1行だけを index へ取り込む。
 - [x] `home/skills.nix` で自作12スキルを共通・Claude 向けの個別ディレクトリとして配置。Claude 固有の同名優先とドット始まり除外を維持。親ディレクトリ全体や `synced` を置き換えない。Antigravity は既存どおり共通置き場への参照リンクで、正本自体は store に配置。
-- [x] `home/external-skills.nix` で現行の外部13スキル（12 repo）を commit と展開後 hash で固定し、標準 `fetchFromGitHub` と個別 `home.file` で接続。公開 HEAD と一致する9件に加え、herdr / tdd / worktrunk / readme-creator は現行内容に一致する過去 commit を特定した。内容の更新や別スキルへの置換はしない。skill-creator の `.pyc` 2件だけは生成キャッシュとして復元しない。
-- [ ] `config/skills-lock.json` は14登録・13 repoで、うち `cua-driver` は現行 HOME に未配置。復元対象へ戻すかを確認し、旧 lock の廃止は T11 で行う。computedHash は revision / Nix hash として使わない。
+- [x] `home/external-skills.nix` で既存の外部13スキル（12 repo）を commit と展開後 hash で固定し、標準 `fetchFromGitHub` と個別 `home.file` で接続。公開 HEAD と一致する9件に加え、herdr / tdd / worktrunk / readme-creator は現行内容に一致する過去 commit を特定した。内容の更新や別スキルへの置換はしない。skill-creator の `.pyc` 2件だけは生成キャッシュとして復元しない。
+- [x] **cua-driver スキルの復元宣言・ビルド** — ユーザー承認により、`home/external-skills.nix` に公式 `trycua/cua` のスキルを追加。取得対象は公開 commit `3a784c5c32fc834f387f47f4835dd869ef505eee` の `libs/cua-driver/rust/Skills/cua-driver`。既存の共通・Claude 向け個別配置へ接続し、固定ビルドと11ファイル×2配置の一致を確認。外部14スキル（13 repo）、自作を含め共通・Claude 各26スキルになった。本体の導入・GUI 操作・実 HOME への適用は含めない。旧 `config/skills-lock.json` の computedHash は revision / Nix hash として使わず、旧 lock の廃止は T11 で行う。
 - [x] Pi の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `subagents.json` / agent 定義3件 / 通知拡張を通常配置。`subagents.json` は上流がユーザー側を読み取り、UI の保存はプロジェクト側に行うことを確認。npm 7件は既存導入版、pi-subagents は導入済み commit `be898c753e9eb32cf1315f63b1c1f5ef0cf6f782` に native settings で固定し、公開取得可能性を確認。
 - [ ] Pi 外部拡張の新規取得・実行時機能の復元を確認する。標準 Pi は npm / Git の可変インストール先を使用し、activation からネットワーク取得や自己更新は実行しない。トップレベルの版固定は推移依存全体の固定ではない。現行の導入実体は Nix Pi 0.99.1 の loader で10 entry point をエラー・警告なしに読み込めたが、新規依存解決・認証付き機能は未検証。
 - [x] Herdr の Git plugin は標準 `install --ref <commit>` の復元手順を `docs/setup.md` に固定。当初の3件から、ユーザー指示で Shepherd を除いた2件を復元対象とする。現 metadata / HEAD / clean 状態を調べ、親側でも公開 commit アーカイブの manifest と主要ファイル7件を照合。再 install で `--ref` を省略すると HEAD へ移ること、有効化を伴うこと、build / activation から実行しないことを明記した。
 - [ ] Git plugin の実機導入と機能確認。Agent Context は同一 release から binary / checksum を取得し、source commit 固定は binary の完全な immutable hash 固定ではない。Shepherd の復元は対象外。
-- [ ] Zerdr の使用本体を確認後、標準 `setup install` で manifest と登録を復元する。現開発 executable の絶対パスは配布しない。setup は Zed tasks にも書くが、現Nix配置は Zed settings のみで tasks は管理していない。
+- [ ] 承認済みの Homebrew 版 Zerdr の標準 `setup install` で manifest と登録を復元する。現開発 executable の絶対パスは配布しない。setup は Zed tasks にも書くが、現Nix配置は Zed settings のみで tasks は管理していない。
 - Agent Context / Worktrunk の tracked config には本番実装の書き込み経路がなく、個別の読み取り専用配置を維持する。registry、checkout、state は可変で残す。plugin 実体・session・log は Git / store へ取り込まない。
 - 完了条件: 認証・状態を store に入れず、必要な設定と拡張を復元できる。永続設定変更を制限する場合は、その具体的な影響を切替前に説明・確認する。
 
@@ -113,7 +113,7 @@ Hermes 本体の採用と T3 の構成評価・ビルドは完了。ここでは
 - [ ] T6・T7 と整合する `switch` を `scripts/dotfiles.{sh,py}` に実装。build と同じ lock 検査・snapshot を使い、未停止サービスや危険な衝突があれば適用を中止する。
 - [ ] 配置先のファイル種別・リンク先・所有権を確認し、旧リンク・実ファイル・Fisher / Yazi plugin・shell 初期化・plist の退避先と復旧先を決める。未知のファイルを force overwrite しない。
   - Zellij 削除後、`~/.config/fish/functions/zl.fish` と `~/.config/zellij/config.kdl` に削除済み正本へのリンクを確認。ホーム側は未変更。切替時にこの既知の旧リンクの整理を確認する。Brewfile の実ファイル、インストール済み本体、保存セッション・履歴は今回変更していない。
-- [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。外部13スキルの既存実ディレクトリは個別に確認・退避し、未管理スキルや Claude の `synced` はまとめて置き換えない。Pi の設定保存と適用の競合を避ける停止手順も含める。
+- [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。外部13スキルの既存実ディレクトリは個別に確認・退避し、未管理スキルや Claude の `synced` はまとめて置き換えない。新規 cua-driver の配置先が未作成かも適用直前に再確認する。Pi の設定保存と適用の競合を避ける停止手順も含める。
 - [ ] 人間に実 `config.fish` との差分を確認してもらい、旧 universal PATH・PGDATA 等の未確認値を整理する。
 - [ ] T1〜T8 の準備完了後、完成構成をビルドし、生成物・OS 変更範囲・初回の非 Nix 構成への復旧手順を確認する。
 - 完了条件: 切替時に変更するものと戻し方をユーザーへ具体的に提示できる。`switch` の実行は T10 の承認後。
@@ -240,8 +240,8 @@ Hermes 本体の採用と T3 の構成評価・ビルドは完了。ここでは
 | 対象 | 実行結果・根拠 |
 |---|---|
 | T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成に加え、Hermes 本体も同じ lock 検査・snapshot・check/build 処理で検証 |
-| 最新 Darwin 成果物 | `/nix/store/1lq48zdz3dp47fx32b4vwfalmab0g863-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/lark5ra4l1ca7zszjj4s2s5xq7wygj68-home-manager-generation` |
+| 最新 Darwin 成果物 | `/nix/store/15g1b07yc5hjspc5fz5k859ls738zdr9-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/c94r0p4jvkgisrrxisv3r0758m4sq6c5-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -286,7 +286,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - `4273041..d7421c1` を独立した read-only reviewer が確認し、新規の blocking/high・medium/low 指摘なし。cua-driver の既知の判断待ちは現行13件の固定を妨げないこと、優先順位・個別配置・取得元とサブパスの整合を確認。外部取得・内容一致の検証は親側が担当。
 - 公開 Git と commit 指定アーカイブで現行13スキルを照合。HEAD と不一致の4件は depth=256 の blob-filtered clone で過去 tree を比較し、一致 commit のアーカイブでも全ファイル・実行ビット一致を確認。GitHub API は匿名 rate limit の403だったため公開 Git を利用し、認証・権限は変更していない。
 - 固定 lock の通常 build が全12ソースの `fetchFromGitHub` を含め成功。生成された共通・Claude 各25スキルのうち外部13件・延べ140ファイルが現行配布内容と byte / 実行ビット一致。親ディレクトリ全体を置き換えず、`.disabled`・Python cacheを含めないことを確認。Nix format・差分検査も成功。
-- 実 HOME の外部スキル実体は未変更。初回の衝突解消・退避・参照更新、未配置 cua-driver の判断、旧取得手順の廃止は未完了。スキル内部の CLI コマンド実行・回帰テスト・fixture・stub は実施していない。
+- 実 HOME の外部スキル実体は未変更。初回の衝突解消・退避・参照更新、旧取得手順の廃止は未完了。cua-driver の復元は後続で承認された。スキル内部の CLI コマンド実行・回帰テスト・fixture・stub は実施していない。
 
 ### Claude 依存の検証記録
 
@@ -321,7 +321,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - `3af1942..0702bb5` の復元手順・判断事項を独立した read-only reviewer が確認し、新規の blocking/high・decision required・medium/low 指摘なし。既知の補完・本体・実行元の判断は未解決のまま保持。公開ソース・実 metadata の検証は親側が担当。
 - 固定 Herdr 0.9.1 の source で `--ref` checkout、registry 保存、再 install、config/state 分離を確認。調査当時の Git plugin 3件は通常の untracked を含め clean。registry 上はこの3件と Zerdr の全4件が enabled。その後 Shepherd は復元対象から除外したが、実 registry は変更していない。ignored build artifact の健全性は保証せず、公開 commit archive の manifest・主要7ファイルと現実体の一致を別途確認した。
 - tracked config 2件は Agent Context の read/mtime監視と Worktrunk の設定読取だけで、本番の書込処理は別state領域。書き込み可能にする根拠はなく、既存T4配置を変更しない。
-- 公開 Zerdr v0.8.0 source では、標準 setup が実行元を含む manifest を生成して Herdr に link し、Zed tasks を merge する。現manifestの開発版と PATH の Homebrew 版の違いは未解決。実plugin install・link・setup・サービス操作・テストは行っていない。
+- 公開 Zerdr v0.8.0 source では、標準 setup が実行元を含む manifest を生成して Herdr に link し、Zed tasks を merge する。その後 Homebrew 版の採用が承認されたが、現 manifest の開発版参照からの切替は未実施。実plugin install・link・setup・サービス操作・テストは行っていない。
 
 ### Hermes パッケージ追加の検証記録
 
@@ -340,6 +340,13 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - 公式 Installation にある npx 実行を使う。ユーザー指示に従い、版固定や更新制限を追加しない。Node 22.12以上（Webは24以上）の前提、cacheと状態が残ること、doctorのdaemon置換への注意を維持する。
 - mise TOML とスキルの YAML metadata を parseし、スキル・reference の fish コードブロック4件の構文、相対リンク、差分を確認。CLI の mise 宣言と Shepherd の復元コマンド、実行例の bare CLI / mise 起動が残らないことを確認した。変更は設定と運用文書で、Nix の再ビルド・npx の実取得は行っていない。
 - 実機アンインストール、plugin の無効化・削除、daemon 停止、npx による取得・起動、Simulator 操作、回帰テストは未実施。実体の整理は T10・T11 で対象と停止条件を確認してから行う。
+
+### Zerdr の実行元確定・cua-driver スキル復元
+
+- review base は `99cd316`。Zerdr の既存 Homebrew 宣言を維持し、復元手順で Homebrew prefix 配下の実行ファイルを明示する。Herdr の登録と Zed tasks を変更する `setup install` は未実行。
+- cua-driver スキルは現在の HOME に存在しないため、旧導入内容との一致は保証せず、公開 commit のスキル（metadata 0.33.0）を復元する。公開 archive の展開後 hash で固定し、11ファイル・相対リンク先の存在・symlink がないことを確認した。公式スキルの本文は改変しない。
+- 通常の `scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p` を Herdr 別ペインで実行し成功。ログは `/tmp/dotfiles-cua-build.OLJA1iTc/build.log`、snapshot は `/nix/store/a1pipxx0y088rd4z2yg9x4a09246iid6-source`。root lock は未変更。Claude の他プロセス変更は snapshot に含むが、コミットからは除外する。
+- 生成された共通・Claude 各26スキルで cua-driver の11ファイル×2が公開ソースと byte / 実行ビット一致。前回の agent-device npx 化も両配置の本文・reference が正本と一致。Nix format、Zerdr 復元コマンドの fish 構文、差分を確認。Zerdr の本体・登録、cua-driver 本体、稼働プロセス・権限、実 HOME は未変更。GUI 操作・回帰テストは実施していない。
 
 ### 残る最終確認
 

@@ -25,6 +25,14 @@ in
     })
     + "/skills/agent-device";
   cognitive-rhythm-writing = techWriting + "/skills/cognitive-rhythm-writing";
+  cua-driver =
+    (pkgs.fetchFromGitHub {
+      owner = "trycua";
+      repo = "cua";
+      rev = "3a784c5c32fc834f387f47f4835dd869ef505eee";
+      hash = "sha256-qhc7cDMDkRNTTIyW4RBw1YGCB7qsU6Ul/kLAtQ0reyI=";
+    })
+    + "/libs/cua-driver/rust/Skills/cua-driver";
   find-docs =
     (pkgs.fetchFromGitHub {
       owner = "upstash";
