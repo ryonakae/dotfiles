@@ -4,9 +4,11 @@
     actionlint
     age
     agent-browser
+    agent-safehouse
     awscli2
     cocoapods
     ctx7
+    dotenvx
     fastlane
     fd
     ffmpeg
@@ -15,6 +17,7 @@
     gh
     git
     git-lfs
+    gomi
     imagemagick
     jq
     keifu
