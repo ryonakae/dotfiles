@@ -16,6 +16,10 @@ in
       source = ../../.agents/hooks/notification.sh;
       executable = true;
     };
+    ".claude/hooks/herdr-agent-state.sh" = {
+      source = "${pkgs.herdr.src}/src/integration/assets/claude/herdr-agent-state.sh";
+      executable = true;
+    };
     ".claude/hooks/notification.sh" = {
       source = ../../.claude/hooks/notification.sh;
       executable = true;

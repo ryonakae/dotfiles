@@ -134,6 +134,12 @@ npx skills add callstack/agent-device -s agent-device -a claude-code -y
 2. Antigravity CLI は `~/.agents/skills/` へのディレクトリリンクで参照する。Hermes や Pi 専用ディレクトリなど、配布対象外に余分なリンクを残さない。
 3. `config/skills-lock.json` の差分を確認する。削除時も、配布ファイルと lock の両方から登録が消えたことを確認する。
 
+## Claude Code
+
+Nix への切替後、Herdr の Claude hook は Home Manager が Herdr 本体と同じソースから配置する。Herdr の UI / CLI から Claude integration を再インストール・更新すると管理対象の hook と settings を書き換えようとするため、併用しない。
+
+statusline は設定内の npm version を固定し、通常の `npx` で利用する。Nix build / activation にはインストールを含めず、初回取得には npm registry への接続が必要。
+
 ## Pi
 
 Nix への切替後も `settings.json`、footer、fast-mode の設定は書き込み可能な実ファイルとして使う。Home Manager の標準 merger は再適用時にリポジトリの定義値を優先し、未定義キーを保持する。アプリ内で変更した定義済みの値を永続化する場合は、正本にも反映する。正本からキーを削除しても実ファイルの同じキーは削除されない。
