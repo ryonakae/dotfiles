@@ -262,14 +262,9 @@ Node の問題を直すためにこのディレクトリの PATH 優先順位を
 
 ## Vim
 
-同梱の Vim 設定を使う場合は、新しい Mac で NeoBundle を導入する。
-
-```fish
-mkdir -p ~/.vim/bundle
-git clone https://github.com/Shougo/neobundle.vim ~/.vim/bundle/neobundle.vim
-```
-
-Vim を開いて `:NeoBundleInstall` を実行する。
+Vim は補助的な編集用に、外部プラグインを使わない最小構成とする。NeoBundle の導入・更新は不要。
+Nix への切替後は標準の Vim と `config/.vimrc` を配布し、本体は nixpkgs と一緒に更新する。
+旧 `~/.vim/bundle` の実体は設定変更だけでは削除しない。不要物の整理は切替後に対象を確認して行う。
 
 ## アプリ設定
 

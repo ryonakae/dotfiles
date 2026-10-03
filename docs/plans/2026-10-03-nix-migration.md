@@ -12,7 +12,7 @@
 
 1. `git status --short` と直近の差分を確認する。保持する既存変更は下記の Pi 2ファイルと、コミット後に再更新された Claude 設定。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
-3. **次は T4 の Vim / Zellij の依存と、T5 の Pi 設定・拡張を接続する。** Zed / Claude / OpenCode / pi-auto-name と Herdr の設定配置は完了。最新の合意は「基本は config ファイルを管理して配布する」。全設定の分類・分割や可変設定の設計を先行ゲートにしない。書き込みが確認された Pi 設定は T5 で扱う。T1・T8 の調査も独立して進められる。
+3. **次は T4 の Zellij の依存と、T5 の Pi 設定・拡張を接続する。** Vim はユーザー承認により外部プラグインなしへ簡素化し、配置・ビルドを確認済み。 Zed / Claude / OpenCode / pi-auto-name と Herdr の設定配置は完了。最新の合意は「基本は config ファイルを管理して配布する」。全設定の分類・分割や可変設定の設計を先行ゲートにしない。書き込みが確認された Pi 設定は T5 で扱う。T1・T8 の調査も独立して進められる。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
@@ -57,9 +57,8 @@
 - [x] `home/fish.nix`: fish 関数・補完・SSH socket 補完、bobthefish / fzf、mise / zoxide 連携。設定本文は `config/.config/fish/{shell-init,interactive-init}.fish` と `config/.config/mise/config.base.toml` に分離。`046d980`、`23257af`。
 - [x] `home/protection.nix`: rm / gomi / Safehouse 共通 wrapper・profile を既存ファイルから配置。rm は shebang のみ Nix Python に固定。PATH 変更後も `.local/bin` を先頭へ戻す処理を配置。
 - [x] `home/files.nix`: Ghostty / Worktrunk / Husky / Yazi、共通 AGENTS の各エージェントへの参照、共通・CLI 別通知スクリプトを配置。`d6159ed`。Yazi の git / smart-enter / full-border は `pkgs.yaziPlugins`、smart-leave は既存 Lua。
-- [ ] `config/.vimrc` の NeoBundle と旧 plugin、Zellij の `zam.wasm` の導入方法を確定し、設定と依存を揃えて配置する。ファイルだけ配置して完了としない。標準管理が難しい部分だけ相談する。
-  - Vim: 固定 nixpkgs には emmet / html5 / bracketed-paste / commentary / Copilot / iceberg / ayu がある。NeoBundle 自体と `hail2u/vim-css3-syntax`、`othree/yajs.vim`、`Townk/vim-autoclose` は同一対象を確認できない。標準 `programs.vim.plugins` へ移す場合、旧3 plugin を固定取得で維持するか削除・代替するかの承認が必要。NeoComplete は現在の宣言にないのにキー割当から呼ばれているため、追加するか旧設定を除くかも確認する。HM の既定本体は Lua 対応 `vim-full`。根拠は固定 nixpkgs の `pkgs/applications/editors/vim/plugins/{generated,aliases,overrides}.nix` と HM の `modules/programs/vim.nix`。
-  - Zellij: 固定 nixpkgs の `zellijPlugins` に ZAM はない。履歴 `a6fe968^:config/.config/zellij/scripts/open-zam-floating.sh` は私的プロジェクトの `zam.wasm` を参照している。私的ソースは未調査。正規の取得元・固定版・対応 Zellij 版と、固定取得または手動補完の承認が必要。現状の Alt+a 起動を保つには wasm を個別配置する。HM の `programs.zellij.plugins` は自動ロードも生成するため、そのまま採用しない。
+- [x] Vim は「ほぼ使わないため管理しやすさ優先」というユーザー承認に従い、外部プラグインなしの最小構成へ変更。既存の標準 `pkgs.vim` と `home/files.nix` による `.vimrc` の配置だけを使用する。NeoBundle / NeoComplete / Copilot 等の専用設定、試作の `home/vim.nix` と限定 unfree 許可を除去。基本の表示・検索・インデント設定を残した。review base は `7785d62`。現行 HOME も `.vimrc` の正本へリンクしているため、次回起動から最小設定になる。旧 `~/.vim/bundle` の実体は未削除。
+- [ ] Zellij: 固定 nixpkgs の `zellijPlugins` に ZAM はない。履歴 `a6fe968^:config/.config/zellij/scripts/open-zam-floating.sh` は私的プロジェクトの `zam.wasm` を参照している。私的ソースは未調査。正規の取得元・固定版・対応 Zellij 版と、固定取得または手動補完の承認が必要。現状の Alt+a 起動を保つには wasm を個別配置する。HM の `programs.zellij.plugins` は自動ロードも生成するため、そのまま採用しない。
 - [x] Zed / Claude / OpenCode / pi-auto-name の設定を `home/files.nix` から既存ファイルのまま配置。通常の `home.file` / `xdg.configFile` を使用し、生成された4ファイルと正本の一致を確認。アプリ内からの永続設定変更の扱いは切替前に確認する。Claude の Herdr hook・statusline 依存は T5 に残す。
 - [ ] Pi の `config/.pi/agent/settings.json` は T5 へ移して対応する。起動に伴う `lastChangelogVersion` の更新が既存差分に現れており、`/settings` による保存もある。単純な store symlink では書き込み先を確保できないため、接続は未実装。
 - [x] Herdr の `config.toml`、plugin 設定2ファイル、補助スクリプト2ファイルを個別に接続。生成された5ファイルとの一致と shell script の実行権限を確認。plugin 本体・tests・session・log は含めない。plugin 本体は T5、サーバーへの設定反映は T9・T10 と分ける。
@@ -227,9 +226,9 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。今回のアプリ設定・Herdr 設定追加までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/8w2bbfdyc55fljch83q9413mzih2whab-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/i463kii3lzf3kyymjhvdm1g96c8b4jam-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。アプリ・Herdr 設定と最小 Vim 設定までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/8nwpjsp7cxcqchpyb2ybarxgag9dvpv8-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/c3gypgmn9m4fhk7ddh5hsqc6pjzlqj30-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -245,7 +244,13 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 ### 今回の部分構成レビュー
 
 - `0b581d3..1f56deb` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。既存の hook / plugin / 可変設定の残作業を含む全移行の完了承認ではない。
-- Vim の旧依存と ZAM の取得方法は採用判断待ち。今回の成果物は local commit 済みで、push・実機適用・Plan archive は未実施。
+- Vim はプラグイン維持から最小構成へ方針変更を承認済み。ビルド・構文・生成物の確認は成功、独立レビューはこれから。ZAM の取得方法は判断待ち。push・実機適用・Plan archive は未実施。
+
+### Vim の検証記録
+
+- 通常の固定 lock ビルドに成功。上表の Darwin / HM 成果物へ `.vimrc` が byte 一致で配置され、Vim は標準 `vim-9.2.1001` へ解決されることを確認。
+- 一時 HOME・空の環境で生成 `.vimrc` を標準 Vim に読ませ、非対話起動が正常終了。行番号・2スペースのインデント・expandtab を確認し、NeoBundle / NeoComplete / Copilot コマンドが未登録であることを確認。Nix format と差分検査も成功。回帰テスト・fixture・stub は追加・再実行していない。
+- ビルドは作業ツリーの未コミット Claude 設定も参照するが、その差分は今回のコミット対象に含めない。Pi 2ファイルと合わせて保持する。実機適用・既存プロセス停止・旧 plugin 削除は未実施。
 
 ### 残る最終確認
 
@@ -260,6 +265,8 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 構文確認は fish の `fish --no-execute`、shebang に対応した shell の `-n`、Python / TOML の parse、Nix formatter / 評価を使う。文書は参照先と `git diff --check` を確認する。通過済みの検証は、後続変更・失敗・未解決の懸念がない限り繰り返さない。
 
 ## 履歴・撤回済み事項（再開タスクではない）
+
+- **Vim plugin 維持案の撤回**: 旧10 plugin と NeoComplete を Nix で配置する試作はビルドできたが、NeoComplete が Vim 8.2.1066 以降を拒否するため受入を中止。その後ユーザーが管理しやすさを優先し、外部プラグインなしの最小構成を承認した。個別取得定義・Lua 対応 Vim・移行用分岐は不要となり撤去済み。互換性回避や旧版固定を再開しない。
 
 - **実装開始時の記録**: review base は `ab60631218ce1544049dca60e143d25ac757f9bb`。開始時の「ahead/behind 0/0」「計画は未追跡」は現在には適用しない。Q16 と計画への「ok」で実装承認済み。
 - **独立 package 管理の撤回**: gomi / dotenvx / Safehouse の独立定義は `44688a4` で撤回。AI の独立定義を加えた `b9f7ab5` は `23a7c38` で置換。現行版合わせの override、`config/nix/packages/`、nix-update app、`update ai` / ツール別更新は復活させない。
