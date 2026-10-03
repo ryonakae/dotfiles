@@ -347,6 +347,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - cua-driver スキルは現在の HOME に存在しないため、旧導入内容との一致は保証せず、公開 commit のスキル（metadata 0.33.0）を復元する。公開 archive の展開後 hash で固定し、11ファイル・相対リンク先の存在・symlink がないことを確認した。公式スキルの本文は改変しない。
 - 通常の `scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p` を Herdr 別ペインで実行し成功。ログは `/tmp/dotfiles-cua-build.OLJA1iTc/build.log`、snapshot は `/nix/store/a1pipxx0y088rd4z2yg9x4a09246iid6-source`。root lock は未変更。Claude の他プロセス変更は snapshot に含むが、コミットからは除外する。
 - 生成された共通・Claude 各26スキルで cua-driver の11ファイル×2が公開ソースと byte / 実行ビット一致。前回の agent-device npx 化も両配置の本文・reference が正本と一致。Nix format、Zerdr 復元コマンドの fish 構文、差分を確認。Zerdr の本体・登録、cua-driver 本体、稼働プロセス・権限、実 HOME は未変更。GUI 操作・回帰テストは実施していない。
+- 実装 commit `da0a558`。`99cd316..da0a558` と先行の `5f35d54..99cd316` の npx 化・Shepherd 復元廃止を独立した read-only reviewer が確認し、新規の blocking/high・decision required・medium/low 指摘なし。公開取得・生成物・build は親側が検証し、レビュー側では再実行していない。
 
 ### 残る最終確認
 
