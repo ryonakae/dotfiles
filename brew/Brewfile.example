@@ -24,7 +24,6 @@ brew 'tmux'
 brew 'tree'
 brew 'vim'
 brew 'yazi'
-brew 'zellij'
 brew 'zoxide'
 
 # プログラミング言語
