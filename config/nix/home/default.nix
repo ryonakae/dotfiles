@@ -3,6 +3,7 @@
   imports = [
     ./packages.nix
     ./fish.nix
+    ./files.nix
     ./protection.nix
   ];
 
