@@ -256,6 +256,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 ### Zellij / ZAM 削除の検証記録
 
+- `f99a92c..35a8a5c` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。削除範囲と残す実機データ・旧リンクの境界を確認済み。
 - 固定 lock の通常 build 成功。上表の HM 成果物に `home-path/bin/zellij`、`home-files/.config/fish/functions/zl.fish`、`home-files/.config/zellij` が存在しないことを確認。
 - 生成 Ghostty 設定は正本と一致し、Option 設定値は変更なし。生成 fish 設定の `fish --no-execute`、Brewfile example の `ruby -c`、Nix format、差分検査を通過。
 - 汎用スキル・履歴・無効化済みの Pi 命名設定を除き、管理中の設定・スクリプト・導入宣言に Zellij / ZAM / `zl` の実行参照が残らないことを確認。回帰テスト追加・再実行、配布・サービス操作・実機アンインストールは未実施。
