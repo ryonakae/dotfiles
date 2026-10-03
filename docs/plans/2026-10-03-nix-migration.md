@@ -77,8 +77,10 @@
   - Git 外の実設定や秘密は読まず、判別できない用途・設定は確認する。既存 Pi 2ファイルの未コミット変更は退避・上書き・取り込みを無断で行わない。
 - [ ] **Flake と bootstrap**: `flake.nix`、`flake.lock`、`config/nix/`、`scripts/bootstrap-nix.sh`、`scripts/dotfiles.sh` を作る。
   - まず root flake、共通 / ホスト分離、HM 統合、通常 build / switch の依存固定を成立させる。bootstrap は破壊的な自動修復を持たせず、再実行時は既存状態を検出する。
-  - bootstrap を先行実装。公式 Nix 2.34.0 / aarch64-darwin の配布物と SHA-256 を固定し、実ダウンロードの checksum 一致を確認。`scripts/tests/test_bootstrap_nix.py` の8件と `bash -n scripts/bootstrap-nix.sh` が通過。Safehouse 拒否・明示実行・OS / CPU・既存状態・checksum / download 失敗・daemon / no-channel-add 引数をダミーの外部コマンドで検証した。実インストーラは未実行。root flake と Nix の評価・ビルドは未完了。
-  - 次の実機側前提: 人間が Safehouse 外で `bash scripts/bootstrap-nix.sh --install` を実行し、新しいターミナルで Nix を確認する。APFS / daemon / build users 等の変更を伴うため、エージェントが現在の sandbox 内で実行したり、環境変数を外して実行したりしない。
+  - bootstrap を先行実装。公式 Nix 2.34.0 / aarch64-darwin の配布物と SHA-256 を固定し、実ダウンロードの checksum 一致を確認。`scripts/tests/test_bootstrap_nix.py` の8件と `bash -n scripts/bootstrap-nix.sh` が通過。Safehouse 拒否・明示実行・OS / CPU・既存状態・checksum / download 失敗・daemon / no-channel-add 引数をダミーの外部コマンドで検証した。その後、人間が Safehouse 外で導入し、`nix (Nix) 2.34.0` を確認。途中の `vifs` 待ちは macOS の許可ダイアログ待ちで、利用者の許可後に進行した。
+  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。update は公開 direct input の個別更新・all のみ先行実装。switch と ai 更新は、保護・サービス・AI package 定義の統合後に接続するため現時点では公開しない。
+  - 実 Nix を使う `scripts/tests/test_dotfiles_cli.py` の4件が通過。host 差替え、通常 build の lock 不変、未追跡ファイルの非混入、公開 URL 変更・lock entry 欠落の拒否、明示 update を確認。ダミー `.env` 作成は Safehouse に拒否されたため、その拒否を回避せず通常名の未追跡ダミーで非混入を検証した。
+  - 実機の非秘密 host 値を `/tmp/dotfiles-machine.SyCOAn6p/host.json` に限定して事前ビルド。最小構成の flake check / build が通過し、`/nix/store/ysxr12iyc0c9h1wsjniq3kfilwkjqf25-darwin-system-26.11.4cff07d` を生成。activation は未実行。固定 nixpkgs が選ぶ Nix は 2.34.8 で、現在稼働中の 2.34.0 をまだ置き換えていない。
   - `AGENTS.md` は新しい正本・配布境界と食い違う箇所だけ更新する。共通エージェント指示の内容を移行に便乗して変更しない。
 - [ ] **パッケージと更新単位**: `config/nix/packages/`、`config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix` に確定した導入対象を実装し、操作入口へ更新対象を接続する。
   - 安定して利用できる既存定義を使い、Nix 導入と最新機能への一斉アップグレードを混同しない。採用版の互換性と独立更新の成立を事前ビルドで確認する。
@@ -144,11 +146,11 @@
 
 計画の独立 read-only レビューを実施。通常 build / switch の固定依存検証に関する指摘を修正し、再確認で Approved。これは計画のレビュー結果であり、Nix ビルド・テスト・実機適用の成功を示すものではない。
 
-- 現在の作業環境は Safehouse 内、HERDR_ENV=1。Nix は現在の PATH に見つからず、実機は macOS 26.2 / arm64。インストール、権限・セキュリティ設定変更、秘密操作をこの sandbox から試さない。必要な人間の sandbox 外操作と承認範囲を実行前に明示する。
+- 現在の作業環境は Safehouse 内、HERDR_ENV=1。Nix は人間による初回導入済み。現在のエージェント PATH にはないため `/nix/var/nix/profiles/default/bin/nix` を使い、daemon 接続と通常ビルドを確認済み。実機は macOS 26.2 / arm64。権限・セキュリティ設定変更、秘密操作をこの sandbox から試さない。必要な人間の sandbox 外操作と承認範囲を実行前に明示する。
 - 既存未コミット変更は `config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`、`config/.pi/agent/settings.json`。実装前に再確認し、対象に競合があれば勝手に上書きしない。
 - 実装方式で要件を満たせない場合は停止して相談する。特に秘密保護の緩和、独立版固定の断念、サービスの強制停止、既存データの破棄を内部詳細として処理しない。
 - [nix-darwin README](https://github.com/nix-darwin/nix-darwin/blob/master/README.md): rolling 系列、upstream Nix の管理、installer と interpreter の区別。公式はアンインストールの容易さから Lix installer を推奨しているが、本計画では合意済み upstream Nix の公式配布を使い、通常復旧をアンインストールに依存させない。
-- [Nix binary installation](https://nix.dev/manual/nix/stable/installation/installing-binary): macOS multi-user、版固定配布、APFS / mount / daemon の変更範囲。macOS 26.2 の実機導入成功を確認したものではない。
+- [Nix binary installation](https://nix.dev/manual/nix/stable/installation/installing-binary): macOS multi-user、版固定配布、APFS / mount / daemon の変更範囲。本実装では macOS 26.2 で人間による導入と Nix 2.34.0 の応答を確認済み。
 - [Nix flake metadata](https://nix.dev/manual/nix/stable/command-ref/new-cli/nix3-flake-metadata): JSON の lock graph、no-update と no-write の相違、override-input の意味を確認。
 - [HM nix-darwin 統合](https://github.com/nix-community/home-manager/blob/master/docs/manual/installation/nix-darwin.md)、[launchd activation](https://github.com/nix-community/home-manager/blob/master/modules/launchd/default.nix)、[Homebrew module](https://github.com/nix-darwin/nix-darwin/blob/master/modules/homebrew.nix): 統合・再読み込み・更新 / cleanup の境界。
 - Hermes / Herdr / Safehouse / Pi / skills の調査根拠と未検証事項は dig log に記録。公開 main/master は調査資料であり、適用時にそのまま浮動参照しない。
