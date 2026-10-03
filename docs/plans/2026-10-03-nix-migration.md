@@ -10,7 +10,7 @@
 
 次のセッションは以下から再開する。
 
-1. `git status --short` と直近の差分を確認する。保持する既存変更は下記の2ファイル。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
+1. `git status --short` と直近の差分を確認する。保持する既存変更は下記の Pi 2ファイルと、コミット後に再更新された Claude 設定。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
 3. **次は T4 の Vim / Zellij の依存と、T5 の Pi 設定・拡張を接続する。** Zed / Claude / OpenCode / pi-auto-name と Herdr の設定配置は完了。最新の合意は「基本は config ファイルを管理して配布する」。全設定の分類・分割や可変設定の設計を先行ゲートにしない。書き込みが確認された Pi 設定は T5 で扱う。T1・T8 の調査も独立して進められる。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
@@ -21,7 +21,7 @@
   - `config/.pi/agent/extensions/pi-gpt-fast-mode/config.json`: `desired: true → false`
   - `config/.pi/agent/settings.json`: `lastChangelogVersion: 0.99.2 → 1.0.0`
   - 現在値を維持して移行へ取り込む承認は取得済みだが、まだ未コミット。動作中の Pi が更新するため、対象を編集・取り込む直前にも差分を確認し、上書き・巻き戻し・一括 stage をしない。
-- 再開中に検出した `config/.claude/settings.json` の `model: "fable"` 追加と `permissions` の順序変更は、ユーザーの `ok` により現在値の取り込みを承認済み。T4 の配置追加と合わせて取り込む。
+- 再開中に検出した `config/.claude/settings.json` の `model: "fable"` 追加と `permissions` の順序変更は、ユーザーの `ok` により `1f56deb` へ取り込み済み。その後の `modelSettings.claude-fable-5-1.effortLevel: "high"` 追加と `model` の順序変更は別プロセスによる新しい未コミット差分。今回のビルド・commit には含めておらず、上書きしない。
 - 最後に確認した環境は Safehouse 内・`HERDR_ENV=1`、macOS 26.2 / arm64。新セッションでは環境を再確認する。Nix は `/nix/var/nix/profiles/default/bin/nix` で利用できる。
 - ユーザー指示により **回帰テスト・fixture・stub の追加と再実行はしない**。構文、差分、ソース・生成物の確認、Nix 評価・ビルドで検証する。
 - この Mac に Hermes の既存環境はない。ここで停止・データ移行・初期化・自動起動をしない。別 Mac の稼働環境の移行は、その Mac で承認・停止・バックアップを確認する。
@@ -58,6 +58,8 @@
 - [x] `home/protection.nix`: rm / gomi / Safehouse 共通 wrapper・profile を既存ファイルから配置。rm は shebang のみ Nix Python に固定。PATH 変更後も `.local/bin` を先頭へ戻す処理を配置。
 - [x] `home/files.nix`: Ghostty / Worktrunk / Husky / Yazi、共通 AGENTS の各エージェントへの参照、共通・CLI 別通知スクリプトを配置。`d6159ed`。Yazi の git / smart-enter / full-border は `pkgs.yaziPlugins`、smart-leave は既存 Lua。
 - [ ] `config/.vimrc` の NeoBundle と旧 plugin、Zellij の `zam.wasm` の導入方法を確定し、設定と依存を揃えて配置する。ファイルだけ配置して完了としない。標準管理が難しい部分だけ相談する。
+  - Vim: 固定 nixpkgs には emmet / html5 / bracketed-paste / commentary / Copilot / iceberg / ayu がある。NeoBundle 自体と `hail2u/vim-css3-syntax`、`othree/yajs.vim`、`Townk/vim-autoclose` は同一対象を確認できない。標準 `programs.vim.plugins` へ移す場合、旧3 plugin を固定取得で維持するか削除・代替するかの承認が必要。NeoComplete は現在の宣言にないのにキー割当から呼ばれているため、追加するか旧設定を除くかも確認する。HM の既定本体は Lua 対応 `vim-full`。根拠は固定 nixpkgs の `pkgs/applications/editors/vim/plugins/{generated,aliases,overrides}.nix` と HM の `modules/programs/vim.nix`。
+  - Zellij: 固定 nixpkgs の `zellijPlugins` に ZAM はない。履歴 `a6fe968^:config/.config/zellij/scripts/open-zam-floating.sh` は私的プロジェクトの `zam.wasm` を参照している。私的ソースは未調査。正規の取得元・固定版・対応 Zellij 版と、固定取得または手動補完の承認が必要。現状の Alt+a 起動を保つには wasm を個別配置する。HM の `programs.zellij.plugins` は自動ロードも生成するため、そのまま採用しない。
 - [x] Zed / Claude / OpenCode / pi-auto-name の設定を `home/files.nix` から既存ファイルのまま配置。通常の `home.file` / `xdg.configFile` を使用し、生成された4ファイルと正本の一致を確認。アプリ内からの永続設定変更の扱いは切替前に確認する。Claude の Herdr hook・statusline 依存は T5 に残す。
 - [ ] Pi の `config/.pi/agent/settings.json` は T5 へ移して対応する。起動に伴う `lastChangelogVersion` の更新が既存差分に現れており、`/settings` による保存もある。単純な store symlink では書き込み先を確保できないため、接続は未実装。
 - [x] Herdr の `config.toml`、plugin 設定2ファイル、補助スクリプト2ファイルを個別に接続。生成された5ファイルとの一致と shell script の実行権限を確認。plugin 本体・tests・session・log は含めない。plugin 本体は T5、サーバーへの設定反映は T9・T10 と分ける。
@@ -239,6 +241,11 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 ```
 
 この一時 host ディレクトリや store 成果物は消えている可能性がある。host 入力がなければ [セットアップ手順](../setup.md#nix-の事前ビルド) に従い、非秘密の `username` / `homeDirectory` だけを持つ入力を用意する。bootstrap をやり直さない。新規の参照ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` を使わない。
+
+### 今回の部分構成レビュー
+
+- `0b581d3..1f56deb` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。既存の hook / plugin / 可変設定の残作業を含む全移行の完了承認ではない。
+- Vim の旧依存と ZAM の取得方法は採用判断待ち。今回の成果物は local commit 済みで、push・実機適用・Plan archive は未実施。
 
 ### 残る最終確認
 
