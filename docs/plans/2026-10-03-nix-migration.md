@@ -92,9 +92,12 @@
   - 以前実行した全36テストは Safehouse のダミーごみ箱保護で2ケース・4 errors（`/tmp/dotfiles-tests.log`）。ユーザー指示により再実行はせず、今後の受入ゲートから外す。保護設定は変更していない。後片付けが拒否された一時ディレクトリ（`tmp8ud28y15`、`tmpgumdah3_`）は残したまま。
 - [ ] **ユーザー設定と拡張の配置**: `config/nix/home/` と既存 `config/` の設定を接続し、共通指示、fish、エディタ、端末、エージェント設定、外部スキル / 拡張 / プラグインを配置する。
   - `fish_variables` は store 外の可変状態とし、宣言する PATH と旧 universal PATH の重複を整理する。実機の universal 値を無断で削除しない。fish plugin も revision を固定し、非Aqua shell の SSH socket 補完を保つ。書き換えられるアプリ設定の所有権を具体化し、新規配布先や duplicate plugin load を増やさない。未知の実ファイルに force overwrite しない。
+  - `home/fish.nix` と `home/protection.nix` を追加。既存の fish 関数・補完・SSH socket 補完をファイル単位で配置し、bobthefish / fzf plugin は共通 nixpkgs の固定 source を使う。mise のグローバル tools をなくしてプロジェクト用途へ限定し、共通ランタイムは Nix profile を優先する。PATH の変更時にも `.local/bin` を先頭へ戻す handler を配置する。
+  - rm の処理は既存実装を再利用し、生成物の shebang だけ Nix の Python に固定。gomi 設定と Safehouse の共通 wrapper / profile も store から配置する。秘密・認証・既存サービスを実行していない。`fish_variables` は追跡から除外したが、実ファイルは保持した。実機 config.fish は秘密を含む保護対象なので読まず、example 由来の共通設定との差分確認は切替前の人間の作業として残す。example の PGDATA は実機の DB 保存先と確認できないため採用しない。
+  - 通常 build が成功し、`/nix/store/ddk55bg4jffh0xi2hmdggqmc1dpqqgkw-darwin-system-26.11.4cff07d` を生成。生成された33件の fish ファイルと共通 wrapper の構文、rm の Python 構文と interpreter を確認した。回帰テスト・ダミー試験は実行していない。その他の設定、AI 本体・拡張、Hermes のサービス統合は引き続き未完了で、実機へは未適用。
 - [ ] **保護・起動・PATH の統合**: `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数、gateway / dashboard wrapper、rm wrapper の参照先を Nix 環境へ接続する。
-  - 共通ロジックとサービス固有の feature 差分を保つ。Safehouse の HOME / profile 順・秘密保護・TMPDIR 補正・環境継承・引数透過を既存テストで守る。共通ランタイム移行に伴う mise / Homebrew 固定パスを解消する。
-- [ ] **Hermes のサービスと安全な適用**: `config/nix/home/hermes.nix`、`hermes-gateway.fish`、`hermes-dashboard.fish`、待機 helper と関連テストへ、固定パッケージ・単一の plist 所有者・停止確認・起動失敗時の扱いを実装する。
+  - 共通ロジックとサービス固有の feature 差分を保つ。Safehouse の HOME / profile 順・秘密保護・TMPDIR 補正・環境継承・引数透過は既存実装と生成物を確認して維持する。共通ランタイム移行に伴う mise / Homebrew 固定パスを解消する。
+- [ ] **Hermes のサービスと安全な適用**: `config/nix/home/hermes.nix`、`hermes-gateway.fish`、`hermes-dashboard.fish`、待機 helper へ、固定パッケージ・単一の plist 所有者・停止確認・起動失敗時の扱いを実装する。
   - 今回はサービスを起動しない配置を確認する。将来の稼働中更新では HM activation の順序を確認し、必要な停止・バックアップが失敗した場合に先へ進まない。単なるプロセスの二重起動だけでなく、同じ DB の同時利用を防ぐ。
 - [ ] **macOS と手動復元手順**: `config/nix/darwin/` へ確認済みの OS 設定を追加し、`docs/setup.md` へ手動認証・権限・秘密復元・Xcode / SDK・mosh firewall・Docker / Tailscale 等の残作業を整理する。
   - 暗号化した共通 .env と Keychain の復元、アプリ個別認証、Hermes / Hindsight データの復元を混同しない。
@@ -112,8 +115,9 @@
 | 現在の対象（Homebrew） | 移行先 / 固定単位 | 残る確認・例外 |
 |---|---|---|
 | actionlint, age, awscli, cocoapods, fastlane, fd, ffmpeg, fish, fzf, gh, git, git-lfs, gomi, imagemagick, jq, mas, mkcert, terminal-notifier, tmux, tree, uv, vim, worktrunk, yazi, zellij, zoxide | 共通 nixpkgs | Darwin 対応と実際のコマンド互換性 |
-| agent-browser, ctx7, dotenvx, keifu, usage, zerdr | 既存 Nix 定義を優先、困難なら補完 | 現行版との差、配布・署名・プラグイン連携 |
-| agent-safehouse 0.12.0, herdr 0.9.0, opencode 1.18.32, pi-coding-agent 1.0.0 | 独立した版定義 / 上流 Flake | 現行機能を落とす downgrade はしない |
+| agent-browser, ctx7, keifu, usage, zerdr | 既存 Nix 定義を優先、困難なら補完 | 現行版との差、配布・署名・プラグイン連携 |
+| dotenvx, agent-safehouse | 共通 nixpkgs | gomi と合わせて現行版の維持より標準定義での管理を優先する |
+| herdr 0.9.0, opencode 1.18.32, pi-coding-agent 1.0.0 | 独立した版定義 / 上流 Flake | 現行機能を落とす downgrade はしない |
 | claude-code@latest, codex, antigravity-cli（cask） | 独立した CLI 配布物 | GUI cask と区別し、自己更新と固定を整合 |
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
 | mise | Nix の CLI、プロジェクト用途のみ | 共通ランタイムの二重管理を解消 |
