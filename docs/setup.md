@@ -260,13 +260,12 @@ Git plugin は標準 CLI で以下の commit を個別に復元する。registry
 
 ```fish
 herdr plugin install ryonakae/herdr-agent-context --ref 10b8ead9d86b2cbb7b13d87ef50dec4b87ee21cd --yes
-herdr plugin install ryonakae/shepherd/packages/shepherd-herdr-plugin --ref e70961a1d821b92e5afc500ecb60a23f6b9c1b3d --yes
 herdr plugin install devashish2203/herdr-worktrunk --ref a3107ca566bafcd463bc138007a0c01051970784 --yes
 ```
 
 更新時も採用する commit をこの一覧へ反映し、`--ref` を省略しない。省略して再インストールすると、保存済み ref を引き継がず remote HEAD へ移る。
 
-Agent Context の installer は release binary と同じ release の checksum を取得するため、ネットワークが必要。source commit の固定は binary の Nix 固定出力管理とは異なる。Shepherd plugin の機能には daemon 本体が別途必要で、現行の npm 本体は Node 24.18 以上を要求する。本体の導入経路は Nix 移行中の未確定事項であり、plugin の導入だけを完了としない。
+Agent Context の installer は release binary と同じ release の checksum を取得するため、ネットワークが必要。source commit の固定は binary の Nix 固定出力管理とは異なる。Shepherd 本体と plugin は復元対象から外す。既存の実機導入物・稼働中 daemon・保存データの停止や削除は、移行宣言の変更と分けて行う。
 
 `zerdr` は Zerdr 本体が `~/Library/Application Support/dev.ryonakae.zerdr/` に配置するローカルプラグインを使う。復元時は採用する本体の `zerdr setup install` で生成・登録し、古い絶対パスを含む manifest をコピーしない。この操作は Zed tasks も更新する。現在の manifest は開発版を参照しているため、移行先本体の確認後に行い、Homebrew 版へ無断で置換しない。Zed tasks は Nix 管理に追加していない。
 worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
