@@ -46,17 +46,17 @@ Simulator 全体の Keychain 消去は通常テストの準備に含めない。
 `com.example.app` は対象アプリの Bundle ID に置き換える。
 
 ```fish
-agent-device open com.example.app --platform ios --session author \
+npx --yes agent-device open com.example.app --platform ios --session author \
   --save-script ./e2e/agent-device/ios/create-item.ad
 ```
 
 以後の操作・期待結果の確認には同じ `--session author` を付ける。
 公式スキルどおり、最新の出力の ref で操作し、`--settle` の差分を利用する。
 対象が差分にないときだけ `snapshot -i` で再観察する。
-例えば、その時点の出力に `@e12` があるなら `agent-device press @e12 --settle --session author` と操作する。例の ref を観察せずコピーしない。
+例えば、その時点の出力に `@e12` があるなら `npx --yes agent-device press @e12 --settle --session author` と操作する。例の ref を観察せずコピーしない。
 
 ```fish
-agent-device close --session author
+npx --yes agent-device close --session author
 ```
 
 `close` 時に `.ad` が保存される。
@@ -104,22 +104,22 @@ close
 ## 実行方法
 
 [SKILL.md の実行環境](../SKILL.md#実行環境を選ぶ) と初期状態の準備を済ませ、アプリのリポジトリルートから実行する。
-以下は CLI を直接実行できる場合の例。対応 Node を明示する場合は、SKILL.md の起動方法で同じ引数を渡す。
+以下は npx で実行する例。対応 Node を選び、`.ad` 本文には npx の接頭辞を加えない。
 
 ```fish
 # 単体
-agent-device replay ./e2e/agent-device/ios/create-item.ad --session verify
+npx --yes agent-device replay ./e2e/agent-device/ios/create-item.ad --session verify
 
 # 一括。ディレクトリ配下の .ad を再帰探索して直列実行する
-agent-device test ./e2e/agent-device/ios --platform ios \
+npx --yes agent-device test ./e2e/agent-device/ios --platform ios \
   --retries 0 --artifacts-dir ./.artifacts/agent-device
 
 # glob は fish に展開させず、引用して渡す
-agent-device test './e2e/agent-device/ios/**/*.ad' --platform ios \
+npx --yes agent-device test './e2e/agent-device/ios/**/*.ad' --platform ios \
   --retries 0 --artifacts-dir ./.artifacts/agent-device
 
 # Bundle ID を実行時に変更する場合
-agent-device replay ./e2e/agent-device/ios/create-item.ad \
+npx --yes agent-device replay ./e2e/agent-device/ios/create-item.ad \
   -e APP_ID=com.example.app.debug --session verify
 ```
 
@@ -139,7 +139,7 @@ CLI の timeout / retries は `context` の値より優先する。通常検証�
 - 失敗したステップ、画面、ログを確認し、仕様違反・対象の不一致・初期状態不足・環境不備を切り分ける。通すためだけにアサーションを削除・弱体化しない。
 - `REPLAY_DIVERGENCE` の候補は確認してから手動編集し、初期状態から全体を再実行する。現行の `--update` / `-u` は自動修復を行わない。
 - 各 attempt の `replay.ad`、`result.txt`、`replay-timing.ndjson` や保持された証跡を確認する。ログ・画像・記録には入力値が残り得るため、コミットや外部共有の前に確認する。
-- CLI 未導入、ビルド失敗、接続不可、Sandbox 拒否などで実行できなければ、原因と未検証範囲を報告する。
+- CLI の取得・実行失敗、ビルド失敗、接続不可、Sandbox 拒否などで実行できなければ、原因と未検証範囲を報告する。
 - Sandbox の拒否は回避せず、共通指示書の委譲・承認ルールに従う。
 
 ## 各アプリに残す実行手順

@@ -3,9 +3,9 @@ name: use-agent-device
 description: >-
   この dotfiles 環境で agent-device を使うための共通運用スキル。
   iOS Simulator での実装後の動作確認、不具合再現、.ad テストの作成・記録・replay・test、
-  mise 管理の agent-device CLI の実行や Node バージョンの問題を扱うときに使う。
+  npx による agent-device CLI の実行や Node バージョンの問題を扱うときに使う。
   公式 agent-device スキルも読み込み、プロジェクトの既存規約を尊重して再実行可能な検証を残す。
-compatibility: Requires mise, agent-device CLI, the official agent-device skill, and Xcode for iOS Simulator automation.
+compatibility: Requires a compatible Node.js and npm/npx, the official agent-device skill, and Xcode for iOS Simulator automation.
 ---
 
 # Use agent-device
@@ -17,7 +17,7 @@ compatibility: Requires mise, agent-device CLI, the official agent-device skill,
 
 最初に `~/.agents/skills/agent-device/SKILL.md` を読む。
 未導入なら操作を止め、dotfiles の README「外部スキル」の手順で導入するよう案内する。
-公式スキルは `config/skills-lock.json` で管理する外部スキルなので、追加ルールを書き込まない。
+公式スキルは外部スキルなので、追加ルールを書き込まない。公式スキル中の `agent-device …` は、下記の `npx` 起動方法へ読み替える。
 
 仕様や手順の質問だけなら、必要な資料を読んで回答する。確認のために Simulator を操作したり、CLI を更新したりしない。
 
@@ -34,32 +34,31 @@ compatibility: Requires mise, agent-device CLI, the official agent-device skill,
 | 要素が見つからない、画面とツリーが一致しない、セレクターを選ぶ | [Snapshots](https://oss.callstack.com/agent-device/docs/snapshots) と [Selectors](https://oss.callstack.com/agent-device/docs/selectors)。ref の有効性、画面外の要素、sparse / recovered の区別、探索範囲、属性による対象指定を確認する |
 | 自動化だけで検証できるか判断する、OS 固有の挙動に遭遇する | [Known Limitations](https://oss.callstack.com/agent-device/docs/known-limitations)。XCUITest で抑制される貼り付け許可ダイアログなど、手動確認が必要な制約を確認する |
 | 複数 worktree・端末・エージェントでの実行構成を初めて組む、セッションが競合する | [Sessions](https://oss.callstack.com/agent-device/docs/sessions)。暗黙セッションの分離、明示名による共有、端末の所有者、変更操作の直列化、終了対象と証跡の場所を確認する |
-| `agent-device.json` や永続的な既定値を変更する、設定の優先順位を調べる | [Configuration](https://oss.callstack.com/agent-device/docs/configuration)。ユーザー設定・プロジェクト設定・環境変数・CLI の優先順位と、リポジトリに置けない接続・認証設定を確認する。mise の設定とは区別する |
+| `agent-device.json` や永続的な既定値を変更する、設定の優先順位を調べる | [Configuration](https://oss.callstack.com/agent-device/docs/configuration)。ユーザー設定・プロジェクト設定・環境変数・CLI の優先順位と、リポジトリに置けない接続・認証設定を確認する。CLI パッケージの取得方法とは区別する |
 | 証跡の種類・保存先・共有先を新設・変更する、機密性が不明、権限や接続の信頼境界を変更する | [Security & Trust](https://oss.callstack.com/agent-device/docs/security-trust)。画像・ログ・録画・replay・レポートに含まれる秘密や私的データ、共有先と必要な権限を確認する |
 | batch を初めて使う、未確認の input を組む、部分実行の失敗を調べる | [Batching](https://oss.callstack.com/agent-device/docs/batching)。構造化 input、操作後の待機、失敗時の部分実行結果を確認する。未知の画面を探索するために長い batch を組まない |
 | 更新後に既存 `.ad` の swipe / gesture が引数エラーになる | [Migrating Gestures](https://oss.callstack.com/agent-device/docs/migrating-gestures)。廃止された duration / velocity と代替操作を確認し、元の操作意図を保って修正する |
 
 上記にない連携・対象で確認が必要なら [公式ドキュメント索引](https://oss.callstack.com/agent-device/llms.txt) から該当ページを選ぶ。索引や見出しだけで仕様を判断せず、使用する機能の本文を読む。全ページや `llms-full.txt` を毎回読み込まない。
 
-実行するコマンドの記法や対応範囲が不明なら、導入版の `agent-device help <topic>` で照合する。
+実行するコマンドの記法や対応範囲が不明なら、`npx --yes agent-device help <topic>` で照合する。
 公式ページと導入版に差がある場合は導入版の契約に合わせ、不明点を推測して実行しない。
 診断は再現に必要な時間帯・対象に絞り、詳細な成果物はファイルに保存して要点を報告する。公式ページを再読しない場合も、成果物の共有・コミット前には秘密や私的データの混入を確認する。
 公式ドキュメントを取得できなければ、その旨を示して導入版のヘルプを参照する。
 
 ## 実行環境を選ぶ
 
-- CLI 本体は dotfiles の `config/.config/mise/config.toml` にある `npm:agent-device` で管理する。スキルの導入とは別であり、毎回 `npx` で最新版を取得しない。
-- mise の npm backend は CLI を別のディレクトリに配置するが、実行時の Node は通常プロジェクトの選択に従う。Node が CLI の要件を満たさない場合や PATH が異なる場合は、対応 Node を明示して実行する。
-- 2026-10-02 の確認済み構成は CLI 0.21.19 / Node 22.14.0。通常操作は Node 22.12 以上、Web 操作は24以上を要求する。例えば iOS 向けには `mise exec node@22.14.0 -- agent-device …` を使う。`mise exec -- agent-device …` だけでは Node を固定しない。更新時は対応 Node も確認する。
+- CLI は `npx --yes agent-device …` で実行する。mise やグローバル npm の管理対象には追加せず、独自 wrapper も作らない。スキルの導入と CLI の取得は別に扱う。
+- パッケージは必要に応じて npm から取得され、npm キャッシュに保存される。
+- npx は Node 自体を選ばない。通常操作は Node 22.12 以上、Web 操作は24以上を要求する。実行 shell の Node が要件を満たさなければ、そのプロジェクトの手順で対応 Node を選んでから実行する。
 - cwd は対象アプリのリポジトリに保つ。HOME に移ると、相対パスと worktree 単位のセッションが変わる。
-- 実体の場所は `mise which agent-device` で確認できる。導入・更新は依頼された範囲で行い、更新時は mise 設定の固定バージョンを変更する。
 
 導入・更新後、または環境不備の調査が必要なときに、以下の該当コマンドを使う。通常のテスト実行のたびにインストールや診断を繰り返さない。
 
 ```fish
-mise install npm:agent-device
-mise exec node@22.14.0 -- agent-device --version
-mise exec node@22.14.0 -- agent-device doctor --platform ios
+node --version
+npx --yes agent-device --version
+npx --yes agent-device doctor --platform ios
 ```
 
 `doctor` はデーモンのバージョン不一致を検出すると置き換える場合があるため、他セッションが同じデーモンを使用中なら更新のタイミングを調整する。更新後は関連テストも再実行する。
@@ -78,5 +77,5 @@ mise exec node@22.14.0 -- agent-device doctor --platform ios
 ## 完了報告
 
 実行したコマンドとフロー、合否、証跡のパス、未検証項目を必要な分だけ報告する。
-CLI 未導入や Simulator 接続不可などで実行できなければ、その理由を明記する。
+CLI の取得・実行や Simulator 接続ができなければ、その理由を明記する。
 文書・構文の確認だけでアプリの動作検証済みとは扱わない。
