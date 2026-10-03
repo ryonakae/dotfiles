@@ -15,7 +15,8 @@ macOS 用の個人設定。導入は [README.md](README.md)、手動の初期設
 変更したファイルの構文、差分、関連テストを確認する。配布やサービス再起動は検証だけを目的に実行しない。
 
 - fish: `fish --no-execute`、shell: shebang に対応する shell の `-n`。
-- rm 転送・起動 wrapper: `scripts/tests/` の関連する `test_*.py` を `uv run --no-project python` で実行する。
+- rm 転送・起動 wrapper・Nix 操作入口: `scripts/tests/` の関連する `test_*.py` を `uv run --no-project python` で実行する。Nix CLI の統合テストは実 Nix が必要で、未導入による skip を成功と扱わない。
+- Nix: [事前ビルド](docs/setup.md#nix-の事前ビルド)を使う。Git ソースに含める新規ファイルは対象を明示して追加し、Git 外の設定を store へ取り込まない。
 - 文書: 参照パス・リンクと `git diff --check`。
 
 `remove-broken-symlinks.sh` は削除を伴うため、読み取り専用の検証には使わない。

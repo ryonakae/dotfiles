@@ -26,6 +26,35 @@ nix --version
 この時点では既存のツール・設定は切り替えず、Nix の事前ビルドへ進む。
 導入失敗時は出力を確認し、残存 volume やシステム設定を無断で削除して再実行しない。
 
+## Nix の事前ビルド
+
+移行中の構成をビルドする入口。現時点では最小構成のみで、既存環境の適用・切替には使わない。
+Nix と Python 3 が必要（初回は Command Line Tools 付属の Python でも可）。
+
+```fish
+mkdir -p ~/.config/dotfiles/host
+cp -n config/nix/hosts/host.json.example ~/.config/dotfiles/host/host.json
+```
+
+作成した `host.json` の `username` と `homeDirectory` を実機に合わせて編集する。
+この2項目は Nix store に入る公開情報として扱い、秘密や認証情報は書かない。ファイルは Git 管理外に置く。
+
+```fish
+bash scripts/dotfiles.sh build
+```
+
+別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
+通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
+
+依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+
+```fish
+bash scripts/dotfiles.sh update nixpkgs
+bash scripts/dotfiles.sh update all
+```
+
+個別更新できるのは公開 input の名前であり、nixpkgs 内の任意パッケージ名ではない。`switch` と AI ツール群の更新は、移行対象の保護・サービス・package 定義が揃うまで未提供。
+
 ## 共通ツール用の秘密
 
 共通 API キーは `config/.config/.env` にまとめ、dotenvx で暗号化し、復号鍵を macOS Keychain に保存する。
