@@ -2,3 +2,4 @@ Brewfile
 config.fish
 *.code-workspace
 .env
+/config/.config/fish/fish_variables

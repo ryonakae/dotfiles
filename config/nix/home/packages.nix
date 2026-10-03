@@ -12,7 +12,6 @@
     fastlane
     fd
     ffmpeg
-    fish
     fzf
     gh
     git
@@ -22,7 +21,6 @@
     jq
     keifu
     mas
-    mise
     mkcert
     terminal-notifier
     tmux
@@ -33,7 +31,6 @@
     worktrunk
     yazi
     zellij
-    zoxide
 
     bun
     nodejs_22

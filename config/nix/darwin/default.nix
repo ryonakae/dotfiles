@@ -7,6 +7,8 @@
   system.primaryUser = machine.username;
   users.users.${machine.username}.home = machine.homeDirectory;
 
+  programs.fish.enable = true;
+
   nix.enable = true;
   nix.settings.experimental-features = [
     "nix-command"

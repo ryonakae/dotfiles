@@ -1,6 +1,10 @@
 { machine, ... }:
 {
-  imports = [ ./packages.nix ];
+  imports = [
+    ./packages.nix
+    ./fish.nix
+    ./protection.nix
+  ];
 
   home.username = machine.username;
   home.homeDirectory = machine.homeDirectory;
