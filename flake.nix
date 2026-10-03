@@ -23,7 +23,12 @@
     let
       pkgs = import inputs.nixpkgs {
         system = "aarch64-darwin";
-        config.allowUnfreePredicate = pkg: inputs.nixpkgs.lib.getName pkg == "claude-code";
+        config.allowUnfreePredicate =
+          pkg:
+          builtins.elem (inputs.nixpkgs.lib.getName pkg) [
+            "claude-code"
+            "antigravity-cli"
+          ];
       };
       hostFile =
         if builtins.pathExists "${host}/host.json" then
@@ -34,12 +39,6 @@
     in
     {
       formatter.aarch64-darwin = pkgs.nixfmt;
-      packages.aarch64-darwin = import ./config/nix/packages { inherit pkgs; };
-      apps.aarch64-darwin.nix-update = {
-        type = "app";
-        meta.description = "Update independent AI package sources and dependency hashes";
-        program = "${pkgs.nix-update}/bin/nix-update";
-      };
       darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit inputs machine; };
         modules = [

@@ -1,11 +1,14 @@
-{ pkgs, inputs, ... }:
+{ pkgs, ... }:
 {
   home.packages = with pkgs; [
     actionlint
     age
     agent-browser
     agent-safehouse
+    antigravity-cli
     awscli2
+    claude-code
+    codex
     cocoapods
     ctx7
     dotenvx
@@ -17,11 +20,14 @@
     git
     git-lfs
     gomi
+    herdr
     imagemagick
     jq
     keifu
     mas
     mkcert
+    opencode
+    pi-coding-agent
     terminal-notifier
     tmux
     tree
@@ -36,10 +42,5 @@
     nodejs_22
     python311
     ruby_3_3
-
-    inputs.self.packages.aarch64-darwin.claude-code
-    inputs.self.packages.aarch64-darwin.codex
-    inputs.self.packages.aarch64-darwin.opencode
-    inputs.self.packages.aarch64-darwin.pi-coding-agent
   ];
 }

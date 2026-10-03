@@ -10,6 +10,8 @@
 - 2026-10-03 開始時点の既存変更は config/.pi/agent/extensions/pi-gpt-fast-mode/config.json と config/.pi/agent/settings.json。上書きしない。
 
 ## 決定事項
+- 最新の追加指示: 「可能な限り標準管理に統一。どうしてもそれが難しいというものだけは相談」。AI を含む本体は共通 nixpkgs の標準定義、設定の配置は Home Manager に分ける。現行版維持・個別更新のための独自パッケージや専用 updater は不要。標準管理が難しい対象だけ理由・代案を示して採用前に相談する。Q3 / Q10 の個別・AI グループ更新の決定は撤回した。
+- 検証方針の追加指示: 本移行では回帰テストの追加・再実行を行わず、構文・差分・Nix 評価とビルドで進める。
 - Q16: A で要件整理を終了し、実装計画の作成を承認。その後、保存した計画への「ok」で実装を承認された。
 - 追加確認（訂正）: この Mac では Hermes を使用しておらず、ディレクトリもない。別の Mac では稼働中。この Mac は新規導入対象として停止・既存データ移行を不要とし、自動起動しない。共通構成は別の Mac の既存データ保持と稼働中の安全な切替にも対応する。別の Mac への適用・停止・再起動は、その Mac での作業時に確認する。
 - Nix 実装は標準の upstream Nix を採用し、導入後の本体・daemon・設定は nix-darwin で管理する（Q15: A）。Determinate Nix に本体管理を分離する構成は採らない。
@@ -34,10 +36,7 @@
   - flake.lock による同一版への固定・復元保証の対象外。Nix 管理するエージェント本体の自己更新とは区別する。
   - 理由: セキュリティ更新と普段の使い勝手を優先し、アプリごとの更新抑止・例外管理を増やさない。
   - 出典: Q11 への「a」。
-- 独立更新の初期対象はエージェント本体と周辺ツールを含める（Q10: A）。Claude Code・Codex・Pi・OpenCode・Hermes 等に加え、Herdr・agent-device・Agent Safehouse も個別更新できる対象とする。
-  - 明示的に更新するまでは版を固定する。具体的な取得元・対応状況・固定方法は調査して決める。Safehouse の保護設定変更や Hermes のサービス再起動を無確認で一括実行する承認ではない。
-  - 理由: 一般ツール全体の更新を待たずに、開発で使うエージェントと周辺ツールの修正を取り込めるようにする。
-  - 出典: Q10 への「a」。
+- Q10 の旧決定（撤回済み）: エージェント本体と周辺ツールの独立更新を選んだが、最新の標準管理優先へ変更した。ツール別に版・hash を持つ要件は残さない。サービス操作の直前承認は維持する。
 - 共通ツール用の秘密管理は dotenvx + Keychain + Safehouse を継続する（Q9: A）。機密ファイルへの直接アクセスを防ぐ目的を優先し、Nix 移行を理由に sops-nix / agenix へ置き換えない。
   - Nix はツール・秘密を含まない起動処理・保護設定の再構築を担当する。実秘密と復号鍵は store に入れず、実秘密の移行・鍵登録・バックアップは人間が sandbox 外で行う。
   - 既存合意どおり、共通ツール用の値は sandbox 外で復号して起動時に注入し、エージェント・子プロセスが利用できることを許容する。プロジェクト用の秘密は共通ファイルへ混ぜず、必要なコマンド単位で扱う。完全な秘密隔離を新たな要件にしない。
@@ -58,12 +57,7 @@
   - 出典: Q5 への「aというか、段階的にというか、なるべく速く完全に切り替える」。実操作は承認済み計画と操作ごとの承認範囲に従う。
 - 対応対象は現在と今後の Apple Silicon Mac（aarch64-darwin）に絞る（Q4: A）。共通設定とマシン固有設定を分離する。
   - 出典: Q4 への「a」。
-- 個別・グループ更新は Q3 の A とする。一般ツールは共通の Nixpkgs を使い、AI 系など更新頻度や要求が異なるツールだけ独立した取得元・版定義で管理する。独立管理したツールの個別更新とグループ更新を用意する。
-  - 一般ツールも、必要になった時点で独立管理へ変更できる。初めから全ツールごとに Nixpkgs input を分ける構成は採らない。
-  - flake update は input 単位であり、AI カテゴリの更新は対象をまとめる独自の操作として用意する。設定のファイル分割と更新単位の独立は区別する。
-  - 理由: 参考構成に沿い、個別更新の利便性と保守負担を両立するため。
-  - 出典: A/B の具体例と参考リポジトリの比較後の「じゃあその方針で」。
-  - 調査根拠: https://github.com/airRnot1106/dotfiles/blob/main/flake.nix は共通 nixpkgs と herdr / neovim-nightly-overlay / nix-claude-code 等を併用。https://github.com/ryuryu333/dotfiles/blob/main/flake.nix は共通 nixpkgs と nix-versions 等を参照し、https://github.com/ryuryu333/dotfiles/blob/main/Taskfile.yml は update と switch を分離。後者の private input 内部は未確認。https://dev.classmethod.jp/articles/nix-home-manager-macos-standalone-flakes/ も共通 nixpkgs を基本に別系列・上流 Flake・独自定義を利用する例。
+- Q3 の旧決定（撤回済み）: AI 系のみ独立した取得元・更新入口を用意する案を選んだが、現在は標準パッケージ群を nixpkgs 単位で更新する。設定ファイルの分割・配置のために本体を独自化する必要はない。
 - Nixpkgs はローリング更新系列を基本とする（Q2: A）。明示的な更新時に新しい版を取り込み、通常の適用では lock に固定した依存を使う。
   - 出典: Q2 への「A」。
 - 設定の適用と依存更新を分離する（Q1: A）。通常の適用・新規 Mac の構築は固定済みの依存を使い、最新版を取り込むときだけ明示的に更新する。
@@ -92,14 +86,14 @@
 - 実秘密の読み取り・移行や Keychain 操作を、通常の設定移行と一緒に無承認で行うこと。
 
 ## 未決・保留
-- Q10 の独立更新対象の具体的な取得元・固定方法と更新グループの確定。GUI アプリの自動更新方針は Q11 で確定済み。
+- 標準パッケージに未収録・非対応の対象を調べ、必要な例外の導入方法を相談する。GUI アプリの自動更新方針は Q11 で確定済み。
 - ホスト別設定と具体的な切替・復旧手順。停止対象・切替タイミングは実行前に確認する。
   - 読み取り専用のホスト確認: macOS 26.2 (25C56)、arm64。現在の PATH では nix が見つからない。インストール済み環境全体の存在確認や Nix ビルドは行っていない。
-- 全パッケージの棚卸し: Nixpkgs、上流 Flake、独自定義、Homebrew のいずれにするか。macOS / CPU 対応と必要な版を確認する。
+- 全パッケージの棚卸し: 共通 nixpkgs の標準定義で macOS / CPU に対応しているか確認する。難しい対象だけ公式 Flake・Homebrew 等の補完案を相談し、独自定義を既定の選択肢にしない。
   - 読み取り専用の brew list では formula 116件（依存を含む）、cask 59件。Brewfile.example は formula 38件、cask 51件で一致しない。インストール済みをすべて直接依存として宣言せず、導入意図・依存関係・名称変更を区別する。
   - 宣言例にない実機 cask: 1password-cli、cmd-eikana、cursor、discord、figma-beta、google-japanese-ime@dev、obs、sheltie、tailscale-app、unity-hub、via、visual-studio-code@insiders。一方、宣言例の google-japanese-ime、figma@beta、ogdesign-eagle、zoom は同名で見つからない。名称変更や別系列の可能性があるため単純な追加・削除一覧とは扱わない。
   - 移行対象の基準は Q14: A で確定。実機の意図的な導入対象と依存ライブラリの区別、Homebrew 以外の導入経路との照合、名称変更・別系列の整理は引き続き必要。
-  - 主要候補の公開定義を調査。Herdr は上流 Flake に aarch64-darwin があり、Agent Safehouse は nixpkgs に Darwin 定義がある。親も両定義を確認。Safehouse の調査時点の nixpkgs 定義は0.11.0で、実機0.12.0と差があるため、そのまま採用せず独立版固定を具体化する。
+  - 主要候補の公開定義を調査。Herdr は上流 Flake に aarch64-darwin があり、Agent Safehouse は nixpkgs に Darwin 定義がある。親も両定義を確認。Safehouse は調査時点で実機版との差があったが、後のユーザー指示により標準定義を採用済み。Herdr も共通 nixpkgs の標準定義を採用し、上流 Flake は使わない。
   - サブエージェント調査では Claude Code / Codex / OpenCode / Pi に Nix 定義があるが、Darwin 向け patch・配布物・依存 hash を含めた固定が必要。agent-device は Apple helper の署名・XCUITest・TCC と store 配置の互換性が未検証。Ghostty 等の GUI、Xcode / SDK / 権限承認は Homebrew / 手動操作の補完候補。パッケージ名の存在だけでは macOS 対応やビルド成功としない。
   - 出典: https://github.com/herdrdev/herdr/blob/master/flake.nix 、https://github.com/NixOS/nixpkgs/blob/master/pkgs/by-name/ag/agent-safehouse/package.nix 、https://github.com/NixOS/nixpkgs/tree/master/pkgs/by-name 、https://oss.callstack.com/agent-device/docs/installation 。Nix 評価・ビルド・実動作確認は未実施。
 - ランタイムの具体的な版と PATH の分担、mise が必要な用途の確認。config/.config/mise/config.toml で共通ランタイムと npm:agent-device、config/.hermes/mise.toml で Hermes 専用 Node / Python の指定を確認済み。Hermes 専用ランタイムは本体・更新方式との互換性を確認する。
@@ -110,7 +104,7 @@
 - Q12 に基づく設定と可変状態の具体的な分離、アプリからの設定書き換えとの競合確認。既存 symlink 方式の維持は前提にしない。
 - macOS 設定の具体値と対象一覧を調査し、専用オプション・preferences・独自処理・手動設定に分類する。
 - Hermes 等のサービス定義と更新・停止手順。plist の二重管理を避け、既存の安全要件を満たす方法。
-  - 上流 `flake.nix` は aarch64-darwin を対象に含み、Python 依存と Node 等を組み込む構成を提供する。専用 mise / venv を残さず上流 Flake へ移す候補。実ビルド・既存機能の互換性は未検証。`nix/packages.nix` では messaging 等の追加依存をビルド時に選び、Matrix は Linux 限定としている。実利用する追加機能との照合が必要。
+  - 上流 `flake.nix` は aarch64-darwin を対象に含み、Python 依存と Node 等を組み込む構成を提供する。標準定義に未収録の場合の補完候補であり、採用は相談後に決める。実ビルド・既存機能の互換性は未検証。`nix/packages.nix` では messaging 等の追加依存をビルド時に選び、Matrix は Linux 限定としている。実利用する追加機能との照合が必要。
   - 上流 Home Manager モジュールに Darwin の launchd agents と gateway / backend の定義がある。ただし現行 Safehouse / dotenvx 起動経路をそのまま提供するものではない。パッケージのみ利用する構成と、モジュールを必要な範囲で調整する構成を比較する。
   - Home Manager の launchd 適用処理は変更された job を bootout / bootstrap する。既存の停止・待機を飛ばして採用しない。現行 `__hermes_gateway_wait_pid_die.fish` はタイムアウトでも成功扱いで続行するため、移行では実装の複製でなく「停止を確認してから切り替える」という安全要件を基準にする。今回の調査では既存 wrapper を変更していない。
   - 上流モジュールは設定の deep merge と managed marker を使う。設定コマンドの制限や、宣言から削除したキーが実ファイルに残る可能性を考慮し、設定の所有権と削除・復旧時の意味を確認する。秘密の実ファイルを Nix の path 型へ渡さない。既存の認証・DB・memory・cron 等を移行時に上書きしない。
