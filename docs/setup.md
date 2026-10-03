@@ -46,14 +46,15 @@ bash scripts/dotfiles.sh build
 別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
-本体は nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は公式 Flake のパッケージのみを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。Hermes の構成評価・ビルドは通過したが、サービス接続はまだ完了していないため、下記の従来セットアップからの切替は行わない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
 
 ```fish
 bash scripts/dotfiles.sh update nixpkgs
+bash scripts/dotfiles.sh update hermes-agent
 bash scripts/dotfiles.sh update all
 ```
 
-更新対象は公開 input の名前であり、ツール名ではない。AI ツールも `update nixpkgs` でまとめて更新し、`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。更新は適用・起動を行わない。`switch` はサービス・残りの設定の移行が揃うまで未提供。
+更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。更新は適用・起動を行わない。`switch` はサービス・残りの設定の移行が揃うまで未提供。
 
 fish の生成設定は管理済み example を基にした共通設定で、Git 外の実 `config.fish` のコピーではない。切替前に、人間が秘密の移行と必要な非秘密の差分を確認する。既存の Fisher 配置・リンクも退避してから移し、二重読み込みさせない。`fish_variables` と履歴は Nix で管理しない。
 
