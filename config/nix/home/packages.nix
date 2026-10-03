@@ -1,0 +1,40 @@
+{ pkgs, ... }:
+{
+  home.packages = with pkgs; [
+    actionlint
+    age
+    agent-browser
+    awscli2
+    cocoapods
+    ctx7
+    fastlane
+    fd
+    ffmpeg
+    fish
+    fzf
+    gh
+    git
+    git-lfs
+    imagemagick
+    jq
+    keifu
+    mas
+    mise
+    mkcert
+    terminal-notifier
+    tmux
+    tree
+    usage
+    uv
+    vim
+    worktrunk
+    yazi
+    zellij
+    zoxide
+
+    bun
+    nodejs_22
+    python311
+    ruby_3_3
+  ];
+}

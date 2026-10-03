@@ -84,6 +84,9 @@
   - `AGENTS.md` は新しい正本・配布境界と食い違う箇所だけ更新する。共通エージェント指示の内容を移行に便乗して変更しない。
 - [ ] **パッケージと更新単位**: `config/nix/packages/`、`config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix` に確定した導入対象を実装し、操作入口へ更新対象を接続する。
   - 安定して利用できる既存定義を使い、Nix 導入と最新機能への一斉アップグレードを混同しない。採用版の互換性と独立更新の成立を事前ビルドで確認する。
+  - 一般 CLI 30件と共通ランタイム4件を `config/nix/home/packages.nix` へ追加。`config/nix/darwin/homebrew.nix` に55 cask、実機 `mas list` の22アプリ、補完 formula 7件を宣言。Homebrew は自動更新・upgrade・cleanup を無効にし、PostgreSQL の start/restart も無効にした。生成された activation の `HOMEBREW_NO_AUTO_UPDATE=1` / `--no-upgrade` と cleanup 指定なしを確認した。
+  - `dotfiles build` が通過し、`/nix/store/9zjhm0kd3ki51h06v8yvbvawpvhddykb-darwin-system-26.11.4cff07d` を生成。生成 profile の fish 4.9.3 / Git 2.55.0 / Node 22.23.3 / Python 3.11.16 / Ruby 3.3.10 / Bun 1.4.2 / uv 0.12.17 / jq 1.8.2 の起動を確認。Bun は旧1.3.13からの minor 更新候補であり、利用互換性は切替前の確認対象。Homebrew bundle・activation・サービス操作は未実行。
+  - gomi（固定 nixpkgs は1.6.4、実機1.6.5）と dotenvx（同2.31.1、実機2.32.4）は downgrade を避けるため別定義が未完了。AI CLI と外部拡張、fish の設定・PATH・保護 wrapper の移行も未完了なので switch は引き続き提供しない。
 - [ ] **ユーザー設定と拡張の配置**: `config/nix/home/` と既存 `config/` の設定を接続し、共通指示、fish、エディタ、端末、エージェント設定、外部スキル / 拡張 / プラグインを配置する。
   - `fish_variables` は store 外の可変状態とし、宣言する PATH と旧 universal PATH の重複を整理する。実機の universal 値を無断で削除しない。fish plugin も revision を固定し、非Aqua shell の SSH socket 補完を保つ。書き換えられるアプリ設定の所有権を具体化し、新規配布先や duplicate plugin load を増やさない。未知の実ファイルに force overwrite しない。
 - [ ] **保護・起動・PATH の統合**: `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数、gateway / dashboard wrapper、rm wrapper の参照先を Nix 環境へ接続する。
@@ -101,7 +104,7 @@
 
 ### 初期移行表（棚卸し中）
 
-実機 `brew info --json=v2 --installed` の metadata を確認。installed-on-request は44 formula、cask は59件。以下は導入元を確認した移行候補で、Nix の評価・実ビルド前に完了扱いしない。Homebrew 外の導入 metadata と App Store の照合は残る。
+実機 `brew info --json=v2 --installed` の metadata を確認。installed-on-request は44 formula、cask は59件。以下は導入元を確認した移行候補で、Nix の評価・実ビルド前に完了扱いしない。App Store は `mas list` で22件を照合済み。Homebrew 外の npm / uv / mise / 手動アプリの metadata 照合は残る。
 
 | 現在の対象（Homebrew） | 移行先 / 固定単位 | 残る確認・例外 |
 |---|---|---|
@@ -113,7 +116,11 @@
 | mise | Nix の CLI、プロジェクト用途のみ | 共通ランタイムの二重管理を解消 |
 | fisher | Home Manager の fish plugin 宣言 | plugin revision を固定 |
 | icu4c@76, libpq, oniguruma, pcre2, postgresql@17 | 用途確認後に確定 | 明示導入フラグがあるため依存として勝手に除外しない。DB / service / 開発用ライブラリの用途を区別 |
-| その他56 cask | Homebrew 補完、導入一覧を Nix 管理 | 実機59件から上記3 CLIを除く。アプリ自動更新を許容。不要なものは確認してから除外 |
+| その他55 cask、App Store 22件 | Homebrew 補完、導入一覧を Nix 管理 | 実機59 caskから上記3 CLIとCotEditorを除く。CotEditorは実機にApp Store receiptがあるためmasへ一本化。アプリ自動更新を許容 |
+
+補足: 旧 `figma-beta` は tap metadata がなく、現在の公式 cask は有効な `figma@beta`（126.10.3）だった。Nix 定義には現行名を採用するが、現在の116.18.4のアプリとの衝突・導入経路整理は切替前に確認する。`sheltie` と `zerdr` は `ryonakae/tap` の完全修飾名を使用。生成 Brewfile は nix-darwin の既定でこの2パッケージに `trusted: true` を付けるため、適用時の変更範囲に含める。実適用はまだ行っていない。
+
+依存 metadata 上、oniguruma は jq、pcre2 は fish / Git / glib / ripgrep が使用。icu4c@76 / libpq / postgresql@17 に直接依存する formula は見つからなかったが、開発プロジェクトや実 DB の用途を否定する根拠にはしない。
 
 ## 切替・復旧手順
 
