@@ -9,6 +9,12 @@
 - 要件合意後に plan で実装計画を保存し、その承認後に implement で実装する。要件整理中は実環境を切り替えない。
 - 2026-10-03 開始時点の既存変更は config/.pi/agent/extensions/pi-gpt-fast-mode/config.json と config/.pi/agent/settings.json。上書きしない。
 
+## 標準管理の補完調査（採用前・相談待ち）
+
+- Hermes: [公式 Flake](https://github.com/NousResearch/hermes-agent/blob/main/flake.nix) は aarch64-darwin を対象に含み、パッケージとサービスモジュールを分離している。パッケージのみを公式定義から採用し、root lock で入力を固定する案。独自 package 定義・updater は作らず、サービス起動は別扱い。実ビルドは未実施。
+- agent-device: [0.21.19 の helper 実装](https://unpkg.com/agent-device@0.21.19/dist/src/helper.js) はパッケージの `apple/macos-helper` 内で `swift build -c release --package-path` を行い、`.build/release` から HOME 内の cache へコピーする。単純な store 配置はこのビルド先が読み取り専用になるため、[mise の標準 npm backend](https://mise.jdx.dev/dev-tools/backends/npm.html) を残す案。npm の版固定と全推移依存の固定は区別し、Node 要件も導入時に確認する。helper の実ビルド・署名・権限変更は未実施。
+- 可変設定: 採用中の Home Manager では Zed に `mutableUserSettings` があり、Pi のモジュールは設定を store にリンクする。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。通常ファイル配置とは分けて採用方法を判断し、独自 merge 基盤は作らない。
+
 ## 決定事項
 - 設定の分離に関する追加指示: fish 以外も通常の設定本文は元の形式で管理し、Nix は導入・連携・配置の指定に薄くする。Nix 固有のパス解決や OS 宣言は Nix に残す。
 - 最新の追加指示: 「可能な限り標準管理に統一。どうしてもそれが難しいというものだけは相談」。AI を含む本体は共通 nixpkgs の標準定義、設定の配置は Home Manager に分ける。現行版維持・個別更新のための独自パッケージや専用 updater は不要。標準管理が難しい対象だけ理由・代案を示して採用前に相談する。Q3 / Q10 の個別・AI グループ更新の決定は撤回した。

@@ -94,7 +94,7 @@
   - 以前実行した全36テストは Safehouse のダミーごみ箱保護で2ケース・4 errors（`/tmp/dotfiles-tests.log`）。ユーザー指示により再実行はせず、今後の受入ゲートから外す。保護設定は変更していない。後片付けが拒否された一時ディレクトリ（`tmp8ud28y15`、`tmpgumdah3_`）は残したまま。
   - 過去の試作（撤回済み）: `b9f7ab5` で Claude Code / Codex / Pi / OpenCode の独立定義と nix-update を追加してビルドしたが、標準管理を優先する追加指示により全て削除した。これらの定義や更新処理を今後の実装の前提にしない。
   - 現在: Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準パッケージへ統一。unfree は Claude Code と Antigravity CLI のみ許可。`update ai`・ツール別更新・nix-update app・`config/nix/packages/` を削除した。通常 build が成功し、`/nix/store/9sx7nbk5gl04j7j4i6zv4hsx05hng9lz-darwin-system-26.11.4cff07d` を生成。実機には未適用。
-  - Hermes / agent-device は採用中の nixpkgs に標準定義が見つかっておらず、導入方法を確定していない。Hermes の公式 Flake はパッケージ単独採用が可能と調査済みだが未採用。Herdr は標準定義があるため、調査済みの上流 Flake は使わない。例外の採用は理由・代案を提示して相談する。
+  - Hermes / agent-device は採用中の nixpkgs に標準定義がなく、補完案の承認待ち。Hermes は公式 Flake の `packages.aarch64-darwin.default` をパッケージのみ採用し、依存は公式定義と root lock に任せる案。サービスモジュールは取り込まない。agent-device は既存 mise の npm backend を残す案。0.21.19 の macOS helper は配布パッケージ配下で `swift build --package-path` を実行するため、単純な store 配置では書き込みできず、独自包装が必要になる。どちらも未実装・未適用。Herdr は標準定義があるため公式 Flake は使わない。
 - [ ] **ユーザー設定と拡張の配置**: `config/nix/home/` と既存 `config/` の設定を接続し、共通指示、fish、エディタ、端末、エージェント設定、外部スキル / 拡張 / プラグインを配置する。
   - `fish_variables` は store 外の可変状態とし、宣言する PATH と旧 universal PATH の重複を整理する。実機の universal 値を無断で削除しない。fish plugin も revision を固定し、非Aqua shell の SSH socket 補完を保つ。書き換えられるアプリ設定の所有権を具体化し、新規配布先や duplicate plugin load を増やさない。未知の実ファイルに force overwrite しない。
   - `home/fish.nix` と `home/protection.nix` を追加。既存の fish 関数・補完・SSH socket 補完をファイル単位で配置し、bobthefish / fzf plugin は共通 nixpkgs の固定 source を使う。mise のグローバル tools をなくしてプロジェクト用途へ限定し、共通ランタイムは Nix profile を優先する。PATH の変更時にも `.local/bin` を先頭へ戻す handler を配置する。
@@ -104,7 +104,7 @@
   - 旧 mise `config.toml` は現行環境で参照され得るため変更せず、切替後は `config.base.toml` を HOME 側の `mise/config.toml` として配置する。旧ファイル・配布経路は集中切替時に整理し、二重管理を残さない。新しい設定の fish / TOML 構文と生成物を確認し、通常 build が成功（`/nix/store/7v6w1yiij5a73svjxhpvdyn2fn15hgrg-darwin-system-26.11.4cff07d`）。実機には未適用。
   - `home/files.nix` で Ghostty / Worktrunk / Husky / Yazi の設定、共通 AGENTS と Claude / Codex / Gemini / Pi の参照先、共通通知と各 CLI の通知スクリプトを標準の `home.file` / `xdg.configFile` に接続。本文・既存 symlink の正本は変更していない。Yazi の git / smart-enter / full-border は `pkgs.yaziPlugins`、自作 smart-leave は既存 Lua を使用する。
   - 通常 build が成功（`/nix/store/1vqp2n0qn3wjmri3kz9wl7vsaanywwaj-darwin-system-26.11.4cff07d`）。shell / TOML 構文、生成ファイルと正本の一致、外部 Yazi plugin の `main.lua` 配置を確認。Ghostty / Yazi の UI 動作や通知送信は未実行。切替前に旧 Yazi `package.toml` と手動導入 plugin の退避を確認し、切替後の対象 plugin 更新は nixpkgs に一本化する。
-  - 未接続の設定: Zed / Pi 等のアプリが書き換える設定は標準の可変設定対応を確認してから扱う。Vim は NeoBundle と一部の旧 plugin に依存し、Zellij は未配布の `zam.wasm` を参照するため、ファイルだけ配置して再構築完了とはしない。Herdr の plugin、外部スキル、その他のエージェント設定も引き続き未完了。
+  - 未接続の設定: Zed / Pi 等のアプリが書き換える設定は標準の可変設定対応を確認してから扱う。採用中の HM では Zed に `mutableUserSettings` がある一方、Pi の設定モジュールは store へのリンクのみ。HM の汎用 merge helper は experimental と明記されているため、標準モジュールと同じ保守性だとは扱わず、利用方法を未確定とする。Vim は NeoBundle と一部の旧 plugin に依存し、Zellij は未配布の `zam.wasm` を参照するため、ファイルだけ配置して再構築完了とはしない。Herdr の plugin、外部スキル、その他のエージェント設定も引き続き未完了。
 - [ ] **保護・起動・PATH の統合**: `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数、gateway / dashboard wrapper、rm wrapper の参照先を Nix 環境へ接続する。
   - 共通ロジックとサービス固有の feature 差分を保つ。Safehouse の HOME / profile 順・秘密保護・TMPDIR 補正・環境継承・引数透過は既存実装と生成物を確認して維持する。共通ランタイム移行に伴う mise / Homebrew 固定パスを解消する。
 - [ ] **Hermes のサービスと安全な適用**: `config/nix/home/hermes.nix`、`hermes-gateway.fish`、`hermes-dashboard.fish`、待機 helper へ、固定パッケージ・単一の plist 所有者・停止確認・起動失敗時の扱いを実装する。
