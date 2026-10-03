@@ -4,6 +4,8 @@
     ./packages.nix
     ./fish.nix
     ./files.nix
+    ./pi.nix
+    ./skills.nix
     ./protection.nix
   ];
 

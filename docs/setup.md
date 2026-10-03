@@ -109,6 +109,7 @@ rm 転送を外す場合は `~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gom
 
 `npx skills` はホームで実行する。`-g` と `update` は使わず、追加・更新の配布先を `-a claude-code` に絞る。
 自作スキルは dotfiles 側で管理し、外部スキルの実体は `~/.agents/skills/` に置く。
+Nix への切替後は自作スキルを Home Manager で個別配置し、旧 `create-skills-symlink.sh` を併用しない。初回は既知の自作リンクだけを確認・退避し、外部スキルや Claude の他のディレクトリは保持する。外部スキルの固定復元は移行中であり、以下の取得手順とは区別する。
 
 新規マシンで lock の登録内容を取得する場合:
 
@@ -132,6 +133,12 @@ npx skills add callstack/agent-device -s agent-device -a claude-code -y
 3. `config/skills-lock.json` の差分を確認する。削除時も、配布ファイルと lock の両方から登録が消えたことを確認する。
 
 ## Pi
+
+Nix への切替後も `settings.json`、footer、fast-mode の設定は書き込み可能な実ファイルとして使う。Home Manager の標準 merger は再適用時にリポジトリの定義値を優先し、未定義キーを保持する。アプリ内で変更した定義済みの値を永続化する場合は、正本にも反映する。正本からキーを削除しても実ファイルの同じキーは削除されない。
+
+適用前には Pi を停止する。初回は既存の設定リンクを対象ごとに確認・退避し、正本へのリンクではなくローカルの実ファイルへ移す。リンク先へ書き戻す事故を避けるため、設定ファイルや親ディレクトリが別の実体へリンクしていると適用は中止する。認証・session を移行用の設定や store へ含めない。
+
+拡張の本体版は `config/.pi/agent/settings.json` の npm version / Git commit で固定する。これは npm の推移依存全体の lock ではなく、新規取得時の全機能の復元検証は移行中の残作業。拡張のインストール先は通常の Pi 管理ディレクトリに保ち、Nix の build / activation では取得・更新しない。Nix 管理の Pi 本体には自己更新コマンドを使わない。
 
 OpenAI は Pi 内の `/login openai` から `Sign in with ChatGPT` を選んで認証する。
 MCP の個人設定は `~/.pi/agent/mcp.json` に置く。OAuth が必要なサーバーには `pi mcp login <server>` を使う。

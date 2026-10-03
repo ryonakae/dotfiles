@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "0.99.2",
+  "lastChangelogVersion": "1.0.0",
   "defaultProvider": "openai",
   "defaultModel": "gpt-6-astra",
   "defaultThinkingLevel": "medium",
@@ -10,14 +10,14 @@
     "+codemode"
   ],
   "packages": [
-    "git:github.com/ryonakae/pi-subagents@master",
-    "npm:pi-footer",
-    "npm:pi-web-access",
-    "npm:@tifan/pi-inline-skills",
-    "npm:@normful/pi-auto-name",
-    "npm:@pi-kaush/pi-tool-call-markers",
-    "npm:pi-gpt-fast-mode",
-    "npm:@hk_net/pi-usage-bars"
+    "git:github.com/ryonakae/pi-subagents@be898c753e9eb32cf1315f63b1c1f5ef0cf6f782",
+    "npm:pi-footer@0.5.1",
+    "npm:pi-web-access@0.35.0",
+    "npm:@tifan/pi-inline-skills@1.0.6",
+    "npm:@normful/pi-auto-name@2.0.0",
+    "npm:@pi-kaush/pi-tool-call-markers@0.3.9",
+    "npm:pi-gpt-fast-mode@0.1.2",
+    "npm:@hk_net/pi-usage-bars@0.7.0"
   ],
   "quietStartup": true,
   "enabledModels": [

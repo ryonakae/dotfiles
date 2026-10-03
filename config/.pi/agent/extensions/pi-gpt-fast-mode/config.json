@@ -1,6 +1,6 @@
 {
   "persist": true,
-  "desired": true,
+  "desired": false,
   "tier": "priority",
   "models": [
     "openai/gpt-6-luna",
