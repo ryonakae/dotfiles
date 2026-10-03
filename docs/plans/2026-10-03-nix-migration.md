@@ -83,12 +83,13 @@
 - [ ] T7 のサービス wrapper と、HOME 許可・profile 順・環境継承・TMPDIR 補正を照合する。サービスが対話用 feature を省く差分は維持する。
 - 完了条件: shell / 非対話 / launchd の生成された実行経路で、Nix 本体の利用と rm 保護の優先順位を説明できる。実秘密の読み取りや保護ポリシーの緩和で検証を通さない。
 
-### T7. Hermes サービス・Hindsight — 未実装
+### T7. Hermes サービス・Hindsight — 停止待機のみ修正済み
 
 Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサービスを起動しない構成を作る。
 
 - [ ] `config/nix/home/hermes.nix` と既存 gateway / dashboard wrapper・管理関数を接続し、plist の所有者を一つにする。現在の wrapper は `~/.hermes/hermes-agent/venv/bin/hermes` 前提なので、パッケージ追加だけで済ませない。
-- [ ] `__hermes_gateway_wait_pid_die.fish` のタイムアウト成功扱いを修正し、未停止なら切替を中止する。HM の再読み込みより前に正規停止が済む順序を保証する。
+- [x] `__hermes_gateway_wait_pid_die.fish` のタイムアウトを失敗に変更し、stop / restart / update の全3呼び出しで後続の bootout / bootstrap / 本体更新を中止する。source・生成配置の fish 構文、byte 一致、差分、固定 lock ビルドで確認。実サービス・待機の動作検証や回帰テストは実施していない。
+- [ ] 正規停止コマンド自体の失敗、状態取得失敗、HM の再読み込みを含む切替全体の停止ゲートを確定する。今回の修正は待機 timeout の扱いのみ。
 - [ ] ホストごとの利用状態を扱い、未使用・停止中のサービスが定義追加だけで自動ロードされないようにする。利用中の別 Mac のデータを保持し、初期化・上書きしない。
 - [ ] Hindsight の `config/.hermes/services/docker-compose.yml` と image digest を固定し、Docker・volume・認証は Nix 世代から分離する。`config/.hermes/SOUL.md` の配置と、旧 `mise.toml` の扱いも確定する。
 - 完了条件: 生成された wrapper / plist / activation の確認とビルドが通る。別 Mac の実機移行・稼働確認は、その Mac での作業として残し、この Mac の準備のゲートにしない。
@@ -229,9 +230,9 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi の可変設定・指示文と自作スキル配置までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/d9j6i0frk5pw53hnd5qh3i6a6cdggfn1-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/ip6x4xhgmx3fxvj26cj6i8zmpjc456yj-home-manager-generation` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi の可変設定・自作スキル配置と gateway 待機 timeout 修正までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/shnhnv9mzdg48n7qyf60q9h8n2d6l6ar-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/fv8hskbg9ndifaiw9v2m9gjs8zc3w3zd-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |

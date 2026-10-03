@@ -27,6 +27,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
 
             set_color cyan; echo "→ waiting for gateway process to exit"; set_color normal
             __hermes_gateway_wait_pid_die 90
+            or return $status
 
             set_color cyan; echo "→ unloading launchd service"; set_color normal
             set -l bootout_out (launchctl bootout $domain/ai.hermes.gateway 2>&1)
@@ -51,6 +52,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
 
             set_color cyan; echo "→ waiting for gateway process to exit"; set_color normal
             __hermes_gateway_wait_pid_die 90
+            or return $status
 
             set_color cyan; echo "→ unloading launchd service"; set_color normal
             set -l bootout_out (launchctl bootout $domain/ai.hermes.gateway 2>&1)
@@ -89,6 +91,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             # restart は無人状態で即 bootstrap になり、race window が消える。
             command hermes gateway stop
             __hermes_gateway_wait_pid_die 120
+            or return $status
             launchctl bootout $domain/ai.hermes.gateway 2>/dev/null
 
             command hermes update $update_args
