@@ -36,7 +36,6 @@
     vim
     worktrunk
     yazi
-    zellij
 
     bun
     nodejs_22
