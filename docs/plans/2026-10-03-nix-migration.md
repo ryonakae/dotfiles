@@ -244,7 +244,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 ### 今回の部分構成レビュー
 
 - `0b581d3..1f56deb` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。既存の hook / plugin / 可変設定の残作業を含む全移行の完了承認ではない。
-- Vim はプラグイン維持から最小構成へ方針変更を承認済み。ビルド・構文・生成物の確認は成功、独立レビューはこれから。ZAM の取得方法は判断待ち。push・実機適用・Plan archive は未実施。
+- Vim はプラグイン維持から最小構成へ方針変更を承認済み。`7785d62..505c0a0` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。ビルド・構文・生成物の確認も成功。ZAM の取得方法は判断待ち。push・実機適用・Plan archive は未実施。
 
 ### Vim の検証記録
 
