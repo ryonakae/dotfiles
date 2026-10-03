@@ -4,6 +4,7 @@ let
 in
 {
   home.file = {
+    ".vimrc".source = ../../.vimrc;
     ".agents/AGENTS.md".source = agentInstructions;
     ".claude/CLAUDE.md".source = agentInstructions;
     ".codex/AGENTS.md".source = agentInstructions;
