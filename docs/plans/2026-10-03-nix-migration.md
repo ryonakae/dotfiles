@@ -2,7 +2,7 @@
 
 参照: [dig log](../dig/2026-10-03-nix-migration.md)。Q16 への「a」で要件整理を終了し、計画作成を承認された。dig log の最終確認待ちの記載はこの回答で解決済み。計画保存後の「ok」で実装を承認され、その後の「ok」「進めて」で既存 Pi 設定の変更を現在値のまま今回の移行へ含めることも承認された。
 
-追加確認: ユーザーの「hermes動いてないから気にしなくて良い」により、現在の Hermes は停止済みを前提とする。今回の移行で Hermes の停止・待機・中断調整は不要とし、自動起動もしない。将来、稼働中の Hermes を更新する場合の既存の安全要件とは区別する。
+追加確認（訂正）: この Mac では Hermes を使用しておらず、ディレクトリもない。別の Mac では稼働中。この Mac は新規導入対象とし、停止・既存データ移行・自動起動は行わない。共通のパッケージ・起動定義は、別の Mac で既存データを保持して移行できる構成にする。サービスの利用状態はホストごとに扱い、別の Mac への適用・停止・再起動はその Mac での作業時に確認する。
 
 追加変更: ユーザーの「回帰テストとかもいらない」「管理が楽な方にして」により、本移行ではテストの追加・再実行を行わず、構文・差分・Nix の評価とビルドで進める。gomi / dotenvx / Agent Safehouse は現行版維持と独立更新を要件から外し、共通 nixpkgs の標準定義を使う。以下の既存テスト結果は過去の実行記録であり、再実行の承認待ちではない。
 
@@ -56,9 +56,9 @@
 
 - 本体パッケージとサービスの所有権を分離する。上流 Flake のパッケージを使い、gateway / dashboard の定義は Home Manager 側の一か所で所有する。既存の `hermes gateway install` による plist 再生成とは併用しない。
 - 上流 services モジュールは Safehouse / dotenvx と停止順序をそのまま満たさないため、全面採用を前提にしない。パッケージを利用して既存の安全な起動契約を HM の launchd 定義へ移す方法を基本とし、独自のサービス管理基盤は作らない。
-- build は停止せず先に完了させる。今回の停止済み Hermes はデータを保持してパッケージ / plist を配置し、停止・待機や自動起動は行わない。将来の稼働中更新は、利用者確認 → 正規停止 → 終了確認 → 必要な DB バックアップ → 切替 → 起動確認の順にする。旧本体と新本体が同じ DB を同時に開く時間を作らない。
+- build は停止せず先に完了させる。この Mac には Hermes の既存環境がないため、パッケージ / 起動定義を用意し、停止・データ移行・自動起動は行わない。初期設定は利用開始時に行う。別の Mac の稼働中環境へ適用するときは、利用者確認 → 正規停止 → 終了確認 → 必要な DB バックアップ → 切替 → 起動確認の順にする。旧本体と新本体が同じ DB を同時に開く時間を作らない。
 - 現行 wait helper の「タイムアウトでも成功扱いで続行」は採用しない。停止失敗・待機時間超過なら切替を中止し、強制終了や継続を自動選択しない。既存の管理関数を移行時にも利用・更新し、外から launchctl を直接呼んで停止処理を飛ばさない。
-- HM の launchd activation が定義の追加だけで停止済み Hermes を起動しない構成にする。今回と新規 Mac は明示的にサービス起動を有効化するまで自動ロードしない。将来の稼働中更新では、HM の再読み込みより前に正規停止が完了する順序を保証し、操作入口を通さない適用でも未停止なら中止する。
+- HM の launchd activation が定義の追加だけで未使用・停止中の Hermes を起動しない構成にする。この Mac と新規 Mac は明示的にサービス起動を有効化するまで自動ロードしない。将来の稼働中更新では、HM の再読み込みより前に正規停止が完了する順序を保証し、操作入口を通さない適用でも未停止なら中止する。
 - Hermes の config / auth / DB / memory / skills / cron は実機の可変データとして保持し、宣言化する非秘密設定だけを明示する。既存実設定を無差別に読み込まず、必要な非秘密項目はユーザーが提供する安全な抜粋等で確認する。package の追加依存は利用機能と照合する。
 - Hindsight の Docker サービスはそのまま独立した状態管理として扱う。Compose 定義は宣言的に配置し、イメージの tag に加えて取得 digest を固定する。データ volume・Codex 認証・Docker runtime は Nix 世代の復元に含めない。データ移行を伴う更新は別途停止・バックアップを確認する。
 
@@ -80,7 +80,7 @@
 - [ ] **Flake と bootstrap**: `flake.nix`、`flake.lock`、`config/nix/`、`scripts/bootstrap-nix.sh`、`scripts/dotfiles.sh` を作る。
   - まず root flake、共通 / ホスト分離、HM 統合、通常 build / switch の依存固定を成立させる。bootstrap は破壊的な自動修復を持たせず、再実行時は既存状態を検出する。
   - bootstrap を先行実装。公式 Nix 2.34.0 / aarch64-darwin の配布物と SHA-256 を固定し、実ダウンロードの checksum 一致を確認。`scripts/tests/test_bootstrap_nix.py` の8件と `bash -n scripts/bootstrap-nix.sh` が通過。Safehouse 拒否・明示実行・OS / CPU・既存状態・checksum / download 失敗・daemon / no-channel-add 引数をダミーの外部コマンドで検証した。その後、人間が Safehouse 外で導入し、`nix (Nix) 2.34.0` を確認。途中の `vifs` 待ちは macOS の許可ダイアログ待ちで、利用者の許可後に進行した。
-  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。公開 direct input の個別更新・all を実装。独立 package 更新の試作は標準パッケージへの統合に合わせて撤回し、AI 本体の導入時に必要な更新入口を接続する。switch は保護・サービス定義の統合後に接続するため現時点では公開しない。
+  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。公開 direct input の個別更新・all を実装。標準3ツール向けの独立更新の試作は撤回。その後、Claude Code / Codex / Pi / OpenCode の独立定義へ `update tool / ai / all` を接続した。switch は保護・サービス定義の統合後に接続するため現時点では公開しない。
   - 実 Nix を使う `scripts/tests/test_dotfiles_cli.py` の4件が通過。host 差替え、通常 build の lock 不変、未追跡ファイルの非混入、公開 URL 変更・lock entry 欠落の拒否、明示 update を確認。ダミー `.env` 作成は Safehouse に拒否されたため、その拒否を回避せず通常名の未追跡ダミーで非混入を検証した。
   - 実機の非秘密 host 値を `/tmp/dotfiles-machine.SyCOAn6p/host.json` に限定して事前ビルド。最小構成の flake check / build が通過し、`/nix/store/ysxr12iyc0c9h1wsjniq3kfilwkjqf25-darwin-system-26.11.4cff07d` を生成。activation は未実行。固定 nixpkgs が選ぶ Nix は 2.34.8 で、現在稼働中の 2.34.0 をまだ置き換えていない。
   - `AGENTS.md` は新しい正本・配布境界と食い違う箇所だけ更新する。共通エージェント指示の内容を移行に便乗して変更しない。
@@ -90,6 +90,10 @@
   - `dotfiles build` が通過し、`/nix/store/9zjhm0kd3ki51h06v8yvbvawpvhddykb-darwin-system-26.11.4cff07d` を生成。生成 profile の fish 4.9.3 / Git 2.55.0 / Node 22.23.3 / Python 3.11.16 / Ruby 3.3.10 / Bun 1.4.2 / uv 0.12.17 / jq 1.8.2 の起動を確認。Bun は旧1.3.13からの minor 更新候補であり、利用互換性は切替前の確認対象。Homebrew bundle・activation・サービス操作は未実行。
   - gomi / dotenvx / Agent Safehouse の独立定義を試作したが、現行版維持は不要とのユーザー判断で撤回。3つとも `home/packages.nix` の標準パッケージへ統合し、個別 hash と nix-update 用の試作コード・追加テストを除去した。通常 build が成功し、`/nix/store/my4x19v9lcgvhmwai98r56bncdwah49y-darwin-system-26.11.4cff07d` を生成。共通 nixpkgs の更新で一緒に更新する。
   - 以前実行した全36テストは Safehouse のダミーごみ箱保護で2ケース・4 errors（`/tmp/dotfiles-tests.log`）。ユーザー指示により再実行はせず、今後の受入ゲートから外す。保護設定は変更していない。後片付けが拒否された一時ディレクトリ（`tmp8ud28y15`、`tmpgumdah3_`）は残したまま。
+  - Claude Code 2.1.285 / Codex 0.159.1 / Pi 1.0.0 / OpenCode 1.18.33 を `config/nix/packages/` に追加。Claude と Pi は共通 nixpkgs の recipe を再利用し、Codex と OpenCode は公式配布物を固定して配置する。Codex は CLI 単体ではなく補助バイナリ・音声リソースを含む公式 package archive を採用し、Rust / V8 の独自ビルド管理を避けた。unfree は Claude Code のみに許可。
+  - Pi はソース・npm 依存・モデル一覧の3 hash を固定。初期 hash の同一 placeholder を nix-update がまとめて置換したため最初の build は不一致で失敗したが、取得値をそれぞれ固定して修正。OpenCode は installPhase の行継続を修正した。最終 build は成功し、`/nix/store/jyj6jhjsa9b3pgy3r767wv2k2a2rqj3f-darwin-system-26.11.4cff07d` を生成した。起動・切替は未実行。
+  - 更新入口は nix-update を使用し、Pi のモデル一覧も更新対象にする。通常 build は固定値のみを使用。Python 構文、Nix format、差分を確認した。回帰テストは追加・実行していない。
+  - Hermes / Herdr の公式 Flake の読み取り調査を実施し、package 単独採用が可能と確認。Hermes の default は optional integrations を含み、配布契約で自己更新を external と扱う。Herdr は Rust / Zig を使う公式 build 定義を持つ。独自依存を無検証で follows せず、lock へ保持する。まだ root input への追加・実ビルドは行っていない。
 - [ ] **ユーザー設定と拡張の配置**: `config/nix/home/` と既存 `config/` の設定を接続し、共通指示、fish、エディタ、端末、エージェント設定、外部スキル / 拡張 / プラグインを配置する。
   - `fish_variables` は store 外の可変状態とし、宣言する PATH と旧 universal PATH の重複を整理する。実機の universal 値を無断で削除しない。fish plugin も revision を固定し、非Aqua shell の SSH socket 補完を保つ。書き換えられるアプリ設定の所有権を具体化し、新規配布先や duplicate plugin load を増やさない。未知の実ファイルに force overwrite しない。
   - `home/fish.nix` と `home/protection.nix` を追加。既存の fish 関数・補完・SSH socket 補完をファイル単位で配置し、bobthefish / fzf plugin は共通 nixpkgs の固定 source を使う。mise のグローバル tools をなくしてプロジェクト用途へ限定し、共通ランタイムは Nix profile を優先する。PATH の変更時にも `.local/bin` を先頭へ戻す handler を配置する。
@@ -132,9 +136,9 @@
 ## 切替・復旧手順
 
 1. **切替前**: 完成した構成を現在の Mac 向けに build。生成された activation とパッケージ参照を確認し、更新する入力・実機パス・サービス・preferences と旧構成への戻し方を用意する。破壊的な Homebrew cleanup や Nix GC は実行しない。
-2. **承認と停止**: ユーザーへ影響を提示し、必要なエージェント・端末・アプリの停止を確認。現在の Hermes は停止済みのため停止・待機は不要。将来、稼働状態で更新する場合だけ管理関数で正規停止し、失敗したら中止する。実行中のエージェント自身が途切れる場合は、人間用の再開手順を先に渡す。
-3. **状態保全**: 停止済み Hermes の DB・認証・memory 等には触れず、構成だけを移す。後で初回起動・schema 更新を行う前に、人間が sandbox 外で必要な状態を整合した形でバックアップする。関連 WAL 等を取りこぼさず、ログや Git / store へ内容を出さない。Hindsight のイメージやデータを変える場合は別途整合したバックアップを取る。既存の秘密・Keychain は変更しない。
-4. **適用**: 確認済みの旧リンク / plist / shell 設定のみを退避して新構成を適用。既存実ファイルを一括強制上書きしない。秘密の参照と PATH を確認し、起動を承認されたサービスだけ起動する。停止済み Hermes は停止したままにする。
+2. **承認と停止**: ユーザーへ影響を提示し、必要なエージェント・端末・アプリの停止を確認。この Mac は Hermes 未使用のため停止・待機は不要。別の Mac の稼働中環境へ適用する場合は、利用者確認後に管理関数で正規停止し、失敗したら中止する。実行中のエージェント自身が途切れる場合は、人間用の再開手順を先に渡す。
+3. **状態保全**: この Mac には Hermes の既存データがなく、移行やバックアップは不要。別の Mac の既存環境では DB・認証・memory 等を保持し、停止後、新しい本体の初回起動・schema 更新より前に、人間が sandbox 外で必要な状態を整合した形でバックアップする。関連 WAL 等を取りこぼさず、ログや Git / store へ内容を出さない。Hindsight のイメージやデータを変える場合は別途整合したバックアップを取る。既存の秘密・Keychain は変更しない。
+4. **適用**: 確認済みの旧リンク / plist / shell 設定のみを退避して新構成を適用。既存実ファイルを一括強制上書きしない。秘密の参照と PATH を確認し、起動を承認されたサービスだけ起動する。この Mac の Hermes は起動しない。別の Mac では適用前の利用状態と利用者の承認に従う。
 5. **スモーク確認**: 下記 Final Validation の実機項目を確認する。設定変更を伴う再起動・ログアウト等は必要なものだけ直前確認する。
 6. **失敗時**: 新サービスを正規停止し、原因に応じて旧生成物 / 旧リンク / 旧 plist / 旧 preferences へ戻す。初回は以前の Nix 世代が存在しないので、退避した非 Nix 構成への復旧手順を使う。以後は保持した Nix 世代を使えるが、Homebrew アプリや OS preferences、DB は同じ操作で戻らない。
 7. **DB を変更した場合**: 旧バイナリを新 schema の DB へそのまま向けない。必要なら停止状態で人間がバックアップを復元し、切替後の新規データが失われ得ることを確認してから実施する。自動 rollback で DB を巻き戻さない。
@@ -147,7 +151,7 @@
 - [ ] **固定構成の事前ビルド**: `dotfiles build` で lock の整合確認と評価・ビルドを行う。build 中に activation や公開依存の更新を行わない。
 - [ ] **構文・差分**: 変更した fish は `fish --no-execute`、shell は対応する `-n`、Nix は formatter と評価、文書は参照と `git diff --check`。Pi の既存変更を保持する。
 - [ ] **配置・秘密・状態**: 宣言と生成物を確認し、秘密・認証・DB・可変状態を store に入れない。切替前に既存ファイルとの衝突と退避先を確認し、未知の実ファイルを上書きしない。
-- [ ] **起動・サービス**: 生成された PATH、wrapper、plist、activation の内容を確認する。停止済み Hermes は起動しない。実サービスの利用確認は再開時に行い、移行のゲートにしない。
+- [ ] **起動・サービス**: 生成された PATH、wrapper、plist、activation の内容を確認する。この Mac の Hermes は起動しない。別の Mac の稼働環境では既存データの保持と停止順序を維持するが、その実機での適用・確認をこの Mac の構成準備のゲートにしない。
 - [ ] **復旧と完成状態**: 初回は旧リンク・設定の退避物へ戻す手順を用意する。DB の復旧演習はしない。管理の正本と通常の更新経路を Nix に集約し、Homebrew 補完・手動操作・可変状態・未確認事項を明記する。実機への適用は直前承認後に行い、未適用や別 Mac での未実証を全体完了と扱わない。
 
 ## 実行上の境界と調査根拠
