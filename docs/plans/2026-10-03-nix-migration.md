@@ -4,11 +4,13 @@
 
 追加確認: ユーザーの「hermes動いてないから気にしなくて良い」により、現在の Hermes は停止済みを前提とする。今回の移行で Hermes の停止・待機・中断調整は不要とし、自動起動もしない。将来、稼働中の Hermes を更新する場合の既存の安全要件とは区別する。
 
+追加変更: ユーザーの「回帰テストとかもいらない」「管理が楽な方にして」により、本移行ではテストの追加・再実行を行わず、構文・差分・Nix の評価とビルドで進める。gomi / dotenvx / Agent Safehouse は現行版維持と独立更新を要件から外し、共通 nixpkgs の標準定義を使う。以下の既存テスト結果は過去の実行記録であり、再実行の承認待ちではない。
+
 ## Requirements
 
 - 現在と今後の Apple Silicon Mac を、ツール・アプリ・ユーザー設定・macOS 設定を含めて再構築できるようにする。実機で意図的に導入されたものを基準とし、Brewfile.example だけを移す構成にしない。依存ライブラリと直接利用するツール、名称変更・別系列を区別する。
 - upstream Nix の multi-user daemon、Flakes、nix-darwin、統合した Home Manager を構成の中心にする。ツールは原則 Nix、macOS 対応・保守負担に問題があるものは Homebrew / App Store 等で補完し、導入一覧の正本を Nix に集約する。
-- 共通 Nixpkgs は rolling 系列を使い、通常の適用は固定済み依存から行う。Claude Code・Codex・Pi・OpenCode・Hermes 等と Herdr・agent-device・Agent Safehouse は個別・グループ更新可能にする。外部拡張・プラグイン・スキルも取得元と版を固定する。一般 GUI アプリの自動更新は許容し、flake.lock による同一版復元とは区別する。
+- 共通 Nixpkgs は rolling 系列を使い、通常の適用は固定済み依存から行う。Claude Code・Codex・Pi・OpenCode・Hermes 等と Herdr・agent-device は個別・グループ更新可能にする。外部拡張・プラグイン・スキルも取得元と版を固定する。一般 GUI アプリの自動更新は許容し、flake.lock による同一版復元とは区別する。
 - 設定はリポジトリを編集して適用する方式を基本にする。元の形式の設定・スクリプトも利用でき、全内容を Nix 記法へ翻訳する必要はない。既存の即時反映方式を残すためだけの out-of-store link は使わない。
 - Node / Python / Ruby / Bun の共通環境は Nix に移す。mise は既存プロジェクトが必要とする用途に限る。別プロジェクトの設定を無断で変更しない。
 - dotenvx + Keychain + Safehouse を維持する。機密ファイルの直接アクセスを拒否し、共通ツール用の値は sandbox 外で復号して起動時に注入する。注入済み環境変数の利用は許容し、完全隔離を追加要件にしない。プロジェクト用秘密を共通ファイルへ混ぜない。
@@ -32,7 +34,7 @@
 
 - 初期の移行表を本計画のタスク内へ記録し、各直接導入対象について「現在の導入元・移行先・固定単位・例外理由」を確定してから切替する。別の恒久的な手書きパッケージ一覧は増やさず、導入後の正本は Nix 定義とする。
 - 一般 CLI は nixpkgs の既存定義を優先する。独立更新対象は既存の上流 Flake、公式配布物、既存 nixpkgs のパッケージ関数・patch を利用し、版とソースだけでなく依存 hash / 補助配布物も固定する。各ツール用に nixpkgs 全体の入力を複製しない。
-- Hermes / Herdr は Darwin 対応の上流 Flake を第一候補にする。Agent Safehouse は独立した release / source と hash を固定する。調査時点の nixpkgs Safehouse は実機より古いため、無断で機能を落とす版へ戻さない。
+- Hermes / Herdr は Darwin 対応の上流 Flake を第一候補にする。gomi / dotenvx / Agent Safehouse は保守の容易さを優先し、共通 nixpkgs の標準定義に揃える。実機の現行版と一致させる override は作らない。
 - agent-device は npm 配布物と依存を固定し、Apple helper・署名・XCUITest の実動作を確認する。CLI に同梱された配布物を壊さない方法を優先し、未確認のまま store 内へ runtime install / codesign を行わせない。Nix 化が困難なら補完方式を提示し、個別版固定を失う変更は確認する。
 - GUI / App Store アプリと Xcode / SDK は macOS の配布経路を利用する。mosh は現行の firewall 手順が実体へ署名を書き込むため、今回は Homebrew 補完とし、store の変更を伴う方法へ移さない。権限・署名・firewall 設定は自動適用へ紛れ込ませない。
 - Homebrew は nix-darwin の homebrew 定義を正本にする。通常適用では `onActivation.autoUpdate = false`、`upgrade = false`、`cleanup = "none"`。導入一覧にないものの自動 uninstall / zap はしない。Homebrew 自体がない新規 Mac では、公式 bootstrap を先に行う手順を用意する。
@@ -78,7 +80,7 @@
 - [ ] **Flake と bootstrap**: `flake.nix`、`flake.lock`、`config/nix/`、`scripts/bootstrap-nix.sh`、`scripts/dotfiles.sh` を作る。
   - まず root flake、共通 / ホスト分離、HM 統合、通常 build / switch の依存固定を成立させる。bootstrap は破壊的な自動修復を持たせず、再実行時は既存状態を検出する。
   - bootstrap を先行実装。公式 Nix 2.34.0 / aarch64-darwin の配布物と SHA-256 を固定し、実ダウンロードの checksum 一致を確認。`scripts/tests/test_bootstrap_nix.py` の8件と `bash -n scripts/bootstrap-nix.sh` が通過。Safehouse 拒否・明示実行・OS / CPU・既存状態・checksum / download 失敗・daemon / no-channel-add 引数をダミーの外部コマンドで検証した。その後、人間が Safehouse 外で導入し、`nix (Nix) 2.34.0` を確認。途中の `vifs` 待ちは macOS の許可ダイアログ待ちで、利用者の許可後に進行した。
-  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。update は公開 direct input の個別更新・all のみ先行実装。switch と ai 更新は、保護・サービス・AI package 定義の統合後に接続するため現時点では公開しない。
+  - `flake.nix` / `flake.lock` と `config/nix/{darwin,home,hosts}` の最小構成を実装。nixpkgs / nix-darwin / Home Manager の revision を固定し、非秘密の host JSON 2項目だけを store snapshot にする。`scripts/dotfiles.sh` / `dotfiles.py` の build は Git source の基準 lock 検査 → host override の graph 比較 → 同じ snapshot の flake check / build の順。公開 direct input の個別更新・all を実装。独立 package 更新の試作は標準パッケージへの統合に合わせて撤回し、AI 本体の導入時に必要な更新入口を接続する。switch は保護・サービス定義の統合後に接続するため現時点では公開しない。
   - 実 Nix を使う `scripts/tests/test_dotfiles_cli.py` の4件が通過。host 差替え、通常 build の lock 不変、未追跡ファイルの非混入、公開 URL 変更・lock entry 欠落の拒否、明示 update を確認。ダミー `.env` 作成は Safehouse に拒否されたため、その拒否を回避せず通常名の未追跡ダミーで非混入を検証した。
   - 実機の非秘密 host 値を `/tmp/dotfiles-machine.SyCOAn6p/host.json` に限定して事前ビルド。最小構成の flake check / build が通過し、`/nix/store/ysxr12iyc0c9h1wsjniq3kfilwkjqf25-darwin-system-26.11.4cff07d` を生成。activation は未実行。固定 nixpkgs が選ぶ Nix は 2.34.8 で、現在稼働中の 2.34.0 をまだ置き換えていない。
   - `AGENTS.md` は新しい正本・配布境界と食い違う箇所だけ更新する。共通エージェント指示の内容を移行に便乗して変更しない。
@@ -86,7 +88,8 @@
   - 安定して利用できる既存定義を使い、Nix 導入と最新機能への一斉アップグレードを混同しない。採用版の互換性と独立更新の成立を事前ビルドで確認する。
   - 一般 CLI 30件と共通ランタイム4件を `config/nix/home/packages.nix` へ追加。`config/nix/darwin/homebrew.nix` に55 cask、実機 `mas list` の22アプリ、補完 formula 7件を宣言。Homebrew は自動更新・upgrade・cleanup を無効にし、PostgreSQL の start/restart も無効にした。生成された activation の `HOMEBREW_NO_AUTO_UPDATE=1` / `--no-upgrade` と cleanup 指定なしを確認した。
   - `dotfiles build` が通過し、`/nix/store/9zjhm0kd3ki51h06v8yvbvawpvhddykb-darwin-system-26.11.4cff07d` を生成。生成 profile の fish 4.9.3 / Git 2.55.0 / Node 22.23.3 / Python 3.11.16 / Ruby 3.3.10 / Bun 1.4.2 / uv 0.12.17 / jq 1.8.2 の起動を確認。Bun は旧1.3.13からの minor 更新候補であり、利用互換性は切替前の確認対象。Homebrew bundle・activation・サービス操作は未実行。
-  - gomi（固定 nixpkgs は1.6.4、実機1.6.5）と dotenvx（同2.31.1、実機2.32.4）は downgrade を避けるため別定義が未完了。AI CLI と外部拡張、fish の設定・PATH・保護 wrapper の移行も未完了なので switch は引き続き提供しない。
+  - gomi / dotenvx / Agent Safehouse の独立定義を試作したが、現行版維持は不要とのユーザー判断で撤回。3つとも `home/packages.nix` の標準パッケージへ統合し、個別 hash と nix-update 用の試作コード・追加テストを除去した。通常 build が成功し、`/nix/store/my4x19v9lcgvhmwai98r56bncdwah49y-darwin-system-26.11.4cff07d` を生成。共通 nixpkgs の更新で一緒に更新する。
+  - 以前実行した全36テストは Safehouse のダミーごみ箱保護で2ケース・4 errors（`/tmp/dotfiles-tests.log`）。ユーザー指示により再実行はせず、今後の受入ゲートから外す。保護設定は変更していない。後片付けが拒否された一時ディレクトリ（`tmp8ud28y15`、`tmpgumdah3_`）は残したまま。
 - [ ] **ユーザー設定と拡張の配置**: `config/nix/home/` と既存 `config/` の設定を接続し、共通指示、fish、エディタ、端末、エージェント設定、外部スキル / 拡張 / プラグインを配置する。
   - `fish_variables` は store 外の可変状態とし、宣言する PATH と旧 universal PATH の重複を整理する。実機の universal 値を無断で削除しない。fish plugin も revision を固定し、非Aqua shell の SSH socket 補完を保つ。書き換えられるアプリ設定の所有権を具体化し、新規配布先や duplicate plugin load を増やさない。未知の実ファイルに force overwrite しない。
 - [ ] **保護・起動・PATH の統合**: `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数、gateway / dashboard wrapper、rm wrapper の参照先を Nix 環境へ接続する。
@@ -135,19 +138,13 @@
 
 ## Final Validation
 
-既存テストのある処理は tdd スキルに従い、守るべき振る舞いを決めてから変更する。構成移行の一度きりの完了確認は差分・生成物・実機確認で行い、旧ファイルの存在だけを検査する恒久テストは追加しない。以下は計画であり未実行。
+ユーザーの追加指示により、回帰テスト・fixture・stub を用いた試験の追加と再実行は行わない。構文確認、ソースと生成物の確認、通常の Nix 評価・ビルドを使う。未実行の確認を成功したとは報告しない。
 
-- [ ] **固定された構成と事前ビルド**: 用意した `dotfiles build` で前述の lock 整合 / graph 一致検査を通した後、検査済みの入力から `nix flake check` と `nix build .#darwinConfigurations.mac.system` 相当を実行する。aarch64-darwin の全構成が評価・ビルドでき、未記録の公開依存を使用せず、activation は実行されない。一時 fixture で公開 input の URL 変更・lock entry 欠落を作り、通常 build / switch が lock を書き換えずに成功するのではなく、中止することを確認する。非秘密の host leaf の明示変更だけは許容する。
-- [ ] **更新の境界**: 一時コピーの lock / 版定義で個別・ai・all の更新を確認する。対象外の直接入力を不要に更新せず、失敗を通知する。初回と通常の switch で更新コマンド・削除 cleanup が起動しないことを検査する。推移依存が変化した場合は差分へ含める。
-- [ ] **秘密の非混入**: ダミー秘密を用いた起動テストでログへ値が出ず、復号失敗時に子を起動しない。評価ソース・生成ファイルの対象を確認し、実 .env、auth、秘密鍵、HOME の可変データが source / store / Git に含まれない構成であることを検査する。実秘密を検索・表示して証明しない。
-- [ ] **rm・環境・起動の回帰**: `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_*.py'` → 通常 rm の gomi 転送、失敗時の保全、並行保存、引数透過、共通 env、TMPDIR と PATH の既存契約が通る。対象は既存 `test_rm_trash.py` / `test_agent_runtime.py` / `test_hermes_tmpdir.py` を中心にする。rm の実 gomi ケースが skip なら実機成功と扱わない。新 fish 構成全体の初期化後も rm が正しく解決されるケースを追加し、conf.d の単体 source だけで保証しない。変更した期待だけ更新し、テストを通すために保護を落とさない。
-- [ ] **安全なサービス切替**: stub の停止・待機・activation を使った既存境界のテストで、停止成功なら順に進み、タイムアウト・停止失敗・バックアップ失敗なら適用しない。稼働していなかったサービスを無断起動しない。実 DB を自動テストへ使わない。
-- [ ] **構文・差分**: 変更した fish は `fish --no-execute`、shell は shebang に対応する `-n`、Nix は formatter / flake 評価、文書はリンク確認と `git diff --check`。他者の Pi 設定変更が保持されている。
-- [ ] **配置と可変状態**: ダミー HOME または衝突のない fixture で設定・スキル・拡張の配置を確認し、実機では対象パスの metadata を照合する。再適用が未知の実ファイルや認証・session・DB を上書きせず、アプリの必要な設定保存が壊れない。固定拡張の依存も解決でき、二重読み込みしない。
-- [ ] **実機の保護と起動**: 切替後の新しい fish と子 shell、各エージェントの PATH / 通常 rm を確認し、停止済み Hermes の起動経路は stub で確認する。人間が sandbox 外で用意したダミーの保護対象へ直接アクセスできず、dotenvx 注入と通常開発の利用が成立する。既存 `scripts/tests/check_safehouse_runtime.py` / `check_gomi_runtime.py` は新配置へ必要箇所だけ合わせて再利用する。store の immutable 性と policy による拒否を区別し、旧配置先への書き込み期待を機械的に移さない。実秘密を検証で読まない。`check_dotenvx_runtime.py` は実 Keychain にダミー項目を作るため、再試験が必要な場合だけ事前承認を得て sandbox 外で実行する。
-- [ ] **Hermes / 開発ツール**: 今回の Hermes は固定パッケージのビルド・起動定義・停止状態の維持まで確認し、動作確認だけを目的に起動しない。gateway `http://localhost:8642/health`、dashboard `http://127.0.0.1:9120/api/status`、既存利用機能・Hindsight 接続・正規停止は、利用再開を承認された時の確認事項として残す。この実サービス未確認は停止済みの移行を妨げるゲートにはしない。Herdr と固定プラグイン、Pi と固定拡張、agent-device の代表的な Apple 操作は切替後に確認する。UI / Simulator 確認は対象スキルと既存規約に従い、未使用機能まで網羅しない。
-- [ ] **再構築と復旧の確認**: 新規 Mac 用の前提条件・host 入力・固定 build・秘密 / データ復元・初回起動の手順を、現在の Mac で確認できる範囲と手動残作業に分けて検査する。別 Mac / clean install 未実施なら完全な再構築実証とは報告しない。旧世代 / 初回退避物の所在と戻し方を確認し、本番 DB の破壊的な復旧演習はしない。
-- [ ] **完成状態**: 対象の導入正本が Nix に集約され、普段の PATH と更新経路に旧共通管理が残らない。Homebrew / 手動操作 / 可変状態の例外と未検証範囲を明記し、未解決の安全性・実機互換性があれば全体完了としない。
+- [ ] **固定構成の事前ビルド**: `dotfiles build` で lock の整合確認と評価・ビルドを行う。build 中に activation や公開依存の更新を行わない。
+- [ ] **構文・差分**: 変更した fish は `fish --no-execute`、shell は対応する `-n`、Nix は formatter と評価、文書は参照と `git diff --check`。Pi の既存変更を保持する。
+- [ ] **配置・秘密・状態**: 宣言と生成物を確認し、秘密・認証・DB・可変状態を store に入れない。切替前に既存ファイルとの衝突と退避先を確認し、未知の実ファイルを上書きしない。
+- [ ] **起動・サービス**: 生成された PATH、wrapper、plist、activation の内容を確認する。停止済み Hermes は起動しない。実サービスの利用確認は再開時に行い、移行のゲートにしない。
+- [ ] **復旧と完成状態**: 初回は旧リンク・設定の退避物へ戻す手順を用意する。DB の復旧演習はしない。管理の正本と通常の更新経路を Nix に集約し、Homebrew 補完・手動操作・可変状態・未確認事項を明記する。実機への適用は直前承認後に行い、未適用や別 Mac での未実証を全体完了と扱わない。
 
 ## 実行上の境界と調査根拠
 
