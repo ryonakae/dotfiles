@@ -331,7 +331,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - 現 lock の固定 source snapshot と非秘密 host で `darwinConfigurations.mac.system.drvPath` を評価したところ、`/nix/store/kgy3pr5z9l4cangknb37d3aalx5lp0vz-source/.envrc` の参照が `Operation not permitted` で失敗。権限・policy を変更せず、その時点では評価を中断した。Nix format・差分検査は成功。
 - 承認された sandbox 外の評価は `allow-import-from-derivation=false` で成功。続く実ビルドも、通常入口の `locked_source` による host leaf 以外の不変検査を通し、同じ snapshot に `flake check` / `build --no-link` を実行して成功。root lock の byte 不変も確認。snapshot は `/nix/store/hkajg0vfb9sa2ay32sbzy7vlf6310jjf-source`、ログと結果は `/tmp/dotfiles-hermes-build.F14YGKOK/`。現行 Claude の未コミット設定も snapshot に含むが、コミット対象からは除外する。
 - HM の `hermes` / `hermes-agent` / `hermes-acp` は `/nix/store/6rpwq8raqms4pqzac6v5gb3jxykqcx6n-hermes-agent-0.0.0/bin/` を参照。公式の install stamp は固定 commit・`distribution=nix`・`updateMechanism=external`。表示版 `0.0.0` は上流定義のままで、独自 override はせず commit を識別子にする。3 wrapper と Darwin / HM activation の指定 shell による構文検査を通過。生成 launch agent は0件。
-- `f71f25d` からの5ファイルは事前に独立した read-only reviewer が静的確認し、新規の blocking/high・decision required・medium/low 指摘なし。既存 input の保持と package-only の接続を確認。評価・ビルド・生成物の確認は親側が担当した。
+- 実装 commit `1cdc4b5`。`f71f25d..1cdc4b5` の5ファイルをビルド後に独立した read-only reviewer が確認し、新規の blocking/high・decision required・medium/low 指摘なし。既存 input の保持、package-only の接続、ビルド済みとサービス未接続の区別を確認。評価・ビルド・生成物の確認は親側が担当し、レビュー側では再実行していない。
 - 実 HOME への適用、Hermes の初期化・起動、サービス操作、回帰テスト、GC・データ削除は未実施。T6・T7 のサービス接続と T9・T10 の切替は別途残す。
 
 ### 残る最終確認
