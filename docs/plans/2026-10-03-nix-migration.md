@@ -96,10 +96,10 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 - [ ] Hindsight の `config/.hermes/services/docker-compose.yml` と image digest を固定し、Docker・volume・認証は Nix 世代から分離する。`config/.hermes/SOUL.md` の配置と、旧 `mise.toml` の扱いも確定する。
 - 完了条件: 生成された wrapper / plist / activation の確認とビルドが通る。別 Mac の実機移行・稼働確認は、その Mac での作業として残し、この Mac の準備のゲートにしない。
 
-### T8. macOS 設定・手動復元 — 未着手
+### T8. macOS 設定・手動復元 — 宣言・文書化済み、実適用は T10
 
-- [ ] Dock / Finder / キーボード / トラックパッド / スクリーンショット等の必要な非秘密キーだけを調査し、`config/nix/darwin/` に宣言する。preferences 全量を取得しない。
-- [ ] Xcode / SDK、Apple ID、Touch ID、TCC、署名、VPN、秘密・Keychain、Docker 等の手動復元を `docs/setup.md` に整理する。
+- [x] Dock / Finder / キーボード / トラックパッド / スクリーンショットの非秘密30キーを個別に読み、値のある18キーを `darwin/preferences.nix` の標準オプション16項目へ宣言。トラックパッド2項目は標準モジュールが内蔵/Bluetooth双方へ書く。未設定12キーには値を新設せず、preferences 全量は取得していない。具体的な復旧用控えは下記。
+- [x] Xcode / SDK、Apple ID、Touch ID、TCC、署名、VPN、秘密・Keychain、Docker、未宣言の UI 設定の手動復元を `docs/setup.md` に整理した。
 - 完了条件: 宣言対象と手動対象が明確で、変更する OS キーの旧値・未設定状態と戻し方を T9 へ渡せる。
 
 ### T9. 適用入口・衝突確認・復旧準備 — 未完了
@@ -232,8 +232,8 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 
 | 対象 | 実行結果・根拠 |
 |---|---|
-| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存配置と gateway 待機 timeout 修正までの部分構成 |
-| 最新 Darwin 成果物 | `/nix/store/iy8myc09vvq61n0dqyd6xs54jnvz653g-darwin-system-26.11.4cff07d` |
+| T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成 |
+| 最新 Darwin 成果物 | `/nix/store/y61zyqbiaippkp53347vm1wp5hpglw8m-darwin-system-26.11.4cff07d` |
 | 対応する Home Manager 成果物 | `/nix/store/jizf1lsbvndqwjhl7rz60wr80w4vj3wp-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
@@ -283,8 +283,30 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 ### Claude 依存の検証記録
 
+- `d7421c1..8e74f44` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。本体と asset の取得元、配置と既存参照、statusline の1行変更、installer との所有権の説明を確認。公開ソース・npm・生成物の検証は親側が担当。
 - 固定 lock の通常 build 成功。生成 hook は標準 Herdr 0.9.1 の公式 asset と byte 一致・実行可能で、`sh -n` と埋め込み Python の構文検査が成功。生成 settings は正本と一致し、statusline の固定版指定を確認。npm 公開 tarball は registry integrity を検証し、現行キャッシュの4ファイルと一致。JSON parse・Nix format・差分検査も成功。
 - Herdr install / hook 実行 / Claude 再起動 / npx 再インストール / 実機適用は行っていない。ビルドは他プロセスの Claude 設定差分も含むが、コミットは statusline の1行だけで、その他は未コミットのまま保持する。
+
+### macOS preferences の検証・復旧用控え
+
+- 固定 lock の通常 build 成功。生成 activation の18個の defaults plist を parse し、現在の個別キー値と一致を確認。指定された Nix Bash の構文検査、Nix format、差分検査も成功。標準の Dock 再起動が生成されることを確認したが、activation / defaults write / killall は実行していない。
+- 以下は 2026-10-03 の準備時点の読取値。T9・T10 直前に再確認し、後から変更された値をこの控えで上書きしない。Nix 標準型に従い、float のリピート値・サイズは integer、integer の Clicking は boolean になる。値は維持するが、厳密に戻す場合は以下の旧型も復元する。
+
+| domain | key | 旧型・値 |
+|---|---|---|
+| NSGlobalDomain | AppleShowAllExtensions | boolean true |
+| NSGlobalDomain | InitialKeyRepeat / KeyRepeat | float 15 / 2 |
+| NSGlobalDomain | NSAutomaticCapitalizationEnabled / NSAutomaticPeriodSubstitutionEnabled / NSAutomaticSpellingCorrectionEnabled | boolean false |
+| com.apple.dock | autohide | boolean true |
+| com.apple.dock | tilesize | float 64 |
+| com.apple.dock | show-recents / mru-spaces | boolean false |
+| com.apple.finder | ShowPathbar / ShowStatusBar | boolean true |
+| com.apple.finder | FXPreferredViewStyle / FXDefaultSearchScope | string Nlsv / SCcf |
+| com.apple.AppleMultitouchTrackpad / com.apple.driver.AppleBluetoothMultitouch.trackpad | Clicking | integer 0 |
+| com.apple.AppleMultitouchTrackpad / com.apple.driver.AppleBluetoothMultitouch.trackpad | TrackpadThreeFingerDrag | boolean false |
+
+- 読み取ったが未設定で、今回は宣言しないキー: NSGlobalDomain の ApplePressAndHoldEnabled / NSAutomaticDashSubstitutionEnabled / NSAutomaticQuoteSubstitutionEnabled / com.apple.swipescrolldirection、Dock の orientation / magnification / largesize / minimize-to-application、Finder の AppleShowAllFiles、screencapture の type / location / disable-shadow。
+- preferences の宣言削除・旧 Nix 世代への切替だけを復旧とみなさない。旧値は対象別に正しい型で戻し、元が未設定なら対象キーだけ削除する。Dock 再起動や必要な logout は T10 直前承認の対象。入力ソース・Dock の並び等は個別手動復元とし、全 plist コピーを手順にしない。
 
 ### 残る最終確認
 
