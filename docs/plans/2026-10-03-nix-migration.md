@@ -12,7 +12,7 @@
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **T3 の Hermes / agent-device 補完案はユーザーに提案済み・未回答。** 進捗照会やこの文書整理の依頼を、採用承認と解釈しない。承認後に限り該当2項目を実装する。
-3. **次は T5 の Herdr 外部 plugin、T6 の起動経路を進める。** Pi の可変設定・指示文、自作12＋現行外部13スキル、Claude の Herdr hook と statusline 版固定を接続済み。Pi 拡張の新規取得・推移依存・全機能の復元検証は残る。
+3. **残る判断は T3 の補完、Shepherd 本体、Zerdr の実行元、未配置 cua-driver。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。T6・T7 は本体／起動元の確定後に接続する。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
 4. T6・T7 の起動契約を揃えた後に T9 の `switch` を接続する。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
@@ -40,13 +40,15 @@
 - [x] `scripts/dotfiles.{sh,py}` の `build` と `update [all|input]` を実装。通常 build は公開依存の lock を検査し、host leaf 以外の変更を拒否して同じ snapshot を check / build する。現在の構成でビルド成功。
 - `switch` は **未実装・未公開**であり、T9 の残作業。この項目の完了に含めない。
 
-### T3. パッケージと更新単位 — 進行中・2件は承認待ち
+### T3. パッケージと更新単位 — 進行中・補完と実行元に判断待ち
 
 - [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `config/nix/home/packages.nix` と `config/nix/darwin/homebrew.nix`。
 - [x] gomi / dotenvx / Agent Safehouse、Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準定義へ統一。`44688a4`、`23a7c38`。独自 package 定義・専用 updater は削除済み。
 - [x] 55 cask・22 App Store アプリ・補完 formula 7件を宣言し、生成物を確認。Homebrew の自動更新・upgrade・cleanup と PostgreSQL の start/restart は無効。**宣言とビルドのみで、Homebrew bundle は未実行。**
 - [ ] **承認待ち: Hermes** — 公式 Flake の `packages.aarch64-darwin.default` をパッケージのみ採用する案。root lock で入力を固定し、サービスモジュールは取り込まない。承認後に input 追加・評価・ビルドを行う。独自依存を未検証で共通 nixpkgs へ follows しない。
 - [ ] **承認待ち: agent-device** — 既存 mise の npm backend を残す案。0.21.19 の macOS helper はパッケージ配下で Swift ビルドするため、単純な Nix store 配置はできない。承認後に native TOML の宣言、Node 要件、導入手順を接続する。npm の版固定と推移依存全体の固定を同一視しない。
+- [ ] **追加で判明: Shepherd 本体** — 現行は npm の `@ryonakae/shepherd@0.5.0` で、`~/.local/bin/shepherd` が mise の Node 24.18.0 と npm 実体を直接指す wrapper。package metadata の Node 要件は `>=24.18.0`（pnpm は `>=11.9.0`）。Nix 共通 Node 22 と単純には置換できない。本体の補完・runtime 所有権を確定するまで、plugin の固定だけで全機能復元済みとしない。
+- [ ] **追加で判明: Zerdr 実行元** — PATH の CLI は Homebrew 0.8.0 だが、現 Herdr manifest は開発 checkout の release executable を指す。どちらを移行先とするか確認し、開発版を公開版へ無断で置換しない。
 - 補完案の根拠・公式出典は [dig log](../dig/2026-10-03-nix-migration.md) 冒頭。調査済みであり、同じ候補調査を最初からやり直す必要はない。
 
 ### T4. config ファイルの配置 — 進行中
@@ -74,7 +76,10 @@
 - [ ] `config/skills-lock.json` は14登録・13 repoで、うち `cua-driver` は現行 HOME に未配置。復元対象へ戻すかを確認し、旧 lock の廃止は T11 で行う。computedHash は revision / Nix hash として使わない。
 - [x] Pi の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `subagents.json` / agent 定義3件 / 通知拡張を通常配置。`subagents.json` は上流がユーザー側を読み取り、UI の保存はプロジェクト側に行うことを確認。npm 7件は既存導入版、pi-subagents は導入済み commit `be898c753e9eb32cf1315f63b1c1f5ef0cf6f782` に native settings で固定し、公開取得可能性を確認。
 - [ ] Pi 外部拡張の新規取得・実行時機能の復元を確認する。標準 Pi は npm / Git の可変インストール先を使用し、activation からネットワーク取得や自己更新は実行しない。トップレベルの版固定は推移依存全体の固定ではない。現行の導入実体は Nix Pi 0.99.1 の loader で10 entry point をエラー・警告なしに読み込めたが、新規依存解決・認証付き機能は未検証。
-- [ ] Herdr の外部 plugin 3つと Zerdr 提供 plugin を接続。取得 revision、アプリとの対応、可変状態を確認する。plugin 実体・session・log を Git 管理へ追加しない。
+- [x] Herdr の Git plugin 3件は標準 `install --ref <commit>` の復元手順を `docs/setup.md` に固定。現 metadata / HEAD / clean 状態を調べ、親側でも公開 commit アーカイブの manifest と主要ファイル7件を照合。再 install で `--ref` を省略すると HEAD へ移ること、有効化を伴うこと、build / activation から実行しないことを明記した。
+- [ ] Git plugin の実機導入と機能確認。Agent Context は同一 release から binary / checksum を取得し、source commit 固定は binary の完全な immutable hash 固定ではない。Shepherd plugin には別の daemon が必要で、T3 の本体 / Node 要件が残る。
+- [ ] Zerdr の使用本体を確認後、標準 `setup install` で manifest と登録を復元する。現開発 executable の絶対パスは配布しない。setup は Zed tasks にも書くが、現Nix配置は Zed settings のみで tasks は管理していない。
+- Agent Context / Worktrunk の tracked config には本番実装の書き込み経路がなく、個別の読み取り専用配置を維持する。registry、checkout、state は可変で残す。plugin 実体・session・log は Git / store へ取り込まない。
 - 完了条件: 認証・状態を store に入れず、必要な設定と拡張を復元できる。永続設定変更を制限する場合は、その具体的な影響を切替前に説明・確認する。
 
 ### T6. 保護・起動・PATH の統合 — 進行中
@@ -204,6 +209,7 @@ Hermes 本体の追加は T3 の承認に依存。ここではこの Mac のサ�
 | herdr, opencode, pi-coding-agent | 共通 nixpkgs の標準定義 | 本体と設定配置を分離し、現行版維持の override は作らない |
 | claude-code@latest, codex, antigravity-cli（cask） | 共通 nixpkgs の標準定義 | GUI cask と区別し、旧 CLI 導入物の整理は切替後 |
 | Hermes, agent-device | 補完案の承認待ち | 調査済み。未回答の提案と採用条件は T3 |
+| @ryonakae/shepherd（npm） | 本体・Node 24 runtime の扱いが未確定 | plugin から実依存を確認。共通 Node 22 だけでは不足 |
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
 | mise | Nix の CLI、プロジェクト用途のみ | 共通ランタイムの二重管理を解消 |
 | fisher | Home Manager の fish plugin 宣言 | plugin revision を固定 |
@@ -289,6 +295,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 ### macOS preferences の検証・復旧用控え
 
+- `8e74f44..3af1942` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。宣言16項目・旧値と型・未設定12キー・Dock再起動と復旧の説明を確認。実機の読取・生成物・build の検証は親側が担当。
 - 固定 lock の通常 build 成功。生成 activation の18個の defaults plist を parse し、現在の個別キー値と一致を確認。指定された Nix Bash の構文検査、Nix format、差分検査も成功。標準の Dock 再起動が生成されることを確認したが、activation / defaults write / killall は実行していない。
 - 以下は 2026-10-03 の準備時点の読取値。T9・T10 直前に再確認し、後から変更された値をこの控えで上書きしない。Nix 標準型に従い、float のリピート値・サイズは integer、integer の Clicking は boolean になる。値は維持するが、厳密に戻す場合は以下の旧型も復元する。
 
@@ -307,6 +314,12 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 - 読み取ったが未設定で、今回は宣言しないキー: NSGlobalDomain の ApplePressAndHoldEnabled / NSAutomaticDashSubstitutionEnabled / NSAutomaticQuoteSubstitutionEnabled / com.apple.swipescrolldirection、Dock の orientation / magnification / largesize / minimize-to-application、Finder の AppleShowAllFiles、screencapture の type / location / disable-shadow。
 - preferences の宣言削除・旧 Nix 世代への切替だけを復旧とみなさない。旧値は対象別に正しい型で戻し、元が未設定なら対象キーだけ削除する。Dock 再起動や必要な logout は T10 直前承認の対象。入力ソース・Dock の並び等は個別手動復元とし、全 plist コピーを手順にしない。
+
+### Herdr plugin の調査・固定手順
+
+- 固定 Herdr 0.9.1 の source で `--ref` checkout、registry 保存、再 install、config/state 分離を確認。現 Git plugin 3件は通常の untracked を含め clean。registry 上はこの3件と Zerdr の全4件が enabled。ignored build artifact の健全性は保証せず、公開 commit archive の manifest・主要7ファイルと現実体の一致を別途確認した。
+- tracked config 2件は Agent Context の read/mtime監視と Worktrunk の設定読取だけで、本番の書込処理は別state領域。書き込み可能にする根拠はなく、既存T4配置を変更しない。
+- 公開 Zerdr v0.8.0 source では、標準 setup が実行元を含む manifest を生成して Herdr に link し、Zed tasks を merge する。現manifestの開発版と PATH の Homebrew 版の違いは未解決。実plugin install・link・setup・サービス操作・テストは行っていない。
 
 ### 残る最終確認
 
