@@ -19,6 +19,8 @@
     "npm:pi-gpt-fast-mode@0.1.2",
     "npm:@hk_net/pi-usage-bars@0.7.0"
   ],
+  "theme": "dark",
+  "tuiMode": "regular",
   "quietStartup": true,
   "enabledModels": [
     "openai/gpt-6-luna",
