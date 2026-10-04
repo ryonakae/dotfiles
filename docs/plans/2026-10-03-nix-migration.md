@@ -6,14 +6,14 @@
 
 **実装承認済み・移行準備中。基盤は完了、設定・拡張の移行が途中。upstream Nix 自体は導入済みだが、nix-darwin / Home Manager の構成は一度も実機へ適用していない。**
 
-- 直近の review base は `74bd8d6`、T6・T7 の実装 commit は `945d699`。固定ビルド・生成物確認と独立レビューが完了。リモートとの同期状態は再開時に `git status -sb` で確認し、未 push の既存コミットを無関係な変更と混同しない。
+- 直近の review base は `6b8021a`、fork 対応・controller 撤去の実装 commit は `1e25f86`。構文・Nix 構成評価と独立ソースレビューが完了。最終ビルド・全生成物確認は依存構築待ち。リモートとの同期状態は再開時に `git status -sb` で確認し、未 push の既存コミットを無関係な変更と混同しない。
 - 実装・検証・承認状態の正本はこのプラン。[dig log](../dig/2026-10-03-nix-migration.md) は合意と調査の出典であり、調査当初の「Nix 未導入」等を現在の状態として扱わない。
 - **進捗の更新場所は下の Tasks。** `[x]` は記載した成果物とその検証の完了を表し、実機適用の完了ではない。未完了項目には残作業・完了条件を記載する。撤回済みの試作は末尾の履歴に隔離した。
 
 次のセッションは以下から再開する。
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
-2. **Hermes の公式 Flake パッケージのみの採用・固定ビルドは完了。agent-device は npx 実行へ変更し、Shepherd は復元対象から除外する方針を承認済み。** ユーザー承認の Herdr 別ペイン（sandbox 外）で固定構成をビルドし、生成物を確認した。T6・T7 の起動・配置・停止処理を実装し、固定ビルドと独立レビューを通過した。Hermes の実起動・停止・実機適用は未実施。
+2. **Hermes fork のビルド完了を先に確認する。** T7 のログ・終了コードを確認し、成功後に最終生成物を検証する。旧本流のビルド成功を fork 版の成功と扱わない。agent-device の npx 実行・Shepherd 復元対象外の方針は変更なし。Hermes の実起動・停止・実機適用は未実施。
 3. **Zerdr は Homebrew 版、cua-driver スキルは復元する方針で承認済み。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
 4. T9 の `switch` と衝突・退避・復旧準備から再開する。T7 の controller は新旧の所有関係が不明なら拒否するので、別 Mac の旧サービス移行を自動化済みと扱わない。部分構成のビルド成功だけで T10 の切替へ進まない。
 
@@ -96,11 +96,11 @@
 
 ### T7. Hermes サービス・Hindsight — fork と既存スクリプトへ修正中
 
-実装承認済み、今回の review base は `6b8021a`。旧 `945d699` の専用 controller と本流採用は撤回対象で、旧ビルド・レビュー記録は下の履歴に残す。最新の停止仕様は Implementation Decisions 4 と dig log の決定事項を正本とする。
+実装 commit は `1e25f86`、今回の review base は `6b8021a`。独立した read-only reviewer がこの範囲を確認し、blocking/high・decision required・medium/low の指摘なし。これはソースレビューで、全ビルドや実サービスの検証とは区別する。旧 `945d699` の専用 controller と本流採用は撤回対象で、旧ビルド・レビュー記録は下の履歴に残す。最新の停止仕様は Implementation Decisions 4 と dig log の決定事項を正本とする。
 
 - [ ] `flake.nix` / `flake.lock`: `github:ryonakae/hermes-agent/ryonakae` の `2a485666e6754ec8e8a0ba9b383ea1eb6e518f14`（`sha256-35HGnPLz0FOWmLA1FtwGD8i1H1YjUUNc3ru+mKR+mMw=`）へ変更済み。共通 nixpkgs / nix-darwin / Home Manager / host node は変更なし。fork 同梱の aarch64-darwin パッケージを使い、独自 package は作らない。通常 build は実行中で、完了確認待ち。
-- [ ] `hermes-gateway.fish` / `hermes-dashboard.fish`: `74bd8d6` の launchd + fork 標準 CLI の経路へ戻し、Nix 実行先とエラー伝播を接続した。restart は stop が成功した場合だけ start。自己更新は Nix の更新・ビルドを案内する。
-- [ ] `home/hermes.nix`: 599行の `hermes-service.py` と専用 Python / psutil 環境を撤去し、`check-stopped.sh` の読み取り専用確認へ置換した。GUI session の launchd 登録・判別可能な Hermes プロセスを確認し、未停止・取得失敗・未知の形式はエラー。PID・子プロセスの追跡、状態保存、停止・再開はしない。
+- [x] `hermes-gateway.fish` / `hermes-dashboard.fish` のソース接続・構文・独立レビュー: `74bd8d6` の launchd + fork 標準 CLI の経路へ戻し、Nix 実行先とエラー伝播を接続した。restart は stop が成功した場合だけ start。自己更新は Nix の更新・ビルドを案内する。
+- [x] `home/hermes.nix` の配置分離・構文・評価・独立レビュー: 599行の `hermes-service.py` と専用 Python / psutil 環境を撤去し、`check-stopped.sh` の読み取り専用確認へ置換した。GUI session の launchd 登録・判別可能な Hermes プロセスを確認し、未停止・取得失敗・未知の形式はエラー。PID・子プロセスの追跡、状態保存、停止・再開はしない。
 - [ ] 生成物・最終ビルド・独立レビューを確認する。fish / shell / Nix の構文と差分検査は通過。最初の fork build は旧 controller を含む snapshot のため、成功しても最終構成の検証とは区別する。ログは `/tmp/dotfiles-hermes-fork.71SzyJwq/build.log`、終了コードは同ディレクトリの `build.exit`。
 - [x] Hindsight の Compose と SOUL の配置、image digest は変更なし。Docker の volume・認証・起動は配置と分離する。
 
@@ -108,7 +108,9 @@
 
 plist は既知の生成物だけユーザー所有の実ファイルへ配置し、標準 HM launchd activation には登録しない。Disabled / RunAtLoad / KeepAlive は既存の配置分離構成を維持し、明示的な start / stop が enable / disable を行う。未知の既存 plist の退避と別 Mac の実機移行は未実施。
 
-回帰テスト・fixture・stub の追加や再実行、実サービス操作・実機適用は行わない。既存の fork build は承認済み Herdr 別ペイン `w3W:pA` で継続中。Safehouse 内での build 診断用 process 一覧は `Operation not permitted` のため取得できず、同環境での再試行はしていない。
+回帰テスト・fixture・stub の追加や再実行、実サービス操作・実機適用は行わない。旧 controller を含む初回 fork build は `w3W:pA`、最終コードを含む build は `w3W:pB` で継続中。最終ログは `/tmp/dotfiles-hermes-fork.71SzyJwq/final-build.log`、終了コードは `final-build.exit`。最後の確認では ONNX Runtime と Hermes TUI は store 登録済み、PyTorch は未登録。ビルド監視の timeout はビルド自体の失敗ではない。成功後は同ディレクトリの `inspect.py` を `uv run --no-project python -B` で実行して全生成物を検証し、終了した作業用ペインだけを閉じる。push と Plan archive は未実施。
+
+35行の生成 checker `/nix/store/npjybps6vhaxa7gidwsw5xfw0qdr373n-hermes-check-stopped` は正本との本文一致・指定 Nix Bash の構文検査に成功。承認済み別ペインで読み取り専用実行し、Hermes 未使用のこの Mac の GUI セッションでは exit 0（`preflight.exit`）を確認。Hermes 本体・activation は実行していない。検査用 `w3W:pC` は終了・閉鎖済み。Safehouse 内での build 診断用 process 一覧は `Operation not permitted` のため取得できず、同環境では再試行せず、許可された別ペインで build に関する process metadata だけを確認した。
 
 ### T8. macOS 設定・手動復元 — 宣言・文書化済み、実適用は T10
 
@@ -219,7 +221,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 | dotenvx, agent-safehouse | 共通 nixpkgs | gomi と合わせて現行版の維持より標準定義での管理を優先する |
 | herdr, opencode, pi-coding-agent | 共通 nixpkgs の標準定義 | 本体と設定配置を分離し、現行版維持の override は作らない |
 | claude-code@latest, codex, antigravity-cli（cask） | 共通 nixpkgs の標準定義 | GUI cask と区別し、旧 CLI 導入物の整理は切替後 |
-| Hermes | 公式 Flake のパッケージのみ | 採用・固定ビルド済み。サービス接続は T7 |
+| Hermes | `ryonakae/hermes-agent` fork 同梱 Flake のパッケージ | lock 更新・既存管理関数への接続済み。最終ビルドは T7 |
 | agent-device | npx で都度実行 | mise 宣言は削除。版・Node 要件と起動方法は自作スキルに記載 |
 | @ryonakae/shepherd（npm） | 復元対象から除外 | Herdr plugin と専用 runtime の復元も取りやめ。実機削除は別操作 |
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
@@ -251,7 +253,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 | 対象 | 実行結果・根拠 |
 |---|---|
 | T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成に加え、Hermes 本体も同じ lock 検査・snapshot・check/build 処理で検証 |
-| 最新 Darwin 成果物 | `/nix/store/vxvdvlvffr0lf9kaiy2lvb1w6sxg5izy-darwin-system-26.11.4cff07d` |
+| 最後に成功した Darwin 成果物（fork 移行前） | `/nix/store/vxvdvlvffr0lf9kaiy2lvb1w6sxg5izy-darwin-system-26.11.4cff07d` |
 | 対応する Home Manager 成果物 | `/nix/store/kyrg9a2gn3dd6hh3gryp2vpaqm8s8xcb-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
