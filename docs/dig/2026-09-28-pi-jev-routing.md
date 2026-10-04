@@ -2,7 +2,7 @@
 
 ## 導入完了時の記録
 
-以下の設計・検証経緯には当時の未承認・未導入状態を残す。現在の運用はこの節と[README](../../README.md#pi-の-jev-連携)を参照する。
+この節は導入当時の記録。dotfilesへの反映は `fa45455` で完了し、その後 `a35be5a` でJev設定・選定ガイドを撤去、inline-skillsをupstream版へ戻した。関連する3計画はアーカイブ済み。以下の両Jev有効という記述や未承認・未導入状態は、現在の運用状態ではない。
 
 - 後続の個別承認により、自動本文挿入を`6b601ae`でcommit/push・導入済み。[完了計画](../plans/archived/2026-09-30-pi-inline-skills-auto-injection.md)に検証結果を記録した。
 - 両forkを履歴の書き換えなしで`master`へ統合し、GitHubのdefault branchとdotfilesのpackage参照を揃えた。README更新後の導入commitはsubagents `d2a493d`、inline-skills `9491b98`。検証済みfeature branchとの差分はREADMEだけ。ユーザーがreload完了を確認した。
@@ -92,7 +92,7 @@
 - modelSelectionGuide の説明文もユーザーが後から編集できるよう、dotfiles で管理する。ユーザーの選定方針やオン時の案内を拡張コードに固定しない。
   - 出典: modelSelectionGuide の定義場所についての説明後、ユーザーが dotfiles 管理を明示的に希望。
 
-- 最終のMarkdown管理構成をユーザーが「それでいこう」と承認。その後、[実装計画](../plans/2026-09-28-pi-jev-routing.md) に対して「実装して」と依頼した。
+- 最終のMarkdown管理構成をユーザーが「それでいこう」と承認。その後、[実装計画](../plans/archived/2026-09-28-pi-jev-routing.md) に対して「実装して」と依頼した。
   - 新規ローカルリポジトリはすべて `/Users/ryo.nakae/Dev/private` 以下に置く。
   - 実装・検証は承認済み。公開・push・本番切替の承認範囲は計画に従う。
   - 以下の設計途中の未決事項・提案は、最終実装計画の内容を優先する。
@@ -138,7 +138,7 @@
 
 ## モデル選択フォールバックの再設計
 
-- 2026-09-29: ユーザーの「その方針で修正」に基づき経路を調査し、[親選定計画](../plans/2026-09-29-pi-parent-model-selection.md)を提示。その後の「ok」で計画と実装開始を承認。ローカル実装・全体check（2213 pass/7 skip）・実Pi SDKの2経路・独立レビュー（指摘なし）が完了。新しい契約と検証・進捗は同計画を正本とする。commit/push/本番切替/公開/archiveは引き続き対象外。
+- 2026-09-29: ユーザーの「その方針で修正」に基づき経路を調査し、[親選定計画](../plans/archived/2026-09-29-pi-parent-model-selection.md)を提示。その後の「ok」で計画と実装開始を承認。ローカル実装・全体check（2213 pass/7 skip）・実Pi SDKの2経路・独立レビュー（指摘なし）が完了。新しい契約と検証・進捗は同計画を正本とする。commit/push/本番切替/公開/archiveは引き続き対象外。
 - 通常Agentは起動前に選定要求をツール結果として返し、親が既存のmodel/thinking引数で再呼び出す。Workflowは同じrun内で該当agentを待機させ、元の親へ通知して`SubagentWorkflow`の`action:"route"`で選定結果を受け取る。完了済み作業を再実行する可能性があるjournal再開は、この待機の解除に使わない。
 
 - サブエージェント定義を優先し、未指定値はJev、不採用なら親が判断する意図を確認。フォールバックは「親の値を使う」ではなく「親がタスクを評価して指定する」。Jevから選択候補が返っても低confidenceで不採用ならこの経路に入る。ユーザー中断を親への再選定依頼として続行しない原則は維持する。
@@ -194,7 +194,7 @@
 - APIキーの実値は拡張の設定JSONやGitへ保存しない。ユーザーはPi標準認証の再利用案を承認。Keychain自体の設定・移行は今回行わない。明示off・固定値・親選定fallback・スキル手動経路・中断・タイムアウト・送信上限の意味を変えない。自動的なprovider間failoverは提案していない。
 - 導入済み拡張の実例を確認（配布ソースのみ、秘密の実設定未読）: pi-web-accessの`credential-source.ts:152-191`は`$ENV`/`!command`/環境変数/設定リテラル、`page-query.ts:112`はPiのmodelRegistry認証を利用。pi-mcp-adapterの`secure-keyring.ts:32-50`はOS資格情報ストアを利用する。2例からエコシステム全体の普及率は主張しない。
 - 承認済み（ユーザー「そのおすすめ案で」）: 独自のキー保存機構を増やさず、OpenRouterはPi標準認証を再利用して保存済みキー/環境変数を利用可能にする。TypeSafeは従来の環境変数を維持。保存時の保護を重視するならPi標準のコマンド参照または起動時注入でKeychain等と組み合わせる。ただし認証取得後は同じprocessの信頼済み拡張から読め、完全な秘密隔離にはならない。Safehouseからのコマンド利用可否は未検証。
-- `/implement`で[OpenRouter対応計画](../plans/2026-09-30-pi-jev-openrouter.md)の実装を開始。dotfilesのSafehouse引数へOPENROUTER_API_KEYの明示passを追加し、両Jev設定にprovider: typesafeを明示。開始時コピーとの比較で他の値・off・本番package参照・sandbox権限の維持とfish構文を確認した。実キー読取/実API呼び出しは行っていない。
+- `/implement`で[OpenRouter対応計画](../plans/archived/2026-09-30-pi-jev-openrouter.md)の実装を開始。dotfilesのSafehouse引数へOPENROUTER_API_KEYの明示passを追加し、両Jev設定にprovider: typesafeを明示。開始時コピーとの比較で他の値・off・本番package参照・sandbox権限の維持とfish構文を確認した。実キー読取/実API呼び出しは行っていない。
 - 合成資格情報のPi 0.87.1 SDK検証で、runtime key > 保存credential > 環境変数を確認。初期harnessでAuthStorageのroot exportを仮定して失敗したため、公式SDK例のauthPathによる専用temporary fixtureへ修正した（製品コードの問題ではない）。証跡: `/tmp/pi-openrouter-implementation/auth-sdk.log`。
 - 先行変更は両repoの`feat/jev-routing`へpush済み（subagents e2ea810、inline-skills aabcfb9）。今回のOpenRouter対応は追加要求として扱い、先行変更の公開完了と混同しない。
 - OpenRouter対応の実装と事前検証: subagents 2232 pass / 7 skip、inline-skills 107 pass / 330 assertions、両方lint/typecheck成功（inline formatも成功）。親self-reviewでinlineのprovider:null既定化を修正し、subagentsの不要な型castを除去した。Pi SDK + fake HTTPの9ケースがPASS。独立レビューは指摘なしで完了し、レビュー後の23変更ファイルのhash一致も確認した。後続の明示承認により、subagents `95119ca`、inline-skills `9e2b286`をそれぞれ`feat/jev-routing`へcommit/push済み。dotfilesのcommit/push/archive・実API試験・本番切替は行っていない。詳細は上記OpenRouter計画の検証記録。

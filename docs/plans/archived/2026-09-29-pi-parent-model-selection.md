@@ -1,12 +1,14 @@
 # Jev不採用時の親によるmodel/effort選定 Implementation Plan
 
-後続の承認により本番導入・master統合・reloadまで完了。以下は各実装段階の記録。[dig logの導入完了記録](../dig/2026-09-28-pi-jev-routing.md#導入完了時の記録)に、導入後の親選定フォールバックと実子起動の確認を記載した。
+Status: アーカイブ済み（実装・導入完了、後続変更でJev利用終了）。必須の回帰検証・実SDK検証・独立レビューが完了し、後続のmaster統合・reload・通常Agentの親選定と実子起動をdig logで確認した。dotfilesへの反映は `fa45455`、Jev設定の撤去は `a35be5a`。実Workflowの本番動作や選定による費用・精度改善まで確認したものではない。以下の未公開・未切替・未commit表記は当時の記録として残す。
+
+後続の承認により本番導入・master統合・reloadまで完了。以下は各実装段階の記録。[dig logの導入完了記録](../../dig/2026-09-28-pi-jev-routing.md#導入完了時の記録)に、導入後の親選定フォールバックと実子起動の確認を記載した。
 
 Status: ローカル実装・検証・独立レビュー完了。今回差分の指摘なし、correction cycleなし。その後、ユーザーが両フォークのcommit/pushとinline-skillsの公開リポジトリ作成を承認し、2026-09-29に完了。本番切替、npm公開、dotfilesのcommit/push、archiveは未実施。
 
 開始時base: pi-subagents `ea5fb93a9ee9892be405c6a8f9b12687fbc7d090`。stagedなし、masterはorigin/masterと同一。先行実装のdirtyは既知の作業対象として保持。差分と開始時ファイルsnapshotは`/tmp/pi-parent-routing-M14YsQ/`。独立レビューはHEADとの差分全体ではなく、このsnapshot以後の今回差分を基本対象とする。dotfilesのClaude/Herdr/Zed/Pi設定等の無関係変更、出自未確認の`node_modules/`は変更しない。
 
-参照: [dig log](../dig/2026-09-28-pi-jev-routing.md)、[先行計画](2026-09-28-pi-jev-routing.md)。この計画は先行計画の「モデル選択失敗時の単純継承」と「Workflowの呼び出し指定優先」を置き換える。inline-skillsの実装・検証結果は変更しない。
+参照: [dig log](../../dig/2026-09-28-pi-jev-routing.md)、[先行計画](2026-09-28-pi-jev-routing.md)。この計画は先行計画の「モデル選択失敗時の単純継承」と「Workflowの呼び出し指定優先」を置き換える。inline-skillsの実装・検証結果は変更しない。
 
 ## Requirements
 

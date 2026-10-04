@@ -1,12 +1,16 @@
 # JevのOpenRouter接続とPi標準認証 Implementation Plan
 
-後続の承認により両forkのmaster統合・導入更新・reloadまで完了。TypeSafeで運用中であり、実OpenRouter接続は引き続き未検証。以下は各段階の記録。最新の導入状態は[dig log](../dig/2026-09-28-pi-jev-routing.md#導入完了時の記録)を参照。
+Status: アーカイブ済み（実装・検証・導入完了、後続変更でJev利用終了）。合成資格情報と偽HTTPによる実SDK検証・独立レビュー、両forkのcommit/pushと後続のmaster統合・reloadを記録済み。dotfilesへの反映は `fa45455`。その後 `a35be5a` でJev設定と個別の認証環境変数受け渡しを撤去した。
+
+実OpenRouter接続・実資格情報・Pi 0.87.1以外の認証互換性は未検証のまま残す。実API試験はこの計画の対象外であり、今回も実行していない。以下のTypeSafe運用中・reload待ち・未commit表記は各段階の履歴で、現在の運用状態ではない。
+
+後続の承認により両forkのmaster統合・導入更新・reloadまで完了。TypeSafeで運用中であり、実OpenRouter接続は引き続き未検証。以下は各段階の記録。最新の導入状態は[dig log](../../dig/2026-09-28-pi-jev-routing.md#導入完了時の記録)を参照。
 
 Status: 実装・検証・独立レビューと両forkのcommit/push完了。後続の明示依頼により本番package参照を両forkのfeat/jev-routingへ切り替え、TypeSafeで両Jevを有効化済み。現在のセッションへの反映は/reload待ち。dotfilesのcommit/push/archiveと実API試験は未実施。
 
 Preflight: staged変更なし。両forkは上記baseでclean・originと0/0。dotfilesは`ee9b494cbd73f9066d2fb3189a8f86f246d15d15`でoriginより1 commit ahead（既存のスキル文書変更）；未push commitと既存のClaude/Herdr/Zed/Pi設定・node_modulesを対象外として保持。今回編集するdotfilesの旧Jev差分は先行作業と一致し、開始時コピーを`/tmp/pi-openrouter-implementation/`へ保存した。
 
-参照: [Dig LogのOpenRouter対応](../dig/2026-09-28-pi-jev-routing.md#openrouter対応)。ユーザーはQ23で接続先の明示設定（A）を選び、その後「そのおすすめ案で」と、OpenRouterのPi標準認証再利用・TypeSafeの環境変数維持・独自キー保存機構を作らない方針に同意した。Dig Logの「提案（未承認）」はこの発言で承認済みとして扱い、実装時に記録を更新する。
+参照: [Dig LogのOpenRouter対応](../../dig/2026-09-28-pi-jev-routing.md#openrouter対応)。ユーザーはQ23で接続先の明示設定（A）を選び、その後「そのおすすめ案で」と、OpenRouterのPi標準認証再利用・TypeSafeの環境変数維持・独自キー保存機構を作らない方針に同意した。Dig Logの「提案（未承認）」はこの発言で承認済みとして扱い、実装時に記録を更新する。
 
 開始時: 両forkの`feat/jev-routing`はclean。pi-subagents `e2ea8107d9c79fc1343ef8a893e845edf7551354`、pi-inline-skills `aabcfb9dfd9388f6cb2b556912b4c18cad1236ef`。dotfilesの既存変更は保持する。
 
