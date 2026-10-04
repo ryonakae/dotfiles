@@ -2,7 +2,9 @@
 import argparse
 import copy
 import json
+import os
 from pathlib import Path
+import pwd
 import re
 import shutil
 import subprocess
@@ -62,9 +64,47 @@ def locked_source(directory):
   return source, overrides
 
 
+def switch_target(source, overrides):
+  target = nix(
+    "eval", source + "#darwinConfigurations.mac.config", *overrides,
+    "--apply", '''c: let h = c.home-manager.users.${c.system.primaryUser}; in {
+      username = h.home.username;
+      homeDirectory = h.home.homeDirectory;
+      hermesCheck = toString h.xdg.configFile."hermes/check-stopped.sh".source;
+    }''', "--json", json_output=True,
+  )
+  user = pwd.getpwuid(os.getuid())
+  if target["username"] != user.pw_name or Path(target["homeDirectory"]).resolve() != Path(user.pw_dir).resolve():
+    raise ValueError("switch must run as the configured user with their configured home directory")
+  return target
+
+
+def switch(system, source, overrides, target):
+  profile = Path("/nix/var/nix/profiles/system")
+  if os.path.lexists(profile):
+    previous = profile.resolve(strict=True)
+  else:
+    previous = "none (first activation)"
+  print(f"Source: {source}")
+  print(f"Candidate system: {system}")
+  print(f"Previous system profile: {previous}")
+  print(f"Target user: {target['username']} ({target['homeDirectory']})")
+  print("This applies system settings, Homebrew and Home Manager configuration.")
+  print("Stop Pi and prepare backups/legacy file collisions before proceeding.")
+  print("Native file checks run during activation. Failure may leave a new profile and partial changes.")
+  print("This entrypoint does not back up files, manage Hermes, or roll back automatically.")
+  if input("Type 'switch' to confirm application: ").strip() != "switch":
+    raise ValueError("switch cancelled; no activation performed")
+  subprocess.run([target["hermesCheck"]], check=True)
+  subprocess.run([
+    "/usr/bin/sudo", str(Path(system) / "sw/bin/darwin-rebuild"),
+    "switch", "--flake", source + "#mac", *overrides,
+  ], check=True)
+
+
 def main():
-  parser = argparse.ArgumentParser(description="Build the locked macOS configuration")
-  parser.add_argument("action", choices=["build", "update"])
+  parser = argparse.ArgumentParser(description="Build, apply, or update the locked macOS configuration")
+  parser.add_argument("action", choices=["build", "switch", "update"])
   parser.add_argument("target", nargs="?")
   parser.add_argument("--host", type=Path, default=Path.home() / ".config/dotfiles/host")
   args = parser.parse_args()
@@ -79,17 +119,28 @@ def main():
     nix("flake", "update", *targets, "--flake", str(ROOT))
     return
   if args.target:
-    parser.error("build does not accept an update target")
+    parser.error(f"{args.action} does not accept an update target")
+  if args.action == "switch":
+    if os.geteuid() == 0:
+      parser.error("run switch as the target user, not with sudo; only darwin-rebuild is elevated")
+    if os.environ.get("APP_SANDBOX_CONTAINER_ID") == "agent-safehouse":
+      parser.error("switch must be run by a human outside Safehouse after migration approval")
+    if not sys.stdin.isatty():
+      parser.error("switch requires an interactive terminal for confirmation")
   source, overrides = locked_source(args.host)
+  target = switch_target(source, overrides) if args.action == "switch" else None
   nix("flake", "check", source, *overrides)
   result = nix("build", source + "#darwinConfigurations.mac.system",
                *overrides, "--no-link", "--json", json_output=True)
-  print(result[0]["outputs"]["out"])
+  system = result[0]["outputs"]["out"]
+  print(system)
+  if args.action == "switch":
+    switch(system, source, overrides, target)
 
 
 if __name__ == "__main__":
   try:
     main()
-  except (OSError, ValueError, KeyError, subprocess.CalledProcessError) as error:
+  except (OSError, ValueError, KeyError, EOFError, subprocess.CalledProcessError) as error:
     print(f"dotfiles: {error}", file=sys.stderr)
     sys.exit(1)

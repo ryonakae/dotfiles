@@ -54,9 +54,29 @@ bash scripts/dotfiles.sh update hermes-agent
 bash scripts/dotfiles.sh update all
 ```
 
-更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。更新は適用・起動を行わない。`switch` はサービス・残りの設定の移行が揃うまで未提供。
+更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。更新は適用・起動を行わない。`switch` の入口は用意しているが、切替準備・実機検証は未完了。以下の承認条件を満たすまで実行しない。
 
 fish の生成設定は管理済み example を基にした共通設定で、Git 外の実 `config.fish` のコピーではない。切替前に、人間が秘密の移行と必要な非秘密の差分を確認する。既存の Fisher 配置・リンクも退避してから移し、二重読み込みさせない。`fish_variables` と履歴は Nix で管理しない。
+
+## Nix の適用と復旧準備
+
+**移行準備が完了し、実機への切替を承認した後にだけ使う。** 対象ユーザーの通常の対話端末から、Safehouse 外で実行する。スクリプト全体を `sudo` で起動しない。
+
+```fish
+bash scripts/dotfiles.sh switch
+```
+
+`--host DIRECTORY` も指定できる。build と同じ公開 lock 検査・source / host snapshot で check / build し、対象ユーザーと HOME を照合する。候補 system と前の system profile を表示し、`switch` と入力した場合だけ既存の Hermes 停止チェックを実行する。その後、候補内の `darwin-rebuild` に同じ snapshot を渡し、標準 `switch` 部分だけを sudo で実行する。非対話・root・Safehouse 内からの実行は拒否する。
+
+実行前に Pi を終了し、別 Mac で Hermes が動いていれば管理関数で停止する。入口は Hermes の稼働状態を保存せず、停止・再開・独自のバックアップ・自動 rollback を行わない。標準適用による Nix daemon 等の変更は別途確認して承認する。
+
+ファイル衝突は Home Manager / nix-darwin の標準 activation 内の検査に任せ、force や自動退避オプションで通さない。**全変更前の検査や原子的な適用を保証しない。** system profile は activation より前に更新される。後段で衝突・エラーになると、それ以前の設定変更が残り得る。標準の `check` / `--dry-run` activation を安全な事前検査として実行しない。
+
+初回は人間が配置対象の旧リンク・実ディレクトリ・実ファイルを個別に確認する。退避先は Git / store 外の私有ディレクトリ（例: `~/.local/state/dotfiles-backups/<日時>/<HOMEからの相対パス>`）とし、元のパス・種別・リンク先・権限と必要な設定内容を保持する。参照先を共有しているリンクの実体や、未管理の兄弟ディレクトリはまとめて移動・削除しない。`/etc` の変更対象と既存の `*.before-nix-darwin` も確認し、標準処理による退避名の衝突を残さない。実 `config.fish` の内容比較・秘密の整理は人間が行う。
+
+Pi の可変設定3ファイルは、Pi を終了した状態で旧リンクと現行内容を保全し、同じ HOME 内の場所に通常ファイルとして準備する。リンクだけを消して初期値で作り直さない。外部スキル・Yazi plugin 等の実ディレクトリは配置対象ごとに退避し、認証・session・DB・cache を対象に加えない。
+
+失敗したら自動再試行せず、表示された前の profile と完了済みの変更を確認する。以前の nix-darwin 世代があれば標準の `--list-generations` / `--switch-generation` を使う復旧を検討するが、実行は別途承認する。初回は戻す Nix 世代がないため、確認済みの旧ファイル・リンク・preferences の復旧が必要。世代の切替は Homebrew アプリや DB を元に戻す操作ではない。ファイル別の退避先と初回復旧手順の確定は、移行計画 T9 に残る。
 
 ## 共通ツール用の秘密
 
@@ -154,7 +174,7 @@ MCP の個人設定は `~/.pi/agent/mcp.json` に置く。OAuth が必要なサ�
 
 ## Hermes Agent
 
-以下は **Nix 移行後**の運用。現時点では switch と実機検証が未完了なので、既存環境へ配布・適用しない。
+以下は **Nix 移行後**の運用。現時点では切替準備と実機検証が未完了なので、既存環境へ配布・適用しない。
 gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。同じ `~/.hermes` を使う Docker dashboard をホスト版と同時起動しない。
 
 ### 初回設定
