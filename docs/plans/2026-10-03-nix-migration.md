@@ -6,14 +6,14 @@
 
 **実装承認済み・移行準備中。基盤は完了、設定・拡張の移行が途中。upstream Nix 自体は導入済みだが、nix-darwin / Home Manager の構成は一度も実機へ適用していない。**
 
-- fork 対応・controller 撤去は `6b8021a..1e25f86` を独立レビュー済み。追加の `voice` 除外は `a7ac812` を review base とし、固定ビルド・生成物確認済み、独立レビュー待ち。リモートとの同期状態は再開時に `git status -sb` で確認し、未 push の既存コミットを無関係な変更と混同しない。
+- fork 対応・controller 撤去は `6b8021a..1e25f86` を独立レビュー済み。追加の `voice` 除外は `a7ac812..c07b186` を独立レビュー済みで、指摘なし。固定ビルド・生成物確認も完了した。リモートとの同期状態は再開時に `git status -sb` で確認し、未 push の既存コミットを無関係な変更と混同しない。
 - 実装・検証・承認状態の正本はこのプラン。[dig log](../dig/2026-10-03-nix-migration.md) は合意と調査の出典であり、調査当初の「Nix 未導入」等を現在の状態として扱わない。
 - **進捗の更新場所は下の Tasks。** `[x]` は記載した成果物とその検証の完了を表し、実機適用の完了ではない。未完了項目には残作業・完了条件を記載する。撤回済みの試作は末尾の履歴に隔離した。
 
 次のセッションは以下から再開する。
 
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定と Pi の fast-mode 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
-2. **Hermes fork の `voice` 除外版はビルド・生成物確認済み。** T7 の独立レビューを確認し、残る移行準備へ進む。agent-device の npx 実行・Shepherd 復元対象外の方針は変更なし。Hermes の実起動・停止・実機適用は未実施。
+2. **Hermes fork の `voice` 除外版はビルド・生成物確認済み。** T7 の独立レビューも完了しており、T5・T9 の残る移行準備へ進む。agent-device の npx 実行・Shepherd 復元対象外の方針は変更なし。Hermes の実起動・停止・実機適用は未実施。
 3. **Zerdr は Homebrew 版、cua-driver スキルは復元する方針で承認済み。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
 4. T9 の `switch` と衝突・退避・復旧準備から再開する。T7 の配置チェックは未知の plist を上書きしないが、別 Mac の旧サービス移行を自動化済みと扱わない。部分構成のビルド成功だけで T10 の切替へ進まない。
 
@@ -94,7 +94,7 @@
 - [x] T7 のサービス wrapper と、HOME 許可・profile 順・環境継承・TMPDIR 補正を照合する。サービスが対話用 feature を省く差分は維持する。
 - 完了条件: shell / 非対話 / launchd の生成された実行経路で、Nix 本体の利用と rm 保護の優先順位を説明できる。実秘密の読み取りや保護ポリシーの緩和で検証を通さない。
 
-### T7. Hermes サービス・Hindsight — fork / voice 除外版のビルド・生成物確認済み
+### T7. Hermes サービス・Hindsight — 構成検証・独立レビュー済み、実機未適用
 
 実装 commit は `1e25f86`、今回の review base は `6b8021a`。独立した read-only reviewer がこの範囲を確認し、blocking/high・decision required・medium/low の指摘なし。これはソースレビューで、全ビルドや実サービスの検証とは区別する。旧 `945d699` の専用 controller と本流採用は撤回対象で、旧ビルド・レビュー記録は下の履歴に残す。最新の停止仕様は Implementation Decisions 4 と dig log の決定事項を正本とする。
 
@@ -102,7 +102,7 @@
 - [x] `hermes-gateway.fish` / `hermes-dashboard.fish` のソース接続・構文・独立レビュー: `74bd8d6` の launchd + fork 標準 CLI の経路へ戻し、Nix 実行先とエラー伝播を接続した。restart は stop が成功した場合だけ start。自己更新は Nix の更新・ビルドを案内する。
 - [x] `home/hermes.nix` の配置分離・構文・評価・独立レビュー: 599行の `hermes-service.py` と専用 Python / psutil 環境を撤去し、`check-stopped.sh` の読み取り専用確認へ置換した。GUI session の launchd 登録・判別可能な Hermes プロセスを確認し、未停止・取得失敗・未知の形式はエラー。PID・子プロセスの追跡、状態保存、停止・再開はしない。
 - [x] `voice` 除外版の固定ビルド・生成物を確認した。fish / shell / Nix の構文、lock 不変、導入本体・対話 CLI・管理関数・サービス wrapper の参照先一致、plist flags、activation の順序、controller 不在、SOUL / Compose の正本一致を確認。venv の配布 metadata で Hindsight・Discord・Telegram・Slack・Edge TTS・ElevenLabs・dashboard 依存の保持と、ローカル音声依存の不在を確認。
-- [ ] `a7ac812` からの `voice` 除外変更を独立レビューする。
+- [x] `a7ac812..c07b186` の `voice` 除外変更を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。レビュー側はソースのみを確認し、親側が実行したビルド・生成物検査とは区別する。
 - [x] Hindsight の Compose と SOUL の配置、image digest は変更なし。Docker の volume・認証・起動は配置と分離する。
 
 公開 fork の gateway stop / dashboard --stop には timeout 後の強制終了がある。ユーザーから、その挙動も fork 標準に任せることへの `ok` を取得済み。旧 Q18 の自動強制終了禁止は置換された。独自の運用 controller や fork への追加機能で停止を再実装しない。実サービスでの停止成功・DB バックアップの整合性を未検証のまま保証しない。
