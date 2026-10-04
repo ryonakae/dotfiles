@@ -14,16 +14,6 @@
       # The firewall helper signs the installed binary in place.
       "mosh"
       "ryonakae/tap/zerdr"
-      # Keep these until their database/development usage is accounted for.
-      "icu4c@76"
-      "libpq"
-      "oniguruma"
-      "pcre2"
-      {
-        name = "postgresql@17";
-        start_service = false;
-        restart_service = false;
-      }
     ];
 
     casks = [
