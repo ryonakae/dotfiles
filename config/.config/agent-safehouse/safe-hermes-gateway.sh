@@ -41,6 +41,5 @@ for profile in compatibility local-overrides; do
   args+=(--append-profile="$file")
 done
 
-# launchd でも mise のバージョン指定を適用し、Hermes 本体は既存 venv に固定する。
-exec mise -C "$HOME/.hermes" exec -- "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse "${args[@]}" -- \
-  "$HOME/.hermes/hermes-agent/venv/bin/hermes" --profile default gateway run
+exec "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse "${args[@]}" -- \
+  hermes --profile default gateway run

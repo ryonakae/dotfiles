@@ -1,8 +1,14 @@
 #!/bin/bash
-# launchd から safehouse 経由で hermes dashboard を起動するラッパー。
 # gateway とは独立 service として動かし、Docker で ~/.hermes を共有しない。
 
-
+if [ ! -d "${TMPDIR:-}" ] || [ ! -w "$TMPDIR" ] || [ ! -x "$TMPDIR" ]; then
+  TMPDIR="$(getconf DARWIN_USER_TEMP_DIR)"
+  if [ ! -d "$TMPDIR" ] || [ ! -w "$TMPDIR" ] || [ ! -x "$TMPDIR" ]; then
+    printf '%s\n' 'error: no usable user temporary directory.' >&2
+    exit 1
+  fi
+  export TMPDIR
+fi
 
 # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
 export HISTFILE=/dev/null
@@ -35,10 +41,8 @@ for profile in compatibility local-overrides; do
   args+=(--append-profile="$file")
 done
 
-# launchd でも mise のバージョン指定を適用し、Hermes 本体は既存 venv に固定する。
-exec mise -C "$HOME/.hermes" exec -- "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse "${args[@]}" -- \
-  "$HOME/.hermes/hermes-agent/venv/bin/hermes" dashboard \
+exec "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse "${args[@]}" -- \
+  hermes --profile default dashboard \
   --host "$HERMES_DASHBOARD_HOST" \
   --port "$HERMES_DASHBOARD_PORT" \
-  --no-open \
-  --insecure
+  --no-open

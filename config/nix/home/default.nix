@@ -7,6 +7,7 @@
     ./pi.nix
     ./skills.nix
     ./protection.nix
+    ./hermes.nix
   ];
 
   home.username = machine.username;

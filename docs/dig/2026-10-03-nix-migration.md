@@ -2,20 +2,30 @@
 
 ## 目的・前提・制約
 - Mac の新規購入・クリーンインストール時に、ツール・アプリ・ユーザー設定・macOS 設定をリポジトリから再構築しやすくする。日常の変更・更新の扱いやすさも重視する。
-- 本ログは、この会話で参照できる最初の調査依頼から方針合意までを整理したもの。同テーマの既存 dig log は見つからなかった。
+- 本ログは、初回の要件整理と実装中に必要になった追加判断を記録する。過去の調査記録は当時の状態であり、現在の実装・検証状況は [実装計画](../plans/2026-10-03-nix-migration.md) を参照する。
 - 現在の Homebrew、mise、config/ と HOME の対応構造、自作 symlink 配布、*.example のコピー等は、維持必須の要件ではない。
 - 秘密の保護、rm 転送による誤削除防止、Hermes の安全な停止など、既存実装が守る要件は維持する。実現手段は見直せる。
-- 現時点では Nix のインストール・ビルド・実機への適用を行っていない。過去の調査は当時の Git 管理ファイルと公開資料が対象で、実秘密や Git 管理外の実設定は読んでいない。
+- 初回の要件整理時点では Nix のインストール・ビルド・実機への適用を行っていなかった。過去の調査は当時の Git 管理ファイルと公開資料が対象で、実秘密や Git 管理外の実設定は読んでいない。
 - 要件合意後に plan で実装計画を保存し、その承認後に implement で実装する。要件整理中は実環境を切り替えない。
 - 2026-10-03 開始時点の既存変更は config/.pi/agent/extensions/pi-gpt-fast-mode/config.json と config/.pi/agent/settings.json。上書きしない。
 
-## 標準管理の補完調査（採用前・相談待ち）
+## 標準管理の補完調査（当時の候補・採否は決定事項と実装計画を参照）
 
 - Hermes: [公式 Flake](https://github.com/NousResearch/hermes-agent/blob/main/flake.nix) は aarch64-darwin を対象に含み、パッケージとサービスモジュールを分離している。パッケージのみを公式定義から採用し、root lock で入力を固定する案。独自 package 定義・updater は作らず、サービス起動は別扱い。実ビルドは未実施。
 - agent-device: [0.21.19 の helper 実装](https://unpkg.com/agent-device@0.21.19/dist/src/helper.js) はパッケージの `apple/macos-helper` 内で `swift build -c release --package-path` を行い、`.build/release` から HOME 内の cache へコピーする。単純な store 配置はこのビルド先が読み取り専用になるため、[mise の標準 npm backend](https://mise.jdx.dev/dev-tools/backends/npm.html) を残す案。npm の版固定と全推移依存の固定は区別し、Node 要件も導入時に確認する。helper の実ビルド・署名・権限変更は未実施。
 - 可変設定: 採用中の Home Manager では Zed に `mutableUserSettings` があり、Pi のモジュールは設定を store にリンクする。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。通常ファイル配置とは分けて採用方法を判断し、独自 merge 基盤は作らない。
 
 ## 決定事項
+- Q18: A を採用。固定 Hermes の標準 stop は使わず、既存の管理関数からサービス所属・PID・起動時刻を確認したプロセスへ SIGTERM を送り、終了確認後にだけ unload する。タイムアウト・状態不明・プロセス再生成時は中止し、強制終了・更新・再開へ進まない。
+  - 理由: 標準 gateway stop は終了確認より先に bootout し、その後 SIGKILL へ移行する。dashboard の stop も自動強制終了へ進むため、後段の待機追加では安全要件を守れない。gateway の SIGTERM は上流の shutdown handler に接続されている。
+  - launchd の自動再起動との競合と子プロセスを含む終了確認も実装・検証対象とする。この合意は実サービス停止・起動の即時実行承認ではない。
+  - 出典: Q18 への「a」。調査根拠は固定 Hermes `3251a180f01ad21ae059862997307bf75f3e3f0a` の `hermes_cli/gateway_launchd.py:730–745`、`hermes_cli/dashboard_procs.py:545–586`、`gateway/run.py:5903–5906`。実プロセス操作による検証は未実施。
+- Q17: A を採用。Hermes の plist の生成・配置は Nix / Home Manager が担当し、起動・停止は既存の管理関数と切替入口に限定する。Hermes に標準 launchd activation を使わず、必要最小限の配置処理と停止確認を追加する。
+  - 理由: 固定 HM は同一設定でも未ロードなら bootstrap するため、停止状態を維持する要件と両立しない。変更・削除時の bootout も Hermes の正規停止を経由しない。
+  - この Mac でサービスを起動しないこと、実操作直前の承認、別 Mac の既存データ保持は維持する。通常の適用で停止済みサービスを再開しない。
+  - 出典: Q17 への「a」。標準 launchd の自動再ロードを許容する B 案は不採用。
+- 実装中の追加合意: Hermes は公式 Flake のパッケージのみ採用し、サービスは別に扱う。agent-device はグローバル mise 管理をやめ、版を固定しない `npx --yes agent-device` を使う。独自の版固定・自動更新制限は追加しない。Shepherd は復元対象から外し、Zerdr は Homebrew 版、cua-driver は公式 skill の固定復元を採用する。実アンインストールやサービス起動の承認とは区別する。
+- 実装中の追加合意: 通常の設定は immutable とし、Pi の書き込みが確認された JSON だけ標準 `mkImpureConfigMerger` を使う。自作・外部スキルは個別配置し、認証・session・自己更新データや管理外の兄弟ディレクトリを置き換えない。
 - 設定の分離に関する追加指示: fish 以外も通常の設定本文は元の形式で管理し、Nix は導入・連携・配置の指定に薄くする。Nix 固有のパス解決や OS 宣言は Nix に残す。
 - 最新の追加指示: 「可能な限り標準管理に統一。どうしてもそれが難しいというものだけは相談」。AI を含む本体は共通 nixpkgs の標準定義、設定の配置は Home Manager に分ける。現行版維持・個別更新のための独自パッケージや専用 updater は不要。標準管理が難しい対象だけ理由・代案を示して採用前に相談する。Q3 / Q10 の個別・AI グループ更新の決定は撤回した。
 - 検証方針の追加指示: 本移行では回帰テストの追加・再実行を行わず、構文・差分・Nix 評価とビルドで進める。
@@ -93,6 +103,11 @@
 - 実秘密の読み取り・移行や Keychain 操作を、通常の設定移行と一緒に無承認で行うこと。
 
 ## 未決・保留
+- Q18 の停止方式は確定済み。T7 の停止処理と静的・生成物検証を進めた。実サービスでの終了確認と別 Mac の旧定義からの移行は未検証。調査・ビルド結果だけで実機の停止安全性を検証済みとしない。
+- Q17 の管理方式は確定済み。具体的な配置処理・停止確認・状態保持は T7、切替入口との接続は T9 で実装・検証する。HM 実装は plist にユーザー所有の実ファイルを使っており、単純な store symlink への置換は前提にしない。
+  - 調査根拠: [固定 HM の activation](https://github.com/nix-community/home-manager/blob/acd21c5a3420a9d5fd0ed06299b10828267ef9ba/modules/launchd/default.nix#L275-L620)。コードの読み取りのみで、実サービス操作による検証ではない。
+
+### 初回調査時の保留事項（進捗・解決状況は実装計画を参照）
 - 標準パッケージに未収録・非対応の対象を調べ、必要な例外の導入方法を相談する。GUI アプリの自動更新方針は Q11 で確定済み。
 - ホスト別設定と具体的な切替・復旧手順。停止対象・切替タイミングは実行前に確認する。
   - 読み取り専用のホスト確認: macOS 26.2 (25C56)、arm64。現在の PATH では nix が見つからない。インストール済み環境全体の存在確認や Nix ビルドは行っていない。
