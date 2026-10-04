@@ -1,6 +1,10 @@
 # Pi Jev Routing and Inline Skills Implementation Plan
 
-後続の承認により公開・本番切替・両Jevの有効化・master統合まで完了。以下は各実装段階の記録であり、当時のoff・未公開・未切替表記を現在の状態とみなさない。最新の導入結果と置換された仕様は[dig logの導入完了記録](../dig/2026-09-28-pi-jev-routing.md#導入完了時の記録)を参照。
+Status: アーカイブ済み（導入完了後、後続変更で利用終了）。実装・検証・独立レビューと両forkの公開・master統合・reloadの記録を確認し、dotfilesへの反映は `fa45455` で確認した。親選定へのフォールバックは後続の親選定計画、自動スキル本文挿入は[後続計画](2026-09-30-pi-inline-skills-auto-injection.md)で置換済み。`a35be5a` でdotfilesのJev設定・選定ガイドを撤去し、inline-skillsはupstream版へ戻した。
+
+JSON.parse例外の断片漏えいに関するmedium指摘は未修正の記録を残す。候補用途説明の本番反映、未見タスクの選定品質・費用改善・長期精度も確認済みとはしない。以下の未完了表記とチェック状態は各実装段階の履歴であり、現行の再開タスクではない。
+
+後続の承認により公開・本番切替・両Jevの有効化・master統合まで完了。以下は各実装段階の記録であり、当時のoff・未公開・未切替表記を現在の状態とみなさない。最新の導入結果と置換された仕様は[dig logの導入完了記録](../../dig/2026-09-28-pi-jev-routing.md#導入完了時の記録)を参照。
 
 2026-09-29追記: モデル選択のフォールバックと定義優先順位は、承認済みの[親選定計画](2026-09-29-pi-parent-model-selection.md)で置換する。以下の過去の実装・検証記録は当時の結果として保持する。
 
@@ -8,7 +12,7 @@
 
 開始時base: dotfiles `7d672bc0d99eb023a3837cb12d84f8ac3b9d3bba`、pi-subagents `ea5fb93a9ee9892be405c6a8f9b12687fbc7d090`。両方upstreamとの差分0/0、staged変更なし。subagentsはクリーン。dotfilesの既存変更はClaude/Herdr/Zed設定、PiのlastChangelogVersionのみで、保持する。検証用Nodeはインストール済み22.20.0をPATHで選択し、global pinは変更しない。
 
-設計記録: [dig log](../dig/2026-09-28-pi-jev-routing.md)。Markdown管理の初期合意に加え、再設計Q18〜Q22を反映する。Q22のA選択と、その後の実装承認を両文書へ記録済み。初期数値は変更せず、実測済みの推奨値とは扱わない。
+設計記録: [dig log](../../dig/2026-09-28-pi-jev-routing.md)。Markdown管理の初期合意に加え、再設計Q18〜Q22を反映する。Q22のA選択と、その後の実装承認を両文書へ記録済み。初期数値は変更せず、実測済みの推奨値とは扱わない。
 
 ## Requirements
 
