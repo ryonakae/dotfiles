@@ -15,7 +15,7 @@
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定と Pi の fast-mode 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **Hermes fork の `voice` 除外版はビルド・生成物確認済み。** T7 の独立レビューも完了しており、T5・T9 の残る移行準備へ進む。agent-device の npx 実行・Shepherd 復元対象外の方針は変更なし。Hermes の実起動・停止・実機適用は未実施。
 3. **Zerdr は Homebrew 版、cua-driver スキルは復元する方針で承認済み。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
-4. T9 の個別の衝突・退避・初回復旧準備から再開する。確認付き `switch` の入口自体は実装・ソースレビュー済みで、実機実行は未検証。T7 の配置チェックは未知の plist を上書きしないが、別 Mac の旧サービス移行を自動化済みと扱わない。部分構成のビルド成功だけで T10 の切替へ進まない。
+4. T9 の個別の衝突・退避・初回復旧準備から再開する。`dd9b0ba` からの再開時に HOME・system 側のパスメタデータを確認した（下記「T9 の初回復旧準備」）。実 `config.fish` から追加で引き継ぐ非秘密設定はないとのユーザー回答を得た。次は旧 fish 初期化・universal PATH の確認と、system 側の復旧準備を進める。確認付き `switch` の入口自体は実装・ソースレビュー済みで、実機実行は未検証。T7 の配置チェックは未知の plist を上書きしないが、別 Mac の旧サービス移行を自動化済みと扱わない。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
 
@@ -128,11 +128,12 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - [x] **ここまでの部分構成**を通常 build で検証。最新の成功成果物は下記「検証記録」。完成構成の受入ビルドとは区別する。
 - [x] `scripts/dotfiles.py` に確認付き `switch` を追加。build と同じ lock 検査・snapshot・check/build を使用し、候補と旧 profile を表示してから明示入力を求める。既存 Hermes check に失敗すれば sudo / profile 更新へ進まない。標準 `darwin-rebuild switch` へ同じ source / host を渡し、世代登録を維持する。ネイティブのファイル衝突検査でエラーになった場合、先行した変更は自動で戻さない。
 - [ ] 配置先のファイル種別・リンク先・所有権を確認し、旧リンク・実ファイル・Fisher / Yazi plugin・shell 初期化・plist の退避先と復旧先を決める。未知のファイルを force overwrite しない。
-  - 最新生成物の HOME 配置135パスを内容を読まずに棚卸しした。旧リンク108、実ディレクトリ16（外部スキル13・Yazi plugin 3）、実ファイル1（Herdr hook）、未作成9、取得不能1。実 `config.fish` は lstat も `Operation not permitted` のため未確認とし、再試行していない。記録は `/tmp/dotfiles-collision-inventory.json`。実退避や内容比較は未実施。
+  - 最新生成物の HOME 配置135パスを内容を読まずに棚卸しした。旧リンク108、実ディレクトリ16（外部スキル13・Yazi plugin 3）、実ファイル1（Herdr hook）、未作成9、取得不能1。`dd9b0ba` からの再開時も種別・リンク先は同じで、確認できた既存対象はすべて本人所有、HOME より下の親経路に symlink はなかった。実 `config.fish` は前回 lstat が `Operation not permitted` だったため再試行しない。記録は `/tmp/dotfiles-collision-inventory-resumed.json`。実退避や内容比較は未実施。
   - Zellij 削除後、`~/.config/fish/functions/zl.fish` と `~/.config/zellij/config.kdl` に削除済み正本へのリンクを確認。ホーム側は未変更。切替時にこの既知の旧リンクの整理を確認する。Brewfile の実ファイル、インストール済み本体、保存セッション・履歴は今回変更していない。
 - [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。外部13スキルの既存実ディレクトリは個別に確認・退避し、未管理スキルや Claude の `synced` はまとめて置き換えない。新規 cua-driver の配置先が未作成かも適用直前に再確認する。Pi の設定保存と適用の競合を避ける停止手順も含める。
   - Pi 可変設定3ファイルはすべてリポジトリへの旧リンク、Hermes plist 2件は未作成。Antigravity CLI の参照は `~/.gemini/antigravity-cli/skills` → `~/.agents/skills` を確認。リンク・通常ファイルの準備は Pi 停止と個別退避を伴うため未実施。
-- [ ] 人間に実 `config.fish` との差分を確認してもらい、旧 universal PATH・PGDATA 等の未確認値を整理する。
+- [x] 実 `config.fish` の非秘密差分をユーザーに確認。追加で引き継ぐ設定はないとの回答。以前記載していた `HOMEBREW_GITHUB_API_TOKEN` / `CONTEXT7_API_KEY` / `TYPESAFE_API_KEY` は dotenvx 管理へ移行済み。実ファイル・秘密の値は取得していない。
+- [ ] 旧 universal PATH 等の shell 状態を整理する。`config.fish` の差分なしという回答を universal variables の確認済みとは扱わず、example の PGDATA を実 DB 保存先と仮定しない。
 - [ ] T1〜T8 の準備完了後、完成構成をビルドし、生成物・OS 変更範囲・初回の非 Nix 構成への復旧手順を確認する。
 - 検証: Python の in-memory compile、Bash 構文、CLI help、固定 build が成功。`switch_target` の対象ユーザー / HOME 照合と生成済み checker の参照を読み取り専用で確認。ログは `/tmp/dotfiles-switch-preparation.Y3SZjkuN/`。build は既存の Darwin 成果物 `920lv1d788i2510q217sgynxq8kgvzfp` を再利用し、root lock は不変。`switch` 本体・sudo・activation・回帰テスト・fixture / stub は実行していない。
 - 完了条件: 切替時に変更するものと戻し方をユーザーへ具体的に提示できる。`switch` の実行は T10 の承認後。
@@ -376,6 +377,34 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - Python のインメモリ構文コンパイル、fish / shell / YAML / Nix の構文・format・差分検査、生成 activation の指定 Nix Bash による構文検査を通過。controller 自体は実行していない。既存 launchctl の読み取り専用 metadata では現在のセッションと同 UID の asuser が Aqua であることだけを確認し、root 経由の実 activation は未検証。
 - 実装 commit `945d699`。`74bd8d6..945d699` の15ファイルを独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。build・外部ソース・生成物検証は親側の実行結果で、reviewer は再実行していない。
 - 実起動・停止・SIGTERM・Hermes 初期化・Compose 実行・実機適用・回帰テスト・fixture・stub は未実施。launchd 診断形式、厳格な process census、稼働中 state 更新との互換性は実機での確認が必要。既知の管理定義だけを扱い、管理外の書き換え・並行管理操作・観測前に service tree を離れたプロセスの追跡を保証しない。旧サービスの自動移行を完了扱いにしない。
+
+### T9 の初回復旧準備
+
+今回の調査基準は `dd9b0bae78bf3dc632adb25a752b1193af31f4ff`。既存の Darwin / HM 成果物を読み、HOME と system 側の対象パスについて種別・所有者・権限・リンク先だけを確認した。実ファイルの内容・秘密・universal variables は取得していない。調査中に共通 `config/.agents/AGENTS.md` にも他プロセスの変更を検出し、Claude / Pi の既存変更と合わせて保持する。これらを既存ビルドで検証済みとは扱わない。
+
+**退避・復旧の対象別準備（未実行）**
+
+退避ルートは `docs/setup.md` の Git / store 外の私有ディレクトリとし、実際の日時・保存先・権限は T10 前に確定する。以下は必要な保全と戻し先の区分であり、実行可能な最終復旧手順ではない。
+
+| 対象 | 退避・復旧の準備 |
+|---|---|
+| HOME の旧リンク108件 | HOME 相対パスごとにリンク自体と参照先を記録する。復旧先は同じ元パス。参照先の共有正本や親ディレクトリを移さない。 |
+| 外部スキル13件・Yazi plugin 3件 | 対象ディレクトリを個別に保全し、元パスへ戻せるようにする。共通・Claude のリンク関係も保持し、未管理スキル・`synced`・兄弟をまとめて移さない。 |
+| Herdr hook の通常ファイル | `.claude/hooks/herdr-agent-state.sh` の内容・権限を保持する。旧ファイルを Nix 生成物で代用して復旧済みとしない。 |
+| Pi 可変設定3件 | すべて旧リポジトリへのリンク。Pi 停止後にリンクと切替直前の内容を別々に保全し、通常ファイルを準備する。復旧でも切替後の変更を先に保全し、旧正本へ無断で書き戻さない。 |
+| Antigravity・新規配置 | `.gemini/antigravity-cli/skills` は共通置き場へのリンク。cua-driver の共通・Claude 両配置、Hermes plist 2件は未作成。元が未作成だった対象を記録し、復旧時に現在の所有権・後から作られたデータを確認せず削除しない。 |
+| 旧 fish 初期化 | 生成物との直接衝突だけでなく、残存する `conf.d`・関数・補完の二重読み込みを確認する。実 `config.fish` の非秘密差分はユーザー確認済み。universal PATH 等の状態と実 DB 保存先は別途確認する。 |
+
+fish の追加 metadata では `conf.d/fish_frozen_key_bindings.fish`、`fish_frozen_theme.fish`、`fzf.fish`、`unity-cli.fish` が通常ファイルだった。内容・用途・新構成との重複は未確認なので、一律に旧 Fisher と決めて退避しない。`functions/fisher.fish` は未作成、`fish_plugins` は `~/dotfiles/.config/fish/fish_plugins` へのリンク。既知の旧 `zl.fish` と Zellij config のリンクも残る。これらの整理と退避は未実施。
+
+**system 側の初回復旧は別途準備が必要**
+
+- 生成された `/etc` 配置20対象のうち、`bashrc` / `zshrc` / `zprofile` / `nix/nix.conf` は root 所有の通常ファイル、残る16対象は未作成。対応する `.before-nix-darwin` は20件すべて未作成だった。内容・既知 hash との一致は未確認であり、メタデータ確認を衝突検査の成功と扱わない。記録は `/tmp/dotfiles-system-collision-metadata.json`。
+- `/etc/profile` と `/etc/synthetic.conf` は通常ファイル、`/etc/nix/nix.custom.conf` / `/etc/static` / `/run` / `/nix/var/nix/profiles/system` は未作成。初回に戻せる system profile はない。Nix インストーラ由来の shell 初期化との整合と、既存 Nix daemon へ戻す手順は未確定。
+- 生成 activation には `/etc/synthetic.conf` の権限・`run` エントリ調整、APFS の synthetic link 更新、PAM 設定の条件付き変更、SSH host key の条件付き生成、Nix daemon の配置・再読込、Dock 再起動が含まれる。実機で各条件が成立するかは未確認。これらは HOME のリンク復元では戻らず、権限・秘密・サービスに関わる操作の直前承認を含め、T10 の変更範囲・保全・復旧手順へ明示する。実秘密の確認や保全をエージェントが代行しない。
+- 確認取消・入口の Hermes check 失敗は標準 switch 起動前。一方、標準 switch 起動後の失敗は profile と部分変更が残り得る。復旧は失敗段階と変更済み対象を確認してから個別に行い、自動再試行しない。旧 `create-symlink.sh` は既存パスをスキップするため、Nix リンクが残る状態の復旧手段にはならない。
+
+リポジトリ内の独立した読み取り専用調査でも、system 側の復旧、ファイル別の退避・戻し順序、エージェント終了後の人間向け再開手順が不足していることを確認した。これは調査であり、新たな実装の完了レビューではない。T9 は未完了のまま。実 `config.fish` から追加で引き継ぐ非秘密設定はなく、旧3キーは dotenvx 管理へ移行済みとのユーザー回答を受け取った。次は旧 fish 初期化・universal PATH と system 側の復旧準備を進める。秘密の値・実ファイル全文は会話や Git に記録しない。実適用・退避・停止・回帰テスト・新たな build は行っていない。
 
 ### 残る最終確認
 
