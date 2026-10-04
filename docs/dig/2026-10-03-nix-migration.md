@@ -16,6 +16,9 @@
 - 可変設定: 採用中の Home Manager では Zed に `mutableUserSettings` があり、Pi のモジュールは設定を store にリンクする。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。通常ファイル配置とは分けて採用方法を判断し、独自 merge 基盤は作らない。
 
 ## 決定事項
+- Hermes の追加承認: fork の `default` から `voice` だけを標準 `override` で除外する。ローカル音声認識・マイク入力用の依存は同梱せず、Hindsight・メッセージング・TTS など他の追加グループは残す。fork 本体の改変や依存パッケージのテスト無効化は行わない。
+  - 理由: Apple Silicon 用の CTranslate2 を nixpkgs から供給する経路で、検証用依存の PyTorch がソースビルドされていた。候補の実依存グラフを比較し、`voice` だけの除外でこの依存を避けられることを確認した。
+  - 出典: 調査結果の「default から voice だけ除外」案に対する「じゃあそれで」。初回の所要時間と、既に構築済みの依存を再利用した所要時間は区別する。
 - 最新の Hermes 合意: 本体は `ryonakae/hermes-agent` fork、起動・停止・再起動は既存の fish 管理関数から fork 標準処理を利用する。dotfiles の適用入口は起動状態を保持せず、自動停止・再開もしない。配置上必要な読み取り専用の確認に失敗したら中止する。
   - 出典: ユーザーが fork URL と既存スクリプトの利用を指定し、「dotfiles が起動状態を管理する必要はない」と指示。修正計画への `ok` に続き、「タイムアウト時の挙動も fork に任せる」ことへの `ok` を取得した。自動強制終了を禁じる旧 Q18 はこの点で置換された。
   - 専用 controller・独自の子プロセス管理は撤去する。fork の標準停止が強制終了へ進むことは受け入れるが、実サービス操作を今行う承認ではない。DB バックアップの整合性は別に確認する。
