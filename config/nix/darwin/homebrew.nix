@@ -76,6 +76,7 @@
       "tailscale-app"
       "the-unarchiver"
       "typeface"
+      "unity-cli"
       "unity-hub"
       "via"
       "visual-studio-code"
