@@ -15,7 +15,7 @@
 1. `git status --short` と直近の差分を確認する。保持する他プロセスの変更は Claude 設定と Pi の fast-mode 設定。Pi 2ファイルの承認済み変更は T5 の配置・版固定に取り込んだ。本文の確認基準より後の変更があれば、実ファイルを優先して進捗を更新する。
 2. **Hermes fork の `voice` 除外版はビルド・生成物確認済み。** T7 の独立レビューも完了しており、T5・T9 の残る移行準備へ進む。agent-device の npx 実行・Shepherd 復元対象外の方針は変更なし。Hermes の実起動・停止・実機適用は未実施。
 3. **Zerdr は Homebrew 版、cua-driver スキルは復元する方針で承認済み。** T5 の Pi・スキル・Claude 依存と Git plugin 固定復元手順、T8 の限定 preferences 宣言を進めた。Pi 拡張の新規取得・全機能の復元検証、T9 の適用ゲート・衝突解消は未完了。
-4. T9 の個別の衝突・退避・初回復旧準備から再開する。`dd9b0ba` からの再開時に HOME・system 側のパスメタデータを確認した（下記「T9 の初回復旧準備」）。実 `config.fish` から追加で引き継ぐ非秘密設定はないとのユーザー回答を得た。次は旧 fish 初期化・universal PATH の確認と、system 側の復旧準備を進める。確認付き `switch` の入口自体は実装・ソースレビュー済みで、実機実行は未検証。T7 の配置チェックは未知の plist を上書きしないが、別 Mac の旧サービス移行を自動化済みと扱わない。部分構成のビルド成功だけで T10 の切替へ進まない。
+4. T9 の個別の衝突・退避・初回復旧準備から再開する。`dd9b0ba` からの再開時に HOME・system 側のパスメタデータを確認した（下記「T9 の初回復旧準備」）。実 `config.fish` から追加で引き継ぐ非秘密設定はないとのユーザー回答を得た。旧 fish 初期化・universal PATH は `18d72cb` からの再開時に読み取り確認した。Unity CLI は Homebrew 補完として復元する承認を得た。次は旧 plugin ファイルと Unity CLI の個別退避・PATH 整理、system 側の復旧準備を進める。確認付き `switch` の入口自体は実装・ソースレビュー済みで、実機実行は未検証。T7 の配置チェックは未知の plist を上書きしないが、別 Mac の旧サービス移行を自動化済みと扱わない。部分構成のビルド成功だけで T10 の切替へ進まない。
 
 ### 再開時に保持する状態・操作境界
 
@@ -50,6 +50,7 @@
 - [x] **Hermes パッケージの採用・固定ビルド** — 公式 Flake の `packages.aarch64-darwin.default` のみを `home.packages` へ追加し、input と root lock を接続した。サービスモジュール・独自 package 定義は追加せず、独自依存を未検証で共通 nixpkgs へ follows しない。既存4 input の内容保持、構文、固定 snapshot の評価・ビルド、生成 CLI の参照先を確認。Safehouse の公開ソース参照拒否後、ユーザー承認の Herdr 別ペインで検証した。review base は `f71f25d`。サービス接続・実起動は T6・T7 に残る。
 - [x] **agent-device のグローバル管理を廃止** — ユーザー指示で mise の `npm:agent-device` 宣言を削除し、自作 `use-agent-device` スキルと `.ad` 実行例を `npx --yes agent-device` へ変更。独自の版固定・更新制限は設けない。Node は npx とは別に要件を満たすものを選ぶ。外部の公式スキルは変更せず、そこでの CLI 表記も npx に読み替える。npm cache・状態は残る。実機の既存導入物は未アンインストール。
 - [x] **Shepherd を復元対象から除外** — ユーザー指示で本体・専用 Node runtime の補完を取りやめ、Herdr plugin の復元コマンドを削除。本体の既存 wrapper、稼働 daemon、実 registry / checkout / state は未変更。無効化済みの team スキルと調査履歴は配布対象外のまま保持する。
+- [ ] **Unity CLI は Homebrew 補完で復元** — ユーザー承認により `homebrew.nix` の cask に `unity-cli` を追加。更新は Homebrew に任せ、公式 installer・`unity self-update`・独自 Nix package は併用しない。Editor / modules と認証・Hub の状態は本体管理から分離する。旧 `~/.unity/bin/unity` と fish の PATH 設定の整理は T9・T10 に残し、実機は変更しない。`--zap` が Hub の状態も削除する注意を `docs/setup.md` に記載。`nix-instantiate --parse` と当該モジュール単体の strict JSON 評価が成功し、cask が56件、`unity-cli` が1件、Hub と自動更新・upgrade・cleanup 無効の維持を確認した。`git diff --check` も成功。構成全体の再ビルド・生成 Brewfile・独立レビューは未実施で、この小項目は未完了。review base は `18d72cb`。
 - [x] **Zerdr は Homebrew 版を採用** — ユーザー承認により既存の `ryonakae/tap/zerdr` 宣言を維持。復元手順で `brew --prefix` から本体のパスを明示し、開発版を拾わないようにした。nix-darwin が導入対象を宣言し、実体・更新は Homebrew が管理する。現 Herdr manifest の開発 checkout 参照は未変更で、切替時の再登録は T5・T10 に残す。
 - 補完案の根拠・公式出典は [dig log](../dig/2026-10-03-nix-migration.md) 冒頭。調査済みであり、同じ候補調査を最初からやり直す必要はない。
 
@@ -133,7 +134,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - [ ] Pi の可変設定3パスの旧リンクと、自作スキルの共通・Claude 各12リンク、Antigravity の参照を確認して初回の退避・復旧手順を用意する。外部13スキルの既存実ディレクトリは個別に確認・退避し、未管理スキルや Claude の `synced` はまとめて置き換えない。新規 cua-driver の配置先が未作成かも適用直前に再確認する。Pi の設定保存と適用の競合を避ける停止手順も含める。
   - Pi 可変設定3ファイルはすべてリポジトリへの旧リンク、Hermes plist 2件は未作成。Antigravity CLI の参照は `~/.gemini/antigravity-cli/skills` → `~/.agents/skills` を確認。リンク・通常ファイルの準備は Pi 停止と個別退避を伴うため未実施。
 - [x] 実 `config.fish` の非秘密差分をユーザーに確認。追加で引き継ぐ設定はないとの回答。以前記載していた `HOMEBREW_GITHUB_API_TOKEN` / `CONTEXT7_API_KEY` / `TYPESAFE_API_KEY` は dotenvx 管理へ移行済み。実ファイル・秘密の値は取得していない。
-- [ ] 旧 universal PATH 等の shell 状態を整理する。`config.fish` の差分なしという回答を universal variables の確認済みとは扱わず、example の PGDATA を実 DB 保存先と仮定しない。
+- [ ] 旧 universal PATH 等の shell 状態を整理する。`18d72cb` からの再開時に PATH 関連4キーだけを選別して確認し、保存済み `PATH` と `fish_user_paths` を検出した。旧 mise shims・存在しない anyenv のパス、PostgreSQL・Antigravity 等の追加パスが残る。値の変更・実 shell 起動による優先順位確認は未実施。詳細は下記「旧 fish 初期化・PATH の追加確認」。example の PGDATA を実 DB 保存先と仮定しない。
 - [ ] T1〜T8 の準備完了後、完成構成をビルドし、生成物・OS 変更範囲・初回の非 Nix 構成への復旧手順を確認する。
 - 検証: Python の in-memory compile、Bash 構文、CLI help、固定 build が成功。`switch_target` の対象ユーザー / HOME 照合と生成済み checker の参照を読み取り専用で確認。ログは `/tmp/dotfiles-switch-preparation.Y3SZjkuN/`。build は既存の Darwin 成果物 `920lv1d788i2510q217sgynxq8kgvzfp` を再利用し、root lock は不変。`switch` 本体・sudo・activation・回帰テスト・fixture / stub は実行していない。
 - 完了条件: 切替時に変更するものと戻し方をユーザーへ具体的に提示できる。`switch` の実行は T10 の承認後。
@@ -229,6 +230,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 | herdr, opencode, pi-coding-agent | 共通 nixpkgs の標準定義 | 本体と設定配置を分離し、現行版維持の override は作らない |
 | claude-code@latest, codex, antigravity-cli（cask） | 共通 nixpkgs の標準定義 | GUI cask と区別し、旧 CLI 導入物の整理は切替後 |
 | Hermes | `ryonakae/hermes-agent` fork 同梱 Flake のパッケージ | `voice` のみ除外。既存管理関数への接続・固定ビルド・生成物確認済み（T7） |
+| Unity CLI（旧 standalone installer） | Homebrew `unity-cli` cask、Nix に導入宣言 | 承認済み。旧本体・PATH の整理と実機適用は T9・T10 |
 | agent-device | npx で都度実行 | mise 宣言は削除。版・Node 要件と起動方法は自作スキルに記載 |
 | @ryonakae/shepherd（npm） | 復元対象から除外 | Herdr plugin と専用 runtime の復元も取りやめ。実機削除は別操作 |
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
@@ -395,7 +397,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 | Antigravity・新規配置 | `.gemini/antigravity-cli/skills` は共通置き場へのリンク。cua-driver の共通・Claude 両配置、Hermes plist 2件は未作成。元が未作成だった対象を記録し、復旧時に現在の所有権・後から作られたデータを確認せず削除しない。 |
 | 旧 fish 初期化 | 生成物との直接衝突だけでなく、残存する `conf.d`・関数・補完の二重読み込みを確認する。実 `config.fish` の非秘密差分はユーザー確認済み。universal PATH 等の状態と実 DB 保存先は別途確認する。 |
 
-fish の追加 metadata では `conf.d/fish_frozen_key_bindings.fish`、`fish_frozen_theme.fish`、`fzf.fish`、`unity-cli.fish` が通常ファイルだった。内容・用途・新構成との重複は未確認なので、一律に旧 Fisher と決めて退避しない。`functions/fisher.fish` は未作成、`fish_plugins` は `~/dotfiles/.config/fish/fish_plugins` へのリンク。既知の旧 `zl.fish` と Zellij config のリンクも残る。これらの整理と退避は未実施。
+fish の追加 metadata では `conf.d/fish_frozen_key_bindings.fish`、`fish_frozen_theme.fish`、`fzf.fish`、`unity-cli.fish` が通常ファイルだった。後続の内容確認は下記に記録する。`functions/fisher.fish` は未作成、`fish_plugins` は `~/dotfiles/.config/fish/fish_plugins` へのリンク。既知の旧 `zl.fish` と Zellij config のリンクも残る。これらの整理と退避は未実施。
 
 **system 側の初回復旧は別途準備が必要**
 
@@ -404,7 +406,25 @@ fish の追加 metadata では `conf.d/fish_frozen_key_bindings.fish`、`fish_fr
 - 生成 activation には `/etc/synthetic.conf` の権限・`run` エントリ調整、APFS の synthetic link 更新、PAM 設定の条件付き変更、SSH host key の条件付き生成、Nix daemon の配置・再読込、Dock 再起動が含まれる。実機で各条件が成立するかは未確認。これらは HOME のリンク復元では戻らず、権限・秘密・サービスに関わる操作の直前承認を含め、T10 の変更範囲・保全・復旧手順へ明示する。実秘密の確認や保全をエージェントが代行しない。
 - 確認取消・入口の Hermes check 失敗は標準 switch 起動前。一方、標準 switch 起動後の失敗は profile と部分変更が残り得る。復旧は失敗段階と変更済み対象を確認してから個別に行い、自動再試行しない。旧 `create-symlink.sh` は既存パスをスキップするため、Nix リンクが残る状態の復旧手段にはならない。
 
-リポジトリ内の独立した読み取り専用調査でも、system 側の復旧、ファイル別の退避・戻し順序、エージェント終了後の人間向け再開手順が不足していることを確認した。これは調査であり、新たな実装の完了レビューではない。T9 は未完了のまま。実 `config.fish` から追加で引き継ぐ非秘密設定はなく、旧3キーは dotenvx 管理へ移行済みとのユーザー回答を受け取った。次は旧 fish 初期化・universal PATH と system 側の復旧準備を進める。秘密の値・実ファイル全文は会話や Git に記録しない。実適用・退避・停止・回帰テスト・新たな build は行っていない。
+リポジトリ内の独立した読み取り専用調査でも、system 側の復旧、ファイル別の退避・戻し順序、エージェント終了後の人間向け再開手順が不足していることを確認した。これは調査であり、新たな実装の完了レビューではない。T9 は未完了のまま。実 `config.fish` から追加で引き継ぐ非秘密設定はなく、旧3キーは dotenvx 管理へ移行済みとのユーザー回答を受け取った。旧 fish 初期化・universal PATH の後続確認は次項に記録する。秘密の値・実 `config.fish` 全文は会話や Git に記録しない。実適用・退避・停止・回帰テスト・新たな build は行っていない。
+
+### 旧 fish 初期化・PATH の追加確認
+
+調査基準は `18d72cb785a0365df10e7b01cd3f27db9025fed1`。開始時の upstream は `origin/master`、ahead/behind は0/0。Claude 設定と Pi fast-mode の既存変更は保持し、取り込まない。現在の Homebrew fish は4.6.0。既存の HM 成果物と HOME の非秘密の初期化ファイルを読み取り比較し、設定を source したり通常の fish を起動したりしていない。
+
+- `conf.d/fzf.fish` と `functions/__fzf*.fish` 10件は、固定 HM 成果物が参照する fzf source と byte 一致。新構成の `plugin-fzf.fish` も同じ `conf.d/fzf.fish` を source するため、旧ファイルを残すと初期化が二重になる。切替時の個別退避対象に含める。
+- bobthefish の通常ファイル9件のうち5件は固定 source と一致し、`__bobthefish_glyphs.fish` / `fish_greeting.fish` / `fish_mode_prompt.fish` / `fish_prompt.fish` は異なる。旧版との差か個別変更かは未確定で、旧ファイルを保全せず捨てない。HM の plugin loader は user functions の後ろへ store の functions を追加するため、旧関数を残すだけでは新 plugin へ完全に切り替わらない。
+- `fish_frozen_key_bindings.fish` は fish 4.3 への移行時に生成されたもので、起動時に universal `fish_key_bindings` を消す。`fish_frozen_theme.fish` は色設定を global scope へ移した生成物。どちらも Fisher の配布物ではなく、新構成の管理対象でもない。旧 plugin と一括退避しない。
+- `functions/fish_logo.fish` と `completions/fish_logo.fish` は固定 plugin に同名ファイルがなく、由来・復元要否は未確認。未知のファイルとして保持する。
+- `conf.d/unity-cli.fish` は `~/.unity/env.fish` を source し、その内容は `~/.unity/bin` を PATH へ追加するだけだった。同ディレクトリに `unity` が存在する。Unity Hub とは別の CLI。公式の standalone installer と配置が一致するが、現本体の版は未確認。ユーザーが利用継続と Homebrew 補完を承認したため、`unity-cli` cask の宣言へ追加した。本体の実行や導入・削除はしていない。
+
+universal variables は `fish_variables` 全文を出力せず、`PATH` / `fish_user_paths` / `fish_function_path` / `fish_complete_path` の行だけを抽出した。後二者は該当行なし。公式 fish の資料では `--no-config` は universal variables も無効にするため、そのモードの `set` 出力を実機の保存値確認には使わない。
+
+- 保存済み `PATH` には `~/.local/share/mise/shims`、Homebrew と system の標準パス、`~/.anyenv/bin`、`/opt/homebrew/opt/mise/bin` がある。`~/.anyenv/bin` は現時点で存在しない。保存値であり、稼働中 shell の実効 PATH と同一とは限らない。
+- `fish_user_paths` は PostgreSQL 17 の bin、Antigravity IDE と Antigravity の各 bin、`~/.local/bin`、Android platform-tools、Android Studio の Java bin、`/usr/local/sbin`。Antigravity の2ディレクトリにはそれぞれ `agy-ide` / `antigravity-ide`、`agy` / `antigravity` がある。両者を同じ不要パスとして扱わない。
+- 新構成は Nix の profile を前方へ移し、最後と PATH 変更時に `~/.local/bin` を先頭へ戻すが、旧 universal 値を削除しない。共通 mise shims を残すと未移行のコマンドが引き続き解決され得るため、T1 の棚卸しと合わせて整理する。PostgreSQL の PATH 維持は DB 保存先・サービス利用状況の確認を代替しない。
+
+T9 は未完了。universal 値の変更と旧ファイルの退避は行っていない。Unity CLI の宣言追加は承認後に実施したが、実機切替は別操作。system 側の復旧手順も未確定のまま。fish 調査では新たな build・回帰テスト・実機適用は実施せず、取得済み生成物との比較だけを行った。
 
 ### 残る最終確認
 
