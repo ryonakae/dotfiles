@@ -46,7 +46,7 @@ bash scripts/dotfiles.sh build
 別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
-本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は公式 Flake のパッケージのみを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。Hermes 本体の構成評価・ビルドは通過したが、サービスの実機検証と切替は未完了。下記の Nix 移行後の手順は、切替を承認するまで実行しない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は `ryonakae/hermes-agent` fork 同梱の Flake のパッケージを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。fork のビルド状況は移行計画を参照し、サービスの実機検証と切替は別に行う。下記の Nix 移行後の手順は、切替を承認するまで実行しない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
 
 ```fish
 bash scripts/dotfiles.sh update nixpkgs
@@ -159,7 +159,7 @@ gateway / dashboard はホストの launchd、Hindsight は Docker で動かす�
 
 ### 初回設定
 
-本体は公式 Flake、起動定義は Home Manager が管理する。`hermes gateway install` 等による plist 再生成、旧 installer、Hermes 専用 mise / venv の復元は併用しない。`setup` のサービス導入・即時起動の質問には No を選ぶ。
+本体は `ryonakae/hermes-agent` の `ryonakae` ブランチを lock で固定し、fork 同梱の Flake で導入する。起動定義は Home Manager が管理する。`hermes gateway install` 等による plist 再生成、旧 installer、Hermes 専用 mise / venv の復元は併用しない。`setup` のサービス導入・即時起動の質問には No を選ぶ。
 
 この Mac では Hermes を起動しない。利用を開始する Mac で、人間が sandbox 外から共通ツール用の秘密、Hermes の認証・設定、Docker を準備する。認証・DB・memory・session・cache は store に入れない。Hindsight の秘密は Git 管理外の `~/.hermes/hindsight/.env` に置き、`openai-codex` 用の `~/.codex` 認証も人間が復元する。
 
@@ -186,18 +186,18 @@ hermes-dashboard status
 
 ### 更新・停止・既存環境の移行
 
-gateway は `hermes-gateway`、dashboard は `hermes-dashboard` で操作する。標準の `hermes gateway stop` / `hermes dashboard --stop` は自動強制終了へ進むため、管理関数の代わりに使わない。`launchctl` で停止確認を飛ばしたり、同時に複数の管理操作・設定適用を行ったりしない。
+gateway は `hermes-gateway`、dashboard は `hermes-dashboard` で操作する。管理関数は fork 標準の停止コマンドを呼ぶ。タイムアウト時の強制終了も fork の仕様に従い、強制終了しないことは保証しない。独自の停止 controller や子プロセス管理は追加しない。
 
-管理関数は管理対象・プロセス identity を確認し、SIGTERM 後に子プロセスを含む終了を待ってから unload する。timeout、状態不明、再生成、未知の定義では中止する。失敗後に強制終了や更新を自動で続けず、原因を確認する。launchd の診断出力を扱う箇所は macOS の変更で拒否される可能性があり、実機での互換性確認が必要。
+停止コマンドや launchd 操作がエラーなら後続の再起動を中止する。直接の `launchctl` で管理関数を飛ばしたり、管理操作と設定適用を並行して行ったりしない。成功表示だけで DB バックアップの整合性を保証した扱いにはせず、既存データの保全は別に確認する。
 
 ```fish
 hermes-dashboard stop
 hermes-gateway stop
 ```
 
-本体の更新は `bash scripts/dotfiles.sh update hermes-agent` と事前ビルドで準備する。`hermes-gateway update` / `hermes update` では更新しない。実切替では操作前の利用状態を確認し、承認後の停止・バックアップ・適用を経て、再開を承認されたサービスだけ起動する。
+本体の更新は `bash scripts/dotfiles.sh update hermes-agent` と事前ビルドで準備する。`hermes-gateway update` / `hermes update` では更新しない。停止・バックアップ・適用・再開は人間が別々に行う。dotfiles の適用入口は利用状態を保存せず、自動停止・再開もしない。
 
-Home Manager は配置前に停止状態と plist の所有関係を確認する。未知の既存 plist は強制上書きせず、確認済みの退避・復旧手順を用意する。旧 KeepAlive 付き定義や管理外の起動プロセスは、この管理関数で安全に移行できるとみなさない。別 Mac の旧サービス停止手順は、その実装を確認してから決める。旧 `~/.hermes/mise.toml` や venv の整理も、その切替時に明示して行う。
+Home Manager は配置前に launchd の Hermes 登録、判別可能な Hermes プロセス、plist の所有関係を確認する。未停止・読み取り失敗・未知の形式なら配置を中止し、停止操作は行わない。確認はユーザーの GUI セッションを前提とし、全プロセスの所属や子プロセスの終了を追跡する仕組みではない。未知の既存 plist は強制上書きせず、確認済みの退避・復旧手順を用意する。別 Mac の旧定義や管理外プロセスの移行は、その環境で確認して行う。旧 `~/.hermes/mise.toml` や venv の整理も、その切替時に明示して行う。
 
 Hindsight の停止・データ移行は別に承認する。必要な停止時は `~/.hermes/services` で `docker compose down` を実行し、データ volume を削除しない。
 

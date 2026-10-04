@@ -8,7 +8,6 @@
 let
   home = config.home.homeDirectory;
   hermes = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  python = pkgs.python311.withPackages (p: [ p.psutil ]);
   services = [
     "gateway"
     "dashboard"
@@ -43,7 +42,7 @@ let
         };
         Disabled = true;
         RunAtLoad = true;
-        # A respawn between drain and bootout could otherwise kill a new DB writer.
+        # Native dashboard stop must not race an automatic respawn.
         KeepAlive = false;
         StandardOutPath = "${home}/.hermes/logs/${name}.log";
         StandardErrorPath = "${home}/.hermes/logs/${name}.error.log";
@@ -54,14 +53,12 @@ let
     "mkdir -p $out\n"
     + lib.concatMapStringsSep "\n" (name: "cp ${plists.${name}} $out/ai.hermes.${name}.plist") services
   );
-  controller = pkgs.writeTextFile {
-    name = "hermes-service.py";
+  checkStopped = pkgs.writeTextFile {
+    name = "hermes-check-stopped";
     executable = true;
-    text =
-      lib.replaceStrings
-        [ "#!/usr/bin/env python3" "@definitions@" ]
-        [ "#!${python}/bin/python3" "${definitions}" ]
-        (builtins.readFile ../../.config/hermes/hermes-service.py);
+    text = lib.replaceStrings [ "#!/bin/bash" ] [ "#!${pkgs.runtimeShell}" ] (
+      builtins.readFile ../../.config/hermes/check-stopped.sh
+    );
   };
 in
 {
@@ -70,8 +67,8 @@ in
     ".hermes/services/docker-compose.yml".source = ../../.hermes/services/docker-compose.yml;
   };
   xdg.configFile = {
-    "hermes/hermes-service.py" = {
-      source = controller;
+    "hermes/check-stopped.sh" = {
+      source = checkStopped;
       executable = true;
     };
   }
@@ -91,7 +88,7 @@ in
 
   home.activation.checkHermesServices = lib.hm.dag.entryBefore [ "writeBoundary" ] (
     ''
-      ${controller} preflight
+      ${checkStopped}
       hermes_home=$(${pkgs.coreutils}/bin/realpath -m -- ${lib.escapeShellArg home})
     ''
     + lib.concatMapStringsSep "\n" (name: ''
@@ -117,7 +114,7 @@ in
 
   home.activation.installHermesPlists = lib.hm.dag.entryAfter [ "linkGeneration" ] (
     ''
-      ${controller} preflight
+      ${checkStopped}
     ''
     + lib.concatMapStringsSep "\n" (name: ''
       run ${pkgs.coreutils}/bin/install -D -m 444 ${plists.${name}} ${lib.escapeShellArg "${home}/Library/LaunchAgents/ai.hermes.${name}.plist"}

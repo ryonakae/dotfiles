@@ -16,11 +16,10 @@
 - 可変設定: 採用中の Home Manager では Zed に `mutableUserSettings` があり、Pi のモジュールは設定を store にリンクする。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。通常ファイル配置とは分けて採用方法を判断し、独自 merge 基盤は作らない。
 
 ## 決定事項
-- Q18: A を採用。固定 Hermes の標準 stop は使わず、既存の管理関数からサービス所属・PID・起動時刻を確認したプロセスへ SIGTERM を送り、終了確認後にだけ unload する。タイムアウト・状態不明・プロセス再生成時は中止し、強制終了・更新・再開へ進まない。
-  - 理由: 標準 gateway stop は終了確認より先に bootout し、その後 SIGKILL へ移行する。dashboard の stop も自動強制終了へ進むため、後段の待機追加では安全要件を守れない。gateway の SIGTERM は上流の shutdown handler に接続されている。
-  - launchd の自動再起動との競合と子プロセスを含む終了確認も実装・検証対象とする。この合意は実サービス停止・起動の即時実行承認ではない。
-  - 出典: Q18 への「a」。調査根拠は固定 Hermes `3251a180f01ad21ae059862997307bf75f3e3f0a` の `hermes_cli/gateway_launchd.py:730–745`、`hermes_cli/dashboard_procs.py:545–586`、`gateway/run.py:5903–5906`。実プロセス操作による検証は未実施。
-- Q17: A を採用。Hermes の plist の生成・配置は Nix / Home Manager が担当し、起動・停止は既存の管理関数と切替入口に限定する。Hermes に標準 launchd activation を使わず、必要最小限の配置処理と停止確認を追加する。
+- 最新の Hermes 合意: 本体は `ryonakae/hermes-agent` fork、起動・停止・再起動は既存の fish 管理関数から fork 標準処理を利用する。dotfiles の適用入口は起動状態を保持せず、自動停止・再開もしない。配置上必要な読み取り専用の確認に失敗したら中止する。
+  - 出典: ユーザーが fork URL と既存スクリプトの利用を指定し、「dotfiles が起動状態を管理する必要はない」と指示。修正計画への `ok` に続き、「タイムアウト時の挙動も fork に任せる」ことへの `ok` を取得した。自動強制終了を禁じる旧 Q18 はこの点で置換された。
+  - 専用 controller・独自の子プロセス管理は撤去する。fork の標準停止が強制終了へ進むことは受け入れるが、実サービス操作を今行う承認ではない。DB バックアップの整合性は別に確認する。
+- Q17: A を採用。Hermes の plist の生成・配置は Nix / Home Manager が担当し、起動・停止は既存の管理関数で行い、最新合意により切替入口は確認だけに限定する。Hermes に標準 launchd activation を使わず、必要最小限の配置処理と停止確認を追加する。
   - 理由: 固定 HM は同一設定でも未ロードなら bootstrap するため、停止状態を維持する要件と両立しない。変更・削除時の bootout も Hermes の正規停止を経由しない。
   - この Mac でサービスを起動しないこと、実操作直前の承認、別 Mac の既存データ保持は維持する。通常の適用で停止済みサービスを再開しない。
   - 出典: Q17 への「a」。標準 launchd の自動再ロードを許容する B 案は不採用。
@@ -103,7 +102,10 @@
 - 実秘密の読み取り・移行や Keychain 操作を、通常の設定移行と一緒に無承認で行うこと。
 
 ## 未決・保留
-- Q18 の停止方式は確定済み。T7 の停止処理と静的・生成物検証を進めた。実サービスでの終了確認と別 Mac の旧定義からの移行は未検証。調査・ビルド結果だけで実機の停止安全性を検証済みとしない。
+- T9 の適用・復旧準備は継続するが、Q19 の選択は撤回。最新合意により switch は Hermes を運用せず、必要な停止確認・衝突確認・適用確認だけを行う。
+  - 調査: 固定 nix-darwin の標準 `switch` は profile 登録後に activation を実行し、失敗時の自動復旧はない。固定ソース・host snapshot を渡せば、標準の世代登録を維持して同じ入力を再評価できる。`activate` のみでは profile 世代が登録されないため、その代用にはしない。
+  - 読み取り専用確認には標準 `check` / `--dry-run` を使わない。固定版では `checkActivation` を export して activation を実行する一方、生成 activation の shebang は `env -i` で環境を消去する。実行ではなくソースと既存生成物で確認した。根拠: nix-darwin 固定 source `pkgs/nix-tools/darwin-rebuild.sh:192–261`、`modules/system/activation-scripts.nix`、生成物 `/nix/store/vxvdvlvffr0lf9kaiy2lvb1w6sxg5izy-darwin-system-26.11.4cff07d/activate`。
+- fork と既存スクリプトの実サービス動作、別 Mac の旧定義からの移行は未検証。調査・ビルド結果だけで実機の停止や DB 保全を検証済みとしない。
 - Q17 の管理方式は確定済み。T7 の配置処理・停止確認の準備範囲は実装計画を参照。切替入口との接続・実機確認は T9・T10 に残る。HM 実装は plist にユーザー所有の実ファイルを使っており、単純な store symlink への置換は前提にしない。
   - 調査根拠: [固定 HM の activation](https://github.com/nix-community/home-manager/blob/acd21c5a3420a9d5fd0ed06299b10828267ef9ba/modules/launchd/default.nix#L275-L620)。コードの読み取りのみで、実サービス操作による検証ではない。
 
@@ -141,6 +143,7 @@
 - 要件の見直しが必要な調査結果は無断で例外化せず確認する。具体的な実装・検証・切替の進捗は承認済みの [実装計画](../plans/2026-10-03-nix-migration.md) に記録する。
 
 ## 撤回・置換済み
+- Hermes の本流パッケージ採用、旧 Q18 の「標準 stop を使わず強制終了を禁じる」方式、専用 controller による PID / 子プロセス管理、switch による利用状態保存・停止・再開は最新の fork / 既存スクリプト利用方針へ置換した。旧 Q18 は本流の停止実装を根拠に承認されたが、対象本体と運用境界の認識が誤っていた。旧実装のレビュー・ビルド記録は実装計画に履歴として残す。
 - Q9 の比較で復元の利便性を重視しすぎた説明を修正。sops-nix / agenix の nix-darwin 対応は確認したが、宣言的な秘密配置自体はエージェントの読み取り制限ではない。保護目的への適合を理由に現行方式を継続する。
   - 比較資料: https://nix.dev/manual/nix/2.34/store/secrets 、https://github.com/Mic92/sops-nix 、https://github.com/ryantm/agenix/blob/main/flake.nix 。
 - Q5 で提案した段階的切替を、ユーザーの希望により「事前準備後、なるべく早く完全切替」へ変更した。長期間の新旧併用は前提にしない。
