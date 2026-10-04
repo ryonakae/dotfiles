@@ -279,6 +279,10 @@ worktree の作成・削除には Worktrunk を使う。Herdr 本体の作成機
 `herdr worktree open` は既存 checkout の登録に限って使う。
 設定変更後は `herdr config check` で検査し、`herdr server reload-config` で反映する。
 
+## Homebrew の補完対象
+
+1Password CLI と Google Cloud CLI は Homebrew cask で管理する。依存ライブラリは依存元のパッケージ管理に任せ、直接の導入一覧へ重ねて追加しない。以前の暫定保持対象だった `icu4c@76` / `libpq` / `oniguruma` / `pcre2` / `postgresql@17` は直接管理せず、必要なら移行時に手動導入する。PostgreSQL のデータ・サービスは別扱いとし、宣言からの除外を理由に削除・停止しない。Homebrew の自動 cleanup は無効のまま維持する。
+
 ## ランタイム
 
 Nix / Homebrew で管理するのは合意済みの共通環境だけ。他プロジェクトのツール・ランタイムは、そのプロジェクトの設定と mise 等に任せる。npm / uv のグローバル配置やインストール済みという事実だけで dotfiles 管理へ追加しない。未宣言の導入物の全件分類を切替条件にせず、既存実体や他プロジェクトの設定を一括削除・変更しない。

@@ -46,7 +46,7 @@
 
 - [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `config/nix/home/packages.nix` と `config/nix/darwin/homebrew.nix`。
 - [x] gomi / dotenvx / Agent Safehouse、Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準定義へ統一。`44688a4`、`23a7c38`。独自 package 定義・専用 updater は削除済み。
-- [x] 55 cask・22 App Store アプリ・補完 formula 7件を宣言し、生成物を確認。Homebrew の自動更新・upgrade・cleanup と PostgreSQL の start/restart は無効。**宣言とビルドのみで、Homebrew bundle は未実行。**
+- [x] 当初の55 cask・22 App Store アプリ・補完 formula 7件を宣言し、生成物を確認。その後 Unity CLI を追加し、現在は56 cask。ユーザー承認により暫定保持の `icu4c@76` / `libpq` / `oniguruma` / `pcre2` / `postgresql@17` を直接宣言から外し、formula は mosh / Zerdr の2件とした。依存はパッケージ管理に任せ、必要な直接導入は移行時に手動で行う。1Password CLI / gcloud は Homebrew cask 管理を維持する。Homebrew の自動更新・upgrade・cleanup は無効。実機の削除・DB 操作・サービス停止は行わない。**Homebrew bundle は未実行。5件除外後の構文・単体評価は実施し、全体ビルドは次回へまとめる。**
 - [x] **Hermes パッケージの採用・固定ビルド** — 公式 Flake の `packages.aarch64-darwin.default` のみを `home.packages` へ追加し、input と root lock を接続した。サービスモジュール・独自 package 定義は追加せず、独自依存を未検証で共通 nixpkgs へ follows しない。既存4 input の内容保持、構文、固定 snapshot の評価・ビルド、生成 CLI の参照先を確認。Safehouse の公開ソース参照拒否後、ユーザー承認の Herdr 別ペインで検証した。review base は `f71f25d`。サービス接続・実起動は T6・T7 に残る。
 - [x] **agent-device のグローバル管理を廃止** — ユーザー指示で mise の `npm:agent-device` 宣言を削除し、自作 `use-agent-device` スキルと `.ad` 実行例を `npx --yes agent-device` へ変更。独自の版固定・更新制限は設けない。Node は npx とは別に要件を満たすものを選ぶ。外部の公式スキルは変更せず、そこでの CLI 表記も npx に読み替える。npm cache・状態は残る。実機の既存導入物は未アンインストール。
 - [x] **Shepherd を復元対象から除外** — ユーザー指示で本体・専用 Node runtime の補完を取りやめ、Herdr plugin の復元コマンドを削除。本体の既存 wrapper、稼働 daemon、実 registry / checkout / state は未変更。無効化済みの team スキルと調査履歴は配布対象外のまま保持する。
@@ -236,13 +236,14 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 | mosh | Homebrew | firewall 手順が配布実体へ署名するため |
 | mise | Nix の CLI、プロジェクト用途のみ | 共通ランタイムの二重管理を解消 |
 | fisher | Home Manager の fish plugin 宣言 | plugin revision を固定 |
-| icu4c@76, libpq, oniguruma, pcre2, postgresql@17 | Homebrew 補完として宣言済み | 用途が完全には判明していないため除外しない。DB / service の状態確認は切替前 |
+| 1password-cli, gcloud-cli | Homebrew cask | 共通ツールとして管理継続をユーザー承認済み |
+| icu4c@76, libpq, oniguruma, pcre2, postgresql@17 | 直接の管理対象外 | ユーザー承認により宣言から除外。依存としての導入はパッケージ管理に任せ、必要なら移行時に手動導入。実機・DB・サービスは削除・停止しない |
 | zellij / ZAM | 移行対象外 | 未使用のため管理設定・導入宣言を削除する承認済み。実機の本体・データ削除は未実施 |
 | その他55 cask、App Store 22件 | Homebrew 補完、導入一覧を Nix 管理 | 実機59 caskから上記3 CLIとCotEditorを除く。CotEditorは実機にApp Store receiptがあるためmasへ一本化。アプリ自動更新を許容 |
 
 補足: 旧 `figma-beta` は tap metadata がなく、現在の公式 cask は有効な `figma@beta`（126.10.3）だった。Nix 定義には現行名を採用するが、現在の116.18.4のアプリとの衝突・導入経路整理は切替前に確認する。`sheltie` と `zerdr` は `ryonakae/tap` の完全修飾名を使用。生成 Brewfile は nix-darwin の既定でこの2パッケージに `trusted: true` を付けるため、適用時の変更範囲に含める。実適用はまだ行っていない。
 
-依存 metadata 上、oniguruma は jq、pcre2 は fish / Git / glib / ripgrep が使用。icu4c@76 / libpq / postgresql@17 に直接依存する formula は見つからなかったが、開発プロジェクトや実 DB の用途を否定する根拠にはしない。
+過去の依存 metadata では oniguruma は jq、pcre2 は fish / Git / glib / ripgrep が使用していた。icu4c@76 / libpq / postgresql@17 の利用元は確定していないが、ユーザーは5件とも直接管理せず必要時の手動導入とする方針を承認した。利用元の全件調査を切替条件にせず、既存の DB・導入実体は保持する。
 
 ## Homebrew 外の導入物の棚卸し
 
