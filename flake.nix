@@ -7,7 +7,7 @@
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-    hermes-agent.url = "github:NousResearch/hermes-agent";
+    hermes-agent.url = "github:ryonakae/hermes-agent/ryonakae";
     host = {
       url = "path:./config/nix/hosts";
       flake = false;

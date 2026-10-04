@@ -32,15 +32,16 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1791043703,
-        "narHash": "sha256-bKqUknS0LlDW44V4LrrLf85bJpzOC3QmdRmIRmA0E7Q=",
-        "owner": "NousResearch",
+        "lastModified": 1788705629,
+        "narHash": "sha256-35HGnPLz0FOWmLA1FtwGD8i1H1YjUUNc3ru+mKR+mMw=",
+        "owner": "ryonakae",
         "repo": "hermes-agent",
-        "rev": "3251a180f01ad21ae059862997307bf75f3e3f0a",
+        "rev": "2a485666e6754ec8e8a0ba9b383ea1eb6e518f14",
         "type": "github"
       },
       "original": {
-        "owner": "NousResearch",
+        "owner": "ryonakae",
+        "ref": "ryonakae",
         "repo": "hermes-agent",
         "type": "github"
       }

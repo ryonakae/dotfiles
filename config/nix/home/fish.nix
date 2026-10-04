@@ -17,6 +17,7 @@ let
         "safe pi "
         ''run-with-agent-env.sh" safehouse ''
         "-- hermes "
+        "command hermes "
       ]
       [
         "safe ${lib.getExe pkgs.claude-code} "
@@ -25,6 +26,7 @@ let
         "safe ${lib.getExe pkgs.pi-coding-agent} "
         ''run-with-agent-env.sh" ${lib.getExe pkgs.agent-safehouse} ''
         "-- ${hermes}/bin/hermes "
+        "command ${hermes}/bin/hermes "
       ];
 in
 {
