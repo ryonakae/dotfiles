@@ -35,6 +35,6 @@ Nix の bootstrap は人間が sandbox 外で実行する。[初回導入](docs/
 - 保護ポリシーは互換性優先。秘密の保存場所を確認せず既存の deny を削除しない。`~/.hermes` は汎用 deny の例外となる信頼領域なので、保護対象の置き場にしない。
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。
 - 実秘密の移行、Keychain 登録・バックアップ、ごみ箱の復元・掃除は人間が sandbox 外で行う。
-- Hermes のサービス操作は `hermes-gateway` / `hermes-dashboard` を使う。`launchctl bootout` / `bootstrap` を直接実行しない。plist を再生成したら [wrapper の差し替え](docs/setup.md#hermes-agent)をやり直す。
+- Hermes のサービス操作は `hermes-gateway` / `hermes-dashboard` を使う。標準 stop の自動強制終了、直接の `launchctl`、installer による plist 再生成を迂回手段にしない。旧サービスの停止・退避は [移行時の制約](docs/setup.md#更新停止既存環境の移行)に従う。
 - Herdr プラグインには復元用 lock がない。追加・削除したら [導入一覧](docs/setup.md#herdr)を更新する。worktree の作成・削除には Herdr 本体の機能を使わず Worktrunk を使う。
 - Pi の `extensions/` に通知処理を置く場合も、`hooks/` という名前のディレクトリを作らない。Pi が extension として自動読み込みするため。

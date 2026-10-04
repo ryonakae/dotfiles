@@ -46,7 +46,7 @@ bash scripts/dotfiles.sh build
 別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
-本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は公式 Flake のパッケージのみを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。Hermes の構成評価・ビルドは通過したが、サービス接続はまだ完了していないため、下記の従来セットアップからの切替は行わない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は公式 Flake のパッケージのみを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。Hermes 本体の構成評価・ビルドは通過したが、サービスの実機検証と切替は未完了。下記の Nix 移行後の手順は、切替を承認するまで実行しない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
 
 ```fish
 bash scripts/dotfiles.sh update nixpkgs
@@ -154,34 +154,16 @@ MCP の個人設定は `~/.pi/agent/mcp.json` に置く。OAuth が必要なサ�
 
 ## Hermes Agent
 
-gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。
-同じ `~/.hermes` を使う Docker dashboard をホスト版と同時起動しない。
-共通ツール用の秘密を設定し、Docker を起動してから進める。
+以下は **Nix 移行後**の運用。現時点では switch と実機検証が未完了なので、既存環境へ配布・適用しない。
+gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。同じ `~/.hermes` を使う Docker dashboard をホスト版と同時起動しない。
 
 ### 初回設定
 
-[Hermes の公式手順](https://github.com/NousResearch/hermes-agent)で本体を導入し、ランタイムと plist を準備する。
+本体は公式 Flake、起動定義は Home Manager が管理する。`hermes gateway install` 等による plist 再生成、旧 installer、Hermes 専用 mise / venv の復元は併用しない。`setup` のサービス導入・即時起動の質問には No を選ぶ。
 
-```fish
-mise -C ~/.hermes install
-command hermes gateway install
-```
+この Mac では Hermes を起動しない。利用を開始する Mac で、人間が sandbox 外から共通ツール用の秘密、Hermes の認証・設定、Docker を準備する。認証・DB・memory・session・cache は store に入れない。Hindsight の秘密は Git 管理外の `~/.hermes/hindsight/.env` に置き、`openai-codex` 用の `~/.codex` 認証も人間が復元する。
 
-`~/Library/LaunchAgents/ai.hermes.gateway.plist` の `ProgramArguments` を、`~/.config/agent-safehouse/safe-hermes-gateway.sh` の**絶対パス1要素**へ完全置換する。
-元の Python 起動引数は残さない。plist 内では `~` や `$HOME` を展開しない。
-`~/.hermes/.env` に `API_SERVER_ENABLED=true` を設定する。
-
-dashboard の plist は Git 管理外の `~/Library/LaunchAgents/ai.hermes.dashboard.plist` に作成する。
-
-| 項目 | 値 |
-|---|---|
-| `Label` | `ai.hermes.dashboard` |
-| `ProgramArguments` | `~/.config/agent-safehouse/safe-hermes-dashboard.sh` の絶対パス1要素 |
-| `WorkingDirectory` | `~/.hermes/hermes-agent` の絶対パス |
-| `EnvironmentVariables` | gateway と同じ `PATH` / `VIRTUAL_ENV` / `HERMES_HOME` |
-
-Hindsight の `.env` は dotfiles 側で編集し、認証を準備する。
-`openai-codex` provider を使う場合は、ホストの `~/.codex` の認証も必要。
+Hindsight のデータと認証を準備し、コンテナ起動を承認した後に実行する。
 
 ```fish
 cd ~/.hermes/services
@@ -189,50 +171,41 @@ docker compose up -d hindsight
 hermes memory setup
 ```
 
-memory provider に Hindsight を選ぶ。plist の構文を確認してからサービスを起動する。
+memory provider に Hindsight を選ぶ。Compose は tag と digest を固定するが、Docker の volume・認証は Nix 世代へ巻き戻らない。
+
+plist の生成・配置だけではサービスを開始しない。初期設定と必要な状態バックアップを済ませ、起動を承認したサービスだけ管理関数から開始する。
 
 ```fish
-plutil -lint ~/Library/LaunchAgents/ai.hermes.gateway.plist
-plutil -lint ~/Library/LaunchAgents/ai.hermes.dashboard.plist
 hermes-gateway start
 hermes-dashboard start
-```
-
-起動後に状態を確認する。
-
-```fish
 hermes-gateway status
 hermes-dashboard status
-hermes memory status
 ```
 
-Python のバージョンを変更した場合は、Hermes 本体の `venv` も再作成する。
-`hermes gateway install --force` / `start` / `setup` で plist を再生成した場合は、wrapper への差し替えをやり直す。
-`setup` のサービス導入・即時起動の質問には No を選び、起動は管理関数で行う。
+新定義は既定で disabled。明示的な start で有効化し、以後のログイン時も起動対象になる。stop が成功したサービスは無効化され、次の start まで停止状態を維持する。KeepAlive による自動再生成は行わないため、異常終了時も原因を確認して管理関数から再起動する。
 
-### 更新・停止
+### 更新・停止・既存環境の移行
 
-gateway は `hermes-gateway`、dashboard は `hermes-dashboard` で操作する。
-停止時の処理を飛ばさないよう、`launchctl` を直接使わない。
-`hermes-gateway` の停止待ちがタイムアウトした場合、stop / restart / update は失敗として中止する。そのまま切替や更新を続けたり強制終了したりせず、終了していないプロセスを確認する。
+gateway は `hermes-gateway`、dashboard は `hermes-dashboard` で操作する。標準の `hermes gateway stop` / `hermes dashboard --stop` は自動強制終了へ進むため、管理関数の代わりに使わない。`launchctl` で停止確認を飛ばしたり、同時に複数の管理操作・設定適用を行ったりしない。
 
-```fish
-hermes-gateway update
-```
-
-停止する場合:
+管理関数は管理対象・プロセス identity を確認し、SIGTERM 後に子プロセスを含む終了を待ってから unload する。timeout、状態不明、再生成、未知の定義では中止する。失敗後に強制終了や更新を自動で続けず、原因を確認する。launchd の診断出力を扱う箇所は macOS の変更で拒否される可能性があり、実機での互換性確認が必要。
 
 ```fish
 hermes-dashboard stop
 hermes-gateway stop
-cd ~/.hermes/services
-docker compose down
 ```
+
+本体の更新は `bash scripts/dotfiles.sh update hermes-agent` と事前ビルドで準備する。`hermes-gateway update` / `hermes update` では更新しない。実切替では操作前の利用状態を確認し、承認後の停止・バックアップ・適用を経て、再開を承認されたサービスだけ起動する。
+
+Home Manager は配置前に停止状態と plist の所有関係を確認する。未知の既存 plist は強制上書きせず、確認済みの退避・復旧手順を用意する。旧 KeepAlive 付き定義や管理外の起動プロセスは、この管理関数で安全に移行できるとみなさない。別 Mac の旧サービス停止手順は、その実装を確認してから決める。旧 `~/.hermes/mise.toml` や venv の整理も、その切替時に明示して行う。
+
+Hindsight の停止・データ移行は別に承認する。必要な停止時は `~/.hermes/services` で `docker compose down` を実行し、データ volume を削除しない。
 
 ### リモートアクセス
 
-dashboard は `0.0.0.0:9120 --insecure` で待ち受けるため、信頼できる LAN 内でのみ動かす。
-iPhone からのアクセス用に Tailscale Serve を設定する。
+dashboard は既存どおり `0.0.0.0:9120` を使うが、採用済み Hermes では認証 provider が必要。`--insecure` は認証を迂回しない。人間が認証を設定してから起動し、信頼できる LAN / VPN 内で使う。
+
+iPhone からのアクセス用に Tailscale Serve を設定する。これは Nix の適用とは別の、人間によるネットワーク設定操作。
 
 ```fish
 tailscale serve --bg --https=9119 http://127.0.0.1:9120
@@ -240,7 +213,7 @@ tailscale serve --bg --https=9999 http://127.0.0.1:9999
 tailscale serve status
 ```
 
-表示されたホスト名の `:9119` が Hermes、`:9999` が Hindsight の dashboard。
+表示されたホスト名の `:9119` が Hermes、`:9999` が Hindsight の dashboard。`hermes-dashboard open` はローカルの URL を開く。
 
 ### Google Workspace
 

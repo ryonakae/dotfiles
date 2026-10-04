@@ -1,4 +1,9 @@
-{ config, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
   home.file.".local/bin/rm" = {
@@ -15,7 +20,9 @@
     "agent-safehouse/compatibility.sb".source = ../../.config/agent-safehouse/compatibility.sb;
     "agent-safehouse/local-overrides.sb".source = ../../.config/agent-safehouse/local-overrides.sb;
     "agent-safehouse/run-with-agent-env.sh" = {
-      source = ../../.config/agent-safehouse/run-with-agent-env.sh;
+      text = lib.replaceStrings [ "exec dotenvx " ] [ "exec ${lib.getExe pkgs.dotenvx} " ] (
+        builtins.readFile ../../.config/agent-safehouse/run-with-agent-env.sh
+      );
       executable = true;
     };
   };

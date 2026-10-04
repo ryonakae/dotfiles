@@ -82,24 +82,34 @@
 - Agent Context / Worktrunk の tracked config には本番実装の書き込み経路がなく、個別の読み取り専用配置を維持する。registry、checkout、state は可変で残す。plugin 実体・session・log は Git / store へ取り込まない。
 - 完了条件: 認証・状態を store に入れず、必要な設定と拡張を復元できる。永続設定変更を制限する場合は、その具体的な影響を切替前に説明・確認する。
 
-### T6. 保護・起動・PATH の統合 — 進行中
+### T6. 保護・起動・PATH の統合 — 宣言・生成物の確認済み
 
-共通ファイルの配置は T4 で完了。残るのは起動経路全体の接続確認。
+共通ファイルの配置は T4 で完了。残るのは起動経路全体の接続確認。今回の review base は `74bd8d6`。
 
-- [ ] `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数の実行先を確認し、不要な mise / Homebrew 固定パスを解消する。引数・終了・signal の透過、秘密の直接アクセス保護、復号失敗時の停止を維持する。
-- [ ] T7 のサービス wrapper と、HOME 許可・profile 順・環境継承・TMPDIR 補正を照合する。サービスが対話用 feature を省く差分は維持する。
+`home/fish.nix` で管理 CLI / Safehouse / Hermes の実行先を Nix パスへ接続し、`home/protection.nix` で dotenvx を固定。プロジェクト用 PATH 全体は置換しない。サービス wrapper は旧 mise / venv 前提を外し、dashboard の TMPDIR 補正を追加した。`home/hermes.nix` でサービス側も Nix の実行先へ接続し、固定ビルドと生成物の構文・参照確認を通過。実機 PATH の衝突・初回切替は T9・T10 に残る。
+
+- [x] `run-with-agent-env.sh`、`__safehouse_args.fish`、対話 CLI 関数の実行先を確認し、不要な mise / Homebrew 固定パスを解消する。引数・終了・signal の透過、秘密の直接アクセス保護、復号失敗時の停止を維持する。
+- [x] T7 のサービス wrapper と、HOME 許可・profile 順・環境継承・TMPDIR 補正を照合する。サービスが対話用 feature を省く差分は維持する。
 - 完了条件: shell / 非対話 / launchd の生成された実行経路で、Nix 本体の利用と rm 保護の優先順位を説明できる。実秘密の読み取りや保護ポリシーの緩和で検証を通さない。
 
-### T7. Hermes サービス・Hindsight — 停止待機のみ修正済み
+### T7. Hermes サービス・Hindsight — 宣言・停止処理を実装、実機未検証
 
 Hermes 本体の採用と T3 の構成評価・ビルドは完了。ここではこの Mac のサービスを起動しない構成を作る。
 
-- [ ] `config/nix/home/hermes.nix` と既存 gateway / dashboard wrapper・管理関数を接続し、plist の所有者を一つにする。現在の wrapper は `~/.hermes/hermes-agent/venv/bin/hermes` 前提なので、パッケージ追加だけで済ませない。
+[dig log の Q17: A](../dig/2026-10-03-nix-migration.md#決定事項) で、plist の生成・配置とサービス操作の分離を承認済み。管理境界は下記「Hermes と常駐サービス」に反映し、配置処理と停止確認を実装した。固定 Hermes の標準 stop 自体が強制終了へ進むため、[Q18: A](../dig/2026-10-03-nix-migration.md#決定事項) により、管理関数側で identity を確認して SIGTERM と終了待機を行う方式も承認済み。
+
+- [x] `config/nix/home/hermes.nix` と gateway / dashboard wrapper・管理関数を接続し、plist の生成元を一つにした。旧 mise / venv 起動を除き、公式 Nix パッケージへ接続。既知の生成物だけをユーザー所有の実ファイルへ配置し、標準 launchd activation には登録しない。
+  - 標準 launchd activation に Hermes を登録せず、生成と必要最小限の配置処理を HM 側へ置く。plist の所有権・既存ファイルとの衝突を確認し、未知の実ファイルを上書きしない。配置時には bootstrap / bootout を呼ばない。
 - [x] `__hermes_gateway_wait_pid_die.fish` のタイムアウトを失敗に変更し、stop / restart / update の全3呼び出しで後続の bootout / bootstrap / 本体更新を中止する。source・生成配置の fish 構文、byte 一致、差分、固定 lock ビルドで確認。実サービス・待機の動作検証や回帰テストは実施していない。
-- [ ] 正規停止コマンド自体の失敗、状態取得失敗、HM の再読み込みを含む切替全体の停止ゲートを確定する。今回の修正は待機 timeout の扱いのみ。
-- [ ] ホストごとの利用状態を扱い、未使用・停止中のサービスが定義追加だけで自動ロードされないようにする。利用中の別 Mac のデータを保持し、初期化・上書きしない。
-- [ ] Hindsight の `config/.hermes/services/docker-compose.yml` と image digest を固定し、Docker・volume・認証は Nix 世代から分離する。`config/.hermes/SOUL.md` の配置と、旧 `mise.toml` の扱いも確定する。
-- 完了条件: 生成された wrapper / plist / activation の確認とビルドが通る。別 Mac の実機移行・稼働確認は、その Mac での作業として残し、この Mac の準備のゲートにしない。
+- [x] gateway / dashboard の管理関数を、Q18 の停止方式へ変更。共通の `config/.config/hermes/hermes-service.py` がサービス所属・PID・起動時刻を停止前と signal 送信時に照合し、SIGTERM 後、対象と捕捉した子プロセスの終了を確認してから unload する。timeout・状態取得失敗・再生成時には後続操作を中止する。psutil は標準 Nix Python 環境に閉じ、上流 stop / status に停止や不在判定を委譲しない。実プロセス操作は未検証。旧 wait helper は呼び出し元とともに置換・削除した。
+  - launchd の自動再起動が終了確認と unload の間に入り込まない順序を確認する。安全な終了確認ができない経路を、標準 stop や強制終了への fallback で通さない。
+  - 追加の read-only 調査で、停止後の PID 読み取り・欠落 / 不正 PID・probe 失敗が不在扱いになる経路、dashboard の timeout 後続行、gateway restart の bootout 失敗後続行、update による停止済みサービスの bootstrap を確認。停止前の状態取得と fail-closed な待機、更新前の状態保持が必要。実サービス検証は行っていない。
+  - 固定上流では `gateway stop --graceful` は未対応。`gateway stop` は先に bootout し、その後の待機中に SIGKILL へ進む。dashboard `--stop` も強制終了へ移行する。status は不在判定用の終了コード / JSON を提供せず、stale state の削除等を伴う reader もあるため、read-only preflight にはそのまま流用しない。管理関数の停止経路は承認済み Q18: A に従って置換済み。
+  - 固定 Hermes では dashboard の `--insecure` は no-op。既存 wrapper の `0.0.0.0` bind には認証 provider が必要で、未設定の非対話起動は拒否される。起動前の設定確認事項とし、bind・認証・秘密はまだ変更していない。
+- [x] 未使用時は `Disabled = true`、配置時はサービス操作なし。start が明示的に enable / bootstrap し、成功した stop が unload / disable する。KeepAlive は false とし、異常終了も明示的な再起動とする。認証・DB 等を初期化・配置しない。別 Mac の旧定義・管理外プロセスは拒否し、実際の移行手順はその Mac で別途確認する。
+- [x] Hindsight の Compose と image digest を固定して配置し、Docker・volume・認証は Nix 世代から分離した。`SOUL.md` は既存正本を通常配置し、旧 `mise.toml` は Nix で配布しない。既存 HOME の旧リンク・venv の退避や撤去は T9・T10 で行う。
+  - GHCR の公開 manifest で `ghcr.io/vectorize-io/hindsight:0.10.2` の OCI index digest `sha256:d1840062a5b79940ab7a9f4809ceb90fc776d4ad737cd9329e9b5836cc64ab70` と linux/arm64・amd64 を確認した。Compose と HM 配置の生成物を確認済み。image pull・コンテナ起動は未実施。
+- 完了条件: 生成された wrapper / plist / activation の確認とビルドが通る。Hermes が標準 launchd activation の対象にないこと、配置前の停止確認、配置によるサービス操作がないこと、新規・停止済み・状態不明の各経路を source と生成物で確認する。実サービスでの検証とは区別する。別 Mac の実機移行・稼働確認は、その Mac での作業として残し、この Mac の準備のゲートにしない。
 
 ### T8. macOS 設定・手動復元 — 宣言・文書化済み、実適用は T10
 
@@ -181,10 +191,11 @@ Hermes 本体の採用と T3 の構成評価・ビルドは完了。ここでは
 ### 4. Hermes と常駐サービス
 
 - 本体パッケージとサービスの所有権を分離する。標準管理が難しい場合の導入方法は別途相談し、gateway / dashboard の定義は Home Manager 側の一か所で所有する。既存の `hermes gateway install` による plist 再生成とは併用しない。
-- 上流 services モジュールは Safehouse / dotenvx と停止順序をそのまま満たさないため、全面採用を前提にしない。パッケージを利用して既存の安全な起動契約を HM の launchd 定義へ移す方法を基本とし、独自のサービス管理基盤は作らない。
+- Q17: A により、上流 services モジュールと HM の標準 launchd activation は Hermes に使わない。公式パッケージを利用し、Safehouse / dotenvx を通る wrapper と plist の生成・配置を HM 側で管理する。起動・正規停止は既存の管理関数と切替入口が担当する。標準 HM は停止中でも bootstrap するため、配置とサービス操作を分離する必要最小限の処理だけを追加し、汎用のサービス管理基盤は作らない。
 - build は停止せず先に完了させる。この Mac には Hermes の既存環境がないため、パッケージ / 起動定義を用意し、停止・データ移行・自動起動は行わない。初期設定は利用開始時に行う。別の Mac の稼働中環境へ適用するときは、利用者確認 → 正規停止 → 終了確認 → 必要な DB バックアップ → 切替 → 起動確認の順にする。旧本体と新本体が同じ DB を同時に開く時間を作らない。
-- 現行 wait helper の「タイムアウトでも成功扱いで続行」は採用しない。停止失敗・待機時間超過なら切替を中止し、強制終了や継続を自動選択しない。既存の管理関数を移行時にも利用・更新し、外から launchctl を直接呼んで停止処理を飛ばさない。
-- HM の launchd activation が定義の追加だけで未使用・停止中の Hermes を起動しない構成にする。この Mac と新規 Mac は明示的にサービス起動を有効化するまで自動ロードしない。将来の稼働中更新では、HM の再読み込みより前に正規停止が完了する順序を保証し、操作入口を通さない適用でも未停止なら中止する。
+- Q18: A により、標準 `hermes gateway stop` / `hermes dashboard --stop` の自動強制終了経路は使わない。既存の管理関数から、サービス所属・PID・起動時刻を確認して SIGTERM を送る。対象と子プロセスの終了を確認してから unload し、再生成・状態不明・停止失敗・待機時間超過なら中止する。強制終了や継続を自動選択せず、外から launchctl を直接呼んで停止処理を飛ばさない。
+- HM の配置処理から Hermes を起動・停止しない。この Mac と新規 Mac は明示的にサービス起動を有効化するまで自動ロードせず、停止済みサービスも適用だけでは再開しない。切替入口は操作前の利用状態を確認し、承認を得て正規停止・終了確認を行う。再開はその状態と直前承認に従い、失敗時に無条件で bootstrap しない。
+- 操作入口を通さない HM 適用にも、write boundary より前の読み取り専用の停止確認を置く。未停止または状態不明なら配置を中止し、activation 自体では停止を試みない。PID 欠落・不正値・probe 失敗だけを不在の証明にせず、状態判定に失敗したまま wrapper / plist を置き換えない。
 - Hermes の config / auth / DB / memory / skills / cron は実機の可変データとして保持し、宣言化する非秘密設定だけを明示する。既存実設定を無差別に読み込まず、必要な非秘密項目はユーザーが提供する安全な抜粋等で確認する。package の追加依存は利用機能と照合する。
 - Hindsight の Docker サービスはそのまま独立した状態管理として扱う。Compose 定義は宣言的に配置し、イメージの tag に加えて取得 digest を固定する。データ volume・Codex 認証・Docker runtime は Nix 世代の復元に含めない。データ移行を伴う更新は別途停止・バックアップを確認する。
 
@@ -240,8 +251,8 @@ Hermes 本体の採用と T3 の構成評価・ビルドは完了。ここでは
 | 対象 | 実行結果・根拠 |
 |---|---|
 | T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成に加え、Hermes 本体も同じ lock 検査・snapshot・check/build 処理で検証 |
-| 最新 Darwin 成果物 | `/nix/store/15g1b07yc5hjspc5fz5k859ls738zdr9-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/c94r0p4jvkgisrrxisv3r0758m4sq6c5-home-manager-generation` |
+| 最新 Darwin 成果物 | `/nix/store/vxvdvlvffr0lf9kaiy2lvb1w6sxg5izy-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/kyrg9a2gn3dd6hh3gryp2vpaqm8s8xcb-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -348,6 +359,14 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 - 通常の `scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p` を Herdr 別ペインで実行し成功。ログは `/tmp/dotfiles-cua-build.OLJA1iTc/build.log`、snapshot は `/nix/store/a1pipxx0y088rd4z2yg9x4a09246iid6-source`。root lock は未変更。Claude の他プロセス変更は snapshot に含むが、コミットからは除外する。
 - 生成された共通・Claude 各26スキルで cua-driver の11ファイル×2が公開ソースと byte / 実行ビット一致。前回の agent-device npx 化も両配置の本文・reference が正本と一致。Nix format、Zerdr 復元コマンドの fish 構文、差分を確認。Zerdr の本体・登録、cua-driver 本体、稼働プロセス・権限、実 HOME は未変更。GUI 操作・回帰テストは実施していない。
 - 実装 commit `da0a558`。`99cd316..da0a558` と先行の `5f35d54..99cd316` の npx 化・Shepherd 復元廃止を独立した read-only reviewer が確認し、新規の blocking/high・decision required・medium/low 指摘なし。公開取得・生成物・build は親側が検証し、レビュー側では再実行していない。
+
+### T6・T7 の起動経路・停止処理の検証記録
+
+- review base は `74bd8d6`。通常の固定 lock build を承認済みの Herdr 別ペインで実行し成功。ログは `/tmp/dotfiles-hermes-services.ZRhCAt20/build.log`。root lock の SHA256 は `b9d00d6546aa0c4c00f73024aee9a5b52309d297f96cd92d2c77965082fe2864` のまま。build snapshot には他プロセスの Claude 設定も含むが、コミット対象にはしない。
+- 生成された標準 HM LaunchAgents は0件。別の `hermes-launch-agents` には対象2 plist があり、単一の Nix store wrapper・明示 HOME / HERMES_HOME / PATH・Disabled / RunAtLoad / KeepAlive を確認。停止確認 → write boundary → linkGeneration → plist 配置の順を確認した。配置処理は状態の検査とコピーだけを行い、サービスを操作しない。
+- 生成 controller の置換後本文、fish 管理関数、SOUL、Compose は正本と一致。対話 CLI / dotenvx / サービスの Nix 実行先、rm 最優先の PATH、旧 mise / venv / wait helper の非配布を確認。wrapper の HOME 許可・環境継承・profile 順とサービス別 feature は維持している。
+- Python のインメモリ構文コンパイル、fish / shell / YAML / Nix の構文・format・差分検査、生成 activation の指定 Nix Bash による構文検査を通過。controller 自体は実行していない。既存 launchctl の読み取り専用 metadata では現在のセッションと同 UID の asuser が Aqua であることだけを確認し、root 経由の実 activation は未検証。
+- 独立レビューは未完了。実起動・停止・SIGTERM・Hermes 初期化・Compose 実行・実機適用・回帰テスト・fixture・stub は未実施。launchd 診断形式、厳格な process census、稼働中 state 更新との互換性は実機での確認が必要。既知の管理定義だけを扱い、管理外の書き換え・並行管理操作・観測前に service tree を離れたプロセスの追跡を保証しない。旧サービスの自動移行を完了扱いにしない。
 
 ### 残る最終確認
 

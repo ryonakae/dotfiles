@@ -1,11 +1,31 @@
 {
   config,
+  inputs,
   lib,
   pkgs,
   ...
 }:
 let
   functions = ../../.config/fish/functions;
+  hermes = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
+  bindExecutables =
+    lib.replaceStrings
+      [
+        "safe claude "
+        "safe codex "
+        "safe opencode "
+        "safe pi "
+        ''run-with-agent-env.sh" safehouse ''
+        "-- hermes "
+      ]
+      [
+        "safe ${lib.getExe pkgs.claude-code} "
+        "safe ${lib.getExe pkgs.codex} "
+        "safe ${lib.getExe pkgs.opencode} "
+        "safe ${lib.getExe pkgs.pi-coding-agent} "
+        ''run-with-agent-env.sh" ${lib.getExe pkgs.agent-safehouse} ''
+        "-- ${hermes}/bin/hermes "
+      ];
 in
 {
   programs.fish = {
@@ -43,7 +63,7 @@ in
       (
         name: _:
         lib.nameValuePair "fish/functions/${name}" {
-          source = functions + "/${name}";
+          text = bindExecutables (builtins.readFile (functions + "/${name}"));
         }
       )
       (
