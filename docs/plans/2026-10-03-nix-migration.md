@@ -28,10 +28,10 @@
 
 ## Tasks
 
-### T1. 対象の棚卸し — 進行中
+### T1. 対象の棚卸し — 完了（共通環境に限定）
 
 - [x] Homebrew の導入 metadata と App Store 一覧を取得。installed-on-request は44 formula、cask は59件、App Store は22件。移行先は下の対応表に記録。
-- [ ] Homebrew 外の npm / uv / mise / 手動導入物と、各アプリの拡張を照合する。依存だけのライブラリを直接利用ツールと混同せず、各対象の導入先・例外理由・未確認点が説明できれば完了。
+- [x] Homebrew 外の npm / uv / mise / 主要手動配置先を照合。ユーザー承認により、インストール済み・グローバル配置・Nix 未宣言という理由だけで dotfiles の管理漏れと扱わない。共通環境は合意済みの対象だけを管理し、他プロジェクトのツール・runtime は各プロジェクトの設定と mise 等に任せる。未宣言分の全件分類・追加調査を切替条件にせず、棚卸しはここで終了する。既存実体・プロジェクト設定は変更・削除しない。合意済みの Pi / Herdr 等の拡張は T5 の範囲で扱い、未知のアプリ拡張まで調査を広げない。
   - 調査済み metadata は `/tmp/dotfiles-brew-inventory.json`。一時ファイルの存続を前提にせず、なければ非秘密の package metadata だけ再取得する。
   - Git 外の実 `config.fish` は秘密を含むため読まない。example と実設定の差分は T9 で人間に確認してもらう。example の PGDATA を実 DB の保存先と仮定しない。
 
@@ -50,7 +50,7 @@
 - [x] **Hermes パッケージの採用・固定ビルド** — 公式 Flake の `packages.aarch64-darwin.default` のみを `home.packages` へ追加し、input と root lock を接続した。サービスモジュール・独自 package 定義は追加せず、独自依存を未検証で共通 nixpkgs へ follows しない。既存4 input の内容保持、構文、固定 snapshot の評価・ビルド、生成 CLI の参照先を確認。Safehouse の公開ソース参照拒否後、ユーザー承認の Herdr 別ペインで検証した。review base は `f71f25d`。サービス接続・実起動は T6・T7 に残る。
 - [x] **agent-device のグローバル管理を廃止** — ユーザー指示で mise の `npm:agent-device` 宣言を削除し、自作 `use-agent-device` スキルと `.ad` 実行例を `npx --yes agent-device` へ変更。独自の版固定・更新制限は設けない。Node は npx とは別に要件を満たすものを選ぶ。外部の公式スキルは変更せず、そこでの CLI 表記も npx に読み替える。npm cache・状態は残る。実機の既存導入物は未アンインストール。
 - [x] **Shepherd を復元対象から除外** — ユーザー指示で本体・専用 Node runtime の補完を取りやめ、Herdr plugin の復元コマンドを削除。本体の既存 wrapper、稼働 daemon、実 registry / checkout / state は未変更。無効化済みの team スキルと調査履歴は配布対象外のまま保持する。
-- [ ] **Unity CLI は Homebrew 補完で復元** — ユーザー承認により `homebrew.nix` の cask に `unity-cli` を追加。更新は Homebrew に任せ、公式 installer・`unity self-update`・独自 Nix package は併用しない。Editor / modules と認証・Hub の状態は本体管理から分離する。旧 `~/.unity/bin/unity` と fish の PATH 設定の整理は T9・T10 に残し、実機は変更しない。`--zap` が Hub の状態も削除する注意を `docs/setup.md` に記載。`nix-instantiate --parse` と当該モジュール単体の strict JSON 評価が成功し、cask が56件、`unity-cli` が1件、Hub と自動更新・upgrade・cleanup 無効の維持を確認した。`git diff --check` も成功。構成全体の再ビルド・生成 Brewfile は未確認で、この小項目は未完了。`18d72cb..4d99014` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。レビューはリポジトリ内のソースに限定し、公式配布情報・実機 fish の調査と宣言評価は親側の確認結果と区別する。
+- [x] **Unity CLI の Homebrew 宣言・ビルド** — ユーザー承認により `homebrew.nix` の cask に `unity-cli` を追加。更新は Homebrew に任せ、公式 installer・`unity self-update`・独自 Nix package は併用しない。Editor / modules と認証・Hub の状態は本体管理から分離する。旧 `~/.unity/bin/unity` と fish の PATH 設定の整理は T9・T10 に残し、実機は変更しない。`--zap` が Hub の状態も削除する注意を `docs/setup.md` に記載。`nix-instantiate --parse` と当該モジュール単体の strict JSON 評価が成功し、cask が56件、`unity-cli` が1件、Hub と自動更新・upgrade・cleanup 無効の維持を確認した。`git diff --check` も成功。承認済みの別ペインで構成全体の固定 build が成功し、生成 Brewfile に `unity-cli` と `unity-hub` が含まれることを確認した。宣言・ビルドは完了、実導入と旧配置の整理は T9・T10 に残る。`18d72cb..4d99014` を独立した read-only reviewer が確認し、blocking/high・decision required・medium/low の指摘なし。レビューはリポジトリ内のソースに限定し、公式配布情報・実機 fish の調査と宣言評価は親側の確認結果と区別する。
 - [x] **Zerdr は Homebrew 版を採用** — ユーザー承認により既存の `ryonakae/tap/zerdr` 宣言を維持。復元手順で `brew --prefix` から本体のパスを明示し、開発版を拾わないようにした。nix-darwin が導入対象を宣言し、実体・更新は Homebrew が管理する。現 Herdr manifest の開発 checkout 参照は未変更で、切替時の再登録は T5・T10 に残す。
 - 補完案の根拠・公式出典は [dig log](../dig/2026-10-03-nix-migration.md) 冒頭。調査済みであり、同じ候補調査を最初からやり直す必要はない。
 
@@ -155,7 +155,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ## Requirements
 
-- 現在と今後の Apple Silicon Mac を、ツール・アプリ・ユーザー設定・macOS 設定を含めて再構築できるようにする。実機で意図的に導入されたものを基準とし、Brewfile.example だけを移す構成にしない。依存ライブラリと直接利用するツール、名称変更・別系列を区別する。
+- 現在と今後の Apple Silicon Mac の、合意済みの共通ツール・アプリ・ユーザー設定・macOS 設定を再構築できるようにする。実機の導入状況は確認材料とするが、インストール済みの全製品を管理対象にはしない。他プロジェクト用のツール・runtime は各プロジェクトの設定と mise 等に任せ、グローバル配置や Nix 未宣言だけを根拠に dotfiles の管理漏れと扱わない。未宣言分の全件分類・追加調査は切替条件にしない。既存実体を無断で削除せず、依存ライブラリと直接利用ツール、名称変更・別系列を区別する。
 - upstream Nix の multi-user daemon、Flakes、nix-darwin、統合した Home Manager を構成の中心にする。ツールは原則 Nix、macOS 対応・保守負担に問題があるものは Homebrew / App Store 等で補完し、導入一覧の正本を Nix に集約する。
 - 共通 nixpkgs は rolling 系列を使い、通常の適用は flake.lock で固定済みの標準パッケージから行う。AI ツールも原則として nixpkgs 単位でまとめて更新し、個別・AI グループ更新は必須にしない。外部拡張・プラグイン・スキルの固定にも既存の標準管理を優先する。一般 GUI アプリの自動更新は許容し、flake.lock による同一版復元とは区別する。
 - 設定はリポジトリを編集して適用する方式を基本にする。通常の設定・スクリプト本文は .fish / .toml / .json 等の元の形式で管理する。Nix は導入・連携・配置の指定を中心とし、Nix 固有の値や OS 宣言を除いて本文を埋め込まない。既存の即時反映方式を残すためだけの out-of-store link は使わない。
@@ -219,7 +219,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ## 移行対応表（T1・T3 の補足）
 
-実機 `brew info --json=v2 --installed` の metadata を確認。installed-on-request は44 formula、cask は59件。標準パッケージと Homebrew 宣言のビルドは完了しているが、導入対象の照合と実適用は未完了。App Store は `mas list` で22件を照合済み。Homebrew 外の npm / uv / mise / 手動アプリの metadata 照合は残る。
+実機 `brew info --json=v2 --installed` の metadata を確認。installed-on-request は44 formula、cask は59件。標準パッケージと Homebrew 宣言のビルドは完了しているが、導入対象の照合と実適用は未完了。App Store は `mas list` で22件を照合済み。Homebrew 外の npm / uv / mise / 主要手動配置先の metadata 照合結果は下記に記録。未宣言分を追加の切替条件にはしない。合意済みの拡張だけ T5 で扱う。
 
 | 現在の対象（Homebrew） | 移行先 / 固定単位 | 残る確認・例外 |
 |---|---|---|
@@ -244,6 +244,34 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 依存 metadata 上、oniguruma は jq、pcre2 は fish / Git / glib / ripgrep が使用。icu4c@76 / libpq / postgresql@17 に直接依存する formula は見つからなかったが、開発プロジェクトや実 DB の用途を否定する根拠にはしない。
 
+## Homebrew 外の導入物の棚卸し
+
+`f95fb3c` 後の調査。実行したのは `uv tool list`、配置先の metadata・package.json の名前と版の取得、Nix 宣言との照合のみ。通常の shell 初期化、ツールの更新・削除・実行テストは行っていない。既存プロジェクト内や npx cache の依存は共通導入物に数えない。
+
+**扱いの訂正（ユーザー承認済み）**: 以下は配置の観測記録であり、管理漏れ・追加必須・切替阻害の一覧ではない。「未確定」は導入目的を調べていないという意味に限る。共通環境として別途合意しない限り新規宣言を追加せず、他プロジェクト用は各プロジェクトの設定と mise 等に任せる。未宣言分の全件分類・追加調査は行わず、既存実体は保持する。手動 GUI の候補もこの調査を理由に移行範囲へ自動追加しない。
+
+| 導入元 | 宣言にない対象 | 観測記録（追加作業の要求ではない） |
+|---|---|---|
+| npm global | `@google/gemini-cli`、`eas-cli`、`@expo/ngrok`、`@vscode/vsce`、`fixpack`、`npm-check-updates`、`sort-package-json` | 復元要否・管理方法が未確定。Node の複数版にある同名パッケージは重複として集約 |
+| Yarn global | `create-hono` 0.8.1 | 復元要否が未確定。単発 generator を恒久導入へ自動追加しない |
+| uv tool | `aider-chat` 0.84.0、`specify-cli` 0.0.22 | どちらも未宣言。復元要否・管理方法が未確定 |
+| mise | Dart、Deno、Flutter、just、lefthook、pnpm、prek、Rust、SwiftFormat、SwiftLint、Yarn | インストール実体あり、共通 Nix 宣言なし。プロジェクト指定で使うものは既存方針どおり mise を残せるが、各対象がプロジェクト専用かは未確認 |
+| Cargo / rustup | rustup と toolchain 用リンク、`cross` / `cross-util` | 未宣言。mise の Rust も併存。既存 toolchain は削除しない |
+| `/usr/local/bin` の通常ファイル | `fswatch`、FTDI helper、`tailscale`、組織向け診断・保護用コマンド | tailscale はアプリ宣言あり。残りは由来・復元要否が未確定。組織管理と思われるものを独断で再配布・削除しない |
+
+既に扱いが決まっている対象:
+
+- npm の `agent-browser` / `@openai/codex` / `opencode-ai`、手動 `~/.local/bin/agy` は Nix 宣言で対応。`agy.*.old` は旧本体の残存で別製品ではない。
+- `agent-device` は npx、Shepherd は復元対象外で承認済み。npm の `npm` / `corepack` は Node 同梱品として区別する。
+- mise の Bun / Node / Python / Ruby は共通 Nix runtime 宣言済み、usage も Nix 宣言済み。旧バージョンの存在だけを復元要求としない。
+- `~/.local/bin` の node / npm / npx は旧 mise shim へのリンク、python3.11 は uv 管理 Python へのリンク。切替時の優先順位整理対象。rm は管理済み wrapper。
+- Unity CLI は Homebrew 補完で承認・宣言済み。Antigravity / Antigravity IDE の手動 bin は前項の PATH 調査対象で、CLI と GUI を混同しない。
+- `/usr/local/bin` の Docker / Cursor / Zed / Spark 等はアプリ内本体へのリンク。OrbStack / Trae へのリンクも残るが、今回の `/Applications` 一覧に対応アプリはなく、導入済み本体とは数えない。Jamf / ClamAV / Cloudflare 等は組織管理の可能性があり、一般 CLI として自動追加しない。
+
+取得範囲は Homebrew・mise 各実 Node 版・`~/.local` の global node_modules、Yarn global、uv tools、mise installs、`~/.local/bin`、`~/.cargo/bin`、`/usr/local/bin`、`/Applications` と `~/Applications`。`~/bin` / `~/go/bin` / `~/.bun/bin` / `~/.deno/bin` と pnpm / Bun の標準 global 配置先は今回確認した場所にはなかった。npmrc 等の認証設定やプロジェクトは読まず、独自 prefix が他に存在しないことまでは保証しない。
+
+手動 GUI は `/Applications` の名称を既存 Homebrew metadata と App Store receipt の有無に照合した。Nix の cask 宣言にない主な候補は Antigravity IDE、Acall Desktop、Bang & Olufsen、Bluesky、Cavalry、CleanArchiver、Cloudflare WARP、ColorNavigator 7、ColorSing、HUAWEI AI Life、IWLTBAP LUT Generator、Maxon / Maxon Autograph、OneDrive、Paper、Pencil、Qfinder Pro、Rakuro、SwitchBot、VOICEVOX、zoom.us、ZXP Installer。Adobe / Blackmagic / DaVinci / Unity Editor の製品群、組織の管理・保護アプリ、Google のショートカットや Chrome profile 用アプリ、OS / SDK の付属アプリは個別パッケージ宣言の漏れとは即断しない。`~/Applications` には Chrome Apps と Claude Code URL Handler がある。これらの利用要否・手動復元の区分は未確定であり、削除候補の一覧ではない。
+
 ## 切替・復旧手順（T10・まだ実行しない）
 
 1. **切替前**: 完成した構成を現在の Mac 向けに build。生成された activation とパッケージ参照を確認し、更新する入力・実機パス・サービス・preferences と旧構成への戻し方を用意する。破壊的な Homebrew cleanup や Nix GC は実行しない。
@@ -262,8 +290,8 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 | 対象 | 実行結果・根拠 |
 |---|---|
 | T2 の基盤、T3 の実装済みパッケージ、T4 の配置 | `dotfiles build` の lock 検査・評価・ビルド成功。Pi・スキル・Claude 依存、gateway timeout、macOS preferences 宣言までの部分構成に加え、Hermes 本体も同じ lock 検査・snapshot・check/build 処理で検証 |
-| 最新 Darwin 成果物（fork / voice 除外版） | `/nix/store/920lv1d788i2510q217sgynxq8kgvzfp-darwin-system-26.11.4cff07d` |
-| 対応する Home Manager 成果物 | `/nix/store/a3whnprsqhmblrqpg5jxgq09wbd9ngps-home-manager-generation` |
+| 最新 Darwin 成果物（fork / voice 除外・Unity CLI 宣言追加） | `/nix/store/46ag235bdr3bwg2b3y9nyzwf5mjww9y6-darwin-system-26.11.4cff07d` |
+| 対応する Home Manager 成果物 | `/nix/store/8dcbikjbxvyfi7jg1mi5k9725i5pkgxj-home-manager-generation` |
 | fish / shell / Python / TOML / Nix | 変更時に構文・format・差分を確認。生成された fish の読み込み順序と rm の interpreter も確認 |
 | `home/files.nix` の配置 | 既存の AGENTS / Yazi の検証に加え、今回追加した9ファイルと正本の byte 一致・shell script の実行権限を確認。Nix format、JSON / TOML / Python / shell 構文、差分を確認。Zed は JSONC のため JSON parser では検証せず、元ファイルとの一致のみ |
 | 実機適用・GUI・サービス | **未実施**。ビルド成功はこれらの成功を意味しない |
@@ -422,9 +450,18 @@ universal variables は `fish_variables` 全文を出力せず、`PATH` / `fish_
 
 - 保存済み `PATH` には `~/.local/share/mise/shims`、Homebrew と system の標準パス、`~/.anyenv/bin`、`/opt/homebrew/opt/mise/bin` がある。`~/.anyenv/bin` は現時点で存在しない。保存値であり、稼働中 shell の実効 PATH と同一とは限らない。
 - `fish_user_paths` は PostgreSQL 17 の bin、Antigravity IDE と Antigravity の各 bin、`~/.local/bin`、Android platform-tools、Android Studio の Java bin、`/usr/local/sbin`。Antigravity の2ディレクトリにはそれぞれ `agy-ide` / `antigravity-ide`、`agy` / `antigravity` がある。両者を同じ不要パスとして扱わない。
-- 新構成は Nix の profile を前方へ移し、最後と PATH 変更時に `~/.local/bin` を先頭へ戻すが、旧 universal 値を削除しない。共通 mise shims を残すと未移行のコマンドが引き続き解決され得るため、T1 の棚卸しと合わせて整理する。PostgreSQL の PATH 維持は DB 保存先・サービス利用状況の確認を代替しない。
+- 新構成は Nix の profile を前方へ移し、最後と PATH 変更時に `~/.local/bin` を先頭へ戻すが、旧 universal 値を削除しない。mise shims から他プロジェクト用コマンドが引き続き解決されること自体は許容し、合意済みの共通ツールと rm の実行先が妨げられる場合だけ整理する。PostgreSQL の PATH 維持は DB 保存先・サービス利用状況の確認を代替しない。
 
 T9 は未完了。universal 値の変更と旧ファイルの退避は行っていない。Unity CLI の宣言追加は承認後に実施したが、実機切替は別操作。system 側の復旧手順も未確定のまま。fish 調査では新たな build・回帰テスト・実機適用は実施せず、取得済み生成物との比較だけを行った。
+
+### 棚卸し終了後のビルドと適用前の実衝突
+
+ユーザーは追加の網羅的検証より切替を進めるよう指示し、他プロジェクト用導入物の全件分類を切替条件から外すことを承認した。T1 は完了。共通環境の範囲を増やす棚卸しを再開せず、合意済み構成の適用に必要な退避・停止へ進む。秘密・権限・削除・サービス操作の具体的な実行条件は維持する。
+
+- 通常の `bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p` が exit 0。公開 lock 検査・flake check・build を通過。ログは `/tmp/dotfiles-final-build.A2q3Qr/build.log`、source snapshot は `/nix/store/z63f6hznh3c2ka4wsmfj1bpxggsgbq16-source`。root lock SHA256 は `6d7c28a5e15bbc7037913dd0b1e0782baf12d39e49d936ddd9b13fb52181988d` で不変。承認済みの Herdr 別ペイン `w3W:pH` を使用し、完了後に閉鎖した。
+- 生成 Brewfile `/nix/store/9b978fh3bbif80xqrflnjc68n82byq44-Brewfile` に Unity CLI / Hub を確認。Homebrew bundle・activation は未実行。Claude / Pi の既存未コミット設定も snapshot に含まれるが、コミット対象には含めない。
+- 最新の activation が持つ既知 hash と `/etc` の既存4ファイルを、内容を出力せず比較した。`/etc/bashrc` / `/etc/zshrc` は不一致で標準衝突検査により中止する対象。`/etc/zprofile` / `/etc/nix/nix.conf` は一致。4件とも `.before-nix-darwin` は未作成。`/etc/profile` に installer の `etc/profile.d/nix-daemon.sh` 参照はなかった。これは対象を絞った確認で、activation 全体を実行した検証ではない。
+- 次は未知内容の `/etc/bashrc` / `/etc/zshrc` を保全して標準の `.before-nix-darwin` へ退避し、既知の HOME 衝突対象・Pi 可変設定を保全する実作業。root 所有ファイルの退避と Pi 終了を伴うため、人間の操作と切替直前の具体的な確認が必要。既存の `/etc` ファイルを force overwrite しない。初回 daemon 復旧など未確定事項を検証済みとは扱わない。
 
 ### 残る最終確認
 
