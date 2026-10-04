@@ -1,4 +1,4 @@
-{ inputs, pkgs, ... }:
+{ hermes, pkgs, ... }:
 {
   home.packages = with pkgs; [
     actionlint
@@ -21,7 +21,7 @@
     git-lfs
     gomi
     herdr
-    inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default
+    hermes
     imagemagick
     jq
     keifu

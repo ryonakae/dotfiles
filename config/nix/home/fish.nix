@@ -1,13 +1,12 @@
 {
   config,
-  inputs,
+  hermes,
   lib,
   pkgs,
   ...
 }:
 let
   functions = ../../.config/fish/functions;
-  hermes = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
   bindExecutables =
     lib.replaceStrings
       [

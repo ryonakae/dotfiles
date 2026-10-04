@@ -1,13 +1,12 @@
 {
   config,
-  inputs,
+  hermes,
   lib,
   pkgs,
   ...
 }:
 let
   home = config.home.homeDirectory;
-  hermes = inputs.hermes-agent.packages.${pkgs.stdenv.hostPlatform.system}.default;
   services = [
     "gateway"
     "dashboard"
