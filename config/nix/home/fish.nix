@@ -49,7 +49,6 @@ in
       fish_add_path --path --move --prepend "${config.home.profileDirectory}/bin" /run/current-system/sw/bin
     '';
     interactiveShellInit = "source ${lib.escapeShellArg "${dotfilesConfig}/.config/fish/interactive-init.fish"}";
-    shellInitLast = "__dotfiles_keep_rm_first";
   };
 
   programs.mise.enable = true;
@@ -85,6 +84,5 @@ in
       "mise/config.toml".source = dotfilesLink ".config/mise/config.base.toml";
       "fish/completions/wt.fish".source = dotfilesLink ".config/fish/completions/wt.fish";
       "fish/conf.d/ssh-agent.fish".source = dotfilesLink ".config/fish/conf.d/ssh-agent.fish";
-      "fish/conf.d/gomi.fish".source = dotfilesLink ".config/fish/conf.d/gomi.fish";
     };
 }

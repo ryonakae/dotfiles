@@ -21,7 +21,6 @@ class AgentRuntimeTests(unittest.TestCase):
     self.bin.mkdir(parents=True)
     self.env = dict(os.environ, HOME=str(self.home), PATH=str(self.bin) + ':' + os.environ['PATH'],
                     UNLISTED_RUNTIME_VALUE='value with spaces')
-    self.program('rm', '#!/bin/sh\nexit 0\n')
     self.program('dotenvx', '#!' + sys.executable + '\n'
       'import os, sys\n'
       'args = sys.argv[1:]\n'
@@ -128,13 +127,6 @@ class AgentRuntimeTests(unittest.TestCase):
     self.assertEqual(result.returncode, 42)
     self.assertEqual(result.stdout, '')
     self.assertEqual(result.stderr, 'decryption failed\n')
-
-  def test_missing_rm_wrapper_does_not_start_command(self):
-    (self.bin / 'rm').unlink()
-    result = self.run_helper('probe')
-    self.assertEqual(result.returncode, 127)
-    self.assertEqual(result.stdout, '')
-    self.assertIn('rm wrapper', result.stderr)
 
   def test_injects_environment_without_changing_arguments_or_exit_code(self):
     result = self.run_helper('probe', 'argument with spaces', '--flag', '')

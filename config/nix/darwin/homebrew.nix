@@ -60,6 +60,7 @@
       "monocle-app"
       "notion-calendar"
       "obs"
+      "ogdesign-eagle"
       "raycast"
       "readdle-spark"
       "rectangle"
@@ -79,6 +80,7 @@
       "visual-studio-code@insiders"
       "vlc"
       "zed"
+      "zoom"
     ];
 
     # CotEditor currently has an App Store receipt; do not also install its cask.
@@ -103,6 +105,7 @@
       Perplexity = 6714467650;
       Transmit = 403388562;
       Transporter = 1450874784;
+      "Unsplash Wallpapers" = 1284863847;
       Velja = 1607635845;
       Xcode = 497799835;
     };

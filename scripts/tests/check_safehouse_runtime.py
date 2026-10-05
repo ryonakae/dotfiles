@@ -29,7 +29,6 @@ def main():
       '.android/release.keystore', 'project/custom.keystore',
       '.config/agent-safehouse/run-with-agent-env.sh',
       'dotfiles/config/.config/fish/config.fish',
-      'dotfiles/config/.local/bin/rm',
     ]
     for relative in files:
       target = home / relative
@@ -45,7 +44,7 @@ def main():
     checkout.mkdir()
     env = dict(os.environ, HOME=str(home), UNLISTED_RUNTIME_VALUE='inherited value with spaces')
     args = ['safehouse', '--workdir=' + str(home), '--add-dirs=' + str(home), '--env',
-            '--allow-profile-writes', '--enable=wide-read,ssh,process-control,launch-services',
+            '--allow-profile-writes', '--enable=wide-read,ssh,process-control',
             '--append-profile=' + str(RUNTIME / 'compatibility.sb'),
             '--append-profile=' + str(RUNTIME / 'local-overrides.sb'), '--', sys.executable, '-c']
 
@@ -112,7 +111,7 @@ placeholder.unlink()
                      *[root + '/info/item.trashinfo' for root in trash_roots]]:
       check('allow read ' + relative, f'from pathlib import Path; assert Path({str(home / relative)!r}).read_text() == "dummy data"')
     for relative in ['Downloads/normal.txt', '.ssh/known_hosts', '.hermes/.env', 'vendor/fixture/.env',
-                     '.config/agent-safehouse/run-with-agent-env.sh', 'dotfiles/config/.local/bin/rm']:
+                     '.config/agent-safehouse/run-with-agent-env.sh']:
       check('allow write ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")')
     for root in trash_roots:
       put_source = home / 'Downloads/put-source'

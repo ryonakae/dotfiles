@@ -82,7 +82,7 @@ uv run python -m pytest -q \
 - **deny-first**: デフォルトで全アクセスを拒否し、必要なものだけ明示的に許可する
 - **実用的な被害軽減**: 絶対的な隔離ではなく、プロンプトインジェクションや誤操作時の被害範囲を最小化する
 - このdotfiles環境は普段の開発の互換性を優先し、HOME RW、`wide-read`、全環境継承、既存の `process-control` と広域IPC許可を維持する。`allow default` や `/` のRWには変更しない
-- 実機密とOS重要領域の直接保護、通常のrmからgomiへの転送を維持する。`.env` / `.envrc` / secrets / 鍵のdenyとvendor・Hermes例外、ごみ箱payloadへの直接アクセス拒否は残る
+- 実機密とOS重要領域の直接保護を維持する。通常のrmからgomiへの転送は廃止済みで、標準rmを使う。gomiは明示的なごみ箱操作に使い、既存データを保持する。`.env` / `.envrc` / secrets / 鍵のdenyとvendor・Hermes例外、ごみ箱payloadへの直接アクセス拒否は残る
 - 独自の管理wrapper・policyディレクトリの編集禁止、保護対象の親とごみ箱ルートのrename禁止は撤廃する。完全な迂回封鎖は保証しない
 - ネットワーク経由のデータ流出、サンドボックスエスケープ、許可済みチャネルの悪用は防げない
 
