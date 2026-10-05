@@ -1,5 +1,6 @@
 {
   config,
+  dotfilesLink,
   lib,
   pkgs,
   ...
@@ -7,16 +8,16 @@
 let
   skillSources =
     directory:
-    if builtins.pathExists directory then
-      lib.mapAttrs (name: _: directory + "/${name}") (
+    if builtins.pathExists (../../. + "/${directory}") then
+      lib.mapAttrs (name: _: dotfilesLink "${directory}/${name}") (
         lib.filterAttrs (name: type: type == "directory" && !(lib.hasPrefix "." name)) (
-          builtins.readDir directory
+          builtins.readDir (../../. + "/${directory}")
         )
       )
     else
       { };
-  shared = (import ./external-skills.nix { inherit pkgs; }) // skillSources ../../.agents/skills;
-  claude = shared // skillSources (../../.claude + "/skills");
+  shared = (import ./external-skills.nix { inherit pkgs; }) // skillSources ".agents/skills";
+  claude = shared // skillSources ".claude/skills";
 in
 {
   home.file =

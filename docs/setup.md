@@ -46,17 +46,26 @@ bash scripts/dotfiles.sh build
 別の host 入力を使う場合は `build --host DIRECTORY` と指定する。出力された store path はビルド成果物であり、activation は実行されない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
-本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は `ryonakae/hermes-agent` fork 同梱の Flake のパッケージを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。fork のビルド状況は移行計画を参照し、サービスの実機検証と切替は別に行う。下記の Nix 移行後の手順は、切替を承認するまで実行しない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。通常の設定本文は元の .fish / .toml / .json 等を編集し、Nix 側は導入・連携・配置と Nix 固有の指定に限定する。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
+本体は原則 nixpkgs の標準パッケージ、設定ファイルの配置は Home Manager で管理する。Hermes は `ryonakae/hermes-agent` fork 同梱の Flake のパッケージを採用し、その依存も root lock で固定する。サービスモジュールは取り込まない。fork のビルド状況は移行計画を参照し、サービスの実機検証と切替は別に行う。下記の Nix 移行後の手順は、切替を承認するまで実行しない。Nix へ移したプラグインも同じ更新経路を使い、Yazi の対象プラグインを `ya pkg` で重ねて更新しない。追跡済みの通常設定・自作スキル・静的スクリプトは、Home Manager の `config.lib.file.mkOutOfStoreSymlink` で `~/dotfiles/config/` への live link を管理する。checkout は README と同じ `~/dotfiles` に置き、実パスは host の `homeDirectory` から組み立てる。本文の編集やアプリからリンク先への書き込みは Git 差分になり、Nix 再適用は不要。Nix はリンクの配置を管理し、本文の復元は Git で行う。Nix 本体・外部 plugin・外部スキルは固定 store 管理を維持する。Nix executable パスや shebang の置換が必要な wrapper / fish 関数、macOS 宣言、生成 fish config は store 生成に残す。依存の更新は別操作で行い、lock の差分を確認して再ビルドする。
 
 ```fish
 bash scripts/dotfiles.sh update nixpkgs
 bash scripts/dotfiles.sh update hermes-agent
+bash scripts/dotfiles.sh update nix-homebrew
 bash scripts/dotfiles.sh update all
 ```
 
 更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。更新は適用・起動を行わない。`switch` の入口は用意しているが、切替準備・実機検証は未完了。以下の承認条件を満たすまで実行しない。
 
-fish の生成設定は管理済み example を基にした共通設定で、Git 外の実 `config.fish` のコピーではない。切替前に、人間が秘密の移行と必要な非秘密の差分を確認する。既存の Fisher 配置・リンクも退避してから移し、二重読み込みさせない。`fish_variables` と履歴は Nix で管理しない。
+fish の生成設定は管理済み example を基にした共通設定で、Git 外の実 `config.fish` のコピーではない。shell-init / interactive-init の非 Nix 本文は live source し、Nix パスの置換が不要な fish 関数も live link にする。切替前に、人間が秘密の移行と必要な非秘密の差分を確認する。既存の Fisher 配置・リンクも退避してから移し、二重読み込みさせない。`fish_variables` と履歴は Nix で管理しない。
+
+### Homebrew 本体とアプリの管理
+
+Homebrew 本体は `nix-homebrew` で導入・版固定する。新規 Mac で Homebrew の公式インストーラを別途実行する必要はなく、承認後の Nix 適用で導入する。Nix 本体の初回導入は引き続き必要。
+
+既存 Mac は `autoMigrate` で Homebrew を引き継ぐ。実機適用時に Homebrew 本体の Git 追跡ファイル・`.git`・残存 vendor ディレクトリを削除して Nix 管理へ置き換える。既存の Cellar / Caskroom・ユーザー追加 tap 等は保持する設計だが、本体へのローカル修正は引き継がれない。ビルドだけでは移行しない。初回適用前に既存 Homebrew の管理部分の退避・復旧範囲を確認し、承認済みの切替操作へ含める。Nix 世代の rollback だけで移行前の管理方式へ戻るとは扱わない。
+
+formula・cask・App Store アプリの一覧は引き続き nix-darwin の `homebrew` 定義で管理する。適用時の自動 update・upgrade・未宣言パッケージの削除は無効のまま。tap は従来の Homebrew 管理を維持し、Intel 用 Homebrew は追加しない。本体の更新は `update nix-homebrew` 後に build・適用する。Homebrew 配下のアプリの版まで `flake.lock` で固定されるわけではなく、アプリの更新は Homebrew やアプリ自身の更新機能で行う。
 
 ## Nix の適用と復旧準備
 
@@ -68,9 +77,9 @@ bash scripts/dotfiles.sh switch
 
 `--host DIRECTORY` も指定できる。build と同じ公開 lock 検査・source / host snapshot で check / build し、対象ユーザーと HOME を照合する。候補 system と前の system profile を表示し、`switch` と入力した場合だけ既存の Hermes 停止チェックを実行する。その後、候補内の `darwin-rebuild` に同じ snapshot を渡し、標準 `switch` 部分だけを sudo で実行する。非対話・root・Safehouse 内からの実行は拒否する。
 
-実行前に Pi を終了し、別 Mac で Hermes が動いていれば管理関数で停止する。入口は Hermes の稼働状態を保存せず、停止・再開・独自のバックアップ・自動 rollback を行わない。標準適用による Nix daemon 等の変更は別途確認して承認する。
+初回のリンク退避時は、書き込み競合を避けるため Pi 等の対象アプリを終了する。日常の live link の内容編集では全アプリ停止を必要としない。別 Mac で Hermes が動いていれば、配置変更に必要な停止を管理関数で行う。入口は Hermes の稼働状態を保存せず、停止・再開・独自のバックアップ・自動 rollback を行わない。標準適用による Nix daemon 等の変更は別途確認して承認する。
 
-ファイル衝突は Home Manager / nix-darwin の標準 activation 内の検査に任せ、force や自動退避オプションで通さない。**全変更前の検査や原子的な適用を保証しない。** system profile は activation より前に更新される。後段で衝突・エラーになると、それ以前の設定変更が残り得る。標準の `check` / `--dry-run` activation を安全な事前検査として実行しない。
+ファイル衝突は Home Manager / nix-darwin の標準 activation 内の検査に任せ、force や自動退避オプションで通さない。**全変更前の検査や原子的な適用を保証しない。** system profile は activation より前に更新される。後段で衝突・エラーになると、それ以前の設定変更が残り得る。標準の `check` / `--dry-run` activation を安全な事前検査として実行しない。アプリが管理リンクを通常ファイル等へ置き換えた場合も衝突として保持し、強制上書きしない。
 
 ### 初回の退避台帳と停止前の引継ぎ
 
@@ -85,13 +94,13 @@ bash scripts/dotfiles.sh switch
 | `after/` | 復旧する直前の、新構成のファイル・リンク・適用後の変更。`before/` を使い回さない |
 | `manifest`・`operations`・`resume` | 対象ごとの元パス、種別（未作成も含む）、リンク先、metadata、退避先、移動の要否、実行済み操作、失敗箇所と再開手順。設定内容や秘密は書かない |
 
-台帳の通常配置対象は、完成ビルドに対応する Home Manager の `home-files` の各末端ファイル・リンクとする。store 側でディレクトリへのリンクになっているスキル・plugin は、そのリンクを1対象として扱い、リンク先の中を展開して列挙しない。下表の可変設定・activation の追加配置先・旧 fish ファイルも台帳へ加える。非秘密のリンク先正本も切替時点の内容を保全し、旧リンクの復元を Git の巻き戻しに依存させない。
+台帳の通常配置対象は、完成ビルドに対応する Home Manager の `home-files` の各末端ファイル・リンクとする。store 側でディレクトリへのリンクになっているスキル・plugin は、そのリンクを1対象として扱い、リンク先の中を展開して列挙しない。下表の activation の追加配置先・旧 fish ファイルも台帳へ加える。Pi 設定3件は通常配置に含める。非秘密のリンク先正本も切替時点の内容を保全し、旧リンクの復元を Git の巻き戻しに依存させない。
 
 Pi や端末を止める前に、`resume` へリポジトリと host 入力の場所、候補 system / HM の store path、旧 profile または「なし」、両退避ルート、未完了の行を記録する。人間がこの文書と台帳を開ける別の通常端末を残す。停止後に自動でエージェントを起動する手順にはしない。
 
 ### HOME の退避と Pi 設定の準備
 
-書き込み元の Pi・Claude・設定対象のアプリと、旧 shell 状態を整理する場合の fish を停止してから保全する。必要な停止対象とタイミングは直前に確認する。認証・session・DB や未管理の兄弟を移動せず、共有正本へのリンクを理由にリポジトリ側の実体を移動しない。
+初回のリンク退避時は、書き込み元の Pi・Claude・設定対象のアプリと、旧 shell 状態を整理する場合の fish を停止してから保全する。必要な停止対象とタイミングは直前に確認する。この停止は退避時の競合回避であり、日常の内容編集で全アプリを止める運用にはしない。認証・session・DB や未管理の兄弟を移動せず、共有正本へのリンクを理由にリポジトリ側の実体を移動しない。
 
 | 対象 | 退避・適用前の扱い |
 |---|---|
@@ -111,8 +120,8 @@ Pi は次の3ファイルを、1件ずつこの順に処理する。
 
 1. Pi の終了後、親経路とリンク先を再確認する。リンクを動かす前に内容を `before/pi-content/` へ保存し、有効な JSON であることを確認する。
 2. 旧リンク自体を `before/home/` へ退避する。退避先へ移した相対リンクを辿って内容を読み直さない。
-3. 保存した内容から、元の HOME パスへ本人所有・0600 の通常ファイルを作る。リンクではないことと内容の一致を確認する。空の JSON やリポジトリの初期値で代用しない。
-4. 適用・確認を終えるまで Pi を再起動しない。切替後の値を旧正本へ自動で書き戻さない。
+3. 元パスを空けた状態で Home Manager の標準配置へ引き渡し、`~/dotfiles/config/` の追跡済み正本への live link を配置する。通常ファイル化・merger・旧正本への手動取り込みは行わない。必要な非秘密内容は保全したまま保持する。
+4. 適用・リンク先の確認を終えるまで Pi を再起動しない。未知の実体や内容差分を強制上書きしない。
 
 `fish_variables` はこの準備で変更しない。後続の PATH 整理では対象キーの旧値を別に控える。履歴・認証を含み得る状態ファイル全体を Nix の入力へ加えない。
 
@@ -145,13 +154,13 @@ HOME は書き込み元を止めたまま、台帳の対象ごとに次の順で
 
 1. 現在のパスと親経路を確認する。新構成のリンク・ファイルと適用後の変更を `after/` へ保存・退避し、復旧先を空ける。未知の実体や、台帳と異なる参照先を force overwrite しない。
 2. `before/home/` から元のパスへ、元の種別・metadata で戻す。スキルの実ディレクトリなどの参照先を先に戻し、その後で参照リンクを戻す。旧リンクが指す正本に後続変更があれば、勝手に巻き戻さず確認する。
-3. Pi は適用後の通常ファイルを保全してから旧リンクを戻す。`before/pi-content/` は切替直前の内容として保持し、旧正本への書き戻しは差分を見て別に決める。
+3. Pi は適用後のリンクと必要な非秘密内容を保全してから旧リンクを戻す。`before/pi-content/` は切替直前の内容として保持し、正本への後続変更を無断で巻き戻さない。旧正本への手動取り込みを移行手順にはしない。
 4. 元が未作成だった対象は、今回の生成物であることと後からのデータがないことを確認して `after/` へ退避する。親ディレクトリを再帰削除しない。Hermes はこの Mac で起動せず、別 Mac では管理関数による停止を確認してから plist を扱う。
 5. HM の profile / `current-home` 参照も元の有無・リンク先へ戻す。世代や store 成果物は消さない。旧 shell の PATH と rm 保護を確認してからアプリを再開する。
 
 旧 `create-symlink.sh` は既存パスをスキップするため、新しい Nix リンクが残った状態の復旧には使わない。標準 `darwin-uninstaller` も初回復旧の既定手段にしない。今回以外の `.before-nix-darwin` や shell・`run` 設定も変更し、途中失敗では旧 daemon の復元条件が成立しない場合があるため、必要なら固定版の処理と失敗状態を確認して別途承認する。
 
-以前の nix-darwin 世代がある場合は標準の `--list-generations` / `--switch-generation` による復旧を検討できるが、実行は別途承認する。世代の切替だけで Homebrew アプリ・可変設定・preferences・DB が戻るとは扱わない。中断後は `resume` と `operations` の最後の完了行から状態を再確認し、bootstrap・`switch`・退避操作を最初から繰り返さない。
+以前の nix-darwin 世代がある場合は標準の `--list-generations` / `--switch-generation` による復旧を検討できるが、実行は別途承認する。世代の切替は管理リンクを戻す操作であり、live link 先の本文は戻らない。本文は Git で別に戻す。Homebrew アプリ・preferences・DB も世代の切替だけで戻るとは扱わない。中断後は `resume` と `operations` の最後の完了行から状態を再確認し、bootstrap・`switch`・退避操作を最初から繰り返さない。
 
 ## 共通ツール用の秘密
 
@@ -205,7 +214,7 @@ rm 転送を外す場合は `~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gom
 
 `npx skills` はホームで実行する。`-g` と `update` は使わず、追加・更新の配布先を `-a claude-code` に絞る。
 自作スキルは dotfiles 側で管理し、外部スキルの実体は `~/.agents/skills/` に置く。
-Nix への切替後は、自作スキルと `config/nix/home/external-skills.nix` で固定した外部スキルを Home Manager で個別配置する。旧 `create-skills-symlink.sh` や、以下の `experimental_install` による上書きを併用しない。外部スキルの更新は revision / hash を明示して変更し、build 後に適用する。
+Nix への切替後は、自作スキルは追跡済み正本への live link、`config/nix/home/external-skills.nix` で固定した外部スキルは store へのリンクとして Home Manager で個別配置する。旧 `create-skills-symlink.sh` や、以下の `experimental_install` による上書きを併用しない。外部スキルの更新は revision / hash を明示して変更し、build 後に適用する。
 
 初回は既知の自作リンクと、Nix 管理対象となる外部スキルの実ディレクトリを個別に確認・退避する。未管理スキルや Claude の `synced` は保持し、親ディレクトリ全体を置き換えない。Python キャッシュ等の実行時生成物は復元対象に含めない。旧 `skills-lock.json` だけに残る未配置スキルの判断は移行中の残作業。以下は切替前の旧配布手順であり、Nix 管理対象の復元には使わない。
 
@@ -238,9 +247,9 @@ statusline は設定内の npm version を固定し、通常の `npx` で利用�
 
 ## Pi
 
-Nix への切替後も `settings.json`、footer、fast-mode の設定は書き込み可能な実ファイルとして使う。Home Manager の標準 merger は再適用時にリポジトリの定義値を優先し、未定義キーを保持する。アプリ内で変更した定義済みの値を永続化する場合は、正本にも反映する。正本からキーを削除しても実ファイルの同じキーは削除されない。
+Nix への切替後は `settings.json`、footer、fast-mode の設定3件も、追跡済み正本への通常の live link とする。Pi からリンク先への書き込みは Git 差分になり、merger やローカル通常ファイルへの複製は使わない。内容変更に Nix 再適用は不要で、本文は Git で戻す。Nix 世代の rollback では本文は戻らない。
 
-適用前には Pi を停止する。初回は既存の設定リンクを対象ごとに確認・退避し、正本へのリンクではなくローカルの実ファイルへ移す。リンク先へ書き戻す事故を避けるため、設定ファイルや親ディレクトリが別の実体へリンクしていると適用は中止する。認証・session を移行用の設定や store へ含めない。
+初回は Pi を停止して旧リンクと必要な非秘密内容を保全・退避し、Home Manager の標準配置へ引き渡す。日常の内容編集で Pi の停止を一律に求めない。アプリがリンク自体を置換した場合は既存衝突として保持し、force overwrite しない。認証・session を移行用の設定や store へ含めない。
 
 拡張の本体版は `config/.pi/agent/settings.json` の npm version / Git commit で固定する。これは npm の推移依存全体の lock ではなく、新規取得時の全機能の復元検証は移行中の残作業。拡張のインストール先は通常の Pi 管理ディレクトリに保ち、Nix の build / activation では取得・更新しない。Nix 管理の Pi 本体には自己更新コマンドを使わない。
 

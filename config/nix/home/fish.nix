@@ -1,5 +1,7 @@
 {
   config,
+  dotfilesConfig,
+  dotfilesLink,
   hermes,
   lib,
   pkgs,
@@ -43,10 +45,10 @@ in
     ];
 
     shellInit = ''
-      source ${../../.config/fish/shell-init.fish}
+      source ${lib.escapeShellArg "${dotfilesConfig}/.config/fish/shell-init.fish"}
       fish_add_path --path --move --prepend "${config.home.profileDirectory}/bin" /run/current-system/sw/bin
     '';
-    interactiveShellInit = "source ${../../.config/fish/interactive-init.fish}";
+    interactiveShellInit = "source ${lib.escapeShellArg "${dotfilesConfig}/.config/fish/interactive-init.fish"}";
     shellInitLast = "__dotfiles_keep_rm_first";
   };
 
@@ -63,9 +65,16 @@ in
     lib.mapAttrs'
       (
         name: _:
-        lib.nameValuePair "fish/functions/${name}" {
-          text = bindExecutables (builtins.readFile (functions + "/${name}"));
-        }
+        let
+          original = builtins.readFile (functions + "/${name}");
+          bound = bindExecutables original;
+        in
+        lib.nameValuePair "fish/functions/${name}" (
+          if original == bound then
+            { source = dotfilesLink ".config/fish/functions/${name}"; }
+          else
+            { text = bound; }
+        )
       )
       (
         lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".fish" name) (
@@ -73,9 +82,9 @@ in
         )
       )
     // {
-      "mise/config.toml".source = ../../.config/mise/config.base.toml;
-      "fish/completions/wt.fish".source = ../../.config/fish/completions/wt.fish;
-      "fish/conf.d/ssh-agent.fish".source = ../../.config/fish/conf.d/ssh-agent.fish;
-      "fish/conf.d/gomi.fish".source = ../../.config/fish/conf.d/gomi.fish;
+      "mise/config.toml".source = dotfilesLink ".config/mise/config.base.toml";
+      "fish/completions/wt.fish".source = dotfilesLink ".config/fish/completions/wt.fish";
+      "fish/conf.d/ssh-agent.fish".source = dotfilesLink ".config/fish/conf.d/ssh-agent.fish";
+      "fish/conf.d/gomi.fish".source = dotfilesLink ".config/fish/conf.d/gomi.fish";
     };
 }

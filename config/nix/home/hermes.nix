@@ -1,5 +1,6 @@
 {
   config,
+  dotfilesLink,
   hermes,
   lib,
   pkgs,
@@ -62,8 +63,8 @@ let
 in
 {
   home.file = {
-    ".hermes/SOUL.md".source = ../../.hermes/SOUL.md;
-    ".hermes/services/docker-compose.yml".source = ../../.hermes/services/docker-compose.yml;
+    ".hermes/SOUL.md".source = dotfilesLink ".hermes/SOUL.md";
+    ".hermes/services/docker-compose.yml".source = dotfilesLink ".hermes/services/docker-compose.yml";
   };
   xdg.configFile = {
     "hermes/check-stopped.sh" = {
