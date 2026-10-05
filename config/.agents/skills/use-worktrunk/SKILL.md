@@ -24,11 +24,7 @@ compatibility: Requires Worktrunk, the official worktrunk Skill, and this dotfil
 ~/.agents/skills/worktrunk/SKILL.md
 ```
 
-存在しなければ操作を停止し、次を案内する。公式Skillの内容を推測して続けない。
-
-```bash
-cd ~ && npx skills experimental_install
-```
+存在しなければ操作を停止し、dotfiles の `docs/setup.md`「外部スキル」に従って、固定済みの Nix 構成を build / switch して復元するよう案内する。最新版の再取得や公式Skillの内容を推測して続けることはしない。
 
 Agent内で実行するcommand、およびflagの意味に新たに依存して委譲commandを組み立てる場合は、実行前に`wt <command> --help`を現在のCLIから確認する。古い知識でflagを組み立てる事故を防ぐためで、ユーザー指定のflagを原文のまま保持して委譲するだけなら不要。作成、hook、approval、copy、merge、remove、pruneなどの意味と既定値は公式SkillとCLIに従い、このSkillで再定義しない。一般的なWorktrunkの仕様質問だけなら公式Skillへ委譲し、この環境制約を持ち込まない。
 

@@ -175,7 +175,7 @@ keybinds {
 zellij --config-dir "$PWD/config/.config/zellij" setup --check
 ```
 
-`[CONFIG FILE]: Well defined.` が出れば KDL としては読めている。通常起動で反映されていない場合は、ホーム側への symlink 状態や dotfiles の `scripts/create-symlink.sh` 実行有無を確認する。
+`[CONFIG FILE]: Well defined.` が出れば KDL としては読めている。通常起動で反映されていない場合は、実際に読み込む設定パスと symlink の参照先を確認する。この dotfiles では Zellij を導入・配布対象から外しているため、設定が自動配置されるとは仮定しない。
 
 ## 一次情報
 

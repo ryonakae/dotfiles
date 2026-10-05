@@ -1,6 +1,0 @@
-[plugin]
-deps = [
-    { use = "yazi-rs/plugins:git" },
-    { use = "yazi-rs/plugins:smart-enter" },
-    { use = "yazi-rs/plugins:full-border" },
-]
