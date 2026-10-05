@@ -2,7 +2,7 @@
 
 ## Requirements
 
-[dig log](../dig/2026-10-05-nix-host-configuration.md) と会話に基づく。Q1 は A（非秘密のホスト定義を Git 管理）、Q2 も A（既存の安全確認付き操作入口を残して簡素化）で承認済み。dig log に Q2 承認と実装状況を反映した。
+[dig log](../../dig/2026-10-05-nix-host-configuration.md) と会話に基づく。Q1 は A（非秘密のホスト定義を Git 管理）、Q2 も A（既存の安全確認付き操作入口を残して簡素化）で承認済み。dig log に Q2 承認と実装状況を反映した。
 
 - 独自の host.json を廃止し、ユーザー名・ホームを通常の nix-darwin module に定義する。非秘密のホスト定義は Git 管理し、clone 後にローカル JSON を用意しなくても build できるようにする。
 - 現在の `darwinConfigurations.mac` と適用先 `ryo.nakae` / `/Users/ryo.nakae` を維持する。macOS のコンピューター名、ユーザー名、HOME を変更・作成する移行ではない。
@@ -63,7 +63,7 @@ Review base: `ae16a31957a46e02d37a5e76e285e66f5430e4b6`。開始時は master �
 - Nix 評価で primaryUser／Home Manager username／nix-homebrew.user が ryo.nakae、OS／Home Manager home が /Users/ryo.nakae と確認。変更した Nix 入力・lock・CLI 実装の8ファイルがビルド snapshot と一致することを比較した。
 - nixfmt --check、shell 構文、差分検査が成功。最後のテスト変更は bytecode 生成抑制のみで switch 安全性7件を再実行して成功、統合8件の成功結果は再利用。テストが作った pycache は除去し、以降は生成しない。
 - 現行コードに JSON input／machine 引数／--host が残らないことを確認。setup 手順の host.json 言及は「不要・旧実体は読まない」という移行説明のみ。文書更新は今回の差分に限定し、README／AGENTS とスキルの整合を確認済み。
-- 実機 switch は未実施で別承認。独立レビューと commit／push は gate summary に記録する。
+- 実機 switch は未実施で別承認。独立レビュー結果は下記の gate summary に記録した。
 
 ## Final Validation
 
@@ -77,5 +77,14 @@ Review base: `ae16a31957a46e02d37a5e76e285e66f5430e4b6`。開始時は master �
 - [x] **文書と移行**: 新規 clone からの手順にローカル host ファイルが不要で、別構成の指定、適用時のユーザー照合、秘密の除外が説明されていること。Git 外の実ファイルを変更・削除していないこと。
 
 このセッションでは Safehouse 内で既存 fish 依存の `.envrc` が拒否され、前の作業は承認済みの Herdr 通常ペインで build を検証した。今回も拒否されたら回避せず報告し、この変更に対する sandbox 外の非適用テスト／build の承認を得て実行する。前回の別変更の承認を実機 switch や任意の外部操作へ広げない。
+
+## Gate summary
+
+- 実装 commit: `d9c2e82`。review base: `ae16a31957a46e02d37a5e76e285e66f5430e4b6`。
+- 独立 read-only reviewer が base..d9c2e82 を確認し、blocking/high・decision required・medium/low の指摘なし。修正 cycle なし。
+- 実 Nix 統合8件・switch 安全性7件、固定 lock 比較、Nix formatter、shell 構文、設定伝播、同一 system 出力の build の成功結果を再利用。レビュー後はこの記録・アーカイブと参照更新だけを行い、実装は変えていない。
+- doc-updater の確認範囲は本変更の16ファイル。README／AGENTS／スキル／setup の必要な更新は実装と同じ commit に含む。追加の文書変更は不要。
+- 実装の受入条件に未解決事項なし。実機 switch は今回の受入条件ではなく、別承認のまま。既存の無関係な settings 3ファイルは保持する。
+- 本アーカイブ commit と実装 commit をまとめて通常 push する。
 
 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。

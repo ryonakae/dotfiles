@@ -13,7 +13,7 @@
   - 出典: ユーザーの「nixに寄せて」。
 
 ## 未決・保留
-- Q2 は A で承認済み。続いて `docs/plans/2026-10-05-nix-host-configuration.md` の実装も「ok」で承認された。合意した範囲は以下。
+- Q2 は A で承認済み。続いて `docs/plans/archived/2026-10-05-nix-host-configuration.md` の実装も「ok」で承認された。合意した範囲は以下。
   - ホスト定義は通常の Nix module とし、system.primaryUser と users.users.<name>.home を正本にする。現在の darwinConfigurations.mac は維持する。
   - 独自 machine 引数の受け渡しは標準 config 参照に置き換える。Home Manager の標準 Darwin 統合からユーザー名・HOME を設定できる経路を使う。
   - JSON input／example／検証／一時 snapshot／host override を廃止する。ホストの選択は darwinConfigurations の名前を基準にする。
