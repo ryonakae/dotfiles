@@ -53,11 +53,11 @@ bash scripts/dotfiles.sh build
 bash scripts/dotfiles.sh update nixpkgs
 bash scripts/dotfiles.sh update hermes-agent
 bash scripts/dotfiles.sh update nix-homebrew
-bash scripts/dotfiles.sh update skills-agent-browser
+bash scripts/dotfiles.sh update agent-skills
 bash scripts/dotfiles.sh update all
 ```
 
-更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。外部スキルの取得元は `skills-` 接頭辞の input、管理ライブラリは `agent-skills` で、`update all` は両方を含む全公開 input を更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。
+更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent`、スキル管理ライブラリは `update agent-skills` で更新する。`update all` は全公開 input を更新するが、Source registry の外部スキルは含まない。外部スキルは[専用の標準コマンド](#追加更新復元)で更新する。`update ai` や独自 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。
 
 日常の依存更新は update → lock 差分確認 → build → 承認した範囲で switch の順に行う。update は適用・起動を行わず、通常の build / switch は lock を更新しない。この Mac の初回適用は完了済み。組織管理アプリは下記のローカル設定で Bundle の導入対象から除外できる。別 Mac の初回切替や新たな操作範囲にも、以下の承認条件を適用する。
 
@@ -232,7 +232,7 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 
 ## 外部スキル
 
-外部スキルは agent-skills-nix の標準 Home Manager モジュールで取得・選択・配布する。管理ライブラリの `agent-skills` と、取得元の `skills-` 接頭辞の非 Flake input を `flake.nix` に宣言し、revision / hash は root の `flake.lock` で固定する。同じ repository の取得元は共有する。Source registry・npins・独自 updater は使わない。
+外部スキルは agent-skills-nix の Source registry と標準 Home Manager モジュールで取得・選択・配布する。取得元と探索範囲は `config/nix/skill-sources/`、revision / hash は `config/nix/skill-sources.lock.json` で管理する。同じ repository の取得元は共有する。root の `flake.lock` は管理ライブラリ `agent-skills` などの固定に使い、スキルの取得元は root input に追加しない。
 
 配布は標準の `structure = "link"` を使い、選択した外部スキルを store へのリンクとして配置する。自作スキルは `config/.agents/skills/` 等の追跡済み正本への個別 live link を維持する。同名の自作スキルを外部スキルより優先し、Claude 側では Claude 専用の同名スキルを優先する。ドット始まりのディレクトリは配布しない。選択・配布先の正本は `config/nix/home/skills.nix` とする。
 
@@ -240,16 +240,18 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 
 ### 追加・更新・復元
 
-追加時は取得元 input と選択・配布先を Nix 定義へ追加する。同名の自作・Claude 専用との衝突を避ける。外部14スキルの既存版を引き継ぐ管理方式の移行と、内容の更新は別操作とする。
+追加時は `config/nix/skill-sources/` に取得元と必要な探索範囲を宣言し、スキルの選択を更新する。同じ repository を使うなら既存の取得元を共有する。新しいスキルを無条件に導入する広い `enableAll` は避け、同名の自作・Claude 専用の優先順位を維持する。取得元を追加するために `flake.nix` を編集する必要はない。
 
-取得元を単体更新する例:
+リポジトリのルートから、外部取得元を一括更新する:
 
 ```fish
 cd ~/dotfiles
-bash scripts/dotfiles.sh update skills-agent-browser
+nix run .#skills-sources-lock
 ```
 
-ライブラリだけなら `update agent-skills`、全体なら `update all` を使う。共有取得元の更新は、同じ repository から選択したスキルすべてに影響する。lock と選択・配布先の差分を確認してからビルドする。
+これは agent-skills-nix が提供する npins ベースの更新処理で、全取得元の解決後に専用 lock を置き換える。宣言を変更した場合も実行する。追加した取得元だけでなく既存の取得元も更新されるため、lock 全体の revision と選択結果を確認する。標準コマンドに取得元名を渡す単体更新機能はない。独自の updater や子 Flake は併用しない。
+
+管理ライブラリだけなら `bash scripts/dotfiles.sh update agent-skills`、システムの全公開 input なら `update all` を使う。どちらも専用 lock の更新とは別操作。外部取得元の更新は、同じ repository から選択したスキルすべてに影響する。新規ファイルを Git ソースに含めてから、宣言・lock・選択の差分を確認してビルドする。
 
 ```fish
 bash scripts/dotfiles.sh build
@@ -261,7 +263,7 @@ bash scripts/dotfiles.sh build
 bash scripts/dotfiles.sh switch
 ```
 
-新規 Mac の復元では update を行わず、既存の `flake.lock` で build / switch する。`npx skills` による取得・コピーや旧 lock による復元は併用しない。自作本文の編集は live link に即時反映されるが、配置対象の追加・無効化には再適用が必要。
+新規 Mac の復元ではどちらの更新コマンドも実行せず、既存の `flake.lock` と `config/nix/skill-sources.lock.json` で build / switch する。`npx skills` による取得・コピーや旧 lock による復元は併用しない。自作本文の編集は live link に即時反映されるが、配置対象の追加・無効化には再適用が必要。
 
 ### 初回移行だけの退避
 

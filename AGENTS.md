@@ -25,6 +25,7 @@ Nix の bootstrap は人間が sandbox 外で実行する。[初回導入](docs/
 ## スキル
 
 - `config/.agents/skills/` は自作のみ。外部スキルの追加・更新は [配布手順](docs/setup.md#外部スキル)に従う。
+- 外部スキルの registry 更新と root Flake の更新は別操作。管理方式の移行・復元に内容の更新を混ぜず、既存 revision を維持する。
 - 自作スキルは Home Manager で正本への個別 live link を配布する。無効化は `.disabled/` へ移動する。
 - 共通スキルの配置先は `~/.agents/skills/`。Claude 専用の同名優先と Antigravity CLI の共通参照を維持し、配布先を増やさない。
 

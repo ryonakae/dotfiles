@@ -121,7 +121,9 @@
 - Agent Context / Worktrunk の tracked config は個別の live link とする。旧調査では本番実装の書き込み経路がないことを確認したが、読み取り専用配置を現行要件にはしない。registry、checkout、state は可変で残す。plugin 実体・session・log は Git / store へ取り込まない。
 - 完了条件: 認証・状態を store に入れず、必要な設定と拡張を復元できる。live link の内容変更とリンク置換時の衝突、store 固定の対象を区別して説明できる。
 
-### T5a. agent-skills-nix への外部スキル管理移行 — 実装・独立レビュー・実機適用完了
+### T5a. agent-skills-nix への外部スキル管理移行 — 初回 Flake input 方式の適用記録
+
+以下は初回方式の完了記録。後続の Source registry 移行は [専用計画](2026-10-05-skills-source-registry.md)で実施し、現在の取得・更新方針はそちらを優先する。
 
 ユーザーは調査報告の採用案1〜5と本計画の実装・削除を承認済み。今回の review base は `fbd516e`。同じ会話の先行移行差分は引き継ぎ、別変更の Claude / Pi / Zed 設定は commit 対象に含めない。T5 の手書き取得・配布の完了記録は現行方式の履歴とし、この変更の完了とは区別する。方針は Implementation Decisions 3a、検証は Final Validation の追加項目を正本にする。
 
@@ -263,7 +265,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ### 3a. 外部スキルの標準管理（追加承認済み）
 
-- agent-skills-nix と外部取得元を Flake input にし、root の `flake.lock` で revision / hash を固定する。Source registry、npins 専用 lock、子 Flake、独自 updater は今回は追加しない。既存の `scripts/dotfiles.sh update <公開input名>` / `update all` を使い、通常 build / switch では更新しない。
+- 初回の「外部取得元も root Flake input にする」方式は、後続の承認で Source registry へ切り替える。詳細と検証は [専用計画](2026-10-05-skills-source-registry.md)。管理ライブラリは root `flake.lock`、外部スキルは registry の専用 lock と標準更新 app に分離し、通常 build / switch では更新しない。子 Flake と独自 updater は追加しない。
 - 外部スキルは同ライブラリの標準 Home Manager モジュールの `structure = "link"` で配布する。`force = true` を改造して無効化せず、管理対象リンクの置換を受け入れる。対象外の兄弟スキルや Claude の `synced` を全面同期で削除する方式は選ばない。単独 `skills-install` の `link`、`symlink-tree` / `copy-tree` は別の動作であり、今回の実装では使わない。
 - 自作スキルは既存の標準 HM `mkOutOfStoreSymlink` による個別 live link を維持する。同ライブラリはローカル source も store に取り込むため、本文編集の即時反映を守るには責務を分ける。自作共通・Claude 固有の同名優先とドット始まりディレクトリの非配布を維持し、同名の外部スキルは選択・target 制限で二重配置を避ける。自動的な同名優先機能があるとは仮定しない。
 - 配布先は現在の共通 `~/.agents/skills`、Claude `~/.claude/skills`、Antigravity CLI `~/.gemini/antigravity-cli/skills` を維持する。Antigravity CLI は共通集合への現行参照を維持でき、専用ディレクトリの追加複製は必須にしない。IDE／2.0 の標準は `~/.gemini/config/skills`、ライブラリ既定の `~/.gemini/antigravity/skills` は IDE の旧互換パスであり、CLI 用と混同しない。新しいエージェントへの配布拡大はしない。

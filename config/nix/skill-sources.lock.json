@@ -1,0 +1,426 @@
+{
+  "manifests": {
+    "agent-browser": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "agent-browser"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "vercel-labs",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "agent-browser",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "agent-device": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "agent-device"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "callstack",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "agent-device",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "cua-driver": {
+      "filter": {
+        "maxDepth": 0,
+        "nameRegex": null
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "trycua",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "cua",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "libs/cua-driver/rust/Skills/cua-driver"
+    },
+    "find-docs": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "find-docs"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "master",
+        "owner": "upstash",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "context7",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "herdr": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "herdr"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "master",
+        "owner": "herdrdev",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "herdr",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "readme-creator": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "readme-creator"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "mblode",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "agent-skills",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "readme-i18n": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "readme-i18n"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "xixu-me",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "skills",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "skill-creator": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "skill-creator"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "anthropics",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "skills",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "stop-slop": {
+      "filter": {
+        "maxDepth": 0,
+        "nameRegex": null
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "hardikpandya",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "stop-slop",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "."
+    },
+    "stop-slop-ja": {
+      "filter": {
+        "maxDepth": 0,
+        "nameRegex": null
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "kyaukyuai",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "stop-slop-ja",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "."
+    },
+    "tdd": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "tdd"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "mattpocock",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "skills",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills/engineering"
+    },
+    "tech-writing": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "(cognitive-rhythm-writing|japanese-tech-writing)"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "f4ah6o",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "tech-write-ja",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    },
+    "worktrunk": {
+      "filter": {
+        "maxDepth": 1,
+        "nameRegex": "worktrunk"
+      },
+      "idPrefix": null,
+      "pin": {
+        "at": null,
+        "branch": "main",
+        "owner": "max-sixty",
+        "preReleases": false,
+        "releasePrefix": null,
+        "repo": "worktrunk",
+        "submodules": false,
+        "type": "github",
+        "versionUpperBound": null
+      },
+      "subdir": "skills"
+    }
+  },
+  "npins": {
+    "pins": {
+      "agent-browser": {
+        "branch": "main",
+        "hash": "sha256-LReBma9Mrr/HyunQ4FlcdZS0CTZZ8qKZjrPqyLTP9hY=",
+        "repository": {
+          "owner": "vercel-labs",
+          "repo": "agent-browser",
+          "type": "GitHub"
+        },
+        "revision": "526157cfd4ec64f45939f9ba0f10d5936aa7ac33",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/vercel-labs/agent-browser/archive/526157cfd4ec64f45939f9ba0f10d5936aa7ac33.tar.gz"
+      },
+      "agent-device": {
+        "branch": "main",
+        "hash": "sha256-BoYefyJ8znVWNAg15Ea3XGiYIokXmYLDZTaX5x8505A=",
+        "repository": {
+          "owner": "callstack",
+          "repo": "agent-device",
+          "type": "GitHub"
+        },
+        "revision": "be3c8104ddc2980f6b1200968d302c20063c8887",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/callstack/agent-device/archive/be3c8104ddc2980f6b1200968d302c20063c8887.tar.gz"
+      },
+      "cua-driver": {
+        "branch": "main",
+        "hash": "sha256-qhc7cDMDkRNTTIyW4RBw1YGCB7qsU6Ul/kLAtQ0reyI=",
+        "repository": {
+          "owner": "trycua",
+          "repo": "cua",
+          "type": "GitHub"
+        },
+        "revision": "3a784c5c32fc834f387f47f4835dd869ef505eee",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/trycua/cua/archive/3a784c5c32fc834f387f47f4835dd869ef505eee.tar.gz"
+      },
+      "find-docs": {
+        "branch": "master",
+        "hash": "sha256-5gckAd+rfGafB9KZPCS1jJqXjA2vF0VXoGHJngDFtUQ=",
+        "repository": {
+          "owner": "upstash",
+          "repo": "context7",
+          "type": "GitHub"
+        },
+        "revision": "bfa02ea67b5707fe0e0a673faa49d0f50b28c80b",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/upstash/context7/archive/bfa02ea67b5707fe0e0a673faa49d0f50b28c80b.tar.gz"
+      },
+      "herdr": {
+        "branch": "master",
+        "hash": "sha256-MAWXZWpOPR9EXCZ+9oNb2PoT0U2ExcW9AgKeGJOQRdc=",
+        "repository": {
+          "owner": "herdrdev",
+          "repo": "herdr",
+          "type": "GitHub"
+        },
+        "revision": "cee4fc2dc6ef2b9269636fc5dc876ecb44ee039f",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/herdrdev/herdr/archive/cee4fc2dc6ef2b9269636fc5dc876ecb44ee039f.tar.gz"
+      },
+      "readme-creator": {
+        "branch": "main",
+        "hash": "sha256-yn2+RBpFE3LovbS3+G92/vOGQ/0d021YfQP8qN1ufdc=",
+        "repository": {
+          "owner": "mblode",
+          "repo": "agent-skills",
+          "type": "GitHub"
+        },
+        "revision": "24f4fd8bdbb7ef6ad88f0411dd0d68680afc6538",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/mblode/agent-skills/archive/24f4fd8bdbb7ef6ad88f0411dd0d68680afc6538.tar.gz"
+      },
+      "readme-i18n": {
+        "branch": "main",
+        "hash": "sha256-XewH3ODEE3w+CkGWlK+66vunQqJcGpjUnPNOJ5PG6Lc=",
+        "repository": {
+          "owner": "xixu-me",
+          "repo": "skills",
+          "type": "GitHub"
+        },
+        "revision": "964cb26130141847fd99ea961e8af3e976add0a7",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/xixu-me/skills/archive/964cb26130141847fd99ea961e8af3e976add0a7.tar.gz"
+      },
+      "skill-creator": {
+        "branch": "main",
+        "hash": "sha256-PRBkTEGNwT73EFCvuTprzIBGiG+UGSYiaCkY7Ji13us=",
+        "repository": {
+          "owner": "anthropics",
+          "repo": "skills",
+          "type": "GitHub"
+        },
+        "revision": "8a1541c4a3ffa5a20a5a91de0dcf3f0bab1d1ef4",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/anthropics/skills/archive/8a1541c4a3ffa5a20a5a91de0dcf3f0bab1d1ef4.tar.gz"
+      },
+      "stop-slop": {
+        "branch": "main",
+        "hash": "sha256-JMqlCRVEAfwG1TLMDpnamznkBfkmX6e2XyETTTH/TSE=",
+        "repository": {
+          "owner": "hardikpandya",
+          "repo": "stop-slop",
+          "type": "GitHub"
+        },
+        "revision": "8da1f030185bdfe8471220585162991eaeb970e9",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/hardikpandya/stop-slop/archive/8da1f030185bdfe8471220585162991eaeb970e9.tar.gz"
+      },
+      "stop-slop-ja": {
+        "branch": "main",
+        "hash": "sha256-ooFbbSABklMbmohCQMCyB9VJ11sZwUETyiR9QhnjiIo=",
+        "repository": {
+          "owner": "kyaukyuai",
+          "repo": "stop-slop-ja",
+          "type": "GitHub"
+        },
+        "revision": "447ca211a4a8ed7bfc90d04f9ca560e07a93c1f8",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/kyaukyuai/stop-slop-ja/archive/447ca211a4a8ed7bfc90d04f9ca560e07a93c1f8.tar.gz"
+      },
+      "tdd": {
+        "branch": "main",
+        "hash": "sha256-2aIcwvuc8DBaeEu/9pDbzvNUj+M4vrjhgLPN66N1OZg=",
+        "repository": {
+          "owner": "mattpocock",
+          "repo": "skills",
+          "type": "GitHub"
+        },
+        "revision": "6b1cb1a8ce7e2a5f9071bb8879f6bbdbc0d456f7",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/mattpocock/skills/archive/6b1cb1a8ce7e2a5f9071bb8879f6bbdbc0d456f7.tar.gz"
+      },
+      "tech-writing": {
+        "branch": "main",
+        "hash": "sha256-Jyc+hkpup9yEhkaw2vo8b2MDwjLYJxnAa/9IERqZ7bo=",
+        "repository": {
+          "owner": "f4ah6o",
+          "repo": "tech-write-ja",
+          "type": "GitHub"
+        },
+        "revision": "244f573d90b593e3f227879302ad96fd154a4ee3",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/f4ah6o/tech-write-ja/archive/244f573d90b593e3f227879302ad96fd154a4ee3.tar.gz"
+      },
+      "worktrunk": {
+        "branch": "main",
+        "hash": "sha256-t48+wGMzGoi3LgXQnbVZzjKDKwwMAixJ003RBBaz0Nc=",
+        "repository": {
+          "owner": "max-sixty",
+          "repo": "worktrunk",
+          "type": "GitHub"
+        },
+        "revision": "2f2ed12130a96b1e6d0cc788c75a466791c86bc9",
+        "submodules": false,
+        "type": "Git",
+        "url": "https://github.com/max-sixty/worktrunk/archive/2f2ed12130a96b1e6d0cc788c75a466791c86bc9.tar.gz"
+      }
+    },
+    "version": 8
+  },
+  "schemaVersion": 1
+}

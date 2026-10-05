@@ -1,6 +1,7 @@
 {
   config,
   dotfilesLink,
+  inputs,
   lib,
   ...
 }:
@@ -17,82 +18,46 @@ let
       { };
   shared = skillSources ".agents/skills";
   claude = shared // skillSources ".claude/skills";
-  external = {
-    agent-browser = {
-      from = "agent-browser";
-      path = "skills/agent-browser";
-    };
-    agent-device = {
-      from = "agent-device";
-      path = "skills/agent-device";
-    };
-    cognitive-rhythm-writing = {
-      from = "tech-writing";
-      path = "skills/cognitive-rhythm-writing";
-    };
-    cua-driver = {
-      from = "cua-driver";
-      path = "libs/cua-driver/rust/Skills/cua-driver";
-    };
-    find-docs = {
-      from = "find-docs";
-      path = "skills/find-docs";
-    };
-    herdr = {
-      from = "herdr";
-      path = "skills/herdr";
-    };
-    japanese-tech-writing = {
-      from = "tech-writing";
-      path = "skills/japanese-tech-writing";
-    };
-    readme-creator = {
-      from = "readme-creator";
-      path = "skills/readme-creator";
-    };
-    readme-i18n = {
-      from = "readme-i18n";
-      path = "skills/readme-i18n";
-    };
-    skill-creator = {
-      from = "skill-creator";
-      path = "skills/skill-creator";
-    };
-    stop-slop = {
-      from = "stop-slop";
-      path = ".";
-    };
-    stop-slop-ja = {
-      from = "stop-slop-ja";
-      path = ".";
-    };
-    tdd = {
-      from = "tdd";
-      path = "skills/engineering/tdd";
-    };
-    worktrunk = {
-      from = "worktrunk";
-      path = "skills/worktrunk";
-    };
-  };
+  external = [
+    "agent-browser"
+    "agent-device"
+    "cognitive-rhythm-writing"
+    "cua-driver"
+    "find-docs"
+    "herdr"
+    "japanese-tech-writing"
+    "readme-creator"
+    "readme-i18n"
+    "skill-creator"
+    "stop-slop"
+    "stop-slop-ja"
+    "tdd"
+    "worktrunk"
+  ];
+  shadowed = name: builtins.hasAttr name shared || builtins.hasAttr name claude;
 in
 {
   programs.agent-skills = {
     enable = true;
-    sources = lib.genAttrs (lib.unique (map (skill: skill.from) (lib.attrValues external))) (name: {
-      input = "skills-${name}";
-      # Explicit selection avoids scanning unrelated skills in each repository.
-      filter.maxDepth = 0;
-    });
-    skills.explicit = lib.mapAttrs (
-      name: skill:
-      skill
-      // {
+    sources = inputs.agent-skills.lib.agent-skills.sourcesFromLock {
+      manifestsDir = ../skill-sources;
+      lockFile = ../skill-sources.lock.json;
+    };
+    skills.enable = lib.filter (name: !shadowed name) external;
+    # Only local overrides need explicit per-target selection.
+    skills.explicit = lib.genAttrs (lib.filter shadowed external) (
+      name:
+      let
+        skill = config.programs.agent-skills.catalog.${name};
+      in
+      {
+        from = skill.source;
+        path = if skill.relPath == "" then "." else skill.relPath;
         agents =
           lib.optional (!(builtins.hasAttr name shared)) "agents"
           ++ lib.optional (!(builtins.hasAttr name claude)) "claude";
       }
-    ) external;
+    );
     targets = {
       agents = {
         enable = true;
