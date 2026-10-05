@@ -207,7 +207,8 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - [x] **現行運用文書への整理**: `README.md` の旧 Install / Quickstart、`AGENTS.md` の旧スキル配布指示、`docs/setup.md` の `npx skills experimental_install`・旧 lock 運用・rm 転送前提の記述を撤去／更新する。初回移行専用の説明は日常運用と区別し、廃止したスクリプトを実行する手順を残さない。`docs/dig/` と `docs/plans/archived/` は判断履歴として保持し、過去記録への言及まで機械的に消さない。
 - [x] 旧 `brew/Brewfile.example` と Git 管理外の実 `brew/Brewfile` を照合後、ユーザー承認で両ファイルと空の `brew/` を削除。README の旧 bundle コマンドと `.gitignore` の不要な除外を整理した。導入一覧の正本は Nix 定義に統一し、実機の Homebrew・インストール済みアプリ・既存 backup は削除していない。
 - [x] **旧スキル lock の撤去（承認済み）**: T5a の移行確認後、`config/skills-lock.json` を削除する。既存14スキルの脱落がないことを確認し、正本を Flake input / `flake.lock` と選択・配置の Nix 定義に統一する。
-- 削除対象は上記9ファイルと T5a で置き換える手書き外部取得定義に限定する。`bootstrap-nix.sh`、`dotfiles.sh` / `dotfiles.py`、現存する関連テスト、`allow-mosh-firewall.sh`、`remove-broken-symlinks.sh` は保持。`.disabled/`、別 Mac 用 Hermes 設定、gomi 設定、秘密の example・実ファイル、実 HOME のデータ・インストール済み本体・既存 backup は削除しない。
+- [x] **先行して承認済みのリポジトリ整理**: ユーザーの「`.vscode`、`GEMINI.md` は削除して良い」に従い、`.vscode/settings.json` とルートの `GEMINI.md` symlink を削除した。リンク先の `AGENTS.md` と Nix の HOME 向け Gemini 指示配置は保持する。`.ruff_cache` は別途「.gitignoreする」との指示に従い、削除せず除外を追加した。これらは T11 追加調査より前の同じ会話で実施した変更であり、`252bdfe` に含めた。
+- 今回追加する削除対象は上記9ファイルと T5a で置き換える手書き外部取得定義に限定する。`bootstrap-nix.sh`、`dotfiles.sh` / `dotfiles.py`、現存する関連テスト、`allow-mosh-firewall.sh`、`remove-broken-symlinks.sh` は保持。`.disabled/`、別 Mac 用 Hermes 設定、gomi 設定、秘密の example・実ファイル、実 HOME のデータ・インストール済み本体・既存 backup は削除しない。
 実装記録: 指定の旧9ファイルと手書き外部取得定義を撤去済み。README・AGENTS・setup を現行 Nix 運用へ整理し、`use-worktrunk/SKILL.md` と `use-zellij/references/configuration-and-sessions.md` の残る旧配布案内も修正した。生成物の内容一致確認、Nix format・差分・限定参照検索が成功。ローカル文書参照29件が存在し、最終 build も終了コード0で同一成果物（`/tmp/dotfiles-skills-final-build.log`）。ソース整理は完了、独立レビューと新方式の実機適用は残る。先行の切替後起動・ツール整備は `83b8374` にコミット済み。
 
 - 完了条件: 新規 Mac の復元と日常運用が文書から辿れ、実装と説明が一致する。全体完了時にのみ本プランを archive する。
