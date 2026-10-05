@@ -11,17 +11,12 @@
     hermes-agent.url = "github:ryonakae/hermes-agent/ryonakae";
     agent-skills.url = "github:Kyure-A/agent-skills-nix";
     agent-skills.inputs.nixpkgs.follows = "nixpkgs";
-    host = {
-      url = "path:./config/nix/hosts";
-      flake = false;
-    };
   };
 
   outputs =
     inputs@{
       nix-darwin,
       home-manager,
-      host,
       ...
     }:
     let
@@ -34,12 +29,6 @@
             "antigravity-cli"
           ];
       };
-      hostFile =
-        if builtins.pathExists "${host}/host.json" then
-          "${host}/host.json"
-        else
-          "${host}/host.json.example";
-      machine = builtins.fromJSON (builtins.readFile hostFile);
       sourceLockProgram = inputs.agent-skills.lib.agent-skills.mkSourceLockProgram {
         inherit pkgs;
         manifestsDir = "config/nix/skill-sources";
@@ -53,19 +42,23 @@
         program = "${sourceLockProgram}/bin/skills-sources-lock";
       };
       darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
-        specialArgs = { inherit inputs machine; };
+        specialArgs = { inherit inputs; };
         modules = [
+          ./config/nix/hosts/mac.nix
           ./config/nix/darwin
           inputs.nix-homebrew.darwinModules.nix-homebrew
           home-manager.darwinModules.home-manager
-          {
-            nixpkgs.pkgs = pkgs;
-            home-manager.useGlobalPkgs = true;
-            home-manager.useUserPackages = true;
-            home-manager.extraSpecialArgs = { inherit inputs machine; };
-            home-manager.sharedModules = [ inputs.agent-skills.homeManagerModules.default ];
-            home-manager.users.${machine.username} = import ./config/nix/home;
-          }
+          (
+            { config, ... }:
+            {
+              nixpkgs.pkgs = pkgs;
+              home-manager.useGlobalPkgs = true;
+              home-manager.useUserPackages = true;
+              home-manager.extraSpecialArgs = { inherit inputs; };
+              home-manager.sharedModules = [ inputs.agent-skills.homeManagerModules.default ];
+              home-manager.users.${config.system.primaryUser} = import ./config/nix/home;
+            }
+          )
         ];
       };
     };

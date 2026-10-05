@@ -14,7 +14,7 @@ cd ~/dotfiles
 bash scripts/bootstrap-nix.sh --install
 ```
 
-導入済みの Mac で bootstrap をやり直さない。続きは `dotfiles-setup` スキル同梱の[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)。host 入力、秘密・認証、既存設定との衝突を必要な範囲で確認する。Homebrew の別途 bootstrap や Fisher による導入は併用しない。
+導入済みの Mac で bootstrap をやり直さない。続きは `dotfiles-setup` スキル同梱の[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)。Nix のホスト定義、秘密・認証、既存設定との衝突を必要な範囲で確認する。Homebrew の別途 bootstrap や Fisher による導入は併用しない。
 
 ## 日常の変更
 
@@ -26,6 +26,7 @@ cd ~/dotfiles
 bash scripts/dotfiles.sh build
 ```
 
+既定では `mac` 構成を使う。別の定義済みホストは build／switch の両方で `--configuration NAME` を指定する。
 生成物と適用範囲を確認し、通常の対話端末で `bash scripts/dotfiles.sh switch` を実行する。
 依存更新・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
 

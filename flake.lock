@@ -125,18 +125,6 @@
         "type": "github"
       }
     },
-    "host": {
-      "flake": false,
-      "locked": {
-        "path": "./config/nix/hosts",
-        "type": "path"
-      },
-      "original": {
-        "path": "./config/nix/hosts",
-        "type": "path"
-      },
-      "parent": []
-    },
     "nix-darwin": {
       "inputs": {
         "nixpkgs": [
@@ -284,7 +272,6 @@
         "agent-skills": "agent-skills",
         "hermes-agent": "hermes-agent",
         "home-manager": "home-manager_2",
-        "host": "host",
         "nix-darwin": "nix-darwin",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs_2"

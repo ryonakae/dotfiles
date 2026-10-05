@@ -1,4 +1,7 @@
-{ machine, ... }:
+{ config, ... }:
+let
+  homeDirectory = config.users.users.${config.system.primaryUser}.home;
+in
 {
   system.defaults = {
     NSGlobalDomain = {
@@ -39,8 +42,8 @@
         "/Applications/Figma Beta.app"
         "/Applications/Ghostty.app"
         "/Applications/Zed.app"
-        "${machine.homeDirectory}/Applications/Chrome Apps.localized/X.app"
-        "${machine.homeDirectory}/Applications/Chrome Apps.localized/Bluesky.app"
+        "${homeDirectory}/Applications/Chrome Apps.localized/X.app"
+        "${homeDirectory}/Applications/Chrome Apps.localized/Bluesky.app"
         "/Applications/Spotify.app"
         "/Applications/LINE.app"
       ];
@@ -55,7 +58,7 @@
         }
         {
           folder = {
-            path = "${machine.homeDirectory}/Downloads";
+            path = "${homeDirectory}/Downloads";
             arrangement = "date-added";
             displayas = "folder";
             showas = "fan";
