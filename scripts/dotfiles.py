@@ -90,7 +90,7 @@ def switch(system, source, overrides, target):
   print(f"Previous system profile: {previous}")
   print(f"Target user: {target['username']} ({target['homeDirectory']})")
   print("This applies system settings, Homebrew and Home Manager configuration.")
-  print("Stop Pi and prepare backups/legacy file collisions before proceeding.")
+  print("Review the changes; stop apps or preserve files only where conflicts require it.")
   print("Native file checks run during activation. Failure may leave a new profile and partial changes.")
   print("This entrypoint does not back up files, manage Hermes, or roll back automatically.")
   if input("Type 'switch' to confirm application: ").strip() != "switch":

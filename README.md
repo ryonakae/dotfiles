@@ -3,12 +3,10 @@
 macOS の開発環境と AI エージェントの設定を、新しい Mac に引き継ぐための個人用 dotfiles。
 Nix / nix-darwin / Home Manager でツールの導入と設定のリンク配置を管理する。
 
-この Mac の初回適用は完了し、拡張の機能確認と旧管理の整理を進めている。新規 Mac の導入は [セットアップ手順](docs/setup.md#nix-の初回導入)、適用前の注意と復旧は [適用と復旧準備](docs/setup.md#nix-の適用と復旧準備)を参照。
-
 ## Install
 
-既存の設定をバックアップし、sandbox 外のターミナルで実行する。
 Git が未導入なら、先に `xcode-select --install` で Command Line Tools を導入する。
+新規 Mac では、sandbox 外の通常端末で実行する。
 
 ```fish
 git clone https://github.com/ryonakae/dotfiles.git ~/dotfiles
@@ -16,40 +14,28 @@ cd ~/dotfiles
 bash scripts/bootstrap-nix.sh --install
 ```
 
-完了後は新しいターミナルで Nix を確認し、[host 入力の準備と事前ビルド](docs/setup.md#nix-の事前ビルド)へ進む。既存の設定を使う Mac は、初回の退避・適用範囲を確認してから切り替える。
-Homebrew 本体とアプリ、fish プラグイン、共通ランタイムも Nix 構成で管理する。Homebrew の別途 bootstrap や Fisher による導入は併用しない。
+導入済みの Mac で bootstrap をやり直さない。続きは `dotfiles-setup` スキル同梱の[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)。host 入力、秘密・認証、既存設定との衝突を必要な範囲で確認する。Homebrew の別途 bootstrap や Fisher による導入は併用しない。
 
-## Quickstart
+## 日常の変更
 
-Nix と host 入力を準備した後、構成を適用せずビルドする。
+通常設定と自作スキルの本文は `config/` の正本を編集する。既存の live link を通じて反映されるため、本文変更だけなら Nix 再適用は不要。
+パッケージや配置対象を変更した場合は、まずビルドする。
 
 ```fish
 cd ~/dotfiles
 bash scripts/dotfiles.sh build
 ```
 
-適用する場合は、[適用と復旧準備](docs/setup.md#nix-の適用と復旧準備)を確認し、承認した範囲で Safehouse 外の対話端末から実行する。
+生成物と適用範囲を確認し、通常の対話端末で `bash scripts/dotfiles.sh switch` を実行する。
+依存更新・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
 
-```fish
-bash scripts/dotfiles.sh switch
-```
+エージェントに作業を任せる場合は [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を使う。リポジトリ共通の編集・検証上の制約は [AGENTS.md](AGENTS.md) を参照する。
 
-組織管理アプリをこの Mac だけ導入対象から除外する場合は、[Homebrew のローカル設定](docs/setup.md#組織管理アプリをこの-mac-だけスキップする)を使う。
-AI エージェントの起動前に、[共通ツール用の秘密](docs/setup.md#共通ツール用の秘密)を設定する。日常の依存更新は [update の手順](docs/setup.md#nix-の事前ビルド)を使う。
+## 手動設定・運用
 
-## 外部スキル
-
-自作スキルはこのリポジトリへの live link、外部スキルは Source registry の専用 lock で固定した store へのリンクとして Home Manager で配布する。外部スキルの更新はシステムの Flake input 更新と分ける。
-追加・更新・復元と配布先の制約は[外部スキルの手順](docs/setup.md#外部スキル)を参照する。
-iOS Simulator の検証は [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) を参照する。
-
-## 運用
-
-- **エージェント:** fish の起動関数から Safehouse 内で使う。HOME への広いアクセスを許可する互換性重視の構成で、完全隔離は保証しない。
-- **削除と復元:** Nix 環境の `rm` は通常どおり直接削除する。ごみ箱へ移す場合は `gomi` を明示して使う。既存のごみ箱データは保持し、[復元手順](docs/setup.md#削除したファイルの復元)を参照。
-- **常駐サービス:** [Hermes のセットアップ](docs/setup.md#hermes-agent)と [Herdr の復元](docs/setup.md#herdr)は、dotfiles の配布とは別に行う。
+- **秘密・認証・サービス初期設定:** [同梱の手順](.agents/skills/dotfiles-setup/references/setup.md)に従い、人間が sandbox 外で行う。
+- **削除と復元:** `rm` は直接削除する。ごみ箱へ移す場合は `gomi` を明示し、[復元手順](.agents/skills/dotfiles-setup/references/setup.md#削除したファイルの復元)を使う。
 - **mosh:** Homebrew で更新するたびに `bash scripts/allow-mosh-firewall.sh` を実行し、署名とファイアウォール登録をやり直す。
+- **iOS Simulator の検証:** [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) を参照する。
 
-Pi の導入拡張は [settings.json](config/.pi/agent/settings.json) を参照する。
-設定や拡張を更新した後は Pi を起動し直す。
-このリポジトリを編集するときの制約は [AGENTS.md](AGENTS.md) に記載する。
+エージェントは fish の起動関数から Safehouse 内で使う。HOME への広いアクセスを許可する互換性重視の構成で、完全隔離は保証しない。
