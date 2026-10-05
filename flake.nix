@@ -5,6 +5,7 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     nix-darwin.url = "github:nix-darwin/nix-darwin/master";
     nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
+    nix-homebrew.url = "github:zhaofengli/nix-homebrew";
     home-manager.url = "github:nix-community/home-manager/master";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
     hermes-agent.url = "github:ryonakae/hermes-agent/ryonakae";
@@ -44,6 +45,7 @@
         specialArgs = { inherit inputs machine; };
         modules = [
           ./config/nix/darwin
+          inputs.nix-homebrew.darwinModules.nix-homebrew
           home-manager.darwinModules.home-manager
           {
             nixpkgs.pkgs = pkgs;
