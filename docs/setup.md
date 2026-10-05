@@ -5,7 +5,8 @@
 
 ## Nix の初回導入
 
-Nix 移行は準備中。以下は Nix 本体の導入のみで、dotfiles や Homebrew の切替は行わない。
+この Mac では Nix 構成の初回適用まで完了済み。外部スキル管理の方式変更は生成物まで検証済みだが、実機への適用確認は移行計画で追跡する。
+以下は新規 Mac 向けの Nix 本体の導入であり、この操作だけでは dotfiles や Homebrew の切替は行わない。
 Apple Silicon Mac の通常のユーザーアカウントから、人間が Safehouse 外のターミナルで実行する。
 
 ```fish
@@ -28,7 +29,7 @@ nix --version
 
 ## Nix の事前ビルド
 
-移行中の構成をビルドする入口。一般 CLI・共通ランタイム、アプリの補完一覧、fish と基本の保護設定まで構成済み。AI ツール・拡張・サービス等の移行が残るため、既存環境の適用・切替には使わない。
+構成を適用せずビルドする入口。この Mac の初回適用は完了したが、拡張の機能確認と旧管理の整理は移行計画に残している。ビルドと実機への適用は別操作。
 Nix と Python 3 が必要（初回は Command Line Tools 付属の Python でも可）。
 
 ```fish
@@ -52,12 +53,15 @@ bash scripts/dotfiles.sh build
 bash scripts/dotfiles.sh update nixpkgs
 bash scripts/dotfiles.sh update hermes-agent
 bash scripts/dotfiles.sh update nix-homebrew
+bash scripts/dotfiles.sh update skills-agent-browser
 bash scripts/dotfiles.sh update all
 ```
 
-更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。更新は適用・起動を行わない。`switch` の入口は用意しているが、切替準備・実機検証は未完了。以下の承認条件を満たすまで実行しない。
+更新対象は公開 input の名前であり、ツール名ではない。nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent` で更新する。外部スキルの取得元は `skills-` 接頭辞の input、管理ライブラリは `agent-skills` で、`update all` は両方を含む全公開 input を更新する。`update ai` や専用 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。
 
-fish の生成設定は管理済み example を基にした共通設定で、Git 外の実 `config.fish` のコピーではない。shell-init / interactive-init の非 Nix 本文は live source し、Nix パスの置換が不要な fish 関数も live link にする。切替前に、人間が秘密の移行と必要な非秘密の差分を確認する。既存の Fisher 配置・リンクも退避してから移し、二重読み込みさせない。`fish_variables` と履歴は Nix で管理しない。
+日常の依存更新は update → lock 差分確認 → build → 承認した範囲で switch の順に行う。update は適用・起動を行わず、通常の build / switch は lock を更新しない。この Mac の初回適用は完了済み。組織管理アプリは下記のローカル設定で Bundle の導入対象から除外できる。別 Mac の初回切替や新たな操作範囲にも、以下の承認条件を適用する。
+
+fish の `config.fish` は Home Manager の共通設定から生成し、Git 外の実ファイルや旧 example をコピーしない。shell-init / interactive-init の非 Nix 本文は live source し、Nix パスの置換が不要な fish 関数も live link にする。初回移行では、人間が秘密の移行と必要な非秘密の差分を確認し、既存の Fisher 配置・リンクも退避して二重読み込みを避ける。日常のプラグイン更新に Fisher は使わない。`fish_variables` と履歴は Nix で管理しない。
 
 ### Homebrew 本体とアプリの管理
 
@@ -67,9 +71,21 @@ Homebrew 本体は `nix-homebrew` で導入・版固定する。新規 Mac で H
 
 formula・cask・App Store アプリの一覧は引き続き nix-darwin の `homebrew` 定義で管理する。適用時の自動 update・upgrade・未宣言パッケージの削除は無効のまま。tap は従来の Homebrew 管理を維持し、Intel 用 Homebrew は追加しない。本体の更新は `update nix-homebrew` 後に build・適用する。Homebrew 配下のアプリの版まで `flake.lock` で固定されるわけではなく、アプリの更新は Homebrew やアプリ自身の更新機能で行う。
 
+### 組織管理アプリをこの Mac だけスキップする
+
+Zoom など、管理者が導入・更新するアプリは dotfiles の cask 宣言に残し、その Mac の Homebrew 標準設定で Bundle から除外できる。`brew --prefix` の下の `etc/homebrew/brew.env` に、例えば次を設定する。
+
+```text
+HOMEBREW_BUNDLE_CASK_SKIP=zoom
+```
+
+既存の `brew.env` があればファイルを上書きせず、既存の除外名も保って編集する。複数名は空白区切り。実ファイルはマシン固有のローカル設定として Git / Nix store に入れない。Homebrew 自身が読み込むため、Nix 適用時の sudo をまたいだ環境変数の継承を追加する必要はない。ユーザー別 `brew.env` に同じキーがあれば上書きされるので、適用時の skip 表示を確認する。
+
+これは `brew bundle` のインストール対象から外す設定であり、既存アプリをアンインストールしたり、組織の管理を解除したりするものではない。PC 別の Nix 構成や全 PC 共通の除外は追加しない。
+
 ## Nix の適用と復旧準備
 
-**移行準備が完了し、実機への切替を承認した後にだけ使う。** 対象ユーザーの通常の対話端末から、Safehouse 外で実行する。スクリプト全体を `sudo` で起動しない。
+**適用範囲を確認・承認した後にだけ使う。** 初回移行では下記の退避・復旧準備も確認する。日常の適用でも、秘密・サービス・OS 設定の変更を無断で含めない。対象ユーザーの通常の対話端末から、Safehouse 外で実行する。スクリプト全体を `sudo` で起動しない。
 
 ```fish
 bash scripts/dotfiles.sh switch
@@ -79,7 +95,9 @@ bash scripts/dotfiles.sh switch
 
 初回のリンク退避時は、書き込み競合を避けるため Pi 等の対象アプリを終了する。日常の live link の内容編集では全アプリ停止を必要としない。別 Mac で Hermes が動いていれば、配置変更に必要な停止を管理関数で行う。入口は Hermes の稼働状態を保存せず、停止・再開・独自のバックアップ・自動 rollback を行わない。標準適用による Nix daemon 等の変更は別途確認して承認する。
 
-ファイル衝突は Home Manager / nix-darwin の標準 activation 内の検査に任せ、force や自動退避オプションで通さない。**全変更前の検査や原子的な適用を保証しない。** system profile は activation より前に更新される。後段で衝突・エラーになると、それ以前の設定変更が残り得る。標準の `check` / `--dry-run` activation を安全な事前検査として実行しない。アプリが管理リンクを通常ファイル等へ置き換えた場合も衝突として保持し、強制上書きしない。
+通常設定のファイル衝突は Home Manager / nix-darwin の標準 activation 内の検査に任せ、force や自動退避オプションで通さない。アプリが通常設定の管理リンクを実ファイル等へ置き換えた場合も衝突として保持する。外部スキルは [標準 link 配布](#外部スキル)による管理対象リンクの置換を受け入れるため、この規約とは区別する。
+
+**全変更前の検査や原子的な適用を保証しない。** system profile は activation より前に更新される。後段で衝突・エラーになると、それ以前の設定変更が残り得る。標準の `check` / `--dry-run` activation を安全な事前検査として実行しない。
 
 ### 初回の退避台帳と停止前の引継ぎ
 
@@ -156,9 +174,9 @@ HOME は書き込み元を止めたまま、台帳の対象ごとに次の順で
 2. `before/home/` から元のパスへ、元の種別・metadata で戻す。スキルの実ディレクトリなどの参照先を先に戻し、その後で参照リンクを戻す。旧リンクが指す正本に後続変更があれば、勝手に巻き戻さず確認する。
 3. Pi は適用後のリンクと必要な非秘密内容を保全してから旧リンクを戻す。`before/pi-content/` は切替直前の内容として保持し、正本への後続変更を無断で巻き戻さない。旧正本への手動取り込みを移行手順にはしない。
 4. 元が未作成だった対象は、今回の生成物であることと後からのデータがないことを確認して `after/` へ退避する。親ディレクトリを再帰削除しない。Hermes はこの Mac で起動せず、別 Mac では管理関数による停止を確認してから plist を扱う。
-5. HM の profile / `current-home` 参照も元の有無・リンク先へ戻す。世代や store 成果物は消さない。旧 shell の PATH と rm 保護を確認してからアプリを再開する。
+5. HM の profile / `current-home` 参照も元の有無・リンク先へ戻す。世代や store 成果物は消さない。旧 shell の PATH と削除コマンドの実行先・挙動を確認してからアプリを再開する。現行構成の `rm` は直接削除するため、ごみ箱を使う場合は `gomi` を明示する。
 
-旧 `create-symlink.sh` は既存パスをスキップするため、新しい Nix リンクが残った状態の復旧には使わない。標準 `darwin-uninstaller` も初回復旧の既定手段にしない。今回以外の `.before-nix-darwin` や shell・`run` 設定も変更し、途中失敗では旧 daemon の復元条件が成立しない場合があるため、必要なら固定版の処理と失敗状態を確認して別途承認する。
+廃止した配布スクリプトによる復旧は行わない。標準 `darwin-uninstaller` も初回復旧の既定手段にしない。今回以外の `.before-nix-darwin` や shell・`run` 設定も変更し、途中失敗では旧 daemon の復元条件が成立しない場合があるため、必要なら固定版の処理と失敗状態を確認して別途承認する。
 
 以前の nix-darwin 世代がある場合は標準の `--list-generations` / `--switch-generation` による復旧を検討できるが、実行は別途承認する。世代の切替は管理リンクを戻す操作であり、live link 先の本文は戻らない。本文は Git で別に戻す。Homebrew アプリ・preferences・DB も世代の切替だけで戻るとは扱わない。中断後は `resume` と `operations` の最後の完了行から状態を再確認し、bootstrap・`switch`・退避操作を最初から繰り返さない。
 
@@ -195,7 +213,9 @@ OS 移行時は Keychain も復元する。暗号化ファイルだけでは復�
 
 ## 削除したファイルの復元
 
-rm 転送用のごみ箱は通常 `~/.local/share/Trash`。`XDG_DATA_HOME` 指定時はその配下の `Trash` を使う。
+Nix 環境では `rm` の gomi 転送を廃止し、通常の `rm` で直接削除する。ごみ箱へ移す場合は `gomi ファイル` を明示する。gomi 本体・設定・既存データは保持する。
+
+gomi のごみ箱は通常 `~/.local/share/Trash`。`XDG_DATA_HOME` 指定時はその配下の `Trash` を使う。
 Finder のごみ箱とは別で、復元は gomi から行う。
 
 ```fish
@@ -207,37 +227,47 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 復元・掃除中は別の rm / gomi を並行実行しない。
 容量を空けるための永久削除は、人間が復元・バックアップを確認してから行う。自動掃除は設定しない。
 
-rm 転送を外す場合は `~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gomi.fish` のリンクだけを確認して退避する。
+初回移行では `~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gomi.fish` の旧管理リンクを確認・保全して除去する。起動済み fish には関数が残るため、新しい shell を開き、`type -a rm` で通常の `rm` を参照することを確認する。この Mac の切替は完了済みであり、日常の更新でこの退避を繰り返さない。
 ごみ箱の実体は残す。
 
 ## 外部スキル
 
-`npx skills` はホームで実行する。`-g` と `update` は使わず、追加・更新の配布先を `-a claude-code` に絞る。
-自作スキルは dotfiles 側で管理し、外部スキルの実体は `~/.agents/skills/` に置く。
-Nix への切替後は、自作スキルは追跡済み正本への live link、`config/nix/home/external-skills.nix` で固定した外部スキルは store へのリンクとして Home Manager で個別配置する。旧 `create-skills-symlink.sh` や、以下の `experimental_install` による上書きを併用しない。外部スキルの更新は revision / hash を明示して変更し、build 後に適用する。
+外部スキルは agent-skills-nix の標準 Home Manager モジュールで取得・選択・配布する。管理ライブラリの `agent-skills` と、取得元の `skills-` 接頭辞の非 Flake input を `flake.nix` に宣言し、revision / hash は root の `flake.lock` で固定する。同じ repository の取得元は共有する。Source registry・npins・独自 updater は使わない。
 
-初回は既知の自作リンクと、Nix 管理対象となる外部スキルの実ディレクトリを個別に確認・退避する。未管理スキルや Claude の `synced` は保持し、親ディレクトリ全体を置き換えない。Python キャッシュ等の実行時生成物は復元対象に含めない。旧 `skills-lock.json` だけに残る未配置スキルの判断は移行中の残作業。以下は切替前の旧配布手順であり、Nix 管理対象の復元には使わない。
+配布は標準の `structure = "link"` を使い、選択した外部スキルを store へのリンクとして配置する。自作スキルは `config/.agents/skills/` 等の追跡済み正本への個別 live link を維持する。同名の自作スキルを外部スキルより優先し、Claude 側では Claude 専用の同名スキルを優先する。ドット始まりのディレクトリは配布しない。選択・配布先の正本は `config/nix/home/skills.nix` とする。
 
-新規マシンで lock の登録内容を取得する場合:
+共通の配置先は `~/.agents/skills/`、Claude は `~/.claude/skills/`。Antigravity CLI は `~/.gemini/antigravity-cli/skills` から共通集合を参照する。Hermes / Pi 専用や Antigravity IDE 用へ配布を広げない。対象外の兄弟スキルと Claude の `synced` は保持する。
 
-```fish
-cd ~
-npx skills experimental_install -a claude-code
-```
+### 追加・更新・復元
 
-これは固定版の再現ではなく、取得元の最新版を取り直す操作で、lock のハッシュも変わる。通常の更新には使わない。
-個別の追加・更新は、取得元とスキル名を指定して `add` を再実行する。例:
+追加時は取得元 input と選択・配布先を Nix 定義へ追加する。同名の自作・Claude 専用との衝突を避ける。外部14スキルの既存版を引き継ぐ管理方式の移行と、内容の更新は別操作とする。
+
+取得元を単体更新する例:
 
 ```fish
-cd ~
-npx skills add callstack/agent-device -s agent-device -a claude-code -y
+cd ~/dotfiles
+bash scripts/dotfiles.sh update skills-agent-browser
 ```
 
-取得後は次を確認する。
+ライブラリだけなら `update agent-skills`、全体なら `update all` を使う。共有取得元の更新は、同じ repository から選択したスキルすべてに影響する。lock と選択・配布先の差分を確認してからビルドする。
 
-1. 単一エージェントへの配布で `~/.claude/skills/` に実体コピーができた場合は、取得した最新版を `~/.agents/skills/` へ移し、Claude 側を symlink に戻す。既存実体は退避し、古い内容で最新版を上書きしない。
-2. Antigravity CLI は `~/.agents/skills/` へのディレクトリリンクで参照する。Hermes や Pi 専用ディレクトリなど、配布対象外に余分なリンクを残さない。
-3. `config/skills-lock.json` の差分を確認する。削除時も、配布ファイルと lock の両方から登録が消えたことを確認する。
+```fish
+bash scripts/dotfiles.sh build
+```
+
+生成物を確認し、[適用条件](#nix-の適用と復旧準備)を満たした後に Safehouse 外の対話端末で実行する。
+
+```fish
+bash scripts/dotfiles.sh switch
+```
+
+新規 Mac の復元では update を行わず、既存の `flake.lock` で build / switch する。`npx skills` による取得・コピーや旧 lock による復元は併用しない。自作本文の編集は live link に即時反映されるが、配置対象の追加・無効化には再適用が必要。
+
+### 初回移行だけの退避
+
+初回は既知の自作リンクと、管理対象になる外部スキルの実ディレクトリを個別に確認・保全して退避する。親ディレクトリ全体や `synced` は動かさず、実行時キャッシュを固定版の内容として復元しない。
+
+日常の外部スキル更新では標準モジュールの管理対象リンク置換を受け入れる。初回の未知の実体の保全を、外部スキル全体の恒久的な上書き禁止へ拡張しない。生成物の検証と実機への適用確認は分け、進捗は移行計画に記録する。
 
 ## Claude Code
 
@@ -258,7 +288,7 @@ MCP の個人設定は `~/.pi/agent/mcp.json` に置く。OAuth が必要なサ�
 
 ## Hermes Agent
 
-以下は **Nix 移行後**の運用。現時点では切替準備と実機検証が未完了なので、既存環境へ配布・適用しない。
+以下は **Nix 移行後**の運用。初回の設定配置は完了したが、拡張の実導入・機能確認は移行計画に残している。旧配布スクリプトは併用しない。
 gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。同じ `~/.hermes` を使う Docker dashboard をホスト版と同時起動しない。
 
 ### 初回設定
@@ -355,7 +385,7 @@ set -l zerdr_bin (brew --prefix ryonakae/tap/zerdr)/bin/zerdr
 $zerdr_bin setup install
 ```
 
-この操作は Herdr の登録と Zed tasks を更新するため、切替時に実行する。現在の開発版への登録はまだ変更していない。Zed tasks は Nix 管理に追加していない。
+この操作は Herdr の登録と Zed tasks を更新するため、切替時に実行する。実行後に両方が Homebrew 版の実行先を参照することを確認する。Zed tasks は Nix 管理に追加していない。
 worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
 導入後は `herdr plugin list` で確認する。
 
@@ -372,7 +402,7 @@ worktree の作成・削除には Worktrunk を使う。Herdr 本体の作成機
 Nix / Homebrew で管理するのは合意済みの共通環境だけ。他プロジェクトのツール・ランタイムは、そのプロジェクトの設定と mise 等に任せる。npm / uv のグローバル配置やインストール済みという事実だけで dotfiles 管理へ追加しない。未宣言の導入物の全件分類を切替条件にせず、既存実体や他プロジェクトの設定を一括削除・変更しない。
 
 `~/.local/bin` に Node / npm のリンクを置く場合は、Hermes 専用の実体ではなく mise の shim を参照させる。
-Node の問題を直すためにこのディレクトリの PATH 優先順位を下げない。rm 転送にも影響するため。
+Node の問題を直すためにこのディレクトリの PATH 優先順位を変更する場合は、他のユーザー配置 CLI への影響も確認する。
 
 ## Unity CLI
 

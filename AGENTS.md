@@ -15,7 +15,7 @@ macOS 用の個人設定。導入は [README.md](README.md)、手動の初期設
 変更したファイルの構文、差分、関連テストを確認する。配布やサービス再起動は検証だけを目的に実行しない。
 
 - fish: `fish --no-execute`、shell: shebang に対応する shell の `-n`。
-- rm 転送・起動 wrapper・Nix 操作入口: `scripts/tests/` の関連する `test_*.py` を `uv run --no-project python` で実行する。Nix CLI の統合テストは実 Nix が必要で、未導入による skip を成功と扱わない。
+- 起動 wrapper・Nix 操作入口: `scripts/tests/` の関連する `test_*.py` を `uv run --no-project python` で実行する。Nix CLI の統合テストは実 Nix が必要で、未導入による skip を成功と扱わない。
 - Nix: [事前ビルド](docs/setup.md#nix-の事前ビルド)を使う。Git ソースに含める新規ファイルは対象を明示して追加し、Git 外の設定を store へ取り込まない。
 - 文書: 参照パス・リンクと `git diff --check`。
 
@@ -25,8 +25,8 @@ Nix の bootstrap は人間が sandbox 外で実行する。[初回導入](docs/
 ## スキル
 
 - `config/.agents/skills/` は自作のみ。外部スキルの追加・更新は [配布手順](docs/setup.md#外部スキル)に従う。
-- 自作スキルの配布には `bash scripts/create-skills-symlink.sh` を使う。無効化は `.disabled/` へ移動する。
-- 共通スキルは `~/.agents/skills/` を正本とし、Claude と Antigravity CLI から参照する。他の配置先を増やさない。
+- 自作スキルは Home Manager で正本への個別 live link を配布する。無効化は `.disabled/` へ移動する。
+- 共通スキルの配置先は `~/.agents/skills/`。Claude 専用の同名優先と Antigravity CLI の共通参照を維持し、配布先を増やさない。
 
 ## 起動・保護設定の変更
 

@@ -2,19 +2,33 @@
 
 ## 現在地と再開手順
 
-**Homebrew 本体の管理変更（ユーザー承認済み）**: `nix-homebrew` を追加し、本体の導入・版固定も Nix に含める。新規 Mac での Homebrew 公式 bootstrap は不要となる。既存 Homebrew は `autoMigrate` で引き継ぎ、tap と formula / cask / App Store アプリの一覧は既存の nix-darwin 定義を維持する。自動 upgrade・cleanup は追加しない。実機への移行は未実施で、初回適用前に Homebrew 管理部分の退避・復旧範囲を確認する。
+**Safehouse 起動修正・通常 rm への切替を適用済み**: ユーザー承認で Nix 標準 `bashInteractive` を追加し、rm の gomi 転送だけを廃止する。gomi 本体・設定・ごみ箱データは保持。macOS Bash 3.2 では共通 wrapper 引数で `Bad file descriptor` が再現し、Nix Bash 5.3（interactive build）ではポリシー保存を指定した Pi の `--help` が終了コード0で成功した。HM の `.local/bin/rm`・`rm.fish`・`conf.d/gomi.fish` 配置、rm 優先 PATH イベント、起動時の rm wrapper 必須チェックを除去。廃止したチェック専用のテストも除去した。`/nix/store/bckrhhwdpim4svffg3016y96yvv1jjs5-darwin-system-26.11.4cff07d` の固定ビルドと生成物確認を通過し、標準 switch が終了コード0で完了。新規 login fish では Bash 5.3.15 と gomi が Nix profile、rm が `/bin/rm`（関数ではなく file）を参照。通常 wrapper 経由で Pi 1.0.0 / Claude Code 2.1.287 の `--version` と `--help` がすべて終了コード0で、Bad file descriptor と gomi の一時ファイル削除エラーは出なかった。実際の対話セッション・認証付き通信はこの確認に含めない。旧配布スクリプトは引き続き併用しない。
 
-**設定配置の方針変更（ユーザー承認済み）**: Q12 の旧 immutable 方式と Pi の merger 例外を撤回し、追跡済み設定・自作スキル・静的スクリプトは `config.lib.file.mkOutOfStoreSymlink` による `~/dotfiles/config/` への live link に変更する。checkout は README と同じ `~/dotfiles`、実パスは `homeDirectory` から作る。内容編集・アプリのリンク先への書き込みは Git 差分となり、Nix 再適用は不要。Nix が管理するのはリンクで、本文は Git で戻し、Nix 世代の rollback では戻らない。本体・外部 plugin・外部スキルは固定 store 管理、Nix パス / shebang の置換が要る wrapper・fish 関数、macOS 宣言・生成 fish config は store 生成を維持する。新方式の実装・固定ビルド・生成物確認は完了し、T4 / T5 / T9 と「live link 方式の検証記録」に記録した。過去の配置検証は旧方式の記録と区別する。実機適用は未承認・未実施。
+**修正前のブロッカー: Safehouse の終了処理と rm 保護の競合**。ユーザーは独自 override を採用せず Nix 標準の Safehouse 0.11.0 を使う方針を承認。共通 fish wrapper・Hermes gateway / dashboard・runtime 検証コマンドから、0.12.0専用の `--enable=launch-services` を除いた。通常端末から `pi --version` が0.99.1を返し、実生成ポリシーに標準の Launch Services と `(allow lsopen)` が含まれることを確認。ただし終了時に一時ポリシー削除を gomi が拒否し、終了コード1となった。rm 保護は変更せず、解消を別途判断する。0.11.0 の `--stdout` も `Bad file descriptor` で失敗したため、ポリシー確認には実起動の生成物を使用した。
+
+共通 `nixpkgs` の承認済み更新（`73e728ddb6b7a12d18808f510813a13ee1fe4cce`）も適用済み・未コミットで、Safehouse は同じ0.11.0。他の入力は変更していない。今回の fish 修正は live link により反映済み。Hermes wrapper は store 生成のため、冒頭の修正候補に含めて再ビルド済み。適用結果は冒頭の記録を参照。この Mac の Hermes は起動せず、回帰テストの追加・再実行もしない。
+
+**初回 switch 完了**: ユーザーの実行承認後、アプリを停止せず標準 `switch` を実行し、終了コード0を確認した。適用先は `/nix/store/cdsxh5l5al5riqmjv89fxyl5sxxdk3jx-darwin-system-26.11.4cff07d`。再開時は T10 の残る動作確認・旧導入物の整理へ進み、初回適用をやり直さない。以下の事前調査・未実施記録は、それぞれの検証時点の履歴であり、この実施結果を優先する。
+
+- `/etc/bashrc` と `/etc/zshrc` の衝突は、それぞれ `.before-nix-darwin` へ退避して解消した。
+- Homebrew 本体の移行と bundle を完了。Figma Beta は配置後の `chgrp` が拒否されたが、ユーザーによる Ghostty の「アプリ管理」権限付与後、`brew install --cask --adopt figma@beta` が成功した。アプリの削除・force は使っていない。
+- HM が報告した44衝突パスだけを、追加承認後に `~/dotfiles-migration-backup-hnw0_6ms/` へ元の相対配置で退避した。対象一覧は同ディレクトリの `paths.json`。リンクはリンク自体を移動し、dotfiles の正本・認証・session は移動していない。同一内容の通常設定は標準チェックを通過した。
+- HM の `linkGeneration`・`setupLaunchAgents` まで完了。新規 login fish で `rm` は `~/.local/bin/rm`（fish 関数も存在）、Pi / Claude は `/etc/profiles/per-user/ryo.nakae/bin/`、brew は `/run/current-system/sw/bin/brew` を参照することを確認した。実ファイルの削除による rm 試験は行っていない。
+- Hermes は起動していない。既存 Claude / Pi 設定差分は保持。主要アプリ・拡張の実機能、既存 shell の再読込、旧配布・二重管理の整理は未完了。旧ファイルと退避先は削除していない。
+
+**Homebrew 本体の管理変更（ユーザー承認済み）**: `nix-homebrew` を追加し、本体の導入・版固定も Nix に含める。新規 Mac での Homebrew 公式 bootstrap は不要となる。既存 Homebrew は `autoMigrate` で引き継ぎ、tap と formula / cask / App Store アプリの一覧は既存の nix-darwin 定義を維持する。自動 upgrade・cleanup は追加しない。実機への移行は冒頭の記録どおり完了。
+
+**設定配置の方針変更（ユーザー承認済み）**: Q12 の旧 immutable 方式と Pi の merger 例外を撤回し、追跡済み設定・自作スキル・静的スクリプトは `config.lib.file.mkOutOfStoreSymlink` による `~/dotfiles/config/` への live link に変更する。checkout は README と同じ `~/dotfiles`、実パスは `homeDirectory` から作る。内容編集・アプリのリンク先への書き込みは Git 差分となり、Nix 再適用は不要。Nix が管理するのはリンクで、本文は Git で戻し、Nix 世代の rollback では戻らない。本体・外部 plugin・外部スキルは固定 store 管理、Nix パス / shebang の置換が要る wrapper・fish 関数、macOS 宣言・生成 fish config は store 生成を維持する。新方式の実装・固定ビルド・生成物確認は完了し、T4 / T5 / T9 と「live link 方式の検証記録」に記録した。過去の配置検証は旧方式の記録と区別する。実機適用は追加承認後に完了（冒頭の記録参照）。
 
 **Hermes の方針訂正（最新のユーザー指示）**: 別 Mac の利用本体は `ryonakae/hermes-agent` fork。公式本流を採用した旧実装を見直し、fork と既存 `hermes-gateway` / `hermes-dashboard` を再利用する。dotfiles の適用入口はサービスの利用状態を保存・管理せず、自動停止・再開もしない。配置上必要な場合の読み取り専用の停止確認とエラーに限定する。Q19 の選択は不要となり、専用 controller による運用管理を撤回する。以下の旧実装・成功ビルドは fork 版の動作証明ではない。`default` から `voice` だけ除外する追加承認を反映し、T7 のビルド・生成物確認を完了した。
 
-**実装承認済み・移行準備中。基盤は完了、設定・拡張の移行が途中。upstream Nix 自体は導入済みだが、nix-darwin / Home Manager の構成は一度も実機へ適用していない。**
+**nix-darwin / Home Manager の初回適用完了。基本の実行経路は確認済みで、拡張の実機能確認・旧管理の整理を継続する。**
 
 - fork 対応・controller 撤去は `6b8021a..1e25f86` を独立レビュー済み。追加の `voice` 除外は `a7ac812..c07b186` を独立レビュー済みで、指摘なし。固定ビルド・生成物確認も完了した。T9 の確認付き switch 入口は `2a307cc..a458e00` を独立レビュー済みで、指摘なし。リモートとの同期状態は再開時に `git status -sb` で確認し、未 push の既存コミットを無関係な変更と混同しない。
 - 実装・検証・承認状態の正本はこのプラン。[dig log](../dig/2026-10-03-nix-migration.md) は合意と調査の出典であり、調査当初の「Nix 未導入」等を現在の状態として扱わない。
 - **進捗の更新場所は下の Tasks。** `[x]` は記載した成果物とその検証の完了を表し、実機適用の完了ではない。未完了項目には残作業・完了条件を記載する。撤回済みの試作は末尾の履歴に隔離した。
 
-### 再開方針：必要最小限の確認から実機切替へ進む
+### 初回適用前の方針（実行済み・経緯）
 
 ユーザーは、準備の調査・文書化・レビューを繰り返すより、早期の実機切替を優先するよう指示した。live link 方式への実装変更は承認済みだが、停止・退避・実機適用の承認ではない。
 
@@ -54,6 +68,8 @@
 - `switch` の入口は T9 で実装済み。切替準備と実機への適用は未完了で、この項目の完了に含めない。
 
 ### T3. パッケージと更新単位 — 実装済み対象の宣言・ビルド完了、棚卸しは T1
+
+- [ ] **旧 Brewfile 照合による追加（6件適用済み、Zoom スキップ設定済み・再適用待ち）**: 当初7件の候補 `/nix/store/3l44bm5q7hc9r1pi8allbdrqhl01bmr1-darwin-system-26.11.4cff07d` はビルド成功したが、組織管理の Zoom が更新を拒否。Zoom を外した `/nix/store/ap5qb5vmyz7c7hbh3zpkaf46ax0sxh25-darwin-system-26.11.4cff07d` は標準 switch が終了コード0で完了し、brew bundle 83件・HM 配置を通過。CLI 4件の Nix profile 参照も確認した。その後ユーザーが「dotfiles 的には Zoom は管理したい」と明確化したため、宣言には Zoom を戻した。現在の実適用には Zoom がなく、T5a の標準 brew.env によるローカル skip を設定・確認済み。宣言を戻した構成の再適用が残る。PC 別の Nix 構成は追加せず、組織管理の既存アプリ・管理設定は変更・削除しない。CLI の Google Workspace CLI（Nix 名 `gws`）・rtk・ExifTool・qrencode は標準 nixpkgs、Eagle / Zoom は cask、Unsplash Wallpapers（1284863847）は masApps。日本語入力は既存の `google-japanese-ime@dev` を維持し、stable 版を重複追加しない。実 Brewfile の残差は Fisher → HM plugin、CotEditor → App Store、Zellij → 承認済み対象外で説明できる。後続のユーザー承認で旧 `brew` ディレクトリは撤去済み。
 
 - [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `config/nix/home/packages.nix` と `config/nix/darwin/homebrew.nix`。
 - [x] gomi / dotenvx / Agent Safehouse、Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準定義へ統一。`44688a4`、`23a7c38`。独自 package 定義・専用 updater は削除済み。
@@ -98,10 +114,22 @@
 - [x] Pi の `APPEND_SYSTEM.md` / `agent-tool-description.md` / `subagents.json` / agent 定義3件 / 通知拡張を通常配置。`subagents.json` は上流がユーザー側を読み取り、UI の保存はプロジェクト側に行うことを確認。npm 7件は既存導入版、pi-subagents は導入済み commit `be898c753e9eb32cf1315f63b1c1f5ef0cf6f782` に native settings で固定し、公開取得可能性を確認。
 - [ ] Pi 外部拡張の新規取得・実行時機能の復元を確認する。標準 Pi は npm / Git の可変インストール先を使用し、activation からネットワーク取得や自己更新は実行しない。トップレベルの版固定は推移依存全体の固定ではない。現行の導入実体は Nix Pi 0.99.1 の loader で10 entry point をエラー・警告なしに読み込めたが、新規依存解決・認証付き機能は未検証。
 - [x] Herdr の Git plugin は標準 `install --ref <commit>` の復元手順を `docs/setup.md` に固定。当初の3件から、ユーザー指示で Shepherd を除いた2件を復元対象とする。現 metadata / HEAD / clean 状態を調べ、親側でも公開 commit アーカイブの manifest と主要ファイル7件を照合。再 install で `--ref` を省略すると HEAD へ移ること、有効化を伴うこと、build / activation から実行しないことを明記した。
-- [ ] Git plugin の実機導入と機能確認。Agent Context は同一 release から binary / checksum を取得し、source commit 固定は binary の完全な immutable hash 固定ではない。Shepherd の復元は対象外。
-- [ ] 承認済みの Homebrew 版 Zerdr の標準 `setup install` で manifest と登録を復元する。現開発 executable の絶対パスは配布しない。setup は Zed tasks にも書くが、現Nix配置は Zed settings のみで tasks は管理していない。
+- [ ] Git plugin の機能確認。移行後の `herdr plugin list` で Agent Context v0.5.1、Worktrunk の固定 commit、Zerdr が enabled であることを確認。既存導入物を無意味に再インストールしない。Agent Context の source commit 固定は release binary の完全な immutable hash 固定ではない。移行対象外の Shepherd も既存 registry で enabled のままだが、稼働中の plugin / daemon の停止・削除はしていない。
+- [x] Homebrew 版 `/opt/homebrew/opt/zerdr/bin/zerdr setup install` が終了コード0で完了。既存 manifest の4 command と Zed tasks が、旧開発 checkout ではなく Homebrew の実行ファイルを参照することを確認した。Zed tasks は Nix 管理には追加していない。Zed thread の実接続・GUI 操作は未検証。
 - Agent Context / Worktrunk の tracked config は個別の live link とする。旧調査では本番実装の書き込み経路がないことを確認したが、読み取り専用配置を現行要件にはしない。registry、checkout、state は可変で残す。plugin 実体・session・log は Git / store へ取り込まない。
 - 完了条件: 認証・状態を store に入れず、必要な設定と拡張を復元できる。live link の内容変更とリンク置換時の衝突、store 固定の対象を区別して説明できる。
+
+### T5a. agent-skills-nix への外部スキル管理移行 — 実装・生成物検証済み、実機適用待ち
+
+ユーザーは調査報告の採用案1〜5と本計画の実装・削除を承認済み。今回の review base は `fbd516e`。同じ会話の先行移行差分は引き継ぎ、別変更の Claude / Pi / Zed 設定は commit 対象に含めない。T5 の手書き取得・配布の完了記録は現行方式の履歴とし、この変更の完了とは区別する。方針は Implementation Decisions 3a、検証は Final Validation の追加項目を正本にする。
+
+- [x] **取得と固定**: `flake.nix` / `flake.lock` に agent-skills-nix と外部スキル取得元を追加する。スキルの取得元は非 Flake input とし、同じ repo は共有する。既存14スキルの取得元・commit・対象ディレクトリを引き継ぎ、管理方式の移行と内容の更新を混ぜない。ライブラリは調査済み `dc122af897ab9a685c20ae54c639021619dbbb52` を初期固定対象とし、無関係な既存 input を更新しない。
+- [x] **標準モジュールへの配置移行**: nix-darwin 統合 HM に agent-skills-nix のモジュールと必要な inputs を渡し、`config/nix/home/skills.nix` の外部スキル部分を標準の選択・`link` 配布へ置換する。自作の個別 live link は維持。初期配置の名前・内容・配布先を揃え、同名の二重配置を避ける。現在の手書き `config/nix/home/external-skills.nix` は置換確認後に撤去する。
+- [ ] **適用と運用手順**: 生成物を確認後、T10 の標準 switch で既存リンクからの切替を確認する。Zoom は宣言に残すという合意を維持し、この PC でのスキップ方法が未解決のまま同じ失敗を繰り返さない。Homebrew の問題をスキルの検証成功・失敗と混同せず、適用を阻まれた場合は build 済み・実機未適用と記録する。`docs/setup.md` に公開 input の update → build → switch を記載し、T11 の旧 lock・旧手順撤去へ進む。
+
+検証記録: agent-skills-nix の14外部スキル・13取得元を既存と同じ revision / hash で root lock に追加し、開始時の既存 lock node / edge は不変。共通・Claude の各14外部スキルは生成 home-files の全ファイルの内容 hash が従来世代と一致し、各12自作スキルと Antigravity CLI の参照先も一致した。通常の固定 build は終了コード0（`/tmp/dotfiles-skills-build.log`）、成果物は `/nix/store/kv7yxnfmn41hw53853cvz38hihhb0wgj-darwin-system-26.11.4cff07d`。手書き外部取得定義・旧 lock はこの生成物確認後に撤去した。実機適用と独立レビューは未完了。
+
+Zoom は Homebrew 標準の prefix 側 `etc/homebrew/brew.env` を使い、この Mac の Bundle だけ `HOMEBREW_BUNDLE_CASK_SKIP=zoom` とする。既存ファイルがない場合のみ排他的に作成し、秘密や既存内容は読んでいない。`brew bundle check --no-upgrade` は Zoom の skip を伴い終了コード0（`/tmp/dotfiles-zoom-skip-check.log`）。通常の check は更新可否も含めて終了コード1だったため、適用と同じ no-upgrade 条件の結果と区別する。Nix の宣言・PC 別構成・sudo の環境継承・組織管理アプリの実体は変更せず、このローカル設定の手順を setup に記載した。
 
 ### T6. 保護・起動・PATH の統合 — 宣言・生成物の確認済み
 
@@ -140,37 +168,48 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - [x] Xcode / SDK、Apple ID、Touch ID、TCC、署名、VPN、秘密・Keychain、Docker、未宣言の UI 設定の手動復元を `docs/setup.md` に整理した。
 - 完了条件: 宣言対象と手動対象が明確で、変更する OS キーの旧値・未設定状態と戻し方を T9 へ渡せる。
 
-### T9. 適用入口・衝突確認・復旧準備 — 入口実装済み、切替準備は未完了
+### T9. 適用入口・衝突確認・復旧準備 — 初回切替済み
+
+以下の事前準備記録は履歴として残す。ユーザーの即時切替指示により、実際の衝突だけを対処する方式で完了した。未実施だった一括台帳・事前バックアップを今から実施するタスクにはしない。
 
 固定 nix-darwin の入口を調査済み。標準 `switch` に検査済み source / host snapshot を渡し、標準の世代登録を維持できる。profile 登録は activation より前で、適用は非トランザクショナル。`activate` 単独は世代を登録しない。標準 `check` / dry-run の activation を読み取り専用検査として実行しない。最新指示により、入口は Hermes の起動状態を保存・管理せず、必要な停止確認とエラーに限定する。Q19 の選択は撤回。T7 完了後、`2a307cc` を review base として適用入口を実装した。対象ユーザーでの対話実行に限定し、Safehouse / root / 非対話を拒否する。既存の Hermes 停止チェック以外にプロセス管理を追加せず、ファイル衝突は標準 activation 内で検査する。全変更前の衝突拒否や自動退避・復旧は保証しない。実適用は未実施。独立した read-only reviewer が `2a307cc..a458e00` を確認し、blocking/high・decision required・medium/low の指摘なし。レビューはリポジトリ内のソースに限定し、外部の固定 Nix 実装や生成物は親側の調査・検証と区別する。
 
 - [x] **ここまでの部分構成**を通常 build で検証。旧方式の成功成果物は下記「検証記録」。live link 方式の受入ビルドとは区別する。
 - [x] `scripts/dotfiles.py` に確認付き `switch` を追加。build と同じ lock 検査・snapshot・check/build を使用し、候補と旧 profile を表示してから明示入力を求める。既存 Hermes check に失敗すれば sudo / profile 更新へ進まない。標準 `darwin-rebuild switch` へ同じ source / host を渡し、世代登録を維持する。ネイティブのファイル衝突検査でエラーになった場合、先行した変更は自動で戻さない。
-- [ ] 配置先のファイル種別・リンク先・所有権を確認し、旧リンク・実ファイル・Fisher / Yazi plugin・shell 初期化・plist の退避先と復旧先を決める。未知のファイルを force overwrite しない。
+- [x] 初回切替時の衝突は標準検査で特定し、承認済みの44パスだけを元の相対配置で退避した。`/etc` の2ファイルは標準の退避名へ移動。未知のファイルは force overwrite していない。詳細は冒頭の実施記録。
   - [x] 旧方式の HOME / system の退避ルート、対象別の保存内容、Pi 設定の通常ファイル化、失敗段階別の復旧順序、中断後の引継ぎを `docs/setup.md` に記載した。今回の方針変更で Pi の通常ファイル化は撤回し、文書は旧リンクと必要な非秘密内容を保全して標準 HM 配置へ引き渡す手順へ更新した。新方式の生成物との照合は下の完了項目。review base は `5113cfdd1b0be0c4a0b1d0a4175e4eca7fbd64e1`。ユーザーは既存の Homebrew 関連文書差分を保持した追記を承認した。実機の退避・復旧を検証済みとは扱わない。
-  - [ ] 人間が旧 daemon plist の実行先・launchd 登録状態と復元操作、build users / PAM / SSH / TCC の変更条件を確認し、対象ごとの私有台帳とバックアップを準備する。実 `config.fish` はエージェントから再取得せず、人間が保全する。
+  - 旧計画の全件私有台帳・事前バックアップは実施せず、実衝突のみを処理する承認済み方針へ変更した。旧 daemon の復旧演習は未実施。実 `config.fish` の内容は再取得せず、承認後に他の衝突対象とともに退避した。
   - 旧 immutable / merger 方式の生成物の HOME 配置135パスを内容を読まずに棚卸しした。旧リンク108、実ディレクトリ16（外部スキル13・Yazi plugin 3）、実ファイル1（Herdr hook）、未作成9、取得不能1。`dd9b0ba` からの再開時も種別・リンク先は同じで、確認できた既存対象はすべて本人所有、HOME より下の親経路に symlink はなかった。実 `config.fish` は前回 lstat が `Operation not permitted` だったため再試行しない。記録は `/tmp/dotfiles-collision-inventory-resumed.json`。実退避や内容比較は未実施。
   - Zellij 削除後、`~/.config/fish/functions/zl.fish` と `~/.config/zellij/config.kdl` に削除済み正本へのリンクを確認。ホーム側は未変更。切替時にこの既知の旧リンクの整理を確認する。Brewfile の実ファイル、インストール済み本体、保存セッション・履歴は今回変更していない。
 - [x] live link 方針に合わせた Pi 設定3パス、自作・外部スキル、Antigravity 参照の初回退避・復旧手順を最新生成物と照合した。実 HOME の直前確認と退避・復旧は未実施。旧リンクと必要な非秘密内容を保全して標準 HM 配置へ引き渡し、0600通常ファイル化・merge・旧正本への手動取り込みは行わない。外部スキルの実ディレクトリは個別退避し、未管理スキル・`synced` は保持する。初回の停止はリンク退避時の書き込み競合回避に限定し、日常の内容編集で全アプリを止めない。復旧はリンクと本文を分け、本文は Git で戻す。cua-driver 両配置が未作成であることも適用直前に再確認する。
   - 旧方式で確認した Pi 設定3ファイルはすべてリポジトリへの旧リンク、Hermes plist 2件は未作成。Antigravity CLI の参照は `~/.gemini/antigravity-cli/skills` → `~/.agents/skills`。実停止・個別退避・新方式の適用は未実施。
 - [x] 実 `config.fish` の非秘密差分をユーザーに確認。追加で引き継ぐ設定はないとの回答。以前記載していた `HOMEBREW_GITHUB_API_TOKEN` / `CONTEXT7_API_KEY` / `TYPESAFE_API_KEY` は dotenvx 管理へ移行済み。実ファイル・秘密の値は取得していない。
 - [ ] 旧 universal PATH 等の shell 状態を整理する。`18d72cb` からの再開時に PATH 関連4キーだけを選別して確認し、保存済み `PATH` と `fish_user_paths` を検出した。旧 mise shims・存在しない anyenv のパス、PostgreSQL・Antigravity 等の追加パスが残る。値の変更・実 shell 起動による優先順位確認は未実施。詳細は下記「旧 fish 初期化・PATH の追加確認」。example の PGDATA を実 DB 保存先と仮定しない。
-- [ ] 実際の OS 変更範囲・初回復旧に必要な保全を確認する。最新構成の固定ビルド・変更分の生成物確認は完了済み。T1〜T8 の全項目完了待ちにはせず、適用前に必要な安全確認と、T10 で行う実行時確認を分ける。
+- 初回適用は完了済み。実施した退避は冒頭の記録を正とし、未取得だった OS 設定の適用前状態を取得済みとは扱わない。復旧演習や事後の一括バックアップを追加の完了条件にはしない。
 - 検証: Python の in-memory compile、Bash 構文、CLI help、固定 build が成功。`switch_target` の対象ユーザー / HOME 照合と生成済み checker の参照を読み取り専用で確認。ログは `/tmp/dotfiles-switch-preparation.Y3SZjkuN/`。build は既存の Darwin 成果物 `920lv1d788i2510q217sgynxq8kgvzfp` を再利用し、root lock は不変。`switch` 本体・sudo・activation・回帰テスト・fixture / stub は実行していない。
 - 完了条件: 切替時に変更するものと戻し方をユーザーへ具体的に提示できる。`switch` の実行は T10 の承認後。
 
-### T10. 集中切替・重複管理の解消 — 未着手・直前承認が必要
+### T10. 集中切替・重複管理の解消 — 初回適用完了・動作確認と整理が残る
 
-- [ ] 必要な停止・退避・適用と復旧の操作範囲を一度に提示し、承認後に下記の手順で初回 `switch` まで進める。エージェント自身が中断される場合は、人間が実行する手順と再開方法を停止前に渡す。
-- [ ] 適用に続けて実機で PATH・rm 保護・主要 CLI / アプリを確認し、T5 の Pi 拡張・Herdr plugin・Homebrew 版 Zerdr の復元と利用確認を行う。問題があれば該当する復旧手順を使い、未確認機能は記録する。提示済みの範囲を超える停止・再起動・ログアウト等が必要になった場合は改めて直前確認する。
+- [x] ユーザーの即時移行指示に従い、アプリ停止や一括バックアップをせず標準 `switch` を実行。実際の衝突だけ対処し、44パスの退避は個別承認を得て実施した。終了コード0を確認。詳細と退避先は冒頭の実施記録。
+- [x] 新規 shell の Nix Bash / Pi / Claude / gomi と標準 `/bin/rm` の実行先を確認。Pi / Claude の version・help は終了コード0で、ユーザーから実際の起動成功も確認した。rm の gomi 転送は追加承認により廃止済み。
+- [ ] T5 の拡張機能・Herdr plugin・Zed/Zerdr の実際の利用確認を行う。問題があれば該当する復旧手順を使い、未確認機能は記録する。提示済みの範囲を超える停止・再起動・ログアウト等が必要になった場合は改めて直前確認する。
 - [ ] 受入後、対象を明示して承認済みの旧導入物・共通 mise 管理・旧配布を整理する。バックアップ・Nix 世代の自動削除、破壊的な Homebrew cleanup はしない。
 - 完了条件: 日常の実行・更新経路が新構成へ移り、補完ツール以外の長期二重管理が残らない。この Mac の Hermes は起動しない。
 
 ### T11. 運用文書・旧配布の終了 — 進行中
 
+- [x] **rm 転送の旧コード撤去（追加承認済み）**: `config/.local/bin/rm`、fish の `rm.fish` / `conf.d/gomi.fish`、`test_rm_trash.py` を削除した。Nix のファイル名除外も除去し、残す gomi の移動/復元検証を直接の `gomi` 呼び出しに変更。Safehouse 検証の旧 wrapper fixture、README・AGENTS・Safehouse スキルの旧規約も整理した。gomi 本体・設定・既存ごみ箱は未変更。Nix format・Python 構文・差分・残参照確認、固定 build が成功し、成果物は適用済み `/nix/store/bckrhhwdpim4svffg3016y96yvv1jjs5-darwin-system-26.11.4cff07d` と同一で再適用不要。回帰テスト・実ごみ箱操作は再実行していない。旧配布スクリプト全体の撤去や秘密・退避物の削除は別項目。
+
 - [x] bootstrap、build / update、標準管理・native 設定ファイルの方針を文書化。`README.md`、`docs/setup.md`、`AGENTS.md` と本プランを更新済み。
-- [ ] T9 では実行に必要な退避・適用・復旧手順だけを用意し、T10 の受入後に実施結果を反映して運用文書を仕上げる。同じ段階で `create-symlink.sh` / `create-skills-symlink.sh` / `copy.sh` 等の旧配布経路と呼び出し元を整理する。文書の仕上げを初回適用の前提にしない。
-- [ ] `Brewfile.example` / `skills-lock.json` 等の旧正本の役割を終了し、移行後の正本を一つにする。秘密の実ファイル・既存 backup は削除対象に含めない。
+- [x] **旧配布スクリプト4件の撤去（承認済み）**: `scripts/install.sh`、`scripts/copy.sh`、`scripts/create-symlink.sh`、`scripts/create-skills-symlink.sh` を削除する。Homebrew / Yazi plugin / 設定・スキル配布は Nix に統一済み。Command Line Tools の準備は新規 Mac 向け手動手順へ残し、必要な `.example` のコピーは個別手順にする。
+- [x] **旧設定・導入一覧4件の撤去（承認済み）**: `config/.config/mise/config.toml`、`config/.config/fish/fish_plugins`、`config/.config/yazi/package.toml`、`config/.config/fish/config.fish.example` を削除する。現行入力の `config.base.toml`、fish の shell-init / interactive-init、Yazi の設定・plugin 本体は保持する。fish example の旧 PGDATA・Homebrew 優先 PATH 等を現行設定へ戻さず、旧ひな形を廃止する。Git 外の実 `config.fish`・fish 状態や、他プロジェクトの mise 設定は対象外。
+- [x] **現行運用文書への整理**: `README.md` の旧 Install / Quickstart、`AGENTS.md` の旧スキル配布指示、`docs/setup.md` の `npx skills experimental_install`・旧 lock 運用・rm 転送前提の記述を撤去／更新する。初回移行専用の説明は日常運用と区別し、廃止したスクリプトを実行する手順を残さない。`docs/dig/` と `docs/plans/archived/` は判断履歴として保持し、過去記録への言及まで機械的に消さない。
+- [x] 旧 `brew/Brewfile.example` と Git 管理外の実 `brew/Brewfile` を照合後、ユーザー承認で両ファイルと空の `brew/` を削除。README の旧 bundle コマンドと `.gitignore` の不要な除外を整理した。導入一覧の正本は Nix 定義に統一し、実機の Homebrew・インストール済みアプリ・既存 backup は削除していない。
+- [x] **旧スキル lock の撤去（承認済み）**: T5a の移行確認後、`config/skills-lock.json` を削除する。既存14スキルの脱落がないことを確認し、正本を Flake input / `flake.lock` と選択・配置の Nix 定義に統一する。
+- 削除対象は上記9ファイルと T5a で置き換える手書き外部取得定義に限定する。`bootstrap-nix.sh`、`dotfiles.sh` / `dotfiles.py`、現存する関連テスト、`allow-mosh-firewall.sh`、`remove-broken-symlinks.sh` は保持。`.disabled/`、別 Mac 用 Hermes 設定、gomi 設定、秘密の example・実ファイル、実 HOME のデータ・インストール済み本体・既存 backup は削除しない。
+実装記録: 指定の旧9ファイルと手書き外部取得定義を撤去済み。README・AGENTS・setup を現行 Nix 運用へ整理し、`use-worktrunk/SKILL.md` と `use-zellij/references/configuration-and-sessions.md` の残る旧配布案内も修正した。生成物の内容一致確認、Nix format・差分・限定参照検索が成功。ローカル文書参照29件が存在し、最終 build も終了コード0で同一成果物（`/tmp/dotfiles-skills-final-build.log`）。ソース整理は完了、独立レビューと新方式の実機適用は残る。先行の切替後起動・ツール整備は `83b8374` にコミット済み。
+
 - 完了条件: 新規 Mac の復元と日常運用が文書から辿れ、実装と説明が一致する。全体完了時にのみ本プランを archive する。
 
 ## Requirements
@@ -181,7 +220,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - 追跡済み設定・自作スキル・静的スクリプトは元の形式で管理し、Home Manager の `config.lib.file.mkOutOfStoreSymlink` で `~/dotfiles/config/` への live link を配置する。実パスは `homeDirectory` から作り、checkout の固定位置は既存 README に合わせる。通常の内容編集・アプリからのリンク先への書き込みは Git 差分となり、Nix 再適用は不要。Nix はリンクの配置を管理し、本文は Git で復元する。Nix 世代の rollback で本文が戻るとは扱わない。Nix 本体・外部 plugin・外部スキルは固定 store 管理、Nix パス / shebang の置換が必要な wrapper・fish 関数、macOS 宣言・生成 fish config は store 生成に残す。
 - Node / Python / Ruby / Bun の共通環境は Nix に移す。mise は既存プロジェクトが必要とする用途に限る。別プロジェクトの設定を無断で変更しない。
 - dotenvx + Keychain + Safehouse を維持する。機密ファイルの直接アクセスを拒否し、共通ツール用の値は sandbox 外で復号して起動時に注入する。注入済み環境変数の利用は許容し、完全隔離を追加要件にしない。プロジェクト用秘密を共通ファイルへ混ぜない。
-- 通常 rm の gomi 転送、失敗時に実 rm へ戻さないこと、Hermes の正規停止と DB 保全を維持する。互換性優先の Safehouse 設計と既存の意図的な例外を狭めず、対話 CLI に承認モード・内蔵 sandbox の強制引数を追加しない。
+- ユーザーの追加承認により通常 rm の gomi 転送は廃止し、標準 rm を使う。gomi は明示的なごみ箱操作のため本体・設定・既存データを保持し、旧転送コードも撤去する。Hermes の正規停止と DB 保全を維持する。互換性優先の Safehouse 設計と既存の意図的な例外を狭めず、対話 CLI に承認モード・内蔵 sandbox の強制引数を追加しない。
 - 準備・ビルド・復旧準備の後、現在の Mac をなるべくまとめて完全切替する。長期二重管理を完成形としない。停止・再起動・ログアウト・OS 再起動は必要性を示して実行直前に確認する。
 - 秘密、認証、memory、session、DB、cache、アプリ生成データは設定世代の復元対象と分離する。実秘密の移行・Keychain 登録・バックアップは人間が sandbox 外で行う。設定の復元とデータの巻き戻しを混同しない。
 - Intel / Linux / WSL、macOS 自体の再インストール、Mac 全体の完全復元、無関係な開発プロジェクトの Nix 化は対象外。
@@ -214,10 +253,18 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - 本体はパッケージ管理、設定・スクリプトの配布は Home Manager と役割を分ける。通常の設定本文は元の形式の追跡済みファイルを正本にし、Home Manager は標準の `mkOutOfStoreSymlink` で live link を配置する。既存モジュールはパッケージ・プラグインの導入、shell 連携等に利用する。Nix profile や interpreter の store パス、nix-darwin の OS 宣言は Nix に残す。設定を配布するために本体パッケージを独自化しない。共通 AGENTS の正本を増やさず、各エージェントの参照関係を維持する。
 - **基本は追跡済み config ファイルへの live link を Home Manager の標準機能で管理する。** Zed / Pi / Claude 等もこの原則で進める。Pi 設定3件も通常のリンクとし、`mkImpureConfigMerger` / `checkPiConfigPaths` / `piMutableSettings` は削除する。アプリごとの全設定分類・分割や独自 merge 基盤は作らない。
 - 認証・履歴・session・DB・cache、`fish_variables` 等の状態は配布対象に入れない。初回は旧リンクと必要な非秘密内容を保全し、標準 HM 配置へ引き渡す。0600通常ファイル化・merge・旧正本への手動取り込みは不要。リンク退避時は競合回避のため書き込み元を止めるが、日常の内容変更で全アプリ停止は求めない。アプリがリンクを置換した場合の衝突を保持し、未知の実体・元ファイル・実秘密を強制上書きしない。
-- 外部スキルは取得元 revision と内容 hash を固定して `~/.agents/skills/` へ配置し、現行の利用先から参照する。Claude 固有スキルの同名優先、`.disabled` 等の非配布、Antigravity の共通参照を保ち、ディレクトリ全体の置換で他のスキルを隠さない。`skills-lock.json` の computedHash だけを再現用 lock と扱わず、最新版を取り直す experimental_install を新規 Mac の復元手順から外す。自作スキルは追跡済み正本への live link とし、外部スキルの固定 store 配置や Hermes の自己更新データと区別する。
+- 外部スキルの取得・選択・配布は、追加承認された Implementation Decisions 3a の agent-skills-nix 標準方式へ移行する。自作スキルの live link と外部スキルの store 固定を分ける。初回移行の衝突保全を、スキル管理全体の恒久的な上書き禁止方針として扱わない。
 - Pi / Herdr の拡張は標準の拡張管理と、その参照設定の配布を優先する。版・revision の固定が標準機能で可能か確認し、独自ビルドや専用の配布処理が必要になる場合は相談する。Zerdr 提供のローカルプラグインはアプリとの対応を保つ。書き込みを要求するプラグインは状態の保存先を分離する。
 - `.env`・復号鍵・OAuth 認証を Nix の値、`home.file.source`、環境変数の静的定義、ソース入力に渡さない。dotenvx は runtime のファイルパスを読み、Keychain 失敗時は起動を止める。新しい配置でも元パス・symlink 実体・復号鍵の直接アクセス保護を維持する。
-- shell / 非対話 / launchd のすべてで、安全な rm wrapper が通常 rm として解決される PATH を作る。Nix profile、Homebrew、mise の activation が優先順位を上書きしないことを確認する。保護 wrapper の実装を複数の起動経路へ重複させない。
+- shell / 非対話 / launchd から標準 rm を利用し、gomi 転送 wrapper やその優先 PATH 制御を再導入しない。Safehouse / dotenvx の起動経路と秘密へのアクセス制限は維持する。Safehouse の `/usr/bin/env bash` が Nix の `bashInteractive` を解決できるよう標準パッケージで配置する。
+
+### 3a. 外部スキルの標準管理（追加承認済み）
+
+- agent-skills-nix と外部取得元を Flake input にし、root の `flake.lock` で revision / hash を固定する。Source registry、npins 専用 lock、子 Flake、独自 updater は今回は追加しない。既存の `scripts/dotfiles.sh update <公開input名>` / `update all` を使い、通常 build / switch では更新しない。
+- 外部スキルは同ライブラリの標準 Home Manager モジュールの `structure = "link"` で配布する。`force = true` を改造して無効化せず、管理対象リンクの置換を受け入れる。対象外の兄弟スキルや Claude の `synced` を全面同期で削除する方式は選ばない。単独 `skills-install` の `link`、`symlink-tree` / `copy-tree` は別の動作であり、今回の実装では使わない。
+- 自作スキルは既存の標準 HM `mkOutOfStoreSymlink` による個別 live link を維持する。同ライブラリはローカル source も store に取り込むため、本文編集の即時反映を守るには責務を分ける。自作共通・Claude 固有の同名優先とドット始まりディレクトリの非配布を維持し、同名の外部スキルは選択・target 制限で二重配置を避ける。自動的な同名優先機能があるとは仮定しない。
+- 配布先は現在の共通 `~/.agents/skills`、Claude `~/.claude/skills`、Antigravity CLI `~/.gemini/antigravity-cli/skills` を維持する。Antigravity CLI は共通集合への現行参照を維持でき、専用ディレクトリの追加複製は必須にしない。IDE／2.0 の標準は `~/.gemini/config/skills`、ライブラリ既定の `~/.gemini/antigravity/skills` は IDE の旧互換パスであり、CLI 用と混同しない。新しいエージェントへの配布拡大はしない。
+- 先行の [dig log](../dig/2026-10-03-nix-migration.md) は背景資料とし、今回承認された外部スキル管理については本節を優先する。調査根拠は [agent-skills-nix dc122af の HM モジュール](https://github.com/Kyure-A/agent-skills-nix/blob/dc122af897ab9a685c20ae54c639021619dbbb52/modules/home-manager/agent-skills.nix)、[bundle の store 取り込み](https://github.com/Kyure-A/agent-skills-nix/blob/dc122af897ab9a685c20ae54c639021619dbbb52/lib/bundle.nix)、[Google 公式スキル配置先](https://antigravity.google/docs/skills/)。調査はソース確認であり、現在の配置からの activation 成功は未検証。
 
 ### 4. Hermes と常駐サービス
 
@@ -510,6 +557,9 @@ T9 は未完了。universal 値の変更と旧ファイルの退避は行って�
 - [ ] T6・T7・T9: 生成された PATH・wrapper・plist・activation が保護と停止順序を守り、未使用の Hermes を起動しない。
 - [ ] T10: 承認後の実機適用・主要導線の確認が完了し、初回復旧手順と実施結果が記録されている。DB 復旧演習は行わない。
 - [ ] T11: 旧配布の終了、手動作業・補完・未実証範囲の明記、実装側の必須レビューが完了。
+- [ ] T5a: 変更した Nix の format・評価と `bash scripts/dotfiles.sh build --host DIRECTORY` が成功し、生成 HM 配置で既存14外部スキルの名前・内容・配布先、自作 live link、同名優先、非配布ディレクトリ除外を確認する。初期 lock の外部 commit は現行定義と一致し、無関係な既存 input は変わらない。更新手順が新しい公開 input 名を対象にできることは入口の引数処理・定義で確認し、検証のためだけに最新版へ更新しない。
+- [ ] T5a・T10: 適用前に生成 home-files の旧個別リンクからの変更範囲を確認し、標準 `bash scripts/dotfiles.sh switch --host DIRECTORY` 後に外部スキルの store 参照、自作の checkout 参照、Antigravity CLI の共通参照、管理外の兄弟・`synced` の保持を確認する。HOME の全件再棚卸しや事前の一括退避はしない。衝突があれば対象を限定して扱い、適用前に秘密・認証の読み取りやサービス停止を追加しない。
+- [ ] T11: 指定した削除対象がなく、現行 Nix が削除ファイルを参照せず、README・AGENTS・setup の実行手順に旧経路が残らないことを限定検索・差分で確認する。文書リンクと `git diff --check` が通り、保持対象に今回の撤去による変更がないことを確認。開始前からの Claude / Pi 等の他者変更はそのまま保持する。撤去を証明するためだけの恒久テストや回帰テストの追加・再実行は行わない。
 
 構文確認は fish の `fish --no-execute`、shebang に対応した shell の `-n`、Python / TOML の parse、Nix formatter / 評価を使う。文書は参照先と `git diff --check` を確認する。通過済みの検証は、後続変更・失敗・未解決の懸念がない限り繰り返さない。
 
