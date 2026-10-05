@@ -39,7 +39,7 @@ AI エージェントの起動前に、[共通ツール用の秘密](docs/setup.
 
 ## 外部スキル
 
-自作スキルはこのリポジトリへの live link、外部スキルは Flake input / `flake.lock` で固定した store へのリンクとして Home Manager で配布する。
+自作スキルはこのリポジトリへの live link、外部スキルは Source registry の専用 lock で固定した store へのリンクとして Home Manager で配布する。外部スキルの更新はシステムの Flake input 更新と分ける。
 追加・更新・復元と配布先の制約は[外部スキルの手順](docs/setup.md#外部スキル)を参照する。
 iOS Simulator の検証は [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) を参照する。
 
