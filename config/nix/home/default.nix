@@ -1,10 +1,19 @@
 {
+  config,
   inputs,
   machine,
   pkgs,
   ...
 }:
+let
+  dotfilesConfig = "${config.home.homeDirectory}/dotfiles/config";
+in
 {
+  _module.args.dotfilesConfig = dotfilesConfig;
+  # Live links inherit checkout permissions; an executable override can force a build-time copy.
+  _module.args.dotfilesLink =
+    relativePath: config.lib.file.mkOutOfStoreSymlink "${dotfilesConfig}/${relativePath}";
+
   imports = [
     ./packages.nix
     ./fish.nix

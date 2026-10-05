@@ -1,5 +1,6 @@
 {
   config,
+  dotfilesLink,
   lib,
   pkgs,
   ...
@@ -16,9 +17,10 @@
   };
 
   xdg.configFile = {
-    "gomi/config.yaml".source = ../../.config/gomi/config.yaml;
-    "agent-safehouse/compatibility.sb".source = ../../.config/agent-safehouse/compatibility.sb;
-    "agent-safehouse/local-overrides.sb".source = ../../.config/agent-safehouse/local-overrides.sb;
+    "gomi/config.yaml".source = dotfilesLink ".config/gomi/config.yaml";
+    "agent-safehouse/compatibility.sb".source = dotfilesLink ".config/agent-safehouse/compatibility.sb";
+    "agent-safehouse/local-overrides.sb".source =
+      dotfilesLink ".config/agent-safehouse/local-overrides.sb";
     "agent-safehouse/run-with-agent-env.sh" = {
       text = lib.replaceStrings [ "exec dotenvx " ] [ "exec ${lib.getExe pkgs.dotenvx} " ] (
         builtins.readFile ../../.config/agent-safehouse/run-with-agent-env.sh

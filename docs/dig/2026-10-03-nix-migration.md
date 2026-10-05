@@ -13,9 +13,15 @@
 
 - Hermes: [公式 Flake](https://github.com/NousResearch/hermes-agent/blob/main/flake.nix) は aarch64-darwin を対象に含み、パッケージとサービスモジュールを分離している。パッケージのみを公式定義から採用し、root lock で入力を固定する案。独自 package 定義・updater は作らず、サービス起動は別扱い。実ビルドは未実施。
 - agent-device: [0.21.19 の helper 実装](https://unpkg.com/agent-device@0.21.19/dist/src/helper.js) はパッケージの `apple/macos-helper` 内で `swift build -c release --package-path` を行い、`.build/release` から HOME 内の cache へコピーする。単純な store 配置はこのビルド先が読み取り専用になるため、[mise の標準 npm backend](https://mise.jdx.dev/dev-tools/backends/npm.html) を残す案。npm の版固定と全推移依存の固定は区別し、Node 要件も導入時に確認する。helper の実ビルド・署名・権限変更は未実施。
-- 可変設定: 採用中の Home Manager では Zed に `mutableUserSettings` があり、Pi のモジュールは設定を store にリンクする。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。通常ファイル配置とは分けて採用方法を判断し、独自 merge 基盤は作らない。
+- 可変設定（旧 immutable / merger 方式の調査。最新の live link 方針では不採用）: 採用中の Home Manager では Zed に `mutableUserSettings` があり、Pi のモジュールは設定を store にリンクする。汎用 `lib.hm.generators.mkImpureConfigMerger` は experimental と明記されている。通常ファイル配置とは分けて採用方法を判断し、独自 merge 基盤は作らない。
 
 ## 決定事項
+- Homebrew 本体も `nix-homebrew` で導入・版固定する（ユーザー指示「nix-homebrewにする」）。新規 Mac で Homebrew の公式インストーラを先行実行する旧方針は置換する。既存環境は `autoMigrate` で引き継ぐが、実機移行は別途承認する。tap・formula・cask・App Store アプリの既存管理と、適用時の自動 update / upgrade / cleanup 無効は維持する。tap の固定管理・Intel 用 Homebrew は追加せず、Homebrew 配下のアプリの版固定も意味しない。
+- 最新の設定配置方針（承認済み）: Home Manager の `config.lib.file.mkOutOfStoreSymlink` で、`~/dotfiles/config/` の追跡済み設定・自作スキル・静的スクリプトへの live link を管理する。checkout は既存 README と同じ `~/dotfiles` に固定し、実パスは `homeDirectory` から作る。通常の内容編集やアプリのリンク先への書き込みは Git 差分となり、Nix 再適用は不要。管理するのはリンクで、本文は Git で戻す。Nix 世代の rollback では本文は戻らない。
+  - Nix 本体・外部 plugin・外部スキルは固定 store 管理を維持する。Nix executable パスや shebang の置換が必要な wrapper / fish 関数、macOS 宣言、生成 fish config は store 生成に残す。fish shell-init / interactive-init の非 Nix 本文は live source、置換不要の fish 関数は live link とする。
+  - Pi 設定3件も通常の live link にし、`mkImpureConfigMerger` / `checkPiConfigPaths` / `piMutableSettings` を撤去する。初回は旧リンクと必要な非秘密内容を保全・退避して標準 HM 配置へ引き渡す。0600 の通常ファイル化・merge・旧正本への手動取り込みは不要。
+  - 初回の停止はリンク退避時の書き込み競合回避のためであり、日常の内容編集で全アプリを停止しない。アプリがリンクを置換した場合の衝突は保持し、force overwrite しない。実機 apply は未承認・未実施。Q12 の旧 immutable 方式と Pi だけの merger 例外を撤回する。
+  - 早期切替を優先する方針は維持し、変更範囲に必要な検証だけ行う。過去の immutable 方式の検証は新方式の検証済みとは扱わず、最新の実装・検証状況は実装計画へ記録する。
 - Hermes の追加承認: fork の `default` から `voice` だけを標準 `override` で除外する。ローカル音声認識・マイク入力用の依存は同梱せず、Hindsight・メッセージング・TTS など他の追加グループは残す。fork 本体の改変や依存パッケージのテスト無効化は行わない。
   - 理由: Apple Silicon 用の CTranslate2 を nixpkgs から供給する経路で、検証用依存の PyTorch がソースビルドされていた。候補の実依存グラフを比較し、`voice` だけの除外でこの依存を避けられることを確認した。
   - 出典: 調査結果の「default から voice だけ除外」案に対する「じゃあそれで」。初回の所要時間と、既に構築済みの依存を再利用した所要時間は区別する。
@@ -27,7 +33,7 @@
   - この Mac でサービスを起動しないこと、実操作直前の承認、別 Mac の既存データ保持は維持する。通常の適用で停止済みサービスを再開しない。
   - 出典: Q17 への「a」。標準 launchd の自動再ロードを許容する B 案は不採用。
 - 実装中の追加合意: Hermes は公式 Flake のパッケージのみ採用し、サービスは別に扱う。agent-device はグローバル mise 管理をやめ、版を固定しない `npx --yes agent-device` を使う。独自の版固定・自動更新制限は追加しない。Shepherd は復元対象から外し、Zerdr は Homebrew 版、cua-driver は公式 skill の固定復元を採用する。実アンインストールやサービス起動の承認とは区別する。
-- 実装中の追加合意: 通常の設定は immutable とし、Pi の書き込みが確認された JSON だけ標準 `mkImpureConfigMerger` を使う。自作・外部スキルは個別配置し、認証・session・自己更新データや管理外の兄弟ディレクトリを置き換えない。
+- 実装中の旧追加合意（撤回済み）: 通常設定を immutable とし Pi の JSON だけ標準 `mkImpureConfigMerger` を使う方式は、最新の live link 方針へ置換した。自作・外部スキルの個別配置と、認証・session・自己更新データや管理外の兄弟ディレクトリを置き換えない制約は維持する。
 - 設定の分離に関する追加指示: fish 以外も通常の設定本文は元の形式で管理し、Nix は導入・連携・配置の指定に薄くする。Nix 固有のパス解決や OS 宣言は Nix に残す。
 - 最新の追加指示: 「可能な限り標準管理に統一。どうしてもそれが難しいというものだけは相談」。AI を含む本体は共通 nixpkgs の標準定義、設定の配置は Home Manager に分ける。現行版維持・個別更新のための独自パッケージや専用 updater は不要。標準管理が難しい対象だけ理由・代案を示して採用前に相談する。Q3 / Q10 の個別・AI グループ更新の決定は撤回した。
 - 検証方針の追加指示: 本移行では回帰テストの追加・再実行を行わず、構文・差分・Nix 評価とビルドで進める。
@@ -46,7 +52,7 @@
   - すべてを個別の Flake input にするのではなく、取得元・固定方法・配布方法を調査して適切にまとめる。
   - 理由: 本体だけでなく、普段の作業に必要な拡張とスキルを含めて環境を再構築するため。
   - 出典: Q13 への「a」。
-- 設定変更はリポジトリの編集後に適用する方式を基本とする（Q12: A）。Nix の宣言的管理を優先し、現在の即時反映方式を維持するためだけの store 外リンクは設けない。
+- Q12: A の旧決定（撤回済み）: 設定変更をリポジトリの編集後に適用し、store 外リンクを設けない方式を選んだが、最新の承認で追跡済み正本への live link 方式に変更した。以下は旧決定の理由・出典であり、現行要件ではない。
   - Home Manager モジュールは導入・連携・配置に利用し、通常の設定・スクリプト本文は元の形式のファイルを正本にする。Nix 側にはファイル参照と Nix 固有の指定だけを残す。
   - 秘密・認証・履歴・セッション・DB・キャッシュは設定から分離して store 外で扱う。アプリが設定を書き換える場合は所有権を確認し、実際に書き込みが必要な箇所だけ例外として設計する。
   - 理由: 既存構成の維持ではなく、適用済み構成の把握と新規 Mac での再構築を優先する。
@@ -128,7 +134,7 @@
   - `config/skills-lock.json` は取得元・skillPath・computedHash を記録するが、復元用コミットを記録していない。`docs/setup.md` も experimental_install を最新版の再取得と明記している。この運用の単純移植では Q13 を満たさない。取得可能な revision と hash の固定を設計する。
   - Pi の管理済み settings.json は版なし npm パッケージと Git master を含む。ローカル Pi 1.0.0 の `docs/packages.md` では npm の版、Git の tag/commit、ローカルパッケージ参照に対応。トップレベルの版指定だけで依存全体の再現性まで保証せず、Nix での依存解決・配布方法を確認する。`docs/configuration.md` は /settings による設定変更を案内しており、設定ファイルの一律 read-only 化との競合を避ける。既存の他者変更は保持している。
   - Herdr は `docs/setup.md` に3つの取得元と Zerdr 提供のローカルプラグインを記載するが、復元用 lock がない。外部プラグインの取得 revision を追加で固定し、アプリ提供プラグインは提供元との整合を確認する。
-- Q12 に基づく設定と可変状態の具体的な分離、アプリからの設定書き換えとの競合確認。既存 symlink 方式の維持は前提にしない。
+- 旧 Q12 に基づく設定と可変状態の分離・書き換え競合の調査は当時の保留事項。最新の live link 方針が置き換える範囲の実装・検証は実装計画を参照する。
 - macOS 設定の具体値と対象一覧を調査し、専用オプション・preferences・独自処理・手動設定に分類する。
 - Hermes 等のサービス定義と更新・停止手順。plist の二重管理を避け、既存の安全要件を満たす方法。
   - 上流 `flake.nix` は aarch64-darwin を対象に含み、Python 依存と Node 等を組み込む構成を提供する。標準定義に未収録の場合の補完候補であり、採用は相談後に決める。実ビルド・既存機能の互換性は未検証。`nix/packages.nix` では messaging 等の追加依存をビルド時に選び、Matrix は Linux 限定としている。実利用する追加機能との照合が必要。
@@ -146,6 +152,7 @@
 - 要件の見直しが必要な調査結果は無断で例外化せず確認する。具体的な実装・検証・切替の進捗は承認済みの [実装計画](../plans/2026-10-03-nix-migration.md) に記録する。
 
 ## 撤回・置換済み
+- Q12 の immutable 配置、Pi のみの `mkImpureConfigMerger` 例外、`checkPiConfigPaths` / `piMutableSettings`、初回の0600通常ファイル化と旧正本への手動取り込みを撤回する。追跡済み設定・自作スキル・静的スクリプトは標準 HM の live link へ変更し、store 固定を必要とする本体・外部取得物・Nix 生成物は維持する。過去の検証は旧方式の記録で、新方式の受入根拠ではない。
 - Hermes の本流パッケージ採用、旧 Q18 の「標準 stop を使わず強制終了を禁じる」方式、専用 controller による PID / 子プロセス管理、switch による利用状態保存・停止・再開は最新の fork / 既存スクリプト利用方針へ置換した。旧 Q18 は本流の停止実装を根拠に承認されたが、対象本体と運用境界の認識が誤っていた。旧実装のレビュー・ビルド記録は実装計画に履歴として残す。
 - Q9 の比較で復元の利便性を重視しすぎた説明を修正。sops-nix / agenix の nix-darwin 対応は確認したが、宣言的な秘密配置自体はエージェントの読み取り制限ではない。保護目的への適合を理由に現行方式を継続する。
   - 比較資料: https://nix.dev/manual/nix/2.34/store/secrets 、https://github.com/Mic92/sops-nix 、https://github.com/ryantm/agenix/blob/main/flake.nix 。
