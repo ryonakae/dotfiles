@@ -2,6 +2,8 @@
 
 ## 現在地と再開手順
 
+**最新適用は Source registry 方式**: [専用計画](archived/2026-10-05-skills-source-registry.md)を完了。実装 `8e7e8ef` は独立レビュー指摘なし、固定 build と通常 switch が終了コード0。現在の system は `/nix/store/l6vmarcxhmjhif7wv6000y7x19ssz8bv-darwin-system-26.11.4cff07d`。外部14スキルの版・内容、各12自作 live link、管理外の兄弟項目を維持した。外部スキルの更新は標準 registry app、管理ライブラリとシステムの更新は root Flake に分離した。以下の初回方式の適用記録は履歴として残す。
+
 **外部スキル移行・旧配布撤去を適用済み**: T5a / T11 の今回承認範囲は実装・独立レビュー・標準 switch を完了。現在の system は `/nix/store/kv7yxnfmn41hw53853cvz38hihhb0wgj-darwin-system-26.11.4cff07d`、終了コード0。Zoom は宣言を維持し、この Mac の Homebrew 標準 `brew.env` でスキップ（実行ログでも確認）。共通・Claude の各14外部 store link、各12自作 live link、Antigravity CLI の共通参照を実機確認し、管理外3項目（Claude `synced` を含む）の inode / mode / mtime / link metadata は適用前後で不変だった。コードレビュー範囲は `fbd516e..252bdfe`、先行削除の既存承認の記録漏れを `866d872` で補い、限定再確認で未解決指摘なし。残る Pi / Herdr / Zed 連携の機能確認や旧 shell 状態の整理と混同せず、本計画全体はまだ archive しない。以下の各適用・調査記録は当時の履歴。
 
 **Safehouse 起動修正・通常 rm への切替を適用済み**: ユーザー承認で Nix 標準 `bashInteractive` を追加し、rm の gomi 転送だけを廃止する。gomi 本体・設定・ごみ箱データは保持。macOS Bash 3.2 では共通 wrapper 引数で `Bad file descriptor` が再現し、Nix Bash 5.3（interactive build）ではポリシー保存を指定した Pi の `--help` が終了コード0で成功した。HM の `.local/bin/rm`・`rm.fish`・`conf.d/gomi.fish` 配置、rm 優先 PATH イベント、起動時の rm wrapper 必須チェックを除去。廃止したチェック専用のテストも除去した。`/nix/store/bckrhhwdpim4svffg3016y96yvv1jjs5-darwin-system-26.11.4cff07d` の固定ビルドと生成物確認を通過し、標準 switch が終了コード0で完了。新規 login fish では Bash 5.3.15 と gomi が Nix profile、rm が `/bin/rm`（関数ではなく file）を参照。通常 wrapper 経由で Pi 1.0.0 / Claude Code 2.1.287 の `--version` と `--help` がすべて終了コード0で、Bad file descriptor と gomi の一時ファイル削除エラーは出なかった。実際の対話セッション・認証付き通信はこの確認に含めない。旧配布スクリプトは引き続き併用しない。
@@ -123,7 +125,7 @@
 
 ### T5a. agent-skills-nix への外部スキル管理移行 — 初回 Flake input 方式の適用記録
 
-以下は初回方式の完了記録。後続の Source registry 移行は [専用計画](2026-10-05-skills-source-registry.md)で実施し、現在の取得・更新方針はそちらを優先する。
+以下は初回方式の完了記録。後続の Source registry 移行は [専用計画](archived/2026-10-05-skills-source-registry.md)で完了し、現在の取得・更新方針はそちらを優先する。
 
 ユーザーは調査報告の採用案1〜5と本計画の実装・削除を承認済み。今回の review base は `fbd516e`。同じ会話の先行移行差分は引き継ぎ、別変更の Claude / Pi / Zed 設定は commit 対象に含めない。T5 の手書き取得・配布の完了記録は現行方式の履歴とし、この変更の完了とは区別する。方針は Implementation Decisions 3a、検証は Final Validation の追加項目を正本にする。
 
@@ -265,7 +267,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ### 3a. 外部スキルの標準管理（追加承認済み）
 
-- 初回の「外部取得元も root Flake input にする」方式は、後続の承認で Source registry へ切り替える。詳細と検証は [専用計画](2026-10-05-skills-source-registry.md)。管理ライブラリは root `flake.lock`、外部スキルは registry の専用 lock と標準更新 app に分離し、通常 build / switch では更新しない。子 Flake と独自 updater は追加しない。
+- 初回の「外部取得元も root Flake input にする」方式は、後続の承認で Source registry へ切り替え済み。詳細と検証は [専用計画](archived/2026-10-05-skills-source-registry.md)。管理ライブラリは root `flake.lock`、外部スキルは registry の専用 lock と標準更新 app に分離し、通常 build / switch では更新しない。子 Flake と独自 updater は追加しない。
 - 外部スキルは同ライブラリの標準 Home Manager モジュールの `structure = "link"` で配布する。`force = true` を改造して無効化せず、管理対象リンクの置換を受け入れる。対象外の兄弟スキルや Claude の `synced` を全面同期で削除する方式は選ばない。単独 `skills-install` の `link`、`symlink-tree` / `copy-tree` は別の動作であり、今回の実装では使わない。
 - 自作スキルは既存の標準 HM `mkOutOfStoreSymlink` による個別 live link を維持する。同ライブラリはローカル source も store に取り込むため、本文編集の即時反映を守るには責務を分ける。自作共通・Claude 固有の同名優先とドット始まりディレクトリの非配布を維持し、同名の外部スキルは選択・target 制限で二重配置を避ける。自動的な同名優先機能があるとは仮定しない。
 - 配布先は現在の共通 `~/.agents/skills`、Claude `~/.claude/skills`、Antigravity CLI `~/.gemini/antigravity-cli/skills` を維持する。Antigravity CLI は共通集合への現行参照を維持でき、専用ディレクトリの追加複製は必須にしない。IDE／2.0 の標準は `~/.gemini/config/skills`、ライブラリ既定の `~/.gemini/antigravity/skills` は IDE の旧互換パスであり、CLI 用と混同しない。新しいエージェントへの配布拡大はしない。
