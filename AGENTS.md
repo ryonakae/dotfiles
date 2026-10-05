@@ -5,7 +5,7 @@ macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・
 ## 編集
 
 - ホーム側を経由せず、`config/` 内の正本を編集する。
-- マシン固有値・秘密は Git 管理外の実ファイルへ置き、管理するのは値を含まない `*.example`。マシン非依存の定数は wrapper に置く。
+- 非秘密の Nix ホスト定義は Git 管理する。それ以外のマシン固有値・秘密は Git 管理外の実ファイルへ置き、管理するのは値を含まない `*.example`。マシン非依存の定数は wrapper に置く。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。
 - Hermes の認証・memory・session・自己更新する hooks / cron / skills、Herdr の plugins 実体・session・log は管理対象に加えない。
 - README とこのファイルに、コードで分かる設定値・ファイル一覧・処理説明を転記しない。進捗は計画に記録し、日常手順へ混ぜない。

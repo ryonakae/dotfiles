@@ -37,21 +37,16 @@ nix --version
 
 ## Nix の事前ビルド
 
-Nix と Python 3 が必要（初回は Command Line Tools 付属の Python でも可）。まず Git 管理外の host 入力を準備する。
+Nix と Python 3 が必要（初回は Command Line Tools 付属の Python でも可）。ホスト定義は `config/nix/hosts/` の Nix module を正本とし、`flake.nix` の `darwinConfigurations` から読み込む。既定の `mac` は `config/nix/hosts/mac.nix` を使う。適用前に `system.primaryUser` と `users.users.<name>.home` が実機に合うことを確認する。
+
+別ホストを追加するときは、そのホスト用 module を作り、`darwinConfigurations` に対応する構成を定義する。構成名は英字または `_` で始め、以降は英数字・`_`・`-` を使う。ユーザー名・ホームなどの非秘密の定義は Git 管理し、秘密や認証情報は書かない。ローカルの `host.json` は不要で、以前の実ファイルが残っていても読み込まない。
 
 ```fish
 cd ~/dotfiles
-mkdir -p ~/.config/dotfiles/host
-cp -n config/nix/hosts/host.json.example ~/.config/dotfiles/host/host.json
-```
-
-`host.json` の `username` と `homeDirectory` を実機に合わせて編集する。この2項目は Nix store に入る公開情報として扱い、秘密や認証情報は書かない。
-
-```fish
 bash scripts/dotfiles.sh build
 ```
 
-別の host 入力を使う場合は `build --host DIRECTORY` と指定する。ビルドは構成を適用せず、出力された store path に対する activation も実行しない。
+別の定義済みホストを使う場合は `build --configuration NAME` と指定する。構成が見つからなければエラーになり、既定の `mac` へ切り替わることはない。ビルドは構成を適用せず、出力された store path に対する activation も実行しない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
 追跡済みの通常設定・自作スキル・静的スクリプトは `~/dotfiles/config/` への live link で配布する。本文の編集やアプリからリンク先への書き込みは Git 差分になり、Nix 再適用は不要。Nix はリンクの配置を管理し、本文の復元は Git で行う。本体・外部 plugin・外部スキルは固定 store 管理。Nix executable パスや shebang の置換が必要な wrapper / fish 関数、macOS 宣言、生成 fish config は store 生成に残す。
@@ -101,7 +96,7 @@ cd ~/dotfiles
 bash scripts/dotfiles.sh switch
 ```
 
-`--host DIRECTORY` も指定できる。候補 system と前の system profile を確認し、`switch` と入力して進める。入口は build と同じ snapshot を使い、対象ユーザーと HOME、Hermes の停止状態を確認してから、候補の `darwin-rebuild` の標準 `switch` 部分を sudo で実行する。非対話・root・Safehouse 内からは実行できない。
+build で `--configuration NAME` を使った場合は、switch にも同じ構成名を指定する。候補 system と前の system profile を確認し、`switch` と入力して進める。入口は build と同じ snapshot を使い、対象ユーザーと HOME、Hermes の停止状態を確認してから、候補の `darwin-rebuild` の標準 `switch` 部分を sudo で実行する。非対話・root・Safehouse 内からは実行できない。
 
 全アプリ停止・未宣言ツールの全件棚卸し・全設定の一括バックアップを常時の適用条件にしない。実際に衝突や書き込み競合がある場合は、その対象の種別・リンク先・必要な内容を確認し、個別に保全と操作範囲を承認する。退避時に競合する書き込み元だけを停止し、認証・session・DB・管理外の兄弟や共有正本を一括移動しない。既存バックアップへ上書きしない。
 

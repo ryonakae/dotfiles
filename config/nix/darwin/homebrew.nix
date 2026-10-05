@@ -1,8 +1,8 @@
-{ machine, ... }:
+{ config, ... }:
 {
   nix-homebrew = {
     enable = true;
-    user = machine.username;
+    user = config.system.primaryUser;
     autoMigrate = true;
   };
 
