@@ -28,7 +28,7 @@ args=(
   --env
   --add-dirs="$HOME"
   --allow-profile-writes
-  --enable=ssh,docker,all-agents,wide-read,keychain,process-control,launch-services
+  --enable=ssh,docker,all-agents,wide-read,keychain,process-control
 )
 
 # HOME の許可より後に拒否を適用し、欠落時は起動を止める。

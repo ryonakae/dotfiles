@@ -7,15 +7,6 @@
 }:
 {
   home.sessionPath = [ "${config.home.homeDirectory}/.local/bin" ];
-  home.file.".local/bin/rm" = {
-    executable = true;
-    text =
-      builtins.replaceStrings
-        [ "#!/usr/bin/env -S uv run --no-project --script" ]
-        [ "#!${pkgs.python311}/bin/python3" ]
-        (builtins.readFile ../../.local/bin/rm);
-  };
-
   xdg.configFile = {
     "gomi/config.yaml".source = dotfilesLink ".config/gomi/config.yaml";
     "agent-safehouse/compatibility.sb".source = dotfilesLink ".config/agent-safehouse/compatibility.sb";

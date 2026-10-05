@@ -7,11 +7,13 @@
     agent-safehouse
     antigravity-cli
     awscli2
+    bashInteractive
     claude-code
     codex
     cocoapods
     ctx7
     dotenvx
+    exiftool
     fastlane
     fd
     ffmpeg
@@ -20,6 +22,7 @@
     git
     git-lfs
     gomi
+    gws
     herdr
     hermes
     imagemagick
@@ -29,6 +32,8 @@
     mkcert
     opencode
     pi-coding-agent
+    qrencode
+    rtk
     terminal-notifier
     tmux
     tree

@@ -15,7 +15,7 @@ function __safehouse_args --description "Build default Agent Safehouse arguments
         --env \
         --add-dirs="$HOME" \
         --allow-profile-writes \
-        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents,wide-read,keychain,xcode,process-control,launch-services
+        --enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents,wide-read,keychain,xcode,process-control
 
     # HOME の許可より後に拒否を適用し、保護ファイルの欠落を黙って許可にしない。
     for profile in compatibility local-overrides
