@@ -96,22 +96,22 @@ placeholder.unlink()
       check('deny secret mutation ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")', 1)
     check('deny secret deletion', f'from pathlib import Path; Path({str(project / ".secrets/token.txt")!r}).unlink()', 1)
     for relative in ['.env', '.aws/credentials', '.gnupg/private.txt', '.ssh/id_ed25519',
-                     '.config/fish/config.fish', 'Library/Messages/chat.db',
+                     'Library/Messages/chat.db',
                      'Library/Application Support/Google/Chrome/Cookies', 'secret-alias',
-                     'dotfiles/config/.config/fish/config.fish',
                      *[root + '/files/private.txt' for root in trash_roots]]:
       check('deny read ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).read_text()', 1)
     for relative in ['.env', '.aws/credentials', '.gnupg/private.txt', '.ssh/id_ed25519',
-                     '.config/fish/config.fish',
                      *[root + '/files/private.txt' for root in trash_roots]]:
       check('deny write ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")', 1)
     for relative in ['Downloads/normal.txt', '.ssh/config', '.ssh/known_hosts',
                      '.ssh/agent/socket-fixture', '.config/agent-browser/profile/normal.txt',
                      '.hermes/.env', 'vendor/fixture/.env',
+                     '.config/fish/config.fish', 'dotfiles/config/.config/fish/config.fish',
                      *[root + '/info/item.trashinfo' for root in trash_roots]]:
       check('allow read ' + relative, f'from pathlib import Path; assert Path({str(home / relative)!r}).read_text() == "dummy data"')
     for relative in ['Downloads/normal.txt', '.ssh/known_hosts', '.hermes/.env', 'vendor/fixture/.env',
-                     '.config/agent-safehouse/run-with-agent-env.sh']:
+                     '.config/agent-safehouse/run-with-agent-env.sh',
+                     '.config/fish/config.fish', 'dotfiles/config/.config/fish/config.fish']:
       check('allow write ' + relative, f'from pathlib import Path; Path({str(home / relative)!r}).write_text("changed")')
     for root in trash_roots:
       put_source = home / 'Downloads/put-source'

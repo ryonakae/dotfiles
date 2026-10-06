@@ -55,8 +55,6 @@ class AgentRuntimeTests(unittest.TestCase):
   def test_all_wrappers_inject_before_sandbox_and_preserve_service_arguments(self):
     runtime = self.install_runtime()
     self.program('safehouse', (self.bin / 'probe').read_text())
-    self.program('mise', '#!/bin/sh\nwhile [ "$1" != -- ]; do shift; done\nshift\n'
-                 'PATH="/mise-shims:$PATH"; export PATH\nexec "$@"\n')
     fish_dir = ROOT / 'config/.config/fish/functions'
     fish = [shutil.which('fish'), '--no-config', '-c']
     wrappers = {
@@ -67,10 +65,10 @@ class AgentRuntimeTests(unittest.TestCase):
                         'source "$argv[1]/hermes.fish"; hermes computer-use doctor', str(fish_dir)],
                  ['hermes', 'computer-use', 'doctor']),
       'gateway': (['/bin/bash', str(RUNTIME / 'safe-hermes-gateway.sh')],
-                  [str(self.home / '.hermes/hermes-agent/venv/bin/hermes'), '--profile', 'default', 'gateway', 'run']),
+                  ['hermes', '--profile', 'default', 'gateway', 'run']),
       'dashboard': (['/bin/bash', str(RUNTIME / 'safe-hermes-dashboard.sh')],
-                    [str(self.home / '.hermes/hermes-agent/venv/bin/hermes'), 'dashboard', '--host',
-                     '127.0.0.1', '--port', '3210', '--no-open', '--insecure']),
+                    ['hermes', '--profile', 'default', 'dashboard', '--host',
+                     '127.0.0.1', '--port', '3210', '--no-open']),
     }
     self.env.update(HERMES_DASHBOARD_HOST='127.0.0.1', HERMES_DASHBOARD_PORT='3210')
     for name, (command, tail) in wrappers.items():

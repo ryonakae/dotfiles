@@ -1,6 +1,7 @@
 """Run outside Safehouse; creates and removes only a new dummy Keychain item/job."""
 import os
 from pathlib import Path
+import pwd
 import re
 import subprocess
 import sys
@@ -12,13 +13,15 @@ import uuid
 def main():
   if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
     raise SystemExit('Run outside Safehouse to check the native Keychain and launchd.')
+  user = pwd.getpwuid(os.getuid()).pw_name
+  dotenvx = str((Path('/etc/profiles/per-user') / user / 'bin/dotenvx').resolve(strict=True))
   with tempfile.TemporaryDirectory(prefix='dotfiles-keychain-') as temporary:
     base = Path(temporary)
     env_file = base / '.env'
     env_file.write_text('AGENT_TEST_TOKEN=dotfiles-dummy-token\n')
     env_file.chmod(0o600)
     # macOS Keychainのlogin contextは実HOMEを必要とする。envファイルは一時領域に閉じる。
-    env = {'HOME': os.environ['HOME'], 'PATH': '/opt/homebrew/bin:/usr/bin:/bin',
+    env = {'HOME': os.environ['HOME'], 'PATH': '/usr/bin:/bin',
            'USER': os.environ.get('USER', ''), 'TMPDIR': os.environ.get('TMPDIR', '/tmp')}
     public_key = None
     job = None
@@ -32,13 +35,13 @@ def main():
       return result
 
     try:
-      run(['dotenvx', 'encrypt', '--quiet', '--no-armor', '-f', str(env_file)])
+      run([dotenvx, 'encrypt', '--quiet', '--no-armor', '-f', str(env_file)])
       match = re.search(r'^DOTENV_PUBLIC_KEY=[\"\']?([0-9a-f]+)', env_file.read_text(), re.M)
       assert match, 'missing public key'
       public_key = match.group(1)
       assert not (base / '.env.keys').exists(), 'unexpected key file'
       code = 'import os; assert os.environ.get("AGENT_TEST_TOKEN") == "dotfiles-dummy-token"'
-      injected = ['dotenvx', 'run', '--quiet', '--strict', '--no-armor', '-f', str(env_file), '-fk', '/dev/null', '--']
+      injected = [dotenvx, 'run', '--quiet', '--strict', '--no-armor', '-f', str(env_file), '-fk', '/dev/null', '--']
       run(injected + [sys.executable, '-c', code])
       print('PASS native Keychain without key file', flush=True)
       result_file = base / 'result'

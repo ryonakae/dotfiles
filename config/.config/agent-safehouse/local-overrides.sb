@@ -89,13 +89,6 @@
     (home-literal "/.android/debug.keystore")
 )
 
-;; config.fish にマシンローカルの機密情報が含まれているため、
-;; shell-init が有効化された場合でも読み書きを拒否する。
-(deny file-read* file-write*
-    (home-literal "/.config/fish/config.fish")
-    (home-literal "/dotfiles/config/.config/fish/config.fish")
-)
-
 ;; ホスト上の各種クレデンシャル。wide-read で / 全 read 開放しているため、
 ;; HOMEの後勝ち許可でも各credentialを再開放しない。
 (deny file-read* file-write*

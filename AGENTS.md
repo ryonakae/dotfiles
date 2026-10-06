@@ -19,7 +19,7 @@ macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・
 - Nix: `dotfiles-setup` のビルド手順を使う。Git ソースへ含める新規ファイルは対象を明示して追加し、Git 外の設定を store へ取り込まない。
 - 文書・スキル: 参照パス・リンク、手順と現行コードの整合、`git diff --check`。
 
-`remove-broken-symlinks.sh` は削除を伴うため、読み取り専用の検証には使わない。Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動しない。
+Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動しない。
 
 ## スキル
 
