@@ -30,6 +30,7 @@
     keifu
     mas
     mkcert
+    mole-cleaner
     opencode
     pi-coding-agent
     qrencode
