@@ -88,7 +88,6 @@
       Barbee = 1548711022;
       Bear = 1091189122;
       CotEditor = 1024640650;
-      "Disk Diag" = 672206759;
       "Ethernet Menubar" = 1549412235;
       GarageBand = 682658836;
       iMovie = 408981434;
@@ -102,7 +101,6 @@
       Numbers = 409203825;
       "Okta Extension App" = 1439967473;
       Pages = 409201541;
-      Perplexity = 6714467650;
       Transmit = 403388562;
       Transporter = 1450874784;
       "Unsplash Wallpapers" = 1284863847;
