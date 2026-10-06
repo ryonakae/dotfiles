@@ -74,15 +74,15 @@ function __hdr_list
     __hdr_require_outer_shell; or return
 
     if not command -q fd
-        echo "error: fd command not found. Install it with: brew install fd"
+        echo "error: fd command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
         return 127
     end
     if not command -q fzf
-        echo "error: fzf command not found. Install it with: brew install fzf"
+        echo "error: fzf command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
         return 127
     end
     if not command -q jq
-        echo "error: jq command not found. Install it with: brew install jq"
+        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
         return 127
     end
 
@@ -204,7 +204,7 @@ function __hdr_open --argument-names path session
         return 1
     end
     if not command -q jq
-        echo "error: jq command not found. Install it with: brew install jq"
+        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
         return 127
     end
 
@@ -235,7 +235,7 @@ function __hdr_stop
     __hdr_require_outer_shell; or return
 
     if not command -q jq
-        echo "error: jq command not found. Install it with: brew install jq"
+        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
         return 127
     end
 
@@ -272,7 +272,7 @@ function __hdr_delete
     __hdr_require_outer_shell; or return
 
     if not command -q jq
-        echo "error: jq command not found. Install it with: brew install jq"
+        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
         return 127
     end
 

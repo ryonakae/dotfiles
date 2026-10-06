@@ -37,9 +37,6 @@ class HermesTmpdirTests(unittest.TestCase):
         'sys.exit(23)\n'
       )
       safehouse.chmod(0o755)
-      mise = bin_dir / 'mise'
-      mise.write_text('#!/bin/sh\nwhile [ "$1" != -- ]; do shift; done\nshift\nexec "$@"\n')
-      mise.chmod(0o755)
       runtime = base / '.config/agent-safehouse'
       runtime.mkdir(parents=True)
       shutil.copy2(ROOT / 'config/.config/agent-safehouse/run-with-agent-env.sh', runtime)
@@ -48,11 +45,6 @@ class HermesTmpdirTests(unittest.TestCase):
       dotenvx = bin_dir / 'dotenvx'
       dotenvx.write_text('#!/bin/sh\nwhile [ "$1" != -- ]; do shift; done\nshift\nexec "$@"\n')
       dotenvx.chmod(0o755)
-      rm_dir = base / '.local/bin'
-      rm_dir.mkdir(parents=True)
-      rm_wrapper = rm_dir / 'rm'
-      rm_wrapper.write_text('#!/bin/sh\nexit 0\n')
-      rm_wrapper.chmod(0o755)
       fish_dir = ROOT / 'config/.config/fish/functions'
       commands = {
         'cli': [shutil.which('fish'), '--no-config', '-c',
