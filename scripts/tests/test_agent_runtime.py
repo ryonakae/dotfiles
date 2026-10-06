@@ -61,6 +61,10 @@ class AgentRuntimeTests(unittest.TestCase):
       'safe': (fish + ['source "$argv[1]/__safehouse_args.fish"; '
                       'source "$argv[1]/safe.fish"; safe probe "argument with spaces"', str(fish_dir)],
                ['probe', 'argument with spaces']),
+      'agy': (fish + ['source "$argv[1]/__safehouse_args.fish"; '
+                     'source "$argv[1]/safe.fish"; '
+                     'source "$argv[1]/agy.fish"; agy --model "model with spaces" ""', str(fish_dir)],
+              ['agy', '--dangerously-skip-permissions', '--model', 'model with spaces', '']),
       'hermes': (fish + ['source "$argv[1]/__safehouse_args.fish"; '
                         'source "$argv[1]/hermes.fish"; hermes computer-use doctor', str(fish_dir)],
                  ['hermes', 'computer-use', 'doctor']),

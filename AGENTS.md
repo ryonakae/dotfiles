@@ -30,7 +30,6 @@ Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動�
 
 ## 起動・保護設定の変更
 
-- 対話 CLI の wrapper から承認モード・内蔵 sandbox を変える引数を自動追加しない。利用者の指定と各 CLI の設定に任せる。
 - `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature 指定を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
 - 保護ポリシーは互換性優先。秘密の保存場所を確認せず既存の deny を削除しない。`~/.hermes` は汎用 deny の例外となる信頼領域なので、保護対象の置き場にしない。
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。

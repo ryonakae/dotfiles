@@ -262,7 +262,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - 追跡済み設定・自作スキル・静的スクリプトは元の形式で管理し、Home Manager の `config.lib.file.mkOutOfStoreSymlink` で `~/dotfiles/config/` への live link を配置する。実パスは `homeDirectory` から作り、checkout の固定位置は既存 README に合わせる。通常の内容編集・アプリからのリンク先への書き込みは Git 差分となり、Nix 再適用は不要。Nix はリンクの配置を管理し、本文は Git で復元する。Nix 世代の rollback で本文が戻るとは扱わない。Nix 本体・外部 plugin・外部スキルは固定 store 管理、Nix パス / shebang の置換が必要な wrapper・fish 関数、macOS 宣言・生成 fish config は store 生成に残す。
 - Node / Python / Ruby / Bun の共通環境は Nix に移す。mise は既存プロジェクトが必要とする用途に限る。別プロジェクトの設定を無断で変更しない。
 - dotenvx + Keychain + Safehouse を維持する。機密ファイルの直接アクセスを拒否し、共通ツール用の値は sandbox 外で復号して起動時に注入する。注入済み環境変数の利用は許容し、完全隔離を追加要件にしない。プロジェクト用秘密を共通ファイルへ混ぜない。
-- ユーザーの追加承認により通常 rm の gomi 転送は廃止し、標準 rm を使う。gomi は明示的なごみ箱操作のため本体・設定・既存データを保持し、旧転送コードも撤去する。Hermes の正規停止と DB 保全を維持する。互換性優先の Safehouse 設計と既存の意図的な例外を狭めず、対話 CLI に承認モード・内蔵 sandbox の強制引数を追加しない。
+- ユーザーの追加承認により通常 rm の gomi 転送は廃止し、標準 rm を使う。gomi は明示的なごみ箱操作のため本体・設定・既存データを保持し、旧転送コードも撤去する。Hermes の正規停止と DB 保全を維持する。互換性優先の Safehouse 設計と既存の意図的な例外を狭めない。対話 CLI の承認モード・内蔵 sandbox 引数の自動追加を禁じる規約は後続のユーザー承認で撤廃し、Antigravity CLI は Safehouse 下の YOLO 起動に変更する。
 - 準備・ビルド・復旧準備の後、現在の Mac をなるべくまとめて完全切替する。長期二重管理を完成形としない。停止・再起動・ログアウト・OS 再起動は必要性を示して実行直前に確認する。
 - 秘密、認証、memory、session、DB、cache、アプリ生成データは設定世代の復元対象と分離する。実秘密の移行・Keychain 登録・バックアップは人間が sandbox 外で行う。設定の復元とデータの巻き戻しを混同しない。
 - Intel / Linux / WSL、macOS 自体の再インストール、Mac 全体の完全復元、無関係な開発プロジェクトの Nix 化は対象外。

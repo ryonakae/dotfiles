@@ -12,6 +12,7 @@ let
   bindExecutables =
     lib.replaceStrings
       [
+        "safe agy "
         "safe claude "
         "safe codex "
         "safe opencode "
@@ -21,6 +22,7 @@ let
         "command hermes "
       ]
       [
+        "safe ${pkgs.antigravity-cli}/bin/agy "
         "safe ${lib.getExe pkgs.claude-code} "
         "safe ${lib.getExe pkgs.codex} "
         "safe ${lib.getExe pkgs.opencode} "
