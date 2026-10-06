@@ -61,11 +61,27 @@ bash scripts/dotfiles.sh update agent-skills
 bash scripts/dotfiles.sh update all
 ```
 
-nixpkgs の AI ツールは `update nixpkgs`、Hermes は `update hermes-agent`、スキル管理ライブラリは `update agent-skills` で更新する。`update all` は全公開 input を更新するが、Source registry の外部スキルは含まない。外部スキルは[専用の標準コマンド](#追加更新復元)で更新する。`update ai` や独自 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。
+nixpkgs 由来の CLI・ランタイム・AI ツールは `update nixpkgs`、Hermes は `update hermes-agent`、スキル管理ライブラリは `update agent-skills` で更新する。`update all` は全公開 input を更新するが、Source registry の外部スキルは含まない。外部スキルは[専用の標準コマンド](#追加更新復元)で更新する。`update ai` や独自 updater は使わない。標準管理が難しい対象だけ、補完方法を相談して決める。
 
 更新は update → lock 差分確認 → build → 承認した範囲で switch の順に行う。update は適用・起動を行わず、通常の build / switch は lock を更新しない。復元時は更新を混ぜず、既存の lock でビルドする。Nix 管理の Yazi プラグインを `ya pkg` で重ねて更新しない。
 
 fish の `config.fish` は Home Manager で生成し、Git 外の実ファイルや旧 example をコピーしない。既存設定と衝突する場合は、人間が秘密と必要な非秘密差分を確認し、該当する Fisher 配置・リンクも保全して二重読み込みを避ける。日常のプラグイン更新に Fisher は使わない。`fish_variables` と履歴は Nix で管理しない。
+
+### ツールのバージョン差を確認する
+
+`flake.nix` が取得元とブランチを選び、`flake.lock` が特定のコミットを固定する。`home.packages` にツール名を追加すると、そのコミットのパッケージ定義が指定する版を使う。`unstable` を指定していても、build のたびに最新版へ更新されるわけではない。
+
+上流より版が古い場合は、まず通常の更新を検討する。
+
+```fish
+bash scripts/dotfiles.sh update nixpkgs
+```
+
+これは対象ツール単体ではなく、共通の nixpkgs の固定コミットを更新する操作。他のツールや依存関係も変わり得るため、その範囲を確認して実行する。更新だけでは使用中の環境は切り替わらない。
+
+更新後は `git diff -- flake.lock` で変更された input を確認し、更新先コミットの対象パッケージ定義で取得元とバージョンを確認する。同名の別ソフトに注意し、検索結果や上流の最新リリースだけで収録版を判断しない。ローカルで評価できない場合は、更新先コミットの公開定義を確認できるが、ビルド・動作検証の代わりにはならない。
+
+更新しても希望版に届かなければ、利用ブランチの nixpkgs 側が未対応であることを伝え、収録を待つか、個別対応するかを相談する。希望版が収録されていれば、lock 差分確認後に build、承認した範囲で switch へ進む。固定版からの復元では、この更新を行わない。
 
 ### Homebrew 本体とアプリの管理
 
@@ -132,7 +148,7 @@ dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
 
 Keychain への保存を確認し、鍵ファイルが残る場合や保存エラーは解消してからエージェントを起動する。
 起動処理は鍵ファイルへ自動で切り替えないため、Keychain から復号できないと停止する。
-以前 `config.fish` にキーを export していた場合は、その設定と現在のシェルに残る値を除く。既存の環境変数が dotenvx より優先されるため。
+API キーを `config.fish` に保存しない。以前キーを export していた場合は、その設定と現在のシェルに残る値を除く。既存の環境変数が dotenvx より優先されるため。Safehouse の `config.fish` 専用 deny は設けず、秘密は dotenvx の暗号化ファイルと Keychain で管理する。
 
 暗号化した `.env` と login Keychain の両方を、暗号化されたバックアップに含める。
 OS 移行時は Keychain も復元する。暗号化ファイルだけでは復号できない。

@@ -3,7 +3,7 @@ name: dotfiles-setup
 description: >-
   ryonakae/dotfiles の macOS 環境を導入・更新・復元するための運用スキル。
   この dotfiles の Nix / Home Manager 設定変更、パッケージ追加、外部スキルの
-  Source registry 管理、build / switch、別 Mac への復元、適用失敗の調査で使う。
+  Source registry 管理、build / switch、ツールのバージョン差・更新相談、別 Mac への復元、適用失敗の調査で使う。
   一般的な Nix の質問や、別プロジェクトの環境構築には使わない。
 ---
 
@@ -35,6 +35,14 @@ description: >-
 `update all` は root Flake input 全体が対象で、外部スキルの専用 lock は更新しない。registry の宣言変更後の lock 再生成は既存取得元も更新するため、その範囲が依頼に含まれるか確認する。手書きの新しい updater やスキル取得用 root input は追加しない。
 
 外部スキルは必要な集合だけを選ぶ。自作優先・Claude 専用同名優先・隠しディレクトリ除外・Antigravity CLI の共通参照を維持する。自作本文を store に固定しない。
+
+## ツールの版が古い・最新版を導入したい場合
+
+固定中の版だけを見て「lock されているから」と説明して終えない。nixpkgs 由来のツールなら、まず `bash scripts/dotfiles.sh update nixpkgs` による標準更新を案内する。上流のリリース、利用ブランチの nixpkgs 収録版、手元の lock の収録版を区別し、未確認の版を最新版と断定しない。
+
+- 更新は対象ツールだけでなく、同じ nixpkgs を使う他のツール・依存関係にも影響することを伝える。相談だけなら実行せず、更新の依頼・承認があれば実行する。固定版の復元には更新を混ぜない。
+- 更新後は lock 差分と対象ツールの収録版を確認する。更新成功を最新版の収録や実機への適用成功と同一視しない。確認方法は[同梱手順](references/setup.md#ツールのバージョン差を確認する)を参照する。
+- 標準更新でも希望版に届かないと確認できてから、収録待ち・個別 override・Homebrew などの代案を相談する。最初から独自パッケージ定義や管理方式の変更を勧めない。
 
 ## ビルドと適用
 
