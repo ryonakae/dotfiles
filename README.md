@@ -1,7 +1,7 @@
 # dotfiles
 
 macOS の開発環境と AI エージェントの設定を、新しい Mac に引き継ぐための個人用 dotfiles。
-Nix / nix-darwin / Home Manager でツールの導入と設定のリンク配置を管理する。
+Nix で macOS と基盤、Homebrew で普段使うアプリ、mise で共通ランタイムと設定の直接リンクを管理する。
 
 ## Install
 
@@ -18,17 +18,18 @@ bash scripts/bootstrap-nix.sh --install
 
 ## 日常の変更
 
-通常設定と自作スキルの本文は `config/` の正本を編集する。既存の live link を通じて反映されるため、本文変更だけなら Nix 再適用は不要。
-パッケージや配置対象を変更した場合は、まずビルドする。
+通常設定と自作スキルの本文は `config/` の正本を編集する。HOME からの直接リンクに即時反映されるため、本文変更だけなら再適用は不要。追跡ファイルや配置対象の増減は、ルートの `mise.toml` に従って反映する。
 
 ```fish
-cd ~/dotfiles
-bash scripts/dotfiles.sh build
+mise -C ~/dotfiles dot apply
 ```
 
+- **CLI / GUI:** Homebrew で更新する。導入一覧は Nix 宣言に保ち、追加・削除は一覧と対象の install / uninstall を整合させる。
+- **共通ランタイム:** mise の Git 正本で版を指定し、install / upgrade を使い分ける。個別プロジェクトの版指定は維持する。
+- **Nix 基盤・外部スキル:** 宣言・lock を確認して `bash scripts/dotfiles.sh build`、適用承認後に通常の対話端末で `bash scripts/dotfiles.sh switch` を使う。
+
 既定では `mac` 構成を使う。別の定義済みホストは build／switch の両方で `--configuration NAME` を指定する。
-生成物と適用範囲を確認し、通常の対話端末で `bash scripts/dotfiles.sh switch` を実行する。
-依存更新・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
+自作スキルの削除前の unapply、依存更新・初回切替・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
 
 エージェントに作業を任せる場合は [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を使う。リポジトリ共通の編集・検証上の制約は [AGENTS.md](AGENTS.md) を参照する。
 

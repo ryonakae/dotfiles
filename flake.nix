@@ -20,15 +20,7 @@
       ...
     }:
     let
-      pkgs = import inputs.nixpkgs {
-        system = "aarch64-darwin";
-        config.allowUnfreePredicate =
-          pkg:
-          builtins.elem (inputs.nixpkgs.lib.getName pkg) [
-            "claude-code"
-            "antigravity-cli"
-          ];
-      };
+      pkgs = import inputs.nixpkgs { system = "aarch64-darwin"; };
       sourceLockProgram = inputs.agent-skills.lib.agent-skills.mkSourceLockProgram {
         inherit pkgs;
         manifestsDir = "config/nix/skill-sources";

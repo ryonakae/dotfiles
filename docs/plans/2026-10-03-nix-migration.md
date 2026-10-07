@@ -1,5 +1,7 @@
 # Nix を中心とした Mac 環境への移行 Implementation Plan
 
+今回の管理方針・切替手順は[新計画「Nix・Homebrew・mise の責務分離」](2026-10-07-hybrid-dotfiles-management.md)を参照する。以下は過去の実機操作・検討履歴として保持し、新方式の適用・検証済みとは扱わない。
+
 ## 現在地と再開手順
 
 最後に成功した実機 `switch` は終了コード0で完了。その後の Mole 追加時の `switch` は Homebrew 段階で失敗した（下記）。`/run/current-system` は `/nix/store/c4mnqzv56k8sr9bsxaasj7mlw8nbbbvr-darwin-system-26.11.4cff07d`（`readlink /run/current-system` で確認）。宣言した48 preferences の実機値との一致も確認済み。外部スキルは Source registry 方式、非秘密のホスト定義は `config/nix/hosts/mac.nix` に移行済みで、旧 `host.json` 入力は廃止した。CLI は既定の `mac` を使い、別構成は `--configuration NAME` で選ぶ。廃止した `--host` は再開時に使わない。

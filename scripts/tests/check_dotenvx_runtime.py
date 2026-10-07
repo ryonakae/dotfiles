@@ -1,7 +1,6 @@
 """Run outside Safehouse; creates and removes only a new dummy Keychain item/job."""
 import os
 from pathlib import Path
-import pwd
 import re
 import subprocess
 import sys
@@ -13,8 +12,7 @@ import uuid
 def main():
   if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
     raise SystemExit('Run outside Safehouse to check the native Keychain and launchd.')
-  user = pwd.getpwuid(os.getuid()).pw_name
-  dotenvx = str((Path('/etc/profiles/per-user') / user / 'bin/dotenvx').resolve(strict=True))
+  dotenvx = '/opt/homebrew/bin/dotenvx'
   with tempfile.TemporaryDirectory(prefix='dotfiles-keychain-') as temporary:
     base = Path(temporary)
     env_file = base / '.env'

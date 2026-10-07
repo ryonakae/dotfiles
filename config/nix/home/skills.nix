@@ -1,23 +1,27 @@
 {
   config,
-  dotfilesLink,
   inputs,
   lib,
   ...
 }:
 let
-  skillSources =
-    directory:
-    if builtins.pathExists (../../. + "/${directory}") then
-      lib.mapAttrs (name: _: dotfilesLink "${directory}/${name}") (
-        lib.filterAttrs (name: type: type == "directory" && !(lib.hasPrefix "." name)) (
-          builtins.readDir (../../. + "/${directory}")
-        )
-      )
-    else
-      { };
-  shared = skillSources ".agents/skills";
-  claude = shared // skillSources ".claude/skills";
+  dotfiles = (builtins.fromTOML (builtins.readFile ../../../mise.toml)).dotfiles;
+  localSkills =
+    agent:
+    let
+      prefix = "~/.${agent}/skills/";
+      pattern = "${prefix}[!.]*";
+      directory = ../../../. + "/${builtins.dirOf dotfiles.${pattern}.source}";
+      common = lib.filterAttrs (name: type: type == "directory" && !(lib.hasPrefix "." name)) (
+        builtins.readDir directory
+      );
+      overrides = lib.mapAttrs' (target: _: lib.nameValuePair (lib.removePrefix prefix target) true) (
+        lib.filterAttrs (target: _: lib.hasPrefix prefix target && target != pattern) dotfiles
+      );
+    in
+    common // overrides;
+  shared = localSkills "agents";
+  claude = localSkills "claude";
   external = [
     "agent-browser"
     "agent-device"
@@ -71,15 +75,4 @@ in
       };
     };
   };
-
-  home.file =
-    lib.mapAttrs' (name: source: lib.nameValuePair ".agents/skills/${name}" { inherit source; }) shared
-    // lib.mapAttrs' (
-      name: source: lib.nameValuePair ".claude/skills/${name}" { inherit source; }
-    ) claude
-    // {
-      # Share the live skill collection, not live sources from this repository.
-      ".gemini/antigravity-cli/skills".source =
-        config.lib.file.mkOutOfStoreSymlink "${config.home.homeDirectory}/.agents/skills";
-    };
 }
