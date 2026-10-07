@@ -2,9 +2,13 @@
 
 今回の管理方針・切替手順は[新計画「Nix・Homebrew・mise の責務分離」](2026-10-07-hybrid-dotfiles-management.md)を参照する。以下は過去の実機操作・検討履歴として保持し、新方式の適用・検証済みとは扱わない。
 
-## 現在地と再開手順
+## 現在地
 
-最後に成功した実機 `switch` は終了コード0で完了。その後の Mole 追加時の `switch` は Homebrew 段階で失敗した（下記）。`/run/current-system` は `/nix/store/c4mnqzv56k8sr9bsxaasj7mlw8nbbbvr-darwin-system-26.11.4cff07d`（`readlink /run/current-system` で確認）。宣言した48 preferences の実機値との一致も確認済み。外部スキルは Source registry 方式、非秘密のホスト定義は `config/nix/hosts/mac.nix` に移行済みで、旧 `host.json` 入力は廃止した。CLI は既定の `mac` を使い、別構成は `--configuration NAME` で選ぶ。廃止した `--host` は再開時に使わない。
+2026-10-07 の後続計画で Nix switch と mise の299リンク配置が成功した。以下の Mole 追加時の失敗を理由に switch を再実行しない。T5・T10 の拡張機能確認、旧 shell 状態・旧導入物の整理は完了を確認できていないため、本計画はアクティブのまま保持する。最新の実機状態は[後続計画](2026-10-07-hybrid-dotfiles-management.md#現在地)を参照する。
+
+## 後続計画への移行前の状態と手順（履歴）
+
+最後に成功した実機 `switch` は終了コード0で完了。その後の Mole 追加時の `switch` は Homebrew 段階で失敗した（下記）。`/run/current-system` は `/nix/store/c4mnqzv56k8sr9bsxaasj7mlw8nbbbvr-darwin-system-26.11.4cff07d`（`readlink /run/current-system` で確認）。宣言した48 preferences の実機値との一致も確認済み。外部スキルは Source registry 方式、非秘密のホスト定義は `nix/hosts/mac.nix` に移行済みで、旧 `host.json` 入力は廃止した。CLI は既定の `mac` を使い、別構成は `--configuration NAME` で選ぶ。廃止した `--host` は再開時に使わない。
 
 導入・更新・復旧の正本は [dotfiles-setup のセットアップ手順](../../.agents/skills/dotfiles-setup/references/setup.md)。旧 `docs/setup.md` は存在しない。以下の過去記録に出てくる旧パス・コマンドは当時の履歴であり、現行の操作案内ではない。
 
@@ -14,7 +18,7 @@ nixpkgs を `73e728d` から `aa48d34` へ更新し、標準 `mole-cleaner` 1.46
 
 ユーザー指示により Disk Diag と Perplexity を導入宣言から削除した。変更後の build は終了コード0、成果物は `/nix/store/qpmlxh33wkk5mpi0vnbybiw9l1z5lasm-darwin-system-26.11.4cff07d`。再適用は未実施で、Mole の実機導入完了は未確認。Disk Diag 本体は別途承認と人間の sudo 入力後にごみ箱へ移動済み。Perplexity 本体は `/Applications` と `~/Applications` に見つからず、設定・ユーザーデータは削除していない。
 
-再開時は失敗時の変更済み範囲を確認し、承認した範囲で標準 switch を行う。コミット・プッシュのためだけに再適用しない。
+この失敗後の switch は後続計画で成功した。コミット・プッシュのためだけに再適用しない。
 
 ### 今回の監査修正と再開手順
 
@@ -103,13 +107,13 @@ nixpkgs を `73e728d` から `aa48d34` へ更新し、標準 `mole-cleaner` 1.46
 - [x] 公式 upstream Nix 2.34.0 の checksum 固定済み bootstrap を実装し、人間が sandbox 外で初回導入。daemon 接続を確認。`f358e81`。
 - [x] `flake.nix` / `flake.lock`、nix-darwin + Home Manager、非秘密 host 入力を実装。`4f10ae9`。Darwin stateVersion は6、HM は `26.05`。
 - [x] `scripts/dotfiles.{sh,py}` の `build` と `update [all|input]` を実装。通常 build は公開依存の lock を検査し、host leaf 以外の変更を拒否して同じ snapshot を check / build する。現在の構成でビルド成功。
-- `switch` の入口は T9 で実装済み、初回と後続の実機適用は T10 と冒頭に記録済み。ホスト定義は現在 `config/nix/hosts/mac.nix`、CLI は既定 `mac` / `--configuration` を使う。旧 host snapshot の実装説明は履歴として扱う。
+- `switch` の入口は T9 で実装済み、初回と後続の実機適用は T10 と冒頭に記録済み。ホスト定義は現在 `nix/hosts/mac.nix`、CLI は既定 `mac` / `--configuration` を使う。旧 host snapshot の実装説明は履歴として扱う。
 
 ### T3. パッケージと更新単位 — 実装済み対象の宣言・ビルド完了、棚卸しは T1
 
 - [x] **旧 Brewfile 照合による追加（6件適用済み、Zoom は宣言維持・ローカルスキップで適用済み）**: 当初7件の候補 `/nix/store/3l44bm5q7hc9r1pi8allbdrqhl01bmr1-darwin-system-26.11.4cff07d` はビルド成功したが、組織管理の Zoom が更新を拒否。Zoom を外した `/nix/store/ap5qb5vmyz7c7hbh3zpkaf46ax0sxh25-darwin-system-26.11.4cff07d` は標準 switch が終了コード0で完了し、brew bundle 83件・HM 配置を通過。CLI 4件の Nix profile 参照も確認した。その後ユーザーが「dotfiles 的には Zoom は管理したい」と明確化したため、宣言には Zoom を戻した。T5a の標準 brew.env によるローカル skip を設定し、宣言を戻した構成の再適用も終了コード0で完了した。PC 別の Nix 構成は追加せず、組織管理の既存アプリ・管理設定は変更・削除しない。CLI の Google Workspace CLI（Nix 名 `gws`）・rtk・ExifTool・qrencode は標準 nixpkgs、Eagle / Zoom は cask、Unsplash Wallpapers（1284863847）は masApps。日本語入力は既存の `google-japanese-ime@dev` を維持し、stable 版を重複追加しない。実 Brewfile の残差は Fisher → HM plugin、CotEditor → App Store、Zellij → 承認済み対象外で説明できる。後続のユーザー承認で旧 `brew` ディレクトリは撤去済み。
 
-- [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `config/nix/home/packages.nix` と `config/nix/darwin/homebrew.nix`。
+- [x] 一般 CLI・共通ランタイムと Homebrew 補完を宣言。`890ef27`。現在の正本は `nix/home/packages.nix` と `nix/darwin/homebrew.nix`。
 - [x] gomi / dotenvx / Agent Safehouse、Claude Code / Codex / Pi / OpenCode / Herdr / Antigravity CLI を共通 nixpkgs の標準定義へ統一。`44688a4`、`23a7c38`。独自 package 定義・専用 updater は削除済み。
 - [x] 当初の55 cask・22 App Store アプリ・補完 formula 7件を宣言し、生成物を確認。その後 Unity CLI を追加し、現在は56 cask。ユーザー承認により暫定保持の `icu4c@76` / `libpq` / `oniguruma` / `pcre2` / `postgresql@17` を直接宣言から外し、formula は mosh / Zerdr の2件とした。依存はパッケージ管理に任せ、必要な直接導入は移行時に手動で行う。1Password CLI / gcloud は Homebrew cask 管理を維持する。Homebrew の自動更新・upgrade・cleanup は無効。実機の削除・DB 操作・サービス停止は行わない。当時は Homebrew bundle 未実行で、5件除外後の構文・単体評価のみ実施した。その後の全体ビルド・bundle・switch は完了済み（冒頭参照）。
 - [x] **Hermes パッケージの採用・固定ビルド** — 公式 Flake の `packages.aarch64-darwin.default` のみを `home.packages` へ追加し、input と root lock を接続した。サービスモジュール・独自 package 定義は追加せず、独自依存を未検証で共通 nixpkgs へ follows しない。既存4 input の内容保持、構文、固定 snapshot の評価・ビルド、生成 CLI の参照先を確認。Safehouse の公開ソース参照拒否後、ユーザー承認の Herdr 別ペインで検証した。review base は `f71f25d`。サービス接続・実起動は T6・T7 に残る。
@@ -164,7 +168,7 @@ nixpkgs を `73e728d` から `aa48d34` へ更新し、標準 `mole-cleaner` 1.46
 ユーザーは調査報告の採用案1〜5と本計画の実装・削除を承認済み。今回の review base は `fbd516e`。同じ会話の先行移行差分は引き継ぎ、別変更の Claude / Pi / Zed 設定は commit 対象に含めない。T5 の手書き取得・配布の完了記録は現行方式の履歴とし、この変更の完了とは区別する。方針は Implementation Decisions 3a、検証は Final Validation の追加項目を正本にする。
 
 - [x] **取得と固定**: `flake.nix` / `flake.lock` に agent-skills-nix と外部スキル取得元を追加する。スキルの取得元は非 Flake input とし、同じ repo は共有する。既存14スキルの取得元・commit・対象ディレクトリを引き継ぎ、管理方式の移行と内容の更新を混ぜない。ライブラリは調査済み `dc122af897ab9a685c20ae54c639021619dbbb52` を初期固定対象とし、無関係な既存 input を更新しない。
-- [x] **標準モジュールへの配置移行**: nix-darwin 統合 HM に agent-skills-nix のモジュールと必要な inputs を渡し、`config/nix/home/skills.nix` の外部スキル部分を標準の選択・`link` 配布へ置換する。自作の個別 live link は維持。初期配置の名前・内容・配布先を揃え、同名の二重配置を避ける。現在の手書き `config/nix/home/external-skills.nix` は置換確認後に撤去する。
+- [x] **標準モジュールへの配置移行**: nix-darwin 統合 HM に agent-skills-nix のモジュールと必要な inputs を渡し、`nix/home/skills.nix` の外部スキル部分を標準の選択・`link` 配布へ置換する。自作の個別 live link は維持。初期配置の名前・内容・配布先を揃え、同名の二重配置を避ける。現在の手書き `nix/home/external-skills.nix` は置換確認後に撤去する。
 - [x] **適用と運用手順**: 生成物を確認後、T10 の標準 switch で既存リンクからの切替を確認する。Zoom は宣言に残すという合意を維持し、この PC でのスキップ方法が未解決のまま同じ失敗を繰り返さない。Homebrew の問題をスキルの検証成功・失敗と混同せず、適用を阻まれた場合は build 済み・実機未適用と記録する。`docs/setup.md` に公開 input の update → build → switch を記載し、T11 の旧 lock・旧手順撤去へ進む。
 
 検証記録: agent-skills-nix の14外部スキル・13取得元を既存と同じ revision / hash で root lock に追加し、開始時の既存 lock node / edge は不変。共通・Claude の各14外部スキルは生成 home-files の全ファイルの内容 hash が従来世代と一致し、各12自作スキルと Antigravity CLI の参照先も一致した。通常の固定 build は終了コード0（`/tmp/dotfiles-skills-build.log`）、成果物は `/nix/store/kv7yxnfmn41hw53853cvz38hihhb0wgj-darwin-system-26.11.4cff07d`。手書き外部取得定義・旧 lock はこの生成物確認後に撤去した。独立レビューは `fbd516e..252bdfe`、既存承認の記録補足 `866d872` の限定再確認まで通過。blocking/high・decision required は残っていない。標準 switch は終了コード0で同一 system へ適用され、実機でも各14外部・12自作の参照先と Antigravity 共通参照が一致した。管理外の兄弟3項目（`synced` を含む）の metadata も維持。秘密・認証の内容確認や各スキルの機能実行までは行っていない。
@@ -240,7 +244,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ### T11. 運用文書・旧配布の終了 — 進行中
 
-- [x] **今回承認された監査修正**: 旧テスト / fixture・runtime PATH・`hdr` 案内を修正し、Hermes の旧 mise 宣言と broken-symlink 削除スクリプトを撤去。`config.fish` 2パスの限定 deny 解除と runtime 検証も完了した。検証結果と未実行範囲は冒頭を参照。setup の正本は `.agents/skills/dotfiles-setup/references/setup.md`、ホスト定義は `config/nix/hosts/mac.nix`。以下の旧9ファイル等の記録は以前の撤去範囲であり、今回の承認範囲とは分ける。
+- [x] **今回承認された監査修正**: 旧テスト / fixture・runtime PATH・`hdr` 案内を修正し、Hermes の旧 mise 宣言と broken-symlink 削除スクリプトを撤去。`config.fish` 2パスの限定 deny 解除と runtime 検証も完了した。検証結果と未実行範囲は冒頭を参照。setup の正本は `.agents/skills/dotfiles-setup/references/setup.md`、ホスト定義は `nix/hosts/mac.nix`。以下の旧9ファイル等の記録は以前の撤去範囲であり、今回の承認範囲とは分ける。
 
 - [x] **rm 転送の旧コード撤去（追加承認済み）**: `config/.local/bin/rm`、fish の `rm.fish` / `conf.d/gomi.fish`、`test_rm_trash.py` を削除した。Nix のファイル名除外も除去し、残す gomi の移動/復元検証を直接の `gomi` 呼び出しに変更。Safehouse 検証の旧 wrapper fixture、README・AGENTS・Safehouse スキルの旧規約も整理した。gomi 本体・設定・既存ごみ箱は未変更。Nix format・Python 構文・差分・残参照確認、固定 build が成功し、成果物は適用済み `/nix/store/bckrhhwdpim4svffg3016y96yvv1jjs5-darwin-system-26.11.4cff07d` と同一で再適用不要。回帰テスト・実ごみ箱操作は再実行していない。旧配布スクリプト全体の撤去や秘密・退避物の削除は別項目。
 
@@ -273,11 +277,11 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ### 1. 構成と管理境界
 
-- ルートに `flake.nix` / `flake.lock` を置き、設定の正本は `config/nix/` と既存 `config/` の明示したファイルにする。`config/nix/darwin/` は OS・Homebrew、`config/nix/home/` は標準パッケージの選択とユーザー設定の配置を担当する。専用の package 定義ディレクトリは設けない。汎用フレームワークや全パッケージの独自再実装は作らない。
+- ルートに `flake.nix` / `flake.lock` を置き、設定の正本は `nix/` と既存 `config/` の明示したファイルにする。`nix/darwin/` は OS・Homebrew、`nix/home/` は標準パッケージの選択とユーザー設定の配置を担当する。専用の package 定義ディレクトリは設けない。汎用フレームワークや全パッケージの独自再実装は作らない。
 - 基本入力は `nixpkgs-unstable`、nix-darwin `master`、Home Manager `master`。後二者の nixpkgs は共通入力へ follows する。上流 Flake の独自依存は、互換性を確認せず一律 follows しない。初回に解決した revision を lock し、適用時に更新しない。
-- 通常 build / switch は公開 input の lock を固定し、依存の更新は明示的 update に限定する。旧 host override / host leaf 検査の方式は廃止済み。現在は `config/nix/hosts/mac.nix` と選択した構成名を使い、現行入口の lock 検査と固定 source snapshot を build / switch で共用する。
+- 通常 build / switch は公開 input の lock を固定し、依存の更新は明示的 update に限定する。旧 host override / host leaf 検査の方式は廃止済み。現在は `nix/hosts/mac.nix` と選択した構成名を使い、現行入口の lock 検査と固定 source snapshot を build / switch で共用する。
 - `nixpkgs.hostPlatform = "aarch64-darwin"`、`home-manager.useGlobalPkgs` / `useUserPackages` を利用する。system / home の stateVersion は初回採用時の互換性基準として固定し、更新のたびに最新値へ変えない。unfree は必要なパッケージへ限定する。
-- ユーザー名・HOME 等の非秘密のマシン固有値は共通設定から分離し、`config/nix/hosts/mac.nix` で定義する。旧 Git 外 `host.json` とローカル path input / override は廃止済み。build / switch は既定 `mac` または `--configuration NAME` で同じ構成を選ぶ。秘密や私的データをホスト定義や store へ混ぜない。
+- ユーザー名・HOME 等の非秘密のマシン固有値は共通設定から分離し、`nix/hosts/mac.nix` で定義する。旧 Git 外 `host.json` とローカル path input / override は廃止済み。build / switch は既定 `mac` または `--configuration NAME` で同じ構成を選ぶ。秘密や私的データをホスト定義や store へ混ぜない。
 - Git 管理の flake ソースと、必要なファイルだけの参照を使う。`config/` 全体や HOME を path source として取り込まない。Git 外の実 `.env` 等を含み得る `path:.` の安易な利用を避ける。初回の新規 Nix ファイルが Git ソースに含まれることを確認し、秘密を含む一括 stage で解決しない。
 
 ### 2. パッケージと更新
@@ -439,7 +443,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 ```
 
-この一時 host ディレクトリや store 成果物は消えている可能性がある。旧 host 入力を再作成せず、現在のビルドは [セットアップ手順](../../.agents/skills/dotfiles-setup/references/setup.md#nix-の事前ビルド) と `config/nix/hosts/mac.nix` に従う。bootstrap をやり直さない。新規の参照ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` を使わない。
+この一時 host ディレクトリや store 成果物は消えている可能性がある。旧 host 入力を再作成せず、現在のビルドは [セットアップ手順](../../.agents/skills/dotfiles-setup/references/setup.md#nix-の事前ビルド) と `nix/hosts/mac.nix` に従う。bootstrap をやり直さない。新規の参照ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` を使わない。
 
 ### 旧方式の部分構成レビュー
 
@@ -596,7 +600,7 @@ T9 は未完了。universal 値の変更と旧ファイルの退避は行って�
 
 ### Final Validation（残る最終確認）
 
-初回適用と以前の後続 switch は完了済み。最新の Mole 追加時の switch は失敗し、修正後の再適用は未実施（冒頭参照）。以下は移行の受入状況であり、今回の監査修正後の検証を過去の成功結果で代用しない。通常の操作は `bash scripts/dotfiles.sh build` / `bash scripts/dotfiles.sh switch`（既定 `mac`）、別構成は `--configuration NAME` を使う。旧 `--host` / `host.json` は使わない。
+初回適用と後続 switch は完了済み。Mole 追加時の失敗後も、2026-10-07 の後続計画で switch と通常配置が成功した。以下は移行の受入状況であり、今回の監査修正後の検証を過去の成功結果で代用しない。通常の操作は `bash scripts/dotfiles.sh build` / `bash scripts/dotfiles.sh switch`（既定 `mac`）、別構成は `--configuration NAME` を使う。旧 `--host` / `host.json` は使わない。
 
 - [x] T10: 最後に成功した実機 switch は終了コード0。`/run/current-system` は `/nix/store/c4mnqzv56k8sr9bsxaasj7mlw8nbbbvr-darwin-system-26.11.4cff07d`。初回の衝突対処・退避と、後続の適用結果は記録済み。復旧演習の成功を意味しない。
 - [x] T8: 宣言した48 preferences の実機値との一致を確認済み。過去の18キーの控えは当時の旧値であり、現在値を戻す根拠として一律に使わない。
