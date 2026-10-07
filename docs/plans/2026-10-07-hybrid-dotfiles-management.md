@@ -1,5 +1,13 @@
 # Nix・Homebrew・mise の責務分離 Implementation Plan
 
+## 現在地
+
+実機の Nix switch、mise の299リンク配置、Herdr 標準 installer の実行は完了した。新規 fish の起動と共通 runtime 4件の版も確認済み。下記の追加受入は未完了のため、プランはアクティブのまま保持する。コミット・push のために再適用・サービス起動・全体テストを行わない。
+
+- 残作業: アプリ経由の編集、Yazi / Herdr plugin・補完の実機能、Safehouse / dotenvx の移管後の実ツール検証、Herdr 登録以外の設定保持の実機比較。
+- Nix 宣言はルートの `nix/` に移動した。相対参照・現行文書を更新し、全 Nix ファイルの構文・参照先・lock 内容不変を確認した。移動後の build / switch は実行していない。
+- 共通指示の中継 symlink 4件を削除し、mise から共通正本へ直接配置する宣言を維持した。関連テスト1件と実機4リンクの確認が成功した。
+
 ## Requirements
 
 日常のツール更新と設定配置のための Nix build / switch を減らす。macOS の宣言管理は残し、通常設定は HOME から Git 正本へ直接 symlink で接続する。Home Manager の store 経由リンクによる、Claude Code 等からの編集の不便を解消する。
@@ -37,7 +45,7 @@
 
 ### 1. 本体の移管と版差
 
-`config/nix/home/packages.nix` の通常 CLI を `config/nix/darwin/homebrew.nix` に移す。`programs.zoxide` のような暗黙導入と、wrapper が供給していた実行時コマンドも対象にする。移管先の名称が異なるもの・注意対象は以下。
+`nix/home/packages.nix` の通常 CLI を `nix/darwin/homebrew.nix` に移す。`programs.zoxide` のような暗黙導入と、wrapper が供給していた実行時コマンドも対象にする。移管先の名称が異なるもの・注意対象は以下。
 
 | 現在の Nix 名 | Homebrew の宣言 |
 |---|---|
@@ -65,8 +73,9 @@ nix-homebrew の `autoMigrate`、既存の GUI / App Store 一覧、`homebrew.on
 リポジトリ直下の `mise.toml` を配置宣言の正本とする。通常の本文は `config/` に残し、配置は `mise -C ~/dotfiles dot apply` で明示的に行う。グローバルなツール指定は `config/.config/mise/config.base.toml` に分離し、HOME の `~/.config/mise/config.toml` から直接リンクする。Nix build / switch に mise apply や runtime install を埋め込まない。
 
 - mise 2026.9.18 で確認できた `[dotfiles]`、`symlink`、`symlink-each`、必要な箇所の `manifest = "git"` を使う。新しい dotfile groups を使うためだけに mise / nixpkgs を更新しない。
-- パスの個別列挙を避けるというユーザーの指摘を受け、同じ相対位置への通常配置は `config/` → HOME の `symlink-each` 1件にまとめる。対象は Git index と明示した除外に限定し、現行 HM の配置範囲を引き継ぐ。Nix ソース、生成 wrapper、テスト、example、秘密・実行時状態を無差別に展開しない。
-- mixed directory はファイルごとの直接リンクで統合し、認証・履歴・キャッシュ・管理外の兄弟を含む親ディレクトリを丸ごと置換しない。各エージェントの共通指示と mise の設定ファイル名など、配置先が異なる例外だけを個別指定する。Pi、自作 Yazi plugin、Hermes の SOUL / Compose も従来の配置先を維持する。
+- HOME 全体を配置先とする `symlink-each` は使用しない。初回・管理記録欠落時に配置先全体を走査するため、アプリ・設定ディレクトリ単位で `symlink-each` / Git manifest で管理する。Nix ソース、生成 wrapper、テスト、example、秘密・実行時状態は配布しない。
+- ユーザーの追加指示により、Pi / Claude / Hermes 等もアプリディレクトリ単位にまとめる。初回にその配下の状態領域を走査することは許容し、実 HOME の dry-run 完了を確認する。Git 追跡ファイルだけを配布し、除外は追跡済みの配布不要物と別宣言の対象に絞る。従来の299リンクを維持し、独自設定生成器・リンク管理基盤・mise 内部状態の手動生成は追加しない。
+- Git manifest の対象内では追跡ファイル増減を apply で反映する。個別リンクと新しい管理ディレクトリの追加には `mise.toml` の更新が必要。管理記録がない初回でも、HOME 全体（Library・Documents）へ走査が入らないことを実 mise のテストで確認する。
 - 自作スキルも共通向け・Claude 向けの2つの glob と `symlink-each` / Git manifest で配置し、名前を列挙しない。ディレクトリ自体でなく追跡済みの各ファイルを正本へ直接リンクする。Claude 専用の同名スキルが必要な場合だけ、その宛先を明示して共通 glob より優先させる。Nix の外部スキル選択は、この配布対象を参照して shadowing を決め、同じ宛先を二重所有しない。Antigravity CLI から共通スキル集合への参照も維持する。
 - 本文編集は再配置不要。Git manifest で走査する範囲の増減は apply で反映する。明示エントリの削除・改名は、宣言を消す前に対象を確認し、標準の unapply で該当する管理リンクだけを解除する。宣言削除だけで HOME 側も消えるとは扱わない。
 - 通常の自作スキル追加では名前の配置宣言を増やさず、Git 追跡と apply で反映する。スキル単位の削除・無効化は移動前に対象の unapply を行う。glob の一致から消えた宛先が自動解除されるとは仮定しない。外部スキルとの優先関係が変わる場合だけ Nix 側の選択変更・適用も必要になる。
@@ -104,7 +113,7 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 
 実装開始時の review base は `837aa5a64b136af0861753265b1ab919e1012712`。`master` と `origin/master` は一致し、既存 staged 変更はない。Claude / Zed / Pi の既存4差分は commit 対象から除外する。実機で確認した初回ランタイム候補は Node `22.23.3`、Python `3.11.17`、Ruby `3.3.10`、Bun `1.4.2`。導入はまだ実行していない。
 
-- [x] **1. 本体の導入宣言**: `config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix`、`config/nix/home/fish.nix` を変更し、通常 CLI と共通ランタイムを Nix のユーザー向け導入集合から外す。
+- [x] **1. 本体の導入宣言**: `nix/home/packages.nix`、`nix/darwin/homebrew.nix`、`nix/home/fish.nix` を変更し、通常 CLI と共通ランタイムを Nix のユーザー向け導入集合から外す。
   - 暗黙導入、Nix wrapper に隠れていた依存も確認する。Hermes 等の内部 closure を、ユーザー向け重複導入と誤認して削らない。
   - `flake.nix` の不要になった unfree 許可等は利用がなくなったものだけ整理する。fish / mise の導入と Nix formatter は保持する。
   - **ユーザーによる追加判断**: mise と補完依存 `usage` を Nix に残す。Home Manager の mise モジュールを維持し、`usage` の Homebrew 宣言は除去する。設定・activation は引き続き Git 側で管理する。
@@ -138,7 +147,37 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
   - **候補実装**: 指定の文書5件を更新し、親が差分を確認した。作業者によるリンク47件の検査と対象 diff check は成功。`setup.md` は300行超で、依頼外の全体再構成は行っていない。
 - [ ] **6. 承認下での切替と受入**: 下記手順で実機を切り替え、配置・解決先・起動経路を確認する。実施範囲と未検証の実サービス・別 Mac の範囲を記録する。
 
-## 現在の判断待ちと検証状況
+## 初回配置の不具合と承認済み修正（2026-10-07）
+
+ユーザーは以下の方針を確認し、計画へ記録した後の修正実行を承認した。今回の修正の review base は `d2dae22`。
+
+### 現在の実機状態
+
+- 承認された20 formula と必要依存の更新を実行した。Python 3.14 の link エラー表示により全体の終了コードは1だったが、20件の候補版・opt リンク、Python の prefix リンク18件・主要拡張・AWS CLI 実行、`brew missing` と21件の `brew linkage --test` は正常。強制 relink や全件再更新はしていない。旧 keg を保持し、developer mode は off に戻した。
+- `~/.local/bin/agy` は、退避ではなく削除するというユーザーの明示指示で削除済み。確認した root `mise.toml` のみ trust し、共通 runtime 4件の選択と実行を確認した。
+- 人間の sudo 入力後、Nix switch は終了0。実 system は `/nix/store/ddnp75vsmggvphdlqwlb1bda2bl8903h-darwin-system-26.11.4cff07d`。旧 HM の通常リンクは解除済みで、Nix switch の再実行は不要。
+- その後の mise apply は、HOME の iCloud 配下を走査して進まなくなったため中断した。リンク作成は0件だった。新しく起動された Pi が settings を生成したため、その Pi の終了確認と削除許可を得て、新規 settings だけを削除し、Pi の11リンクを正本へ応急復旧した。既存の Git 正本4差分、認証・session・履歴は保持している。その後、アプリディレクトリ単位の宣言で実 HOME の dry-run と apply がともに終了0となり、299リンクすべてが予定の正本を直接参照することを確認した。未知の実体との衝突はなかった。ログは `/tmp/dotfiles-hybrid-build.GRTGTZ/scoped-{dry-run,apply}.log`。
+- Homebrew Herdr 0.9.3 の標準 installer は成功し、`~/.claude/hooks/herdr-agent-state.sh` の実行属性・設定内の登録2件・settings symlink の維持を確認した。ただし、比較用スクリプトが hook 名を誤認して失敗したため、無関係な設定の保持を実機比較で確認済みとは扱わない。Claude settings は既存変更と混在するため今回の commit から除外する。
+- 古い mise activation の継承状態を外した新規 login fish で、mise が Nix 管理先、共通 runtime が Node 22.23.3 / Python 3.11.17 / Ruby 3.3.10 / Bun 1.4.2 であることと prompt の存在を確認した。
+
+### 根拠と修正内容
+
+- [公式の Git manifest 例](https://mise.jdx.dev/dotfiles.html#git-tracked-directories)自体は HOME を対象にしており、構文の誤用ではない。[Discussion #11548](https://github.com/jdx/mise/discussions/11548) と [PR #11549](https://github.com/jdx/mise/pull/11549) が同じ全体走査を扱う。所有記録を使う改善後も、記録欠落・不正時の legacy scan は残る。2026.9.18 と2026.10.3の実装で確認し、初回走査を無効化する公式オプションは見つからなかった。
+- 上記「配置の正本と所有権」に従って宣言を分割する。自作スキルの2 glob、Nix 所有物との分離、通常設定の配置範囲は維持する。
+- テスト境界は既存の実 mise CLI と隔離 HOME。管理記録のない HOME に対象外ディレクトリを用意し、アクセスがあれば検出する。空の HOME の成功や、時間内に終わったことだけを非走査の証拠にしない。衝突保持、冪等性、Git 増減、unapply も新しい配置単位で維持する。
+- 今後の移行は Nix 所有解除前に実 HOME の dry-run を時間制限付きで確認する。既知の旧 HM リンクとの衝突以外の問題、タイムアウト、未知の実体があれば切替しない。アプリを新規起動しない短い切替時間を確保し、失敗時の所有リンク引渡し・旧 Nix 世代への復旧範囲を事前に確認する。自動 rollback や独自配置処理は追加しない。
+
+### 修正・復旧チェックリスト
+
+- [x] HOME 全体を走査する旧宣言で回帰テストが失敗することを確認し、ディレクトリ単位へ修正した。最終構成の非走査・衝突保持・配布除外の3テストが成功。従来と同じ299配置先の実機リンクを確認した。
+- [x] setup skill / 同梱手順・必要な指示を更新した。初回制約、個別宣言の追加・削除、事前検証と復旧を明記する。
+- [x] 修正差分を主担当が確認した。ユーザーの追加指示により、今回は追加の独立レビュー担当・全体テスト・再ビルドを省略し、非走査の回帰と上書き防止の確認に絞る。
+- [x] 実 HOME の対象を再確認し、修正した mise の dry-run → apply が成功した。Pi の既存リンクを保持し、未知の実体の削除・force は行っていない。
+- [ ] Herdr integration と shell / runtime / CLI / plugin の受入を行い、結果と未検証項目を記録する。サービス起動・Keychain テストの別承認は維持する。
+
+## 切替前までの検証履歴
+
+以下は不具合発生前の時点の記録であり、現在の実機状態は上の節を正本とする。
 
 - **Bash の管理先は承認済み**: nix-darwin の標準 `programs.bash.enable = true` による導入・初期化を維持し、Bash も Nix 基盤に残すことをユーザーが承認した。Homebrew の `bash` 宣言だけを除去し、Bash の初期化や PATH の追加変更はしていない。
 - Task 3 の上書きについては、ユーザーが公開版の維持を承認し、APIキーを含まないことを確認済み。
@@ -162,7 +201,7 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 1. **候補の事前検証**: 構文・関連テスト・Nix build を完了し、新 HM の配置集合から mise 所有先が外れていることを確認する。旧 system generation、対象リンクの種類と宛先、実際の CLI / runtime 版を記録する。設定内容や環境変数を全量取得しない。
 2. **切替範囲の確認**: 追加 formula / cask / tap、移管対象の版差、リンク引継ぎ、Herdr 登録の変更範囲を提示して実機適用を承認してもらう。衝突対象だけを個別に保全する。稼働する Hermes は既存管理関数で別途停止し、リンク切替と競合するアプリだけ必要に応じて停止する。
 3. **利用可能性の準備**: 既存 Mac では、承認した Homebrew の移管対象と mise runtime を、旧実行環境を失う前に準備して確認する。Nix 宣言を正本にした対象限定の標準 install を使い、全体 upgrade はしない。runtime の候補設定を明示して準備し、旧実行先からの切替前に不足を検出する。mise の trust は確認した当該設定だけを対象とし、信頼検査を全体で無効化しない。
-4. **Nix の所有解除**: Safehouse 外の通常の対話端末から既存 `bash scripts/dotfiles.sh switch` を実行する。switch 自身が取得した snapshot に対して check / build / apply する契約を維持する。mise に先に同じ宛先を書かせて HM と競合させない。
+4. **実 HOME の事前確認と Nix の所有解除**: 所有解除前に修正済み宣言の実 HOME dry-run を時間制限付きで実行する。既知の HM リンクによる衝突と未知の実体を区別し、未知の衝突・走査の停滞・想定外のエラーがあれば切替しない。切替中の新規アプリ起動を避け、失敗時に渡し戻す対象リンクと旧世代を確認しておく。その後、Safehouse 外の通常の対話端末から既存 `bash scripts/dotfiles.sh switch` を実行する。switch 自身が取得した snapshot に対して check / build / apply する契約を維持する。mise に先に同じ宛先を書かせて HM と競合させない。
 5. **mise の配置**: HM の終了コードと実際の解除済み範囲を確認し、残った旧リンクがあれば由来を確認して扱う。`mise -C ~/dotfiles dot apply` で直接リンクを配置する。新規 Mac では Nix による fish / mise / Homebrew 導入後にこの配置と runtime install を行う。利用可能な作業用 shell を、設定・runtime の確認が終わるまで残す。
 6. **Herdr integration**: 旧 HM hook が解除されたことを確認し、Homebrew 本体から標準 installer を実行する。Git 正本への settings 差分が承認範囲内で、hook が現行本体に対応することを確認する。別の integration / plugin installer をついでに実行しない。
 7. **受入**: 新しい shell の本体・runtime の解決先、直接リンク、主要 CLI と設定編集を確認する。Hermes を使わない Mac で検証のためにサービスを起動しない。必要なサービス再開は受入後に別途承認し、既存管理関数から行う。
