@@ -20,7 +20,7 @@ let
         lib.replaceStrings
           [ "#!/bin/bash" ''"$HOME/.local/libexec/hermes"'' ]
           [ "#!${pkgs.runtimeShell}" ''"${hermes}/bin/hermes"'' ]
-          (builtins.readFile (../../.config/agent-safehouse + "/safe-hermes-${name}.sh"));
+          (builtins.readFile (../../config/.config/agent-safehouse + "/safe-hermes-${name}.sh"));
     }
   );
   plists = lib.genAttrs services (
@@ -52,7 +52,7 @@ let
     name = "hermes-check-stopped";
     executable = true;
     text = lib.replaceStrings [ "#!/bin/bash" ] [ "#!${pkgs.runtimeShell}" ] (
-      builtins.readFile ../../.config/hermes/check-stopped.sh
+      builtins.readFile ../../config/.config/hermes/check-stopped.sh
     );
   };
 in

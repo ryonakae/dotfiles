@@ -5,13 +5,13 @@
   ...
 }:
 let
-  dotfiles = (builtins.fromTOML (builtins.readFile ../../../mise.toml)).dotfiles;
+  dotfiles = (builtins.fromTOML (builtins.readFile ../../mise.toml)).dotfiles;
   localSkills =
     agent:
     let
       prefix = "~/.${agent}/skills/";
       pattern = "${prefix}[!.]*";
-      directory = ../../../. + "/${builtins.dirOf dotfiles.${pattern}.source}";
+      directory = ../../. + "/${builtins.dirOf dotfiles.${pattern}.source}";
       common = lib.filterAttrs (name: type: type == "directory" && !(lib.hasPrefix "." name)) (
         builtins.readDir directory
       );

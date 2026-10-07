@@ -3,7 +3,7 @@
 ## 目的・前提・制約
 - 現在の dotfiles の macOS 設定管理を拡張し、新しい Mac でも操作環境を再現する。
 - 既存の移行方針は現在の使い勝手の再現を基準にする（`docs/dig/2026-10-03-nix-migration.md`）。参考記事の好みの値をそのまま採用しない。
-- 正本は `config/nix/darwin/preferences.nix`。専用オプションを優先し、未対応項目だけ個別に検討する。preferences 全量取得・全 plist コピーはしない。
+- 正本は `nix/darwin/preferences.nix`。専用オプションを優先し、未対応項目だけ個別に検討する。preferences 全量取得・全 plist コピーはしない。
 - 現在の環境は Safehouse 内。設定の実適用・Dock 再起動は別途承認が必要。宣言削除や世代 rollback だけでは preferences を復旧できないため、適用前に対象キーの旧値・型・未設定状態を記録する。
 - 既存の他者差分は保持する。実装計画・実装にはそれぞれ承認を得る。
 

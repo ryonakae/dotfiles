@@ -20,20 +20,27 @@
 | 対象 | 正本・管理主体 |
 |---|---|
 | macOS・Nix・Homebrew 本体・Bash / fish / mise と補完依存 | Nix / nix-darwin / nix-homebrew |
-| 普段使う CLI / GUI / App Store アプリ | Homebrew。導入一覧は `config/nix/darwin/homebrew.nix` |
+| 普段使う CLI / GUI / App Store アプリ | Homebrew。導入一覧は `nix/darwin/homebrew.nix` |
 | 共通ランタイム | mise。版指定は `config/.config/mise/config.base.toml` |
 | 通常設定・自作スクリプト・自作スキル | `config/` の Git 正本。配置はルート `mise.toml` |
 | Hermes fork・生成 wrapper / plist・停止検査、外部スキル・fish / Yazi 外部 plugin | Nix / Home Manager |
 
-通常配置は mise の `symlink-each` と `manifest = "git"` で、追跡済みファイルごとに HOME から正本へ直接リンクする。Nix ソース・生成 wrapper・example・秘密・実行時状態は除外する。共有指示の別名と mise global 設定のファイル名等、相対位置が異なる例外だけを個別指定する。認証・履歴・管理外の兄弟がある親ディレクトリを丸ごと置換しない。
+通常配置は HOME から `config/` の正本へ直接リンクする。アプリ・設定ディレクトリ単位に mise の `symlink-each` と `manifest = "git"` で追跡ファイルごとに配置し、HOME 全体を配置先にしない。親ディレクトリ自体は置換しない。初回は各配置先内の状態ディレクトリも走査され得るため、実 HOME の dry-run 完了を確認する。`exclude` は初回走査を止める指定ではなく、追跡済みの配布不要物と別宣言の対象だけに使う。Nix ソース・生成 wrapper・example・秘密・実行時状態は配布しない。
 
-本文の編集やアプリからリンク先への書き込みは Git 差分になり、再配置不要。Git 追跡対象の増減は、対象を確認して反映する。
+`symlink-each` は、管理記録がない初回には配置先全体を走査する。[mise PR #11549](https://github.com/jdx/mise/pull/11549) の所有記録を使う改善後も、記録欠落・不正時の走査は残る。この制約を前提に配置先を狭く保ち、mise の内部状態を手動生成して回避しない。
+
+本文の編集やアプリからリンク先への書き込みは Git 差分になり、再配置不要。配置対象の変更は次のように区別する。
+
+- 既存の Git manifest 内の追跡ファイル増減は、対象を確認して apply で反映する。
+- 個別リンクや新しい管理ディレクトリの追加は、ルート `mise.toml` の宣言を更新して apply する。
+- 個別リンクや管理ディレクトリの削除・改名は、宣言を消す前に該当宛先を標準 unapply で解除する。宣言削除だけで HOME 側も消えるとは扱わない。
+- 自作スキルは共通・Claude 向けの2 glob を維持する。通常追加では名前を列挙せず、スキル単位の削除・無効化は[外部スキル節](#外部スキル)に従う。
 
 ```fish
 mise -C ~/dotfiles dot apply
 ```
 
-apply 前に対象の実体・リンク先と変更範囲を確認する。未知の実ファイル・ディレクトリ・別リンクを `--force` や一括退避で置換しない。mise が未知の symlink を必ず拒否するとは仮定しない。追跡対象の削除は apply で反映するが、明示エントリや glob に一致するスキル自体を削除・改名する場合は、宣言や正本を消す前に該当宛先を `mise -C ~/dotfiles dot unapply TARGET` で解除する。宣言削除だけでリンクも消えるとは扱わない。自作スキルの例外は[外部スキル節](#外部スキル)を参照する。
+apply 前に対象の実体・リンク先と変更範囲を確認する。未知の実ファイル・ディレクトリ・別リンクを `--force` や一括退避で置換しない。mise が未知の symlink を必ず拒否するとは仮定しない。解除には対象を確認して `mise -C ~/dotfiles dot unapply TARGET` を使う。初回の所有権移行には[事前確認と切替手順](#初回の配置と既存-mac-の切替)も必要。
 
 自前 Brewfile やコピー運用を追加しない。Nix build / switch に mise apply や runtime install を組み込まない。Nix 操作は以下の手順に分ける。
 
@@ -61,7 +68,7 @@ nix --version
 
 ## Nix の事前ビルド
 
-Nix と Command Line Tools 付属の `/usr/bin/python3` が必要。`scripts/dotfiles.sh` はこの Python を使い、mise の導入・配置やプロジェクトの Python に依存しない。ホスト定義は `config/nix/hosts/` の Nix module を正本とし、`flake.nix` の `darwinConfigurations` から読み込む。既定の `mac` は `config/nix/hosts/mac.nix` を使う。適用前に `system.primaryUser` と `users.users.<name>.home` が実機に合うことを確認する。
+Nix と Command Line Tools 付属の `/usr/bin/python3` が必要。`scripts/dotfiles.sh` はこの Python を使い、mise の導入・配置やプロジェクトの Python に依存しない。ホスト定義は `nix/hosts/` の Nix module を正本とし、`flake.nix` の `darwinConfigurations` から読み込む。既定の `mac` は `nix/hosts/mac.nix` を使う。適用前に `system.primaryUser` と `users.users.<name>.home` が実機に合うことを確認する。
 
 別ホストを追加するときは、そのホスト用 module を作り、`darwinConfigurations` に対応する構成を定義する。構成名は英字または `_` で始め、以降は英数字・`_`・`-` を使う。ユーザー名・ホームなどの非秘密の定義は Git 管理し、秘密や認証情報は書かない。ローカルの `host.json` は不要で、以前の実ファイルが残っていても読み込まない。
 
@@ -117,7 +124,7 @@ Homebrew 本体は `nix-homebrew` で導入・版固定する。新規 Mac で H
 
 既存 Mac は `autoMigrate` で Homebrew を引き継ぐ。適用時に Homebrew 本体の Git 追跡ファイル・`.git`・残存 vendor ディレクトリを削除して Nix 管理へ置き換える。既存の Cellar / Caskroom・ユーザー追加 tap 等は保持する設計だが、本体へのローカル修正は引き継がれない。ビルドだけでは移行しない。既存 Homebrew を移行する場合は、管理部分の保全・復旧範囲を確認して承認する。Nix 世代の rollback だけで移行前の管理方式へ戻るとは扱わない。
 
-formula・cask・App Store アプリの一覧は `config/nix/darwin/homebrew.nix` で管理する。適用時は `autoUpdate = false` / `upgrade = false` / `cleanup = "none"` を維持する。tap は Homebrew 管理を維持し、Intel 用 Homebrew は追加しない。本体の更新は `update nix-homebrew` 後に build・switch する。パッケージの版は `flake.lock` で固定されない。
+formula・cask・App Store アプリの一覧は `nix/darwin/homebrew.nix` で管理する。適用時は `autoUpdate = false` / `upgrade = false` / `cleanup = "none"` を維持する。tap は Homebrew 管理を維持し、Intel 用 Homebrew は追加しない。本体の更新は `update nix-homebrew` 後に build・switch する。パッケージの版は `flake.lock` で固定されない。
 
 通常 CLI の日常更新は Homebrew で行う。
 
@@ -175,12 +182,13 @@ Hermes の配置変更に必要な停止は[管理関数](#更新停止既存環
 1. 宣言・構文・関連テスト・Nix build を確認し、旧世代、対象リンクの種類・宛先、使用版と導入候補の版差を確認する。設定・環境変数を全量取得しない。
 2. 対象の install、リンク引継ぎ、Herdr 登録、必要な停止・保全の範囲を提示し、実機操作を承認する。既存の Claude / Zed / Pi の差分と管理外の状態を保持する。
 3. 旧環境が使える間に対象限定の Homebrew install と mise runtime の準備を行う。候補の版指定を明示して不足を確認し、全体 upgrade はしない。mise の trust は確認した当該設定だけに限定する。
-4. 稼働する Hermes は管理関数で別途停止し、通常端末の `bash scripts/dotfiles.sh switch` で HM の所有を解除する。先に mise を同じ宛先へ適用しない。
-5. 終了コードと解除済み範囲を確認し、残った旧リンクは由来を確認する。`mise -C ~/dotfiles dot apply` で直接リンクを配置する。未知の実体を force で通さない。
-6. 旧 HM hook の解除後、Homebrew 本体から[Herdr integration](#claude-code)を導入し、settings の差分を確認する。plugin / session / log の移行はしない。
-7. 新しい shell の本体・runtime の解決先、直接リンク、主要 CLI・fish plugin・Herdr hook を確認する。必要なサービス再開は別途承認し、既存管理関数を使う。検証だけのためにサービスを起動しない。
+4. **Nix の所有解除前に**、実 HOME に対する mise の配置 dry-run を時間制限付きで実行し、完了と結果を確認する。使用する mise 版の標準構文を確認し、実行前に制限時間を決める。既知の旧 HM リンクによる衝突以外の問題、未知の実体、タイムアウトがあれば switch しない。dry-run の成功だけで後続の switch / apply の成功を保証したとは扱わない。
+5. アプリを新規起動しない短い切替時間を確保し、失敗時に引き渡す対象リンクと復旧先の旧 Nix 世代、操作の承認範囲を事前に確認する。稼働する Hermes は管理関数で別途停止し、通常端末の `bash scripts/dotfiles.sh switch` で HM の所有を解除する。先に mise を同じ宛先へ適用しない。
+6. 終了コードと解除済み範囲を確認し、残った旧リンクは由来を確認する。`mise -C ~/dotfiles dot apply` で直接リンクを配置する。切替中に新しい実体が作られた場合も保持して相談し、force で通さない。
+7. 旧 HM hook の解除後、Homebrew 本体から[Herdr integration](#claude-code)を導入し、settings の差分を確認する。plugin / session / log の移行はしない。
+8. 新しい shell の本体・runtime の解決先、直接リンク、主要 CLI・fish plugin・Herdr hook を確認する。必要なサービス再開は別途承認し、既存管理関数を使う。検証だけのためにサービスを起動しない。
 
-途中失敗時は Nix profile / HM / mise / Homebrew / Herdr の変更済み範囲を確認して止める。switch や apply を最初から自動再試行しない。復旧は[所有リンクの引渡しと本文・アプリ・状態の復旧](#nix-の適用と復旧準備)を分け、旧世代や退避物の削除・GC を混ぜない。
+途中失敗時は進行を止め、Nix profile / HM / mise / Homebrew / Herdr の現状と変更済み範囲を確認する。switch や apply を最初から自動再試行しない。所有リンクの引渡しや旧 Nix 世代への復旧は承認範囲を確認して行い、[本文・アプリ・状態の復旧](#nix-の適用と復旧準備)とは分ける。force、自動 rollback、独自配置ツールは使わず、旧世代や退避物の削除・GC を混ぜない。
 
 ## 共通ツール用の秘密
 
@@ -232,9 +240,9 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 
 ## 外部スキル
 
-外部スキルは agent-skills-nix の Source registry と標準 Home Manager モジュールで取得・選択・配布する。取得元と探索範囲は `config/nix/skill-sources/`、revision / hash は `config/nix/skill-sources.lock.json` で管理する。同じ repository の取得元は共有する。root の `flake.lock` は管理ライブラリ `agent-skills` などの固定に使い、スキルの取得元は root input に追加しない。
+外部スキルは agent-skills-nix の Source registry と標準 Home Manager モジュールで取得・選択・配布する。取得元と探索範囲は `nix/skill-sources/`、revision / hash は `nix/skill-sources.lock.json` で管理する。同じ repository の取得元は共有する。root の `flake.lock` は管理ライブラリ `agent-skills` などの固定に使い、スキルの取得元は root input に追加しない。
 
-外部スキルは標準の `structure = "link"` で store へのリンクとして配置する。外部の選択・配布先は `config/nix/home/skills.nix`、自作の配置はルート `mise.toml` を正本にし、Nix 側は mise の対象を参照して同じ宛先を二重所有しない。同名の自作を外部より優先し、Claude 側では Claude 専用の同名スキルを優先する。ドット始まりのディレクトリは配布しない。
+外部スキルは標準の `structure = "link"` で store へのリンクとして配置する。外部の選択・配布先は `nix/home/skills.nix`、自作の配置はルート `mise.toml` を正本にし、Nix 側は mise の対象を参照して同じ宛先を二重所有しない。同名の自作を外部より優先し、Claude 側では Claude 専用の同名スキルを優先する。ドット始まりのディレクトリは配布しない。
 
 自作スキルは共通・Claude 向け glob の `symlink-each` / Git manifest で、追跡ファイルごとに正本へ直接リンクする。通常の追加は Git 追跡と mise apply だけでよく、TOML に名前を列挙しない。Claude 専用の同名スキルが必要な場合だけ、該当宛先の明示エントリに専用 source と `mode = "symlink-each"` / `manifest = "git"` を宣言し、共通 glob を override する。
 
@@ -244,7 +252,7 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 
 ### 追加・更新・復元
 
-追加時は `config/nix/skill-sources/` に取得元と必要な探索範囲を宣言し、スキルの選択を更新する。同じ repository を使うなら既存の取得元を共有する。新しいスキルを無条件に導入する広い `enableAll` は避け、同名の自作・Claude 専用の優先順位を維持する。取得元を追加するために `flake.nix` を編集する必要はない。
+追加時は `nix/skill-sources/` に取得元と必要な探索範囲を宣言し、スキルの選択を更新する。同じ repository を使うなら既存の取得元を共有する。新しいスキルを無条件に導入する広い `enableAll` は避け、同名の自作・Claude 専用の優先順位を維持する。取得元を追加するために `flake.nix` を編集する必要はない。
 
 リポジトリのルートから、外部取得元を一括更新する。
 
@@ -267,7 +275,7 @@ bash scripts/dotfiles.sh build
 bash scripts/dotfiles.sh switch
 ```
 
-新規 Mac の復元ではどちらの更新コマンドも実行せず、既存の `flake.lock` と `config/nix/skill-sources.lock.json` で build / switch する。`npx skills` による取得・コピーや旧 lock による復元は併用しない。自作スキルは別途 mise で配置し、本文の編集は即時反映する。
+新規 Mac の復元ではどちらの更新コマンドも実行せず、既存の `flake.lock` と `nix/skill-sources.lock.json` で build / switch する。`npx skills` による取得・コピーや旧 lock による復元は併用しない。自作スキルは別途 mise で配置し、本文の編集は即時反映する。
 
 既存の実ディレクトリなどが新たに管理対象になる場合は、その対象だけを確認・保全して退避する。親ディレクトリ全体や `synced` は動かさず、実行時キャッシュを固定版として復元しない。日常の更新では標準モジュールの管理対象リンク置換を受け入れ、初回の未知の実体の保全を恒久的な上書き禁止へ拡張しない。
 
@@ -436,7 +444,7 @@ Vim は外部プラグインを使わない補助的な編集用の最小構成�
 
 ## macOS と手動復元
 
-Nix 管理する preferences は `config/nix/darwin/preferences.nix` を正本にする。標準オプションで現在の動作を表現できる範囲だけを管理し、独自の適用スクリプトで補完しない。明示されていないキーへ推測で値を設定しない。管理対象を GUI で変更しても、次回 switch で宣言値へ戻る。適用時は標準 nix-darwin モジュールが Dock を再起動するため、作業中の UI への影響を確認してから切り替える。キーボードのリピート値・Dock サイズは整数型、トラックパッドのタップ設定は真偽値で書き込まれる。
+Nix 管理する preferences は `nix/darwin/preferences.nix` を正本にする。標準オプションで現在の動作を表現できる範囲だけを管理し、独自の適用スクリプトで補完しない。明示されていないキーへ推測で値を設定しない。管理対象を GUI で変更しても、次回 switch で宣言値へ戻る。適用時は標準 nix-darwin モジュールが Dock を再起動するため、作業中の UI への影響を確認してから切り替える。キーボードのリピート値・Dock サイズは整数型、トラックパッドのタップ設定は真偽値で書き込まれる。
 
 preferences は宣言や Nix 世代を戻すだけでは元に戻らない場合がある。適用直前に変更対象の旧値・型・未設定状態を記録し、戻す場合は対象キーだけを復旧する。未設定だったキーは、値を書き込むのでなくそのキーの削除が必要。再起動やログアウトが必要なら、その都度確認する。
 
