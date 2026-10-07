@@ -25,19 +25,22 @@ description: >-
 | 依頼 | 編集・操作 |
 |---|---|
 | 通常設定・HOME 配布用の自作スキルの本文編集 | `config/` の正本。直接リンクの本文変更だけなら再適用不要 |
-| 通常配置・追跡ファイルの増減 | ルート `mise.toml` の Git manifest と除外を確認し、`mise -C ~/dotfiles dot apply`。削除前の unapply は同梱手順に従う |
+| 既存 Git manifest 内の追跡ファイル増減 | 対象を確認して `mise -C ~/dotfiles dot apply` |
+| 個別リンク・管理ディレクトリの追加・削除 | ルート `mise.toml` を更新する。削除・改名は宣言を消す前に標準 unapply。詳細は同梱手順に従う |
 | このリポジトリ専用のスキル編集 | `.agents/skills/` の正本。`.claude/skills/` は相対 symlink。HOME 配布とは別 |
-| 通常 CLI / GUI の追加・削除 | `config/nix/darwin/homebrew.nix` の一覧を整合させ、対象限定の `brew install` / `brew uninstall`。Nix build / switch は必須でない |
+| 通常 CLI / GUI の追加・削除 | `nix/darwin/homebrew.nix` の一覧を整合させ、対象限定の `brew install` / `brew uninstall`。Nix build / switch は必須でない |
 | 通常 CLI / GUI の更新 | Homebrew。cask の自己更新・`auto_updates` / `latest` の扱いを確認し、無条件に全件 greedy 更新しない |
 | 共通ランタイムの導入・更新 | `config/.config/mise/config.base.toml` の版指定と mise install / upgrade。個別プロジェクトは変更しない |
 | OS・Nix・Homebrew 本体・Bash / fish / mise と補完依存・管理ライブラリの更新 | `bash scripts/dotfiles.sh update <公開input名>` → build → 承認後に switch。名前は root `flake.lock` / `flake.nix` で確認 |
-| 外部スキルの追加・選択変更 | `config/nix/skill-sources/` の取得元・探索範囲と `config/nix/home/skills.nix` の選択を確認 |
+| 外部スキルの追加・選択変更 | `nix/skill-sources/` の取得元・探索範囲と `nix/home/skills.nix` の選択を確認 |
 | 外部スキル取得元の更新 | `nix run .#skills-sources-lock`。標準の全取得元更新で、単体更新引数はない |
 | 固定版からの復元・管理方式だけの移行 | 更新しない。root と registry の両 lock の revision を維持 |
 
 `update all` は root Flake input 全体が対象で、外部スキルの専用 lock は更新しない。registry の宣言変更後の lock 再生成は既存取得元も更新するため、その範囲が依頼に含まれるか確認する。手書きの新しい updater やスキル取得用 root input は追加しない。
 
-外部スキルは必要な集合だけを選ぶ。自作優先・Claude 専用同名優先・隠しディレクトリ除外・Antigravity CLI の共通参照を維持する。自作本文を store に固定しない。通常の自作追加は Git 追跡と mise apply で行い、名前を列挙しない。外部との優先関係が変わる場合だけ Nix 側も適用する。
+HOME 全体を `symlink-each` の配置先にせず、アプリ・設定ディレクトリ単位の Git manifest で配置する。管理記録がない初回には各配置先全体を走査する。`exclude` はこの走査を止めないため、実 HOME の dry-run 完了を確認する。配布対象は Git 追跡ファイルとし、除外は追跡済みの配布不要物と別宣言の対象に絞る。[PR #11549](https://github.com/jdx/mise/pull/11549) の改善後も記録欠落・不正時の走査は残る。
+
+外部スキルは必要な集合だけを選ぶ。自作優先・Claude 専用同名優先・隠しディレクトリ除外・Antigravity CLI の共通参照を維持する。自作本文を store に固定しない。自作スキルの共通・Claude 向け2 glob を維持し、通常の追加は Git 追跡と mise apply で行い、名前を列挙しない。外部との優先関係が変わる場合だけ Nix 側も適用する。
 
 ## ツールの版が古い・最新版を導入したい場合
 
@@ -64,8 +67,8 @@ Safehouse 内から switch しない。既存の制限を回避せず、Herdr �
 
 - エラー時は自動再試行せず、失敗段階・profile・既に変更された範囲を確認する。activation は非原子的で、失敗しても profile や一部設定が変わっている場合がある。
 - 通常設定の未知の実体を force や一括削除で通さない。mise apply 前に対象の実体とリンク先を確認し、未知の symlink を自動拒否すると仮定しない。外部スキルの標準 HM link 置換とは区別する。親ディレクトリ全体や Claude の `synced` を移動・削除しない。
-- 初回の所有権移行・Herdr integration は[同梱手順](references/setup.md#初回の配置と既存-mac-の切替)に従い、実機操作を別途承認する。Hermes の installer 禁止とサービス運用は変えない。
-- Nix 世代の切替だけでは mise 所有リンク、正本の本文、Homebrew アプリ、mise runtime、preferences、DB は戻らない。所有権の引渡しと内容の復旧を分ける。検証目的の activation / dry-run、サービス再起動、GC は行わない。
+- 初回の所有権移行・Herdr integration は[同梱手順](references/setup.md#初回の配置と既存-mac-の切替)に従い、実機操作を別途承認する。Nix 所有解除前に実 HOME の mise dry-run を時間制限付きで完了確認し、既知の旧 HM リンクによる衝突以外の問題やタイムアウトがあれば switch しない。dry-run 成功だけで後続成功を保証しない。切替中の新規アプリ起動を避け、失敗時は現状を確認して、所有リンクの引渡し・旧世代復旧を承認下で行う。自動 rollback や独自配置ツールは追加しない。Hermes の installer 禁止とサービス運用は変えない。
+- Nix 世代の切替だけでは mise 所有リンク、正本の本文、Homebrew アプリ、mise runtime、preferences、DB は戻らない。所有権の引渡しと内容の復旧を分ける。検証目的の Nix activation / dry-run、サービス再起動、GC は行わない。
 - 秘密・Keychain・認証・バックアップ復元・権限変更は人間へ引き継ぐ。値を読み出したりログへ出したりしない。初回移行の履歴は参考資料であり、そこにある全操作を再実行しない。
 
 ## 完了時

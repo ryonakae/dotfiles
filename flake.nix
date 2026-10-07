@@ -23,8 +23,8 @@
       pkgs = import inputs.nixpkgs { system = "aarch64-darwin"; };
       sourceLockProgram = inputs.agent-skills.lib.agent-skills.mkSourceLockProgram {
         inherit pkgs;
-        manifestsDir = "config/nix/skill-sources";
-        lockFile = "config/nix/skill-sources.lock.json";
+        manifestsDir = "nix/skill-sources";
+        lockFile = "nix/skill-sources.lock.json";
       };
     in
     {
@@ -36,8 +36,8 @@
       darwinConfigurations.mac = nix-darwin.lib.darwinSystem {
         specialArgs = { inherit inputs; };
         modules = [
-          ./config/nix/hosts/mac.nix
-          ./config/nix/darwin
+          ./nix/hosts/mac.nix
+          ./nix/darwin
           inputs.nix-homebrew.darwinModules.nix-homebrew
           home-manager.darwinModules.home-manager
           (
@@ -48,7 +48,7 @@
               home-manager.useUserPackages = true;
               home-manager.extraSpecialArgs = { inherit inputs; };
               home-manager.sharedModules = [ inputs.agent-skills.homeManagerModules.default ];
-              home-manager.users.${config.system.primaryUser} = import ./config/nix/home;
+              home-manager.users.${config.system.primaryUser} = import ./nix/home;
             }
           )
         ];
