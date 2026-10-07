@@ -21,6 +21,7 @@
 - `config/.config/fish/config.fish` は Git 管理してよい。example は不要。旧 `config.fish.example` はすでに削除済みなので再作成しない。
 - Herdr 本体を Homebrew に移し、Claude hook は Herdr 標準 installer で管理する。Claude settings の Herdr 用登録変更を含めるが、既存変更を保持して差分を確認する。
 - `.agents/skills/dotfiles-setup/SKILL.md` と同梱 `references/setup.md`、`README.md`、ルート `AGENTS.md` を更新する。
+- Claude Code は既存の Homebrew `claude-code@latest` を採用する。exiftool / googleworkspace-cli / mole / qrencode の Homebrew 導入はユーザー承認済み。RTK は未使用のため移管せず廃止し、6件とも Nix パッケージとしての導入宣言から外す。
 
 制約・対象外:
 
@@ -42,14 +43,16 @@
 |---|---|
 | `awscli2` | formula `awscli` |
 | `gws` / `mole-cleaner` | formula `googleworkspace-cli` / `mole` |
-| `antigravity-cli` / `claude-code` / `codex` | 同名 cask。Antigravity IDE ではなく CLI |
+| `antigravity-cli` / `codex` | 同名 cask。Antigravity IDE ではなく CLI |
+| `claude-code` | cask `claude-code@latest`。既存の latest channel を維持 |
+| `rtk` | 未使用のため廃止。Homebrew にも導入しない |
 | `agent-safehouse` | formula `eugene1g/safehouse/agent-safehouse` |
 | `dotenvx` | formula `dotenvx/brew/dotenvx` |
 | `keifu` | formula `trasta298/tap/keifu` |
 | `herdr` / `pi-coding-agent` | 同名の core formula |
 | HM の `programs.zoxide` | formula `zoxide` |
 
-Bash は nix-darwin の標準導入・初期化を維持し、mise と補完用 `usage` も Nix に残す。それ以外の通常 CLI は、調査した同名 core formula を使う。`uv` は CLI として Homebrew に移す。Pi は現行と同じ `earendil-works/pi` 系列を維持する。Homebrew の `gws` は別製品なので使わない。Pi 等の Nix wrapper から暗黙に得ていた `ripgrep` / `fd` の可用性を確認し、必要な直接利用コマンドは Homebrew 宣言に含める。
+Bash は nix-darwin の標準導入・初期化を維持し、mise と補完用 `usage` も Nix に残す。上表以外の移管対象 CLI は、調査した同名 core formula を使う。`uv` は CLI として Homebrew に移す。Pi は現行と同じ `earendil-works/pi` 系列を維持する。Homebrew の `gws` は別製品なので使わない。Pi 等の Nix wrapper から暗黙に得ていた `ripgrep` / `fd` の可用性を確認し、必要な直接利用コマンドは Homebrew 宣言に含める。
 
 Safehouse・dotenvx・keifu の取得元は、それぞれ upstream が案内する既成の公式 tap。既存 `ryonakae/tap` に加えてこの3件を Nix で宣言する。独自 tap / packaging は追加しない。
 
@@ -139,13 +142,14 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 
 - **Bash の管理先は承認済み**: nix-darwin の標準 `programs.bash.enable = true` による導入・初期化を維持し、Bash も Nix 基盤に残すことをユーザーが承認した。Homebrew の `bash` 宣言だけを除去し、Bash の初期化や PATH の追加変更はしていない。
 - Task 3 の上書きについては、ユーザーが公開版の維持を承認し、APIキーを含まないことを確認済み。
-- Safehouse 内の評価拒否は、ユーザーが Herdr の通常ペインで評価・build のみを承認したことで検証を進められた。`bash scripts/dotfiles.sh build` の flake check / system build は終了0。Bash / usage を Nix に残す候補は `/nix/store/5axbnzlq4dp2qrg8x6xpvdj0a6nmvbsa-darwin-system-26.11.4cff07d`。生成 Brewfile は40 formula で、Bash / usage を含まない。HM generation は `/nix/store/zimzvifcg7gn2j5l8k3sd2cdx04jrfl8-home-manager-generation`。root / registry lock は変更なし。ログは `/tmp/dotfiles-hybrid-build.GRTGTZ/build-bash.log`。
+- Safehouse 内の評価拒否は、ユーザーが Herdr の通常ペインで評価・build のみを承認したことで検証を進められた。`bash scripts/dotfiles.sh build` の flake check / system build は終了0。Claude Code latest 採用・RTK 廃止後の候補は `/nix/store/ddnp75vsmggvphdlqwlb1bda2bl8903h-darwin-system-26.11.4cff07d`。生成 Brewfile は39 formula で、Bash / usage / RTK を含まず、Claude Code は `claude-code@latest` のみ。対象6件の実行ファイルが候補の Nix user / system profile にないことも確認した。HM generation は `/nix/store/zimzvifcg7gn2j5l8k3sd2cdx04jrfl8-home-manager-generation`。root / registry lock は変更なし。ログは `/tmp/dotfiles-hybrid-build.GRTGTZ/approved-prep.log`。
 - 新しい通常ペインでは既存 mise `2026.6.14` が root `mise.toml` の未信頼警告を出した。build は独立して成功しており、trust の変更はしていない。実配置時には Nix mise の解決先と、確認済み設定に限定した trust を扱う。
 - Task 1〜5 は検証済み候補として、入口独立化 `4c18231` と責務分離 `b6ad840` の2単位で local commit にした。責務分離の設定・配置・起動経路は相互依存するため、ファイル種別では分割していない。
 - **独立レビュー完了**: `837aa5a64b136af0861753265b1ab919e1012712..b6ad840` を別 context の reviewer が read-only で確認し、blocking/high・decision required・medium/low はいずれも指摘なし。コミット差分・関連コード・契約を照合し、shell 構文と diff check を独立実行した。実 Nix / mise / Herdr fixture と build の結果は実装側の報告として扱い、実機受入済みとは判定していない。
-- install / update / switch、実 HOME の mise apply、実設定への Herdr integration、サービス・Keychain 操作は未実施。実機受入のゲートが残るため、archive / push は行わない。既存4件の他者差分は未読・未編集のまま保持し、commit に含めていない。
-- **実機準備の読み取り確認**: 移管先の formula 38件中33件、cask 3件中2件に既存導入を確認した。未導入5 formula は Cellar ディレクトリ、未導入 cask は Caskroom ディレクトリの不在も確認した。`brew list` は未導入を含む照会で終了1となり、API metadata の取得はあったが、package install / upgrade は行っていない。共通 runtime は宣言版の実行ファイルが既定 mise data 配下に4種類とも存在したが、実環境の選択・動作は未検証。
-- 2026-10-07時点の不足分の標準配布候補は [exiftool](https://formulae.brew.sh/api/formula/exiftool.json) 13.55、[googleworkspace-cli](https://formulae.brew.sh/api/formula/googleworkspace-cli.json) 0.22.5、[mole](https://formulae.brew.sh/api/formula/mole.json) 1.58.0、[qrencode](https://formulae.brew.sh/api/formula/qrencode.json) 4.1.1、[rtk](https://formulae.brew.sh/api/formula/rtk.json) 0.51.0、[claude-code](https://formulae.brew.sh/api/cask/claude-code.json) 2.1.285。公式 API で disabled / deprecated が false、qrencode の実行時依存が libpng、Claude Code は binary 配置であることを確認した。導入時に候補が変われば版差を再確認する。これは導入済み・承認済みという意味ではない。
+- 対象限定の Brew 導入は下記のとおり実施済み。全体 upgrade、Nix update / switch、実 HOME の mise apply、実設定への Herdr integration、サービス・Keychain 操作は未実施。実機受入のゲートが残るため、archive / push は行わない。既存4件の他者差分は未読・未編集のまま保持し、commit に含めていない。
+- **導入前の読み取り確認と訂正**: RTK を除く移管対象 formula 37件中33件、cask 3件すべてに既存導入を確認した。当初は通常名だけで照会し、既存 `claude-code@latest` を見落として未導入と誤報した。実際は Nix / Brew とも 2.1.289 で、Brew の実行先は `/opt/homebrew/Caskroom/claude-code@latest/2.1.289/claude`。追加導入は不要で、宣言を既存の名前へ合わせる。共通 runtime は宣言版の実行ファイルが既定 mise data 配下に4種類とも存在したが、実環境の選択・動作は未検証。
+- **承認済み4件の導入成功**: [exiftool](https://formulae.brew.sh/api/formula/exiftool.json) 13.55_1、[googleworkspace-cli](https://formulae.brew.sh/api/formula/googleworkspace-cli.json) 0.22.5、[mole](https://formulae.brew.sh/api/formula/mole.json) 1.58.0、[qrencode](https://formulae.brew.sh/api/formula/qrencode.json) 4.1.1_1 を通常 Herdr ペインから `brew install --yes --formula exiftool googleworkspace-cli mole qrencode` で導入し、終了0。qrencode の必須依存 libpng は 1.6.55 → 1.6.59 に更新した。コマンド単位で `HOMEBREW_NO_AUTO_UPDATE=1` / `HOMEBREW_NO_INSTALL_CLEANUP=1` / `HOMEBREW_NO_INSTALL_UPGRADE=1` / `HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=1` を指定し、事前の dry-run に出た4件と libpng 以外の更新・cleanup は行っていない。libpng の旧 keg も残る。
+- Brew の導入版、4コマンドの Cellar への実行可能リンク、4件と libpng の `brew linkage --test` を確認し、すべて成功した。linkage が自動で有効化した developer mode は `brew developer off`（終了0）で戻した。Claude Code latest は既存の 2.1.289 を維持し、再導入・更新していない。RTK は Brew の keg / 実行ファイルがないことを確認し、削除対象の Brew 実体はなかった。旧 Nix profile の6件はまだ有効で、実機からの解除は移行全体の switch で行う。mise trust / apply、既存の管理外ファイルの退避、Nix switch、サービス・Keychain 操作はこの導入に含めていない。
 - **切替前の残件**: 既存 Brew Herdr 0.9.0 / Pi 1.0.1 は現行 Nix 版より古く、他の移管対象も版差・必要な対象限定更新を確認する。`~/.local/bin/agy` は実行可能な通常ファイルで Brew より PATH 上で先に見つかるが、内容・委譲先は未確認。無断で上書き・退避・削除しない。codex / opencode / usage の旧 mise shims も存在し、隔離 fixture では未設定 CLI が次の PATH 実行先へ fallback することを確認したが、実環境の解決先確認は別途必要。Nix 管理の mise 2026.9.18 は既に使用可能で、当該設定の trust はまだ変更していない。
 
 ## 切替・復旧手順
