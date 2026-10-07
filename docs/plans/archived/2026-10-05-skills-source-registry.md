@@ -4,7 +4,7 @@
 
 ユーザー承認済み。root Flake の外部スキル input を Source registry へ移し、標準の探索・選択機能で設定を簡素化する。現在の13取得元・14外部スキルの revision と内容を維持し、更新は移行と分ける。共通・Claude 各12自作 live link、Claude 専用同名優先、隠しディレクトリ除外、Antigravity CLI の共通参照、管理外の兄弟項目を保持する。標準 HM link の通常の置換動作は変更しない。
 
-背景は [既存の移行計画](../2026-10-03-nix-migration.md) T5a と [dig log](../../dig/2026-10-03-nix-migration.md)。今回の合意は、以前の「root lock に統一し registry を使わない」選択を置き換える。設定本文の live link 方針は維持する。
+背景は [既存の移行計画](2026-10-03-nix-migration.md) T5a と [dig log](../../dig/2026-10-03-nix-migration.md)。今回の合意は、以前の「root lock に統一し registry を使わない」選択を置き換える。設定本文の live link 方針は維持する。
 
 ## Implementation Decisions
 
