@@ -1,15 +1,43 @@
-[dotfiles."~"]
-source = "config"
+[dotfiles."~/.agents"]
+source = "config/.agents"
+mode = "symlink-each"
+manifest = "git"
+exclude = ["skills"]
+
+[dotfiles."~/.claude"]
+source = "config/.claude"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.codex"]
+source = "config/.codex"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.config"]
+source = "config/.config"
 mode = "symlink-each"
 manifest = "git"
 exclude = [
-  "nix", "tests", "*.example", ".disabled", "fish_variables",
-  ".env", ".env.*", "*.key", "*.pem", "auth.json", ".credentials.json", "sessions", "history.jsonl",
-  ".agents/skills", ".claude/skills",
-  ".claude/CLAUDE.md", ".codex/AGENTS.md", ".gemini/GEMINI.md", ".pi/agent/AGENTS.md",
-  ".config/mise", ".config/hermes/check-stopped.sh",
-  ".config/agent-safehouse/safe-hermes-*.sh",
+  "tests", "*.example",
+  "mise", "hermes/check-stopped.sh", "agent-safehouse/safe-hermes-*.sh",
 ]
+
+[dotfiles."~/.gemini"]
+source = "config/.gemini"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.hermes"]
+source = "config/.hermes"
+mode = "symlink-each"
+manifest = "git"
+exclude = ["*.example"]
+
+[dotfiles."~/.pi"]
+source = "config/.pi"
+mode = "symlink-each"
+manifest = "git"
 
 [dotfiles."~/.agents/skills/[!.]*"]
 source = "config/.agents/skills/[!.]*"
@@ -22,6 +50,7 @@ mode = "symlink-each"
 manifest = "git"
 
 [dotfiles]
+"~/.vimrc" = { source = "config/.vimrc", mode = "symlink" }
 "~/.claude/CLAUDE.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.codex/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.gemini/GEMINI.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
