@@ -141,8 +141,12 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 - Task 3 の上書きについては、ユーザーが公開版の維持を承認し、APIキーを含まないことを確認済み。
 - Safehouse 内の評価拒否は、ユーザーが Herdr の通常ペインで評価・build のみを承認したことで検証を進められた。`bash scripts/dotfiles.sh build` の flake check / system build は終了0。Bash / usage を Nix に残す候補は `/nix/store/5axbnzlq4dp2qrg8x6xpvdj0a6nmvbsa-darwin-system-26.11.4cff07d`。生成 Brewfile は40 formula で、Bash / usage を含まない。HM generation は `/nix/store/zimzvifcg7gn2j5l8k3sd2cdx04jrfl8-home-manager-generation`。root / registry lock は変更なし。ログは `/tmp/dotfiles-hybrid-build.GRTGTZ/build-bash.log`。
 - 新しい通常ペインでは既存 mise `2026.6.14` が root `mise.toml` の未信頼警告を出した。build は独立して成功しており、trust の変更はしていない。実配置時には Nix mise の解決先と、確認済み設定に限定した trust を扱う。
-- Task 1〜5 は検証済み候補として、入口独立化 `4c18231` と責務分離の2単位で local commit にまとめる。責務分離の設定・配置・起動経路は相互依存するため、ファイル種別で分割しない。独立レビューはこの候補全体を対象とし、Task 6 の実機操作とは区別する。
-- install / update / switch、実 HOME の mise apply、実設定への Herdr integration、サービス・Keychain 操作は未実施。実機受入と独立レビューのゲートが残るため、archive / push は行わない。既存4件の他者差分は未読・未編集のまま保持し、commit に含めない。
+- Task 1〜5 は検証済み候補として、入口独立化 `4c18231` と責務分離 `b6ad840` の2単位で local commit にした。責務分離の設定・配置・起動経路は相互依存するため、ファイル種別では分割していない。
+- **独立レビュー完了**: `837aa5a64b136af0861753265b1ab919e1012712..b6ad840` を別 context の reviewer が read-only で確認し、blocking/high・decision required・medium/low はいずれも指摘なし。コミット差分・関連コード・契約を照合し、shell 構文と diff check を独立実行した。実 Nix / mise / Herdr fixture と build の結果は実装側の報告として扱い、実機受入済みとは判定していない。
+- install / update / switch、実 HOME の mise apply、実設定への Herdr integration、サービス・Keychain 操作は未実施。実機受入のゲートが残るため、archive / push は行わない。既存4件の他者差分は未読・未編集のまま保持し、commit に含めていない。
+- **実機準備の読み取り確認**: 移管先の formula 38件中33件、cask 3件中2件に既存導入を確認した。未導入5 formula は Cellar ディレクトリ、未導入 cask は Caskroom ディレクトリの不在も確認した。`brew list` は未導入を含む照会で終了1となり、API metadata の取得はあったが、package install / upgrade は行っていない。共通 runtime は宣言版の実行ファイルが既定 mise data 配下に4種類とも存在したが、実環境の選択・動作は未検証。
+- 2026-10-07時点の不足分の標準配布候補は [exiftool](https://formulae.brew.sh/api/formula/exiftool.json) 13.55、[googleworkspace-cli](https://formulae.brew.sh/api/formula/googleworkspace-cli.json) 0.22.5、[mole](https://formulae.brew.sh/api/formula/mole.json) 1.58.0、[qrencode](https://formulae.brew.sh/api/formula/qrencode.json) 4.1.1、[rtk](https://formulae.brew.sh/api/formula/rtk.json) 0.51.0、[claude-code](https://formulae.brew.sh/api/cask/claude-code.json) 2.1.285。公式 API で disabled / deprecated が false、qrencode の実行時依存が libpng、Claude Code は binary 配置であることを確認した。導入時に候補が変われば版差を再確認する。これは導入済み・承認済みという意味ではない。
+- **切替前の残件**: 既存 Brew Herdr 0.9.0 / Pi 1.0.1 は現行 Nix 版より古く、他の移管対象も版差・必要な対象限定更新を確認する。`~/.local/bin/agy` は実行可能な通常ファイルで Brew より PATH 上で先に見つかるが、内容・委譲先は未確認。無断で上書き・退避・削除しない。codex / opencode / usage の旧 mise shims も存在し、隔離 fixture では未設定 CLI が次の PATH 実行先へ fallback することを確認したが、実環境の解決先確認は別途必要。Nix 管理の mise 2026.9.18 は既に使用可能で、当該設定の trust はまだ変更していない。
 
 ## 切替・復旧手順
 
