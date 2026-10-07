@@ -36,8 +36,15 @@ class DotfilesLinksTests(unittest.TestCase):
     }
     (self.repo / 'mise.toml').write_text((ROOT / 'mise.toml').read_text())
     subprocess.run(['git', 'init', '--quiet', str(self.repo)], env=self.env, check=True)
-    self.source('.agents/AGENTS.md')
-    self.source('.config/mise/config.base.toml', content='')
+    tracked = subprocess.run(['git', '-C', str(ROOT), 'ls-files', '-z', '--', 'config'],
+                             capture_output=True, text=True, check=True).stdout
+    for name in tracked.split('\0'):
+      if name and (ROOT / name).exists() and not name.startswith('config/.agents/skills/'):
+        path = self.repo / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text('')
+    subprocess.run(['git', '-C', str(self.repo), 'add', '--', 'config'],
+                   env=self.env, check=True)
 
   def source(self, name, content='fixture\n', tracked=True):
     path = self.repo / 'config' / name
@@ -52,6 +59,43 @@ class DotfilesLinksTests(unittest.TestCase):
     return subprocess.run([MISE, '-C', str(self.repo), 'dot', *args],
                           cwd=self.base, env=self.env, capture_output=True,
                           text=True, timeout=30)
+
+  def test_initial_operations_do_not_walk_unmanaged_home_directories(self):
+    blocked = ['Library', 'Documents']
+    sentinels = []
+    for name in blocked:
+      path = self.home / name
+      path.mkdir(parents=True)
+      sentinel = path / 'unmanaged.txt'
+      sentinel.write_text('unmanaged state\n')
+      sentinels.append(sentinel)
+      path.chmod(0)
+      self.addCleanup(path.chmod, 0o700)
+      with self.assertRaises(PermissionError, msg=f'{path} must reject directory access'):
+        list(path.iterdir())
+
+    source = self.source('.vimrc')
+    target = self.home / '.vimrc'
+    self.env['MISE_DEBUG'] = '1'
+    for operation in [('apply', '--dry-run'), ('apply', '--yes'), ('unapply', '--yes')]:
+      with self.subTest(operation=operation):
+        self.assertFalse((self.base / 'state/dotfiles').exists())
+        result = self.mise(*operation)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        walking_errors = [line for line in result.stderr.splitlines()
+                          if 'files: walking' in line and 'Permission denied' in line]
+        self.assertEqual(walking_errors, [], '\n'.join(walking_errors))
+        if operation == ('apply', '--dry-run'):
+          self.assertFalse(target.is_symlink())
+        elif operation == ('apply', '--yes'):
+          self.assertEqual(target.readlink(), source)
+        else:
+          self.assertFalse(target.is_symlink())
+        shutil.rmtree(self.base / 'state/dotfiles', ignore_errors=True)
+
+    for sentinel in sentinels:
+      sentinel.parent.chmod(0o700)
+      self.assertEqual(sentinel.read_text(), 'unmanaged state\n')
 
   def test_apply_links_directly_and_edits_reach_source_from_another_cwd(self):
     source = self.source('.vimrc')
@@ -98,7 +142,7 @@ class DotfilesLinksTests(unittest.TestCase):
     target.unlink()
     result = self.mise('apply', '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
-    result = self.mise('unapply', str(self.home), '--yes')
+    result = self.mise('unapply', str(target), '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertFalse(target.is_symlink())
     self.assertTrue(source.is_file())
@@ -106,7 +150,8 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertEqual(result.returncode, 0, result.stderr)
     target.unlink()
     target.write_text('replacement\n')
-    self.mise('unapply', str(self.home), '--yes')
+    result = self.mise('unapply', str(target), '--yes')
+    self.assertNotEqual(result.returncode, 0)
     self.assertEqual(target.read_text(), 'replacement\n')
 
   def test_agent_instructions_share_one_direct_source(self):
@@ -139,7 +184,7 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertFalse((shared / 'local-only/SKILL.md').exists())
     self.assertEqual((targets[2] / 'external/SKILL.md').read_text(), 'external skill\n')
 
-  def test_home_walk_excludes_nix_generated_files_examples_tests_and_state(self):
+  def test_apply_excludes_nix_generated_files_examples_tests_and_state(self):
     excluded = [
       'nix/home/packages.nix',
       '.config/agent-safehouse/safe-hermes-gateway.sh',
@@ -147,16 +192,16 @@ class DotfilesLinksTests(unittest.TestCase):
       '.config/hermes/check-stopped.sh',
       '.config/herdr/scripts/tests/test_helper.py',
       '.config/tool/config.toml.example',
-      '.config/fish/fish_variables',
-      '.pi/agent/sessions/last.json',
     ]
+    untracked = ['.config/fish/fish_variables', '.pi/agent/sessions/last.json',
+                 '.config/fish/functions/local-only.fish']
     for name in excluded:
       self.source(name)
-    self.source('.config/fish/functions/local-only.fish', tracked=False)
+    for name in untracked:
+      self.source(name, tracked=False)
     result = self.mise('apply', '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
-    for name in [*excluded, '.config/mise/config.base.toml',
-                 '.config/fish/functions/local-only.fish']:
+    for name in [*excluded, *untracked, '.config/mise/config.base.toml']:
       with self.subTest(path=name):
         self.assertFalse(os.path.lexists(self.home / name))
     self.assertEqual((self.home / '.config/mise/config.toml').readlink(),

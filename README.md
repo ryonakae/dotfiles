@@ -18,7 +18,7 @@ bash scripts/bootstrap-nix.sh --install
 
 ## 日常の変更
 
-通常設定と自作スキルの本文は `config/` の正本を編集する。HOME からの直接リンクに即時反映されるため、本文変更だけなら再適用は不要。追跡ファイルや配置対象の増減は、ルートの `mise.toml` に従って反映する。
+通常設定と自作スキルの本文は `config/` の正本を編集する。HOME からの直接リンクに即時反映されるため、本文変更だけなら再適用は不要。アプリ・設定ディレクトリ単位の Git manifest で配置する。既存 manifest 内の追跡ファイル増減は apply で反映し、個別リンクや管理ディレクトリの追加はルートの `mise.toml` も更新する。削除・改名は宣言を消す前に対象を unapply する。
 
 ```fish
 mise -C ~/dotfiles dot apply
@@ -29,7 +29,7 @@ mise -C ~/dotfiles dot apply
 - **Nix 基盤・外部スキル:** 宣言・lock を確認して `bash scripts/dotfiles.sh build`、適用承認後に通常の対話端末で `bash scripts/dotfiles.sh switch` を使う。
 
 既定では `mac` 構成を使う。別の定義済みホストは build／switch の両方で `--configuration NAME` を指定する。
-自作スキルの削除前の unapply、依存更新・初回切替・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
+自作スキルの glob 配置と削除前の unapply、依存更新・初回切替の事前確認・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
 
 エージェントに作業を任せる場合は [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を使う。リポジトリ共通の編集・検証上の制約は [AGENTS.md](AGENTS.md) を参照する。
 
