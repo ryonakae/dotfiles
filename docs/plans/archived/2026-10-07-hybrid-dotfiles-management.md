@@ -1,10 +1,10 @@
 # Nix・Homebrew・mise の責務分離 Implementation Plan
 
-## 現在地
+## 完了・アーカイブ
 
-実機の Nix switch、mise の299リンク配置、Herdr 標準 installer の実行は完了した。新規 fish の起動と共通 runtime 4件の版も確認済み。下記の追加受入は未完了のため、プランはアクティブのまま保持する。コミット・push のために再適用・サービス起動・全体テストを行わない。
+ユーザー承認により本計画を完了とし、アーカイブした。依頼された修正・Nix switch・mise の299リンク配置・Herdr 標準 installer の実行・コミット・push は完了した。新規 fish の起動と共通 runtime 4件の版も確認済み。追加検証は完了条件から外し、未実施のまま記録する。以下の未実施項目や当時の再開手順は履歴であり、残タスクとして引き継がない。問題が発生した場合は個別に扱う。
 
-- 残作業: アプリ経由の編集、Yazi / Herdr plugin・補完の実機能、Safehouse / dotenvx の移管後の実ツール検証、Herdr 登録以外の設定保持の実機比較。
+- 未実施（完了条件から除外）: アプリ経由の編集、Yazi / Herdr plugin・補完の実機能、Safehouse / dotenvx の移管後の実ツール検証、Herdr 登録以外の設定保持の実機比較。
 - Nix 宣言はルートの `nix/` に移動した。相対参照・現行文書を更新し、全 Nix ファイルの構文・参照先・lock 内容不変を確認した。移動後の build / switch は実行していない。
 - 共通指示の中継 symlink 4件を削除し、mise から共通正本へ直接配置する宣言を維持した。関連テスト1件と実機4リンクの確認が成功した。
 
@@ -39,7 +39,7 @@
 - 宣言の変更・検証と実機適用を分ける。計画承認だけで switch、サービス操作、Keychain 操作、既存ファイルの退避を実行しない。
 - 調査開始時からの Claude settings、Zed settings、Pi settings、Pi fast-mode config の既存差分を保持する。Herdr 登録以外を移行の都合で書き換えない。
 
-関連履歴は [Nix 移行の dig log](../dig/2026-10-03-nix-migration.md) と [旧計画](2026-10-03-nix-migration.md)。本計画は旧来の「通常 CLI・共通ランタイムを Nix、通常設定を HM live link に統一」という管理方針を置き換える。過去の実機操作・検証記録を新方式の検証結果には流用しない。旧計画の未完了事項も自動的に完了扱いしない。
+関連履歴は [Nix 移行の dig log](../../dig/2026-10-03-nix-migration.md) と [旧計画](2026-10-03-nix-migration.md)。本計画は旧来の「通常 CLI・共通ランタイムを Nix、通常設定を HM live link に統一」という管理方針を置き換える。過去の実機操作・検証記録を新方式の検証結果には流用しない。旧計画の未完了事項も自動的に完了扱いしない。
 
 ## Implementation Decisions
 
@@ -145,7 +145,7 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
   - 初回導入と既存機の切替・復旧を区別する。Herdr integration の旧併用禁止を新運用へ置換し、更新時に本体と hook の整合を確認する。Hermes の installer 禁止は維持する。
   - fish の生成 config 前提、Pi / Vim / 通常 CLI の Nix 更新案内など、変更で古くなる記述を対象を絞って除去する。旧計画の現行再開指示には本計画への参照を加え、過去の記録は保持する。
   - **候補実装**: 指定の文書5件を更新し、親が差分を確認した。作業者によるリンク47件の検査と対象 diff check は成功。`setup.md` は300行超で、依頼外の全体再構成は行っていない。
-- [ ] **6. 承認下での切替と受入**: 下記手順で実機を切り替え、配置・解決先・起動経路を確認する。実施範囲と未検証の実サービス・別 Mac の範囲を記録する。
+- [x] **6. 承認下での切替と受入**: 実機の切替・配置・基本的な解決先確認を完了した。ユーザー承認により追加検証は完了条件から除外し、未実施範囲を記録した。
 
 ## 初回配置の不具合と承認済み修正（2026-10-07）
 
@@ -173,7 +173,7 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 - [x] setup skill / 同梱手順・必要な指示を更新した。初回制約、個別宣言の追加・削除、事前検証と復旧を明記する。
 - [x] 修正差分を主担当が確認した。ユーザーの追加指示により、今回は追加の独立レビュー担当・全体テスト・再ビルドを省略し、非走査の回帰と上書き防止の確認に絞る。
 - [x] 実 HOME の対象を再確認し、修正した mise の dry-run → apply が成功した。Pi の既存リンクを保持し、未知の実体の削除・force は行っていない。
-- [ ] Herdr integration と shell / runtime / CLI / plugin の受入を行い、結果と未検証項目を記録する。サービス起動・Keychain テストの別承認は維持する。
+- 未実施（完了条件から除外）: Herdr integration と shell / runtime / CLI / plugin の受入を行い、結果と未検証項目を記録する。サービス起動・Keychain テストの別承認は維持する。
 
 ## 切替前までの検証履歴
 
@@ -219,10 +219,10 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 
 ### 移管に固有の確認
 
-- [ ] **実機の所有権と使い勝手**: `readlink` で通常設定・Git 管理 config.fish が `/nix/store` を挟まず正本へ向くことを確認する。非秘密の検証用リンクを Claude Code 等から編集し、正本へ反映できることを確認する。認証・session・管理外の兄弟・既存ユーザー差分が保持されていることも対象を絞って確認する。
-- [ ] **解決先と互換性**: 新規の対話 shell と非対話環境で `type -a`、`command -s`、`mise which`、対象の version / help を確認する。通常 CLI は Brew、Bash / fish / mise / usage / Hermes は Nix、共通 runtime は mise の意図した版になる。二重 activation・旧 PATH の shadowing がなく、既存のプロジェクト選択を壊さない。Yazi plugin、fish の prompt / 補完、Herdr の Claude hook を確認する。
-- [ ] **実ツールでの保護**: Safehouse / dotenvx の配布変更に対応する `check_safehouse_runtime.py` / `check_dotenvx_runtime.py` を、承認した通常端末から `uv run --no-project python` で実行する。前者は使い捨て HOME、後者は dummy Keychain item / launchd job を使う既存検証で、実秘密を読まない。Keychain / launchd 操作には別途承認が必要。未承認ならこの項目を未完了とし、単体テストで代替済みとしない。
-- [ ] **Herdr と既存変更**: fixture で無関係な settings が保たれることを確認したうえで、実機の変更を Herdr 用登録と hook に限定する。現在使用する本体と hook の同版性を確認し、既存の Claude / Pi / Zed 差分を紛れ込ませない。
+- 未実施（完了条件から除外）: **実機の所有権と使い勝手**: `readlink` で通常設定・Git 管理 config.fish が `/nix/store` を挟まず正本へ向くことを確認する。非秘密の検証用リンクを Claude Code 等から編集し、正本へ反映できることを確認する。認証・session・管理外の兄弟・既存ユーザー差分が保持されていることも対象を絞って確認する。
+- 未実施（完了条件から除外）: **解決先と互換性**: 新規の対話 shell と非対話環境で `type -a`、`command -s`、`mise which`、対象の version / help を確認する。通常 CLI は Brew、Bash / fish / mise / usage / Hermes は Nix、共通 runtime は mise の意図した版になる。二重 activation・旧 PATH の shadowing がなく、既存のプロジェクト選択を壊さない。Yazi plugin、fish の prompt / 補完、Herdr の Claude hook を確認する。
+- 未実施（完了条件から除外）: **実ツールでの保護**: Safehouse / dotenvx の配布変更に対応する `check_safehouse_runtime.py` / `check_dotenvx_runtime.py` を、承認した通常端末から `uv run --no-project python` で実行する。前者は使い捨て HOME、後者は dummy Keychain item / launchd job を使う既存検証で、実秘密を読まない。Keychain / launchd 操作には別途承認が必要。未承認ならこの項目を未完了とし、単体テストで代替済みとしない。
+- 未実施（完了条件から除外）: **Herdr と既存変更**: fixture で無関係な settings が保たれることを確認したうえで、実機の変更を Herdr 用登録と hook に限定する。現在使用する本体と hook の同版性を確認し、既存の Claude / Pi / Zed 差分を紛れ込ませない。
 - [x] **文書と廃止経路**: 参照リンク、標準コマンド、管理主体、実機の手順を照合し、`git diff --check` を行う。古い Nix 導入参照・実行先置換・config.fish example / ignore・HM 通常配置の残存は、対象を絞った検索と差分で確認する。削除完了だけを証明する恒久テストは作らない。
 
 ## 調査根拠と未検証範囲
