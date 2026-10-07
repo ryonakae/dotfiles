@@ -101,38 +101,38 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 
 実装開始時の review base は `837aa5a64b136af0861753265b1ab919e1012712`。`master` と `origin/master` は一致し、既存 staged 変更はない。Claude / Zed / Pi の既存4差分は commit 対象から除外する。実機で確認した初回ランタイム候補は Node `22.23.3`、Python `3.11.17`、Ruby `3.3.10`、Bun `1.4.2`。導入はまだ実行していない。
 
-- [ ] **1. 本体の導入宣言**: `config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix`、`config/nix/home/fish.nix` を変更し、通常 CLI と共通ランタイムを Nix のユーザー向け導入集合から外す。
+- [x] **1. 本体の導入宣言**: `config/nix/home/packages.nix`、`config/nix/darwin/homebrew.nix`、`config/nix/home/fish.nix` を変更し、通常 CLI と共通ランタイムを Nix のユーザー向け導入集合から外す。
   - 暗黙導入、Nix wrapper に隠れていた依存も確認する。Hermes 等の内部 closure を、ユーザー向け重複導入と誤認して削らない。
   - `flake.nix` の不要になった unfree 許可等は利用がなくなったものだけ整理する。fish / mise の導入と Nix formatter は保持する。
   - **ユーザーによる追加判断**: mise と補完依存 `usage` を Nix に残す。Home Manager の mise モジュールを維持し、`usage` の Homebrew 宣言は除去する。設定・activation は引き続き Git 側で管理する。
-  - **部分実装・未 commit**: 通常 CLI を Homebrew 宣言へ移し、共通 runtime と不要な unfree 許可を Nix から除去した。Pi の暗黙依存だった ripgrep と zoxide も直接宣言した。Nix 構文・nixfmt と実 flake check / system build が成功。生成 Home Manager profile は fish / mise / usage / Hermes のみ。system profile の Bash はユーザー承認により標準の Nix 管理を維持し、Brew 宣言から除去した。
-- [ ] **2. 直接リンクと所有権の分離**: `mise.toml` を追加し、`home/files.nix`、`pi.nix`、`skills.nix`、`protection.nix`、`hermes.nix`、`default.nix` から通常配置だけを移す。
+  - **候補実装**: 通常 CLI を Homebrew 宣言へ移し、共通 runtime と不要な unfree 許可を Nix から除去した。Pi の暗黙依存だった ripgrep と zoxide も直接宣言した。Nix 構文・nixfmt と実 flake check / system build が成功。生成 Home Manager profile は fish / mise / usage / Hermes のみ。system profile の Bash はユーザー承認により標準の Nix 管理を維持し、Brew 宣言から除去した。
+- [x] **2. 直接リンクと所有権の分離**: `mise.toml` を追加し、`home/files.nix`、`pi.nix`、`skills.nix`、`protection.nix`、`hermes.nix`、`default.nix` から通常配置だけを移す。
   - `scripts/tests/test_dotfiles_links.py` を追加し、実 mise と使い捨て HOME / Git fixture で配置契約を検証する。独自の配置処理や状態台帳は作らない。
   - 自作スキルの glob 配置・Claude 専用例外と外部選択を同じ管理集合に合わせる。共通指示の正本・既存 symlink は実ファイルへ複製しない。
-  - **部分実装・未 commit**: `mise.toml` をディレクトリ単位の Git manifest と例外指定へ整理した。実 mise の隔離 HOME 検証で、直接編集・冪等性、追跡ファイル増減、衝突保持、unapply、共通指示、スキル共有、除外、Claude 専用例外を確認した（既存5件＋追加2件成功）。実 HOME は未変更。
+  - **候補実装**: `mise.toml` をディレクトリ単位の Git manifest と例外指定へ整理した。実 mise の隔離 HOME 検証で、直接編集・冪等性、追跡ファイル増減、衝突保持、unapply、共通指示、スキル共有、除外、Claude 専用例外を確認した（既存5件＋追加2件成功）。実 HOME は未変更。
   - 空になった module や不要な `dotfilesLink` 等の引数・imports は同じ変更で除去する。
   - HM 側の通常配置を除去し、外部 Yazi plugin・外部 skills・Hermes 生成物・fish 補助を残した。`pi.nix` / `protection.nix` と不要な引数を除去。自作 skill の shadowing は mise の glob source と明示例外を参照する。実 build の HM リンク42件と mise 配置先299件を照合し、同一パス・親子パスの所有重複なし。通常設定・自作スキル・Herdr hook の HM 所有解除を生成物で確認した。
-- [ ] **3. fish と共通ランタイム**: `.gitignore`、`config/.config/fish/config.fish`、公開済み init ファイル、`config/.config/mise/config.base.toml`、`home/fish.nix` を変更する。
+- [x] **3. fish と共通ランタイム**: `.gitignore`、`config/.config/fish/config.fish`、公開済み init ファイル、`config/.config/mise/config.base.toml`、`home/fish.nix` を変更する。
   - Nix 補助設定と Git 側初期化を分離し、plugin / 補完 / `zoxide --cmd cd` の従来機能と、対話・非対話のランタイム選択を保つ。
   - `scripts/dotfiles.sh` の Python を安定化し、`test_dotfiles_cli.py` に入口の循環依存と cwd に関する必要な回帰ケースを加える。bootstrap 本体の仕様は変更しない。
-  - **部分実装・未 commit**: shell 入口を `/usr/bin/python3` に固定した。壊れた PATH 上の Python と別プロジェクト cwd を扱う回帰テストは変更前に終了127で失敗し、変更後に成功。`uv run --no-project python scripts/tests/test_dotfiles_cli.py` は16件成功・skipなし。Bash 構文・対象差分も確認済み。
+  - **入口の独立成果物 `4c18231`**: shell 入口を `/usr/bin/python3` に固定した。壊れた PATH 上の Python と別プロジェクト cwd を扱う回帰テストは変更前に終了127で失敗し、変更後に成功。`uv run --no-project python scripts/tests/test_dotfiles_cli.py` は16件成功・skipなし。Bash 構文・対象差分も確認済み。
   - **操作ミスと維持の承認**: 旧 `config/.config/fish/config.fish` は Git 管理外の通常ファイル（3032 bytes）だった。必要な保全の扱いを確認する前に、公開済み init ファイルを source する11行の公開版へ上書きしてしまった。旧本文は読み出しておらず、この作業でバックアップも作成していない。報告後、ユーザーから現在の公開版を維持する承認を得た。現在の本文が作成した公開内容と完全一致し、APIキーを含まないことを確認した。Git 管理の init ファイルと Nix fish module でも、資格情報の設定・既知のキー形式は検出されなかった。承認後の build に向け、公開版と `mise.toml` の2件だけを明示 stage した。
   - `.gitignore` の除外解除、HM 生成設定の `nix-init.fish` 分離、対話 mise / zoxide activation、非対話 shims、確認済み4 runtime の exact pin を実装した。fish 構文と、隔離 HOME の対話/非対話 × 既定/明示 `MISE_DATA_DIR` の4条件の初期化・PATH・cwd 検証は成功。生成された HM 補助の配置先・構文・二重 activation の不在も確認した。実 runtime の導入と、切替後の実 plugin 動作は未検証。
-- [ ] **4. 起動・保護・連携**: `config/.config/fish/functions/` の対象関数、`run-with-agent-env.sh`、`home/protection.nix`、`home/hermes.nix` を新しい実行先へ接続する。
+- [x] **4. 起動・保護・連携**: `config/.config/fish/functions/` の対象関数、`run-with-agent-env.sh`、`home/protection.nix`、`home/hermes.nix` を新しい実行先へ接続する。
   - `test_agent_runtime.py` と `test_hermes_tmpdir.py` で関連する PATH / cwd / 失敗経路を補強する。`check_dotenvx_runtime.py` の HM 固定の実行先を新方式に直す。
   - Pi の telemetry 抑止を起動経路へ移す。Codex は既存のユーザー設定を保持して Homebrew 標準版へ移す。必要な設定変更が既存のユーザー変更と競合した場合は止めて確認する。
   - **要件の誤認を訂正**: ユーザーの指摘により、Codex の daemon 自動起動を既定で無効にする条件と、それを理由にした停止を撤回した。Nix パッケージ側の補正をユーザー要件と誤認していたもので、system defaults の追加承認は不要。Codex 用の実設定・コードは変更していない。
   - Herdr hook の旧 HM 宣言を除去し、標準 installer の検証用 fixture と実機の引継ぎ手順を用意する。実機の installer 実行はタスク6へ残す。
-  - **部分実装・未 commit**: Safehouse / dotenvx の Brew 固定参照、Hermes の安定参照、非対話 shims、Pi telemetry を実装した。`test_agent_runtime.py` 9件、`test_hermes_tmpdir.py` 1件（21 subtests）が成功し、worker の差分を親が確認した。fish / shell / Python / Nix 構文も成功。生成 wrapper は Nix shebang / Hermes 絶対パス以外が正本と一致し、Bash 構文も成功。plist の実行先、cwd、shims、Disabled / RunAtLoad / KeepAlive を生成物で確認した。
+  - **候補実装**: Safehouse / dotenvx の Brew 固定参照、Hermes の安定参照、非対話 shims、Pi telemetry を実装した。`test_agent_runtime.py` 9件、`test_hermes_tmpdir.py` 1件（21 subtests）が成功し、worker の差分を親が確認した。fish / shell / Python / Nix 構文も成功。生成 wrapper は Nix shebang / Hermes 絶対パス以外が正本と一致し、Bash 構文も成功。plist の実行先、cwd、shims、Disabled / RunAtLoad / KeepAlive を生成物で確認した。
   - 隔離 HOME の Herdr installer 検証は、既存 Brew `0.9.0` と現行 Nix `0.9.3` で成功。settings symlink、無関係な設定・hook、実行属性、冪等性を確認した。実設定は変更せず、候補版の Brew 導入検証や実機 hook 更新を済ませたとは扱わない。
-- [ ] **5. 運用文書と指示**: `dotfiles-setup` の `SKILL.md` / `references/setup.md`、`README.md`、`AGENTS.md` を新分担へ更新する。
+- [x] **5. 運用文書と指示**: `dotfiles-setup` の `SKILL.md` / `references/setup.md`、`README.md`、`AGENTS.md` を新分担へ更新する。
   - 運用の正本は同梱 `setup.md` に保つ。README は分担と入口、AGENTS は編集・所有権・検証上の制約に絞り、パッケージ一覧や設定値を重複掲載しない。
   - config 本文編集・配置増減、CLI の導入 / 更新 / 削除、runtime、Nix 基盤、外部スキルで手順を分ける。通常のツール更新を一律 `update nixpkgs` へ誘導しない。
   - Homebrew の日常更新は `brew update && brew upgrade`、本体更新は Nix。自己更新を抑止する CLI は、使用する Homebrew 版での `auto_updates` / `:latest` の扱いを確認し、必要な場合だけ対象を限定して `--greedy` 等を案内する。全 cask の更新へ無条件に広げない。削除は Nix 宣言から除外したうえで対象の `brew uninstall`。`cleanup = "none"` では宣言削除だけでアンインストールされないことを明記する。
   - mise の配置と runtime の install / upgrade を区別し、初回の版維持と更新時の指定方法を説明する。自作スキルの追加・無効化、明示リンクの unapply、外部との優先関係変更も扱う。
   - 初回導入と既存機の切替・復旧を区別する。Herdr integration の旧併用禁止を新運用へ置換し、更新時に本体と hook の整合を確認する。Hermes の installer 禁止は維持する。
   - fish の生成 config 前提、Pi / Vim / 通常 CLI の Nix 更新案内など、変更で古くなる記述を対象を絞って除去する。旧計画の現行再開指示には本計画への参照を加え、過去の記録は保持する。
-  - **部分実装・未 commit**: 指定の文書5件を更新し、親が差分を確認した。作業者によるリンク47件の検査と対象 diff check は成功。`setup.md` は451行で、依頼外の全体再構成は行っていない。
+  - **候補実装**: 指定の文書5件を更新し、親が差分を確認した。作業者によるリンク47件の検査と対象 diff check は成功。`setup.md` は300行超で、依頼外の全体再構成は行っていない。
 - [ ] **6. 承認下での切替と受入**: 下記手順で実機を切り替え、配置・解決先・起動経路を確認する。実施範囲と未検証の実サービス・別 Mac の範囲を記録する。
 
 ## 現在の判断待ちと検証状況
@@ -141,7 +141,8 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 - Task 3 の上書きについては、ユーザーが公開版の維持を承認し、APIキーを含まないことを確認済み。
 - Safehouse 内の評価拒否は、ユーザーが Herdr の通常ペインで評価・build のみを承認したことで検証を進められた。`bash scripts/dotfiles.sh build` の flake check / system build は終了0。Bash / usage を Nix に残す候補は `/nix/store/5axbnzlq4dp2qrg8x6xpvdj0a6nmvbsa-darwin-system-26.11.4cff07d`。生成 Brewfile は40 formula で、Bash / usage を含まない。HM generation は `/nix/store/zimzvifcg7gn2j5l8k3sd2cdx04jrfl8-home-manager-generation`。root / registry lock は変更なし。ログは `/tmp/dotfiles-hybrid-build.GRTGTZ/build-bash.log`。
 - 新しい通常ペインでは既存 mise `2026.6.14` が root `mise.toml` の未信頼警告を出した。build は独立して成功しており、trust の変更はしていない。実配置時には Nix mise の解決先と、確認済み設定に限定した trust を扱う。
-- 公開版 `config.fish` と `mise.toml` の2件のみ staged。他は今回の未 commit 差分として保持している。install / update / switch、実 HOME の mise apply、実設定への Herdr integration、サービス・Keychain 操作は未実施。独立した実装レビュー、commit、archive、push も未実施。既存4件の他者差分は未読・未編集のまま保持している。
+- Task 1〜5 は検証済み候補として、入口独立化 `4c18231` と責務分離の2単位で local commit にまとめる。責務分離の設定・配置・起動経路は相互依存するため、ファイル種別で分割しない。独立レビューはこの候補全体を対象とし、Task 6 の実機操作とは区別する。
+- install / update / switch、実 HOME の mise apply、実設定への Herdr integration、サービス・Keychain 操作は未実施。実機受入と独立レビューのゲートが残るため、archive / push は行わない。既存4件の他者差分は未読・未編集のまま保持し、commit に含めない。
 
 ## 切替・復旧手順
 

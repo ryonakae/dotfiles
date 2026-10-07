@@ -14,12 +14,55 @@
       cleanup = "none";
     };
     caskArgs.appdir = "/Applications";
-    taps = [ "ryonakae/tap" ];
+    taps = [
+      "ryonakae/tap"
+      "eugene1g/safehouse"
+      "dotenvx/brew"
+      "trasta298/tap"
+    ];
 
     brews = [
+      "actionlint"
+      "age"
+      "agent-browser"
+      "eugene1g/safehouse/agent-safehouse"
+      "awscli"
+      "cocoapods"
+      "ctx7"
+      "dotenvx/brew/dotenvx"
+      "exiftool"
+      "fastlane"
+      "fd"
+      "ffmpeg"
+      "fzf"
+      "gh"
+      "git"
+      "git-lfs"
+      "gomi"
+      "googleworkspace-cli"
+      "herdr"
+      "imagemagick"
+      "jq"
+      "trasta298/tap/keifu"
+      "mas"
+      "mkcert"
+      "mole"
       # The firewall helper signs the installed binary in place.
       "mosh"
+      "opencode"
+      "pi-coding-agent"
+      "qrencode"
+      "ripgrep"
+      "rtk"
+      "terminal-notifier"
+      "tmux"
+      "tree"
+      "uv"
+      "vim"
+      "worktrunk"
+      "yazi"
       "ryonakae/tap/zerdr"
+      "zoxide"
     ];
 
     casks = [
@@ -28,12 +71,15 @@
       "adobe-creative-cloud"
       "affinity"
       "android-studio"
+      "antigravity-cli"
       "appcleaner"
       "bettertouchtool"
       "chatgpt"
       "claude"
+      "claude-code"
       "cleanshot"
       "cmd-eikana"
+      "codex"
       "contexts"
       "cursor"
       "cursorsense"

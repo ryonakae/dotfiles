@@ -35,7 +35,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             set_color green; echo "✓ gateway started"; set_color normal
         case stop
             set_color cyan; echo "→ requesting native gateway shutdown"; set_color normal
-            command hermes --profile default gateway stop
+            command "$HOME/.local/libexec/hermes" --profile default gateway stop
             or return $status
 
             # Native gateway stop may already have unloaded the launchd job.
@@ -62,7 +62,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             hermes-gateway start
             return $status
         case status
-            command hermes --profile default gateway status
+            command "$HOME/.local/libexec/hermes" --profile default gateway status
             set -l native_status $status
             command launchctl print $domain/$label
             set -l launchd_status $status

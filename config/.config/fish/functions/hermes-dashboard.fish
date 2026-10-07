@@ -43,7 +43,7 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             set_color green; echo "✓ dashboard started"; set_color normal
         case stop
             set_color cyan; echo "→ requesting native dashboard shutdown"; set_color normal
-            command hermes --profile default dashboard --stop
+            command "$HOME/.local/libexec/hermes" --profile default dashboard --stop
             or return $status
 
             set -l jobs (command launchctl list)
@@ -70,7 +70,7 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             return $status
         case status
             echo "Local dashboard: $local_url"
-            command hermes --profile default dashboard --status
+            command "$HOME/.local/libexec/hermes" --profile default dashboard --status
             set -l native_status $status
             command launchctl print $domain/$label
             set -l launchd_status $status

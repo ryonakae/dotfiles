@@ -1,0 +1,30 @@
+[dotfiles."~"]
+source = "config"
+mode = "symlink-each"
+manifest = "git"
+exclude = [
+  "nix", "tests", "*.example", ".disabled", "fish_variables",
+  ".env", ".env.*", "*.key", "*.pem", "auth.json", ".credentials.json", "sessions", "history.jsonl",
+  ".agents/skills", ".claude/skills",
+  ".claude/CLAUDE.md", ".codex/AGENTS.md", ".gemini/GEMINI.md", ".pi/agent/AGENTS.md",
+  ".config/mise", ".config/hermes/check-stopped.sh",
+  ".config/agent-safehouse/safe-hermes-*.sh",
+]
+
+[dotfiles."~/.agents/skills/[!.]*"]
+source = "config/.agents/skills/[!.]*"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.claude/skills/[!.]*"]
+source = "config/.agents/skills/[!.]*"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles]
+"~/.claude/CLAUDE.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.codex/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.gemini/GEMINI.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.pi/agent/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.config/mise/config.toml" = { source = "config/.config/mise/config.base.toml", mode = "symlink" }
+"~/.gemini/antigravity-cli/skills" = { source = "~/.agents/skills", mode = "symlink" }

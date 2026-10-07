@@ -1,6 +1,5 @@
 {
   config,
-  dotfilesLink,
   hermes,
   lib,
   pkgs,
@@ -19,12 +18,8 @@ let
       executable = true;
       text =
         lib.replaceStrings
-          [ "#!/bin/bash" ''run-with-agent-env.sh" safehouse '' "  hermes --profile " ]
-          [
-            "#!${pkgs.runtimeShell}"
-            ''run-with-agent-env.sh" ${lib.getExe pkgs.agent-safehouse} ''
-            "  ${hermes}/bin/hermes --profile "
-          ]
+          [ "#!/bin/bash" ''"$HOME/.local/libexec/hermes"'' ]
+          [ "#!${pkgs.runtimeShell}" ''"${hermes}/bin/hermes"'' ]
           (builtins.readFile (../../.config/agent-safehouse + "/safe-hermes-${name}.sh"));
     }
   );
@@ -38,7 +33,7 @@ let
         EnvironmentVariables = {
           HOME = home;
           HERMES_HOME = "${home}/.hermes";
-          PATH = "${home}/.local/bin:${config.home.path}/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin";
+          PATH = "${home}/.local/bin:${home}/.local/share/mise/shims:${config.home.path}/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin";
         };
         Disabled = true;
         RunAtLoad = true;
@@ -62,10 +57,7 @@ let
   };
 in
 {
-  home.file = {
-    ".hermes/SOUL.md".source = dotfilesLink ".hermes/SOUL.md";
-    ".hermes/services/docker-compose.yml".source = dotfilesLink ".hermes/services/docker-compose.yml";
-  };
+  home.file.".local/libexec/hermes".source = "${hermes}/bin/hermes";
   xdg.configFile = {
     "hermes/check-stopped.sh" = {
       source = checkStopped;

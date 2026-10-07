@@ -40,5 +40,5 @@ for profile in compatibility local-overrides; do
   args+=(--append-profile="$file")
 done
 
-exec "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse "${args[@]}" -- \
-  hermes --profile default gateway run
+exec "$HOME/.config/agent-safehouse/run-with-agent-env.sh" "/opt/homebrew/bin/safehouse" "${args[@]}" -- \
+  "$HOME/.local/libexec/hermes" --profile default gateway run

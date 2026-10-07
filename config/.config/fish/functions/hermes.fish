@@ -1,5 +1,5 @@
 function hermes --description "Run Hermes Agent through Agent Safehouse"
-    if not command -q safehouse
+    if not test -x "/opt/homebrew/bin/safehouse"
         echo "error: safehouse command not found." >&2
         return 127
     end
@@ -16,6 +16,6 @@ function hermes --description "Run Hermes Agent through Agent Safehouse"
     set -l safehouse_args (__safehouse_args)
     or return $status
 
-    command "$HOME/.config/agent-safehouse/run-with-agent-env.sh" safehouse $safehouse_args -- hermes $argv
+    command "$HOME/.config/agent-safehouse/run-with-agent-env.sh" "/opt/homebrew/bin/safehouse" $safehouse_args -- "$HOME/.local/libexec/hermes" $argv
     return $status
 end
