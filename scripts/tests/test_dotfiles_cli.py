@@ -15,6 +15,30 @@ ROOT = Path(__file__).resolve().parents[2]
 NIX = shutil.which('nix') or '/nix/var/nix/profiles/default/bin/nix'
 
 
+class ShellEntrypointTests(unittest.TestCase):
+  def test_cli_starts_without_path_python_from_repo_or_another_project(self):
+    with tempfile.TemporaryDirectory() as directory:
+      project = Path(directory) / 'other project'
+      project.mkdir()
+      (project / '.python-version').write_text('unavailable-python\n')
+      shims = Path(directory) / 'shims'
+      shims.mkdir()
+      python = shims / 'python3'
+      python.write_text('#!/bin/sh\nprintf "mise Python is unavailable\\n" >&2\nexit 127\n')
+      python.chmod(0o755)
+      env = dict(os.environ, PATH=f'{shims}:/usr/bin:/bin')
+      for cwd in (ROOT, project):
+        with self.subTest(cwd=cwd):
+          result = subprocess.run(
+            ['/bin/bash', str(ROOT / 'scripts/dotfiles.sh'), '--help'],
+            cwd=cwd, env=env, capture_output=True, text=True,
+          )
+          self.assertEqual(result.returncode, 0, result.stderr)
+          self.assertIn('Build, apply, or update the locked macOS configuration', result.stdout)
+          self.assertIn('--configuration', result.stdout)
+          self.assertEqual(result.stderr, '')
+
+
 @unittest.skipUnless(Path(NIX).is_file(), 'Nix is required for CLI integration tests')
 class DotfilesCliTests(unittest.TestCase):
   def setUp(self):
