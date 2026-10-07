@@ -16,7 +16,7 @@ compatibility: Requires a compatible Node.js and npm/npx, the official agent-dev
 ## 公式スキルを読む
 
 最初に `~/.agents/skills/agent-device/SKILL.md` を読む。
-未導入なら操作を止め、dotfiles の README「外部スキル」の手順で導入するよう案内する。
+未導入なら操作を止め、dotfiles の `dotfiles-setup` スキルに同梱された `references/setup.md` の「外部スキル」の手順で導入するよう案内する。
 公式スキルは外部スキルなので、追加ルールを書き込まない。公式スキル中の `agent-device …` は、下記の `npx` 起動方法へ読み替える。
 
 仕様や手順の質問だけなら、必要な資料を読んで回答する。確認のために Simulator を操作したり、CLI を更新したりしない。
