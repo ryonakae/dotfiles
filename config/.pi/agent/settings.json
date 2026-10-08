@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.0.0",
+  "lastChangelogVersion": "1.0.4",
   "defaultProvider": "openai",
   "defaultModel": "gpt-6-astra",
   "defaultThinkingLevel": "medium",
@@ -17,7 +17,8 @@
     "npm:@normful/pi-auto-name@2.0.0",
     "npm:@pi-kaush/pi-tool-call-markers@0.3.9",
     "npm:pi-gpt-fast-mode@0.1.2",
-    "npm:@hk_net/pi-usage-bars@0.7.0"
+    "npm:@hk_net/pi-usage-bars@0.7.0",
+    "npm:@sting8k/pi-vcc@0.10.0"
   ],
   "theme": "dark",
   "tuiMode": "regular",
