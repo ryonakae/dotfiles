@@ -108,6 +108,17 @@ class AgentRuntimeTests(unittest.TestCase):
         self.assertEqual(payload['cwd'], str(self.project.resolve()))
         self.assertEqual(payload['node'], str(self.project.resolve()))
 
+  def test_noninteractive_runtime_resolves_rm_to_trash_wrapper(self):
+    gtrash = self.program('gtrash', (self.bin / 'probe').read_text())
+    wrapper = self.bin / 'rm'
+    wrapper.write_text((ROOT / 'config/.local/bin/rm').read_text().replace(
+      '/opt/homebrew/bin/gtrash', str(gtrash)))
+    wrapper.chmod(0o755)
+    self.env['PATH'] = '/usr/bin:/bin'
+    result = self.run_helper('/bin/sh', '-c', 'rm -rf -- "argument with spaces"')
+    self.assertEqual(result.returncode, 23, result.stderr)
+    self.assertEqual(json.loads(result.stdout)['args'], ['put', '-rf', '--', 'argument with spaces'])
+
   def test_all_wrappers_inject_before_sandbox_and_preserve_service_arguments(self):
     runtime = self.install_runtime()
     self.program('safehouse', (self.bin / 'probe').read_text())

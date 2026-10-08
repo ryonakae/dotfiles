@@ -39,6 +39,7 @@
       "git-lfs"
       "gomi"
       "googleworkspace-cli"
+      "gtrash"
       "herdr"
       "imagemagick"
       "jq"

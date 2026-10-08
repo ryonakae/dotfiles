@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Keep failed cross-volume moves recoverable instead of copying and deleting.
+export GTRASH_ONLY_HOME_TRASH=false
+export GTRASH_HOME_TRASH_FALLBACK_COPY=false
+
+exec "/opt/homebrew/bin/gtrash" put "$@"

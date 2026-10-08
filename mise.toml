@@ -8,6 +8,7 @@ exclude = ["skills"]
 source = "config/.claude"
 mode = "symlink-each"
 manifest = "git"
+exclude = ["skills"]
 
 [dotfiles."~/.codex"]
 source = "config/.codex"
@@ -50,6 +51,7 @@ mode = "symlink-each"
 manifest = "git"
 
 [dotfiles]
+"~/.local/bin/rm" = { source = "config/.local/bin/rm", mode = "symlink" }
 "~/.vimrc" = { source = "config/.vimrc", mode = "symlink" }
 "~/.claude/CLAUDE.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.codex/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }

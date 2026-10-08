@@ -223,20 +223,25 @@ OS 移行時は Keychain も復元する。暗号化ファイルだけでは復�
 
 ## 削除したファイルの復元
 
-通常の `rm` は直接削除する。ごみ箱へ移す場合は `gomi ファイル` を明示する。
-gomi のごみ箱は通常 `~/.local/share/Trash`。`XDG_DATA_HOME` 指定時はその配下の `Trash` を使う。
-Finder のごみ箱とは別で、復元は gomi から行う。
+通常の `rm` は `~/.local/bin/rm` から Homebrew の `gtrash put` へ転送する。引数と終了コードは gtrash に委ね、未導入・失敗時に直接削除へ戻らない。これは rm の完全互換実装ではないため、非対応のオプションで失敗しても別の削除コマンドへ無断で切り替えない。
+
+同一 volume ではごみ箱へ移動し、別 volume から HOME へのコピー fallback は無効にしている。HOME volume の既定先は `~/.local/share/Trash`（`XDG_DATA_HOME` 指定時はその配下）。他の volume はその volume のごみ箱を使い、利用できなければ失敗する。Finder のごみ箱とは別。
+
+Safehouse 内では `/bin/rm` の実行と、ごみ箱 payload の直接の読み取り・上書き・削除を拒否する。エージェントの削除操作が終わってから、人間が sandbox 外で一覧確認・復元する。
+
+```fish
+gtrash restore
+```
+
+TUI の `?` で操作方法を確認する。元の場所に別のデータがある場合は、先に復元先を確認し、必要なら `--restore-to` で別の場所へ戻す。復元・掃除中は別の rm / gtrash / gomi を並行実行しない。永久削除は人間が復元・バックアップを確認してから行い、自動掃除は設定しない。
+
+gomi 本体・設定・既存ごみ箱データは保持する。以前の gomi データは従来どおり次で復元できる。
 
 ```fish
 gomi --config "$HOME/.config/gomi/config.yaml" --restore
 ```
 
-エージェントの削除操作が終わってから、sandbox 外で実行する。
-一覧から対象を選び、Enter で復元する。元の場所に別のデータがある場合は、先に退避して復元先を確認する。
-復元・掃除中は別の rm / gomi を並行実行しない。
-容量を空けるための永久削除は、人間が復元・バックアップを確認してから行う。自動掃除は設定しない。
-
-旧 rm 転送から切り替える環境では、`~/.local/bin/rm`、fish の `rm.fish`、`conf.d/gomi.fish` の旧管理リンクを個別に確認・保全して除去する。起動済み fish には関数が残るため、新しい shell の `type -a rm` で通常の `rm` を参照することを確認する。日常の更新でこの退避を繰り返さず、gomi 本体・設定・ごみ箱の実体は残す。
+導入時は `~/.local/bin/rm` と旧 fish 関数・リンクの実体を確認し、未知の設定を上書きしない。gtrash を導入してから標準 mise apply でリンクを配置し、新しい fish と子 shell の `type -a rm` / `command -v rm` で wrapper が選ばれることを確認する。既に起動しているエージェントの policy は変わらず、新しい policy は次回起動から適用される。
 
 ## 外部スキル
 

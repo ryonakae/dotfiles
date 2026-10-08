@@ -1,143 +1,17 @@
-;; Agent Safehouse のローカルオーバーライド。
-;; 標準のパス許可より後に、機密ファイルへの直接アクセスを制限する。
-;; 通常の共有アクセスには --add-dirs-ro/--add-dirs を使い、ホスト固有のルールをここに書く。
-
-;; HOMEの広い許可より後に、コピーされた秘密もファイル名で保護する。
-;;
-;; スコープの使い分け:
-;;   .* (全パス)   — システムパスに同名ファイルが存在しないパターン
-;;   HOME_DIR 限定 — /opt/homebrew/etc 等のシステム SSL 証明書と衝突するパターン
-(deny file-read* file-write*
-    ;; 環境変数 / 設定ファイル
-    (regex #".*/\.env$")
-    (regex #".*/\.env\.keys$")
-    (regex #".*/\.env\.local$")
-    (regex #".*/\.env\.development$")
-    (regex #".*/\.env\.development\.local$")
-    (regex #".*/\.env\.preview$")
-    (regex #".*/\.env\.preview\.local$")
-    (regex #".*/\.env\.staging$")
-    (regex #".*/\.env\.staging\.local$")
-    (regex #".*/\.env\.production$")
-    (regex #".*/\.env\.production\.local$")
-    (regex #".*/\.env\.test$")
-    (regex #".*/\.env\.test\.local$")
-    (regex #".*/\.envrc$")
-
-    ;; クラウド / サービス認証情報
-    (regex #".*/credentials\.json$")
-    (regex #".*/service-account[^/]*\.json$")
-    (regex #".*/[^/]*-credentials\.json$")
-    (regex #".*/firebase-adminsdk[^/]*\.json$")
-
-    ;; workdir/tmpにコピーされたSSH秘密鍵も対象にする。
-    (regex #".*/id_rsa$")
-    (regex #".*/id_ed25519$")
-    (regex #".*/id_ecdsa$")
-    (regex #".*/id_dsa$")
-
-    ;; シークレットディレクトリ
-    (regex #".*/secrets(/.*)?$")
-    (regex #".*/\.secrets(/.*)?$")
-
-    ;; 証明書 / キーストア（HOME_DIR 限定: システム SSL 証明書との衝突を回避）
-    ;; certifi の CA バンドルは秘密鍵ではなく HTTPS 通信に必須なため除外
-    (require-all
-        (regex (string-append "^" HOME_DIR "/.*\\.pem$"))
-        (require-not (regex #".*/certifi/cacert\.pem$"))
-    )
-    (regex (string-append "^" HOME_DIR "/.*\\.p8$"))
-    (regex (string-append "^" HOME_DIR "/.*\\.p12$"))
-    (regex (string-append "^" HOME_DIR "/.*\\.key$"))
-    (regex (string-append "^" HOME_DIR "/.*\\.jks$"))
-    (regex (string-append "^" HOME_DIR "/.*\\.keystore$"))
-)
-
-;; Gitは追跡用placeholderとdirectoryの列挙を必要とするが、秘密の内容は不要。
-(allow file-read-metadata (regex #".*/\.secrets(/.*)?$"))
-(allow file-read-data file-write-create
-    (require-all
-        (regex #".*/\.secrets$")
-        (vnode-type DIRECTORY)
-    )
-)
-(allow file-read* file-write* (regex #".*/\.secrets/\.gitkeep$"))
-
-;; サードパーティ依存ディレクトリ配下に紛れる .env / 鍵 / pem は agent 個人の機密ではなく、
-;; git clone / ビルドで読み書きが必要。上記の汎用 deny を後勝ち allow で例外化する。
-;; これが無いと vendor/libghostty-vt/.envrc の checkout が deny されて clone が失敗する。
-(allow file-read* file-write*
-    (regex #".*/(vendor|node_modules|third_party)/.*/\.env[^/]*$")
-    (regex #".*/(vendor|node_modules|third_party)/.*/\.envrc$")
-    (regex #".*/(vendor|node_modules|third_party)/.*/id_(rsa|dsa|ecdsa|ed25519)$")
-    (regex #".*/(vendor|node_modules|third_party)/.*\.pem$")
-    (regex #".*/(vendor|node_modules|third_party)/.*\.p(8|12)$")
-    (regex #".*/(vendor|node_modules|third_party)/.*\.(key|jks|keystore)$")
-    ;; Cargo registry の test fixture (libnghttp2-sys 等)
-    (regex (string-append "^" HOME_DIR "/\\.cargo/registry/.*\\.pem$"))
-)
-
-;; Flutter SDK / pub cache / analysis server / Android SDK manager の状態は同じワークフローで必要になる。
-;; HOME以外へsymlinkされる場合も既存のSDKアクセスを維持する。
+;; HOME以外へsymlinkされたSDKも、既存の開発ワークフローで必要になる。
 (allow file-read* file-write*
     (home-subpath "/.local/share/mise/installs/flutter")
     (home-subpath "/.pub-cache")
     (home-subpath "/.dart-tool")
     (home-subpath "/.dartServer")
     (home-subpath "/.android/cache")
-    ;; 開発用の自動生成鍵だけを許可し、本番署名鍵は保護する。
-    (home-literal "/.android/debug.keystore")
 )
 
-;; ホスト上の各種クレデンシャル。wide-read で / 全 read 開放しているため、
-;; HOMEの後勝ち許可でも各credentialを再開放しない。
-(deny file-read* file-write*
-    (home-subpath "/.gnupg")
-    (home-literal "/.aws/credentials")
-    (home-literal "/.netrc")
-    (home-literal "/.git-credentials")
-    (home-literal "/.kube/config")
-)
+;; 通常rmはgtrashへ転送し、絶対パス指定による直接削除を防ぐ。
+(deny process-exec (literal "/bin/rm"))
 
-;; HOMEのlate grantがSSHの標準denyを上書きするため、例外ごと再適用する。
-(deny file-read* file-write*
-    (home-subpath "/.ssh")
-    (home-subpath "/Library/Mail")
-    (home-subpath "/Library/Messages")
-    (home-subpath "/Library/Safari")
-    (home-subpath "/Library/Containers/com.apple.mail")
-    (home-subpath "/Library/Group Containers/group.com.apple.mail")
-    (home-subpath "/Library/Application Support/Google/Chrome")
-    (home-subpath "/Library/Application Support/Chromium")
-    (home-subpath "/Library/Application Support/Firefox/Profiles")
-    (home-subpath "/Library/Application Support/Microsoft Edge")
-    (home-subpath "/Library/Application Support/BraveSoftware")
-    (home-subpath "/Library/Application Support/Arc")
-    (home-subpath "/Library/Application Support/Dia")
-)
-(allow file-read-metadata (home-literal "/.ssh") (home-literal "/.ssh/agent"))
-(allow file-read*
-    (home-literal "/.ssh/config")
-    (home-subpath "/.ssh/config.d")
-    (home-literal "/.ssh/known_hosts")
-    (home-literal "/.ssh/allowed_signers")
-)
-(allow file-write*
-    (home-literal "/.ssh/known_hosts")
-    (home-literal "/.ssh/known_hosts.old")
-)
-(allow file-read* file-write* file-read-metadata (home-subpath "/.ssh/agent"))
-
-;; ~/.hermes は Hermes Agent の workdir かつ信頼境界。
-;; Agent が自己改善で .env / hooks / cron / automations / skills を書き換える前提のため、
-;; 上記の汎用 deny（.env / secrets / credentials.json 等）を後勝ちで貫通させる。
-;; 信頼境界は ~/.hermes の内側に閉じる前提。
-(allow file-read* file-write*
-    (home-subpath "/.hermes")
-)
-
-;; 元の保護パスから人間が移した秘密をtrash経由で読み取らせない。
-;; renameによるPutは内容を読まず、metadataと書き込みは維持する。
+;; 復旧先の内容を保護し、復元・掃除は人間がsandbox外で行う。
+;; renameによる投入とmetadata処理は維持する。既存のHermes例外は狭めない。
 (deny file-read-data file-write-data file-write-unlink
     (require-all
         (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")

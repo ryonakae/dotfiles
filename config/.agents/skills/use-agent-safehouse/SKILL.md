@@ -30,29 +30,15 @@ Agent Safehouse は macOS ネイティブの `sandbox-exec` を利用した、LL
 3. 必要なら **`/usr/bin/log stream`** で既存の拒否ログを確認する。実秘密へのprobeや無断の迂回は行わない。
 4. 標準の `--enable` とgrantで対応できるかを確認し、残るdenyとの衝突なら理由と承認が必要な最小変更を提示する。実行中のsandboxのpolicyは更新できず、変更は次回起動から反映される。
 
-### pytest が tmp 配下に `.env` / `.envrc` を作って落ちる場合
+### `.env` / 鍵ファイルの拒否が残る場合
 
-Ryo 環境では `local-overrides.sb` で `.env` / `.envrc` を全パス deny し、後段でvendor等の依存ディレクトリと `~/.hermes` をallow例外にしている。Hermes 本体の `~/.hermes/.env` は読み書きできるが、pytest の `tmp_path` は通常 `/var/folders/.../T/pytest-*` や `/tmp` 配下なので、テストが `tmp_path / ".env"` を作ると `Operation not permitted` で失敗する。
-
-HOME RWや `--allow-profile-writes` を有効にしても、この名前denyは残る。固定保存場所だけで実機密を保護する移行は、本番署名鍵や独自の秘密保存場所が未把握のため保留している。テスト用のダミー `.env` も例外外なら拒否されるので、実秘密を読まず、エラーとpolicyから判断する。
-
-元コードを変えない代案として、承認済みのテスト専用実行では、一時ディレクトリを既存の `~/.hermes` 例外内へ移せる。実秘密・セッションがある場所は使わず、テスト専用の新しいpathを選ぶ：
-
-```fish
-set -l test_tmp "$HOME/.hermes/tmp/pytest-hermes-agent-"(date +%s)
-uv run --with '.[all]' python -m pytest \
-  tests/agent/test_codex_ttfb_watchdog.py \
-  --basetemp "$test_tmp" \
-  -q
-```
-
-`--basetemp` は既存の指定先を削除して作り直すため、`~/.hermes` 直下や重要ディレクトリを指定しない。これを毎回の必須手順にはしない。必要なら、承認済みのテスト専用Sandbox外実行も代案にする。policy変更が必要なら、標準機能と最終profile順で原因を確認し、ユーザー承認後に最小修正する。
+機密・個人データの独自 deny は撤廃済み。新しい起動では、HOME や許可された一時ディレクトリのダミー `.env` を名前だけで拒否しない。以前から動いているプロセスには旧 policy が残るため、正本と起動時の設定を区別する。実秘密を probe せず、再起動や追加 grant が必要ならユーザーへ確認する。
 
 ### Hermes の parallel test runner と kanban write guard を併用する場合
 
 `scripts/run_tests_parallel.py` は test file ごとに pytest subprocess を起動する。全 subprocess へ同じ `PYTEST_ADDOPTS=--basetemp=...` を渡すと、各 pytest が同じ directory を削除・再作成してraceするため、共有 `--basetemp` は使わない。
 
-また、`TMPDIR=~/.hermes/...` だけでは `tests/conftest.py` の kanban write guard が一時DBを実 `~/.hermes` 配下と判定して拒否する。短いTMPDIR、Safehouseの `.env` 許可、kanban guardを同時に満たすには、pre-sandboxのcustom homeとkanban deny sentinelを兄弟pathへ分ける：
+また、`TMPDIR=~/.hermes/...` だけでは `tests/conftest.py` の kanban write guard が一時DBを実 `~/.hermes` 配下と判定して拒否する。短いTMPDIRとkanban guardを併用するには、pre-sandboxのcustom homeとkanban deny sentinelを兄弟pathへ分ける：
 
 既存の実データへ書かないテスト専用pathを確認したうえで使う例：
 
@@ -82,7 +68,7 @@ uv run python -m pytest -q \
 - **deny-first**: デフォルトで全アクセスを拒否し、必要なものだけ明示的に許可する
 - **実用的な被害軽減**: 絶対的な隔離ではなく、プロンプトインジェクションや誤操作時の被害範囲を最小化する
 - このdotfiles環境は普段の開発の互換性を優先し、HOME RW、`wide-read`、全環境継承、既存の `process-control` と広域IPC許可を維持する。`allow default` や `/` のRWには変更しない
-- 実機密とOS重要領域の直接保護を維持する。通常のrmからgomiへの転送は廃止済みで、標準rmを使う。gomiは明示的なごみ箱操作に使い、既存データを保持する。`.env` / `.envrc` / secrets / 鍵のdenyとvendor・Hermes例外、ごみ箱payloadへの直接アクセス拒否は残る
+- 機密・個人データの独自 deny は設けない。通常の `rm` は Homebrew の `gtrash put` へ転送し、Safehouse 内では `/bin/rm` 実行を拒否する。ごみ箱 payload の直接読み取り・上書き・削除は拒否し、復元・掃除は人間が sandbox 外で行う。gomi と既存データは保持する
 - 独自の管理wrapper・policyディレクトリの編集禁止、保護対象の親とごみ箱ルートのrename禁止は撤廃する。完全な迂回封鎖は保証しない
 - ネットワーク経由のデータ流出、サンドボックスエスケープ、許可済みチャネルの悪用は防げない
 
@@ -303,11 +289,11 @@ dtracehelper や Apple サービスのフォルスポジティブを除外。`DY
 5. `profiles/65-apps/` にデスクトップアプリプロファイルを追加
 6. `profiles/30-toolchains/` にツールチェーンプロファイルを追加
 
-**この環境の原則**: 開発の互換性と実機密・OS重要領域の直接保護を両立する。標準機能と最終profile順から原因を診断し、承認された最小変更を行う。広いgrantを一律に避けたり、拒否ログをそのままallowへ変換したりしない。
+**この環境の原則**: 開発の互換性を優先し、OS重要領域への書き込み範囲とごみ箱の保護を維持する。標準機能と最終profile順から原因を診断し、承認された最小変更を行う。広いgrantを一律に避けたり、拒否ログをそのままallowへ変換したりしない。
 
-対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。独自の管理wrapper/policy編集denyの撤廃とは別に、Safehouse標準のappend profile保護を省く設定であり、残る機密denyや `.safehouse` の保護は解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
+対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。独自の管理wrapper/policy編集denyの撤廃とは別に、Safehouse標準のappend profile保護を省く設定であり、ごみ箱の deny や `.safehouse` の保護は解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
 
-IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめ、実機密のdenyとvendor/Hermes例外は後段の `local-overrides.sb` に置く。すでに許可されたMach/network/signalの個別allowを重複追加しない。
+IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめ、ごみ箱保護と `/bin/rm` 実行拒否は後段の `local-overrides.sb` に置く。すでに許可されたMach/network/signalの個別allowを重複追加しない。
 
 ## 配布
 

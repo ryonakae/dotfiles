@@ -111,6 +111,15 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertEqual(target.lstat().st_ino, before)
 
+  def test_rm_wrapper_is_a_direct_managed_link(self):
+    source = self.source('.local/bin/rm', '#!/bin/sh\nexit 23\n')
+    source.chmod(0o755)
+    target = self.home / '.local/bin/rm'
+    result = self.mise('apply', '--yes')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertEqual(target.readlink(), source)
+    self.assertEqual(subprocess.run([str(target)]).returncode, 23)
+
   def test_functions_follow_git_membership_without_touching_local_files(self):
     source = self.source('.config/fish/functions/shared.fish')
     self.source('.config/fish/functions/untracked.fish', tracked=False)
