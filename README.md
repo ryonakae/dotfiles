@@ -28,7 +28,7 @@ mise -C ~/dotfiles dot apply
 - **共通ランタイム:** mise の Git 正本で版を指定し、install / upgrade を使い分ける。個別プロジェクトの版指定は維持する。
 - **Nix 基盤・外部スキル:** 宣言・lock を確認して `bash scripts/dotfiles.sh build`、適用承認後に通常の対話端末で `bash scripts/dotfiles.sh switch` を使う。
 
-既定では `mac` 構成を使う。別の定義済みホストは build／switch の両方で `--configuration NAME` を指定する。
+既定では共通の `default` 構成を使う。家用Macでは build／switch の両方に `--configuration private` を指定する。
 自作スキルの glob 配置と削除前の unapply、依存更新・初回切替の事前確認・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
 
 エージェントに作業を任せる場合は [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を使う。リポジトリ共通の編集・検証上の制約は [AGENTS.md](AGENTS.md) を参照する。

@@ -68,16 +68,16 @@ nix --version
 
 ## Nix の事前ビルド
 
-Nix と Command Line Tools 付属の `/usr/bin/python3` が必要。`scripts/dotfiles.sh` はこの Python を使い、mise の導入・配置やプロジェクトの Python に依存しない。ホスト定義は `nix/hosts/` の Nix module を正本とし、`flake.nix` の `darwinConfigurations` から読み込む。既定の `mac` は `nix/hosts/mac.nix` を使う。適用前に `system.primaryUser` と `users.users.<name>.home` が実機に合うことを確認する。
+Nix と Command Line Tools 付属の `/usr/bin/python3` が必要。`scripts/dotfiles.sh` はこの Python を使い、mise の導入・配置やプロジェクトの Python に依存しない。ホスト定義は `nix/hosts/` の Nix module を正本とし、`flake.nix` の `darwinConfigurations` から読み込む。既定の `default` は共通設定、`private` は共通設定に家用アプリを加えた構成。適用前に `system.primaryUser` と `users.users.<name>.home` が実機に合うことを確認する。
 
-別ホストを追加するときは、そのホスト用 module を作り、`darwinConfigurations` に対応する構成を定義する。構成名は英字または `_` で始め、以降は英数字・`_`・`-` を使う。ユーザー名・ホームなどの非秘密の定義は Git 管理し、秘密や認証情報は書かない。ローカルの `host.json` は不要で、以前の実ファイルが残っていても読み込まない。
+別の構成を追加するときは、その差分用 module を作り、`darwinConfigurations` に対応する構成を定義する。構成名は英字または `_` で始め、以降は英数字・`_`・`-` を使う。ユーザー名・ホームなどの非秘密の定義は Git 管理し、秘密や認証情報は書かない。ローカルの `host.json` は不要で、以前の実ファイルが残っていても読み込まない。
 
 ```fish
 cd ~/dotfiles
 bash scripts/dotfiles.sh build
 ```
 
-別の定義済みホストを使う場合は `build --configuration NAME` と指定する。構成が見つからなければエラーになり、既定の `mac` へ切り替わることはない。ビルドは構成を適用せず、出力された store path に対する activation も実行しない。
+別の定義済み構成を使う場合は `build --configuration NAME` と指定する。構成が見つからなければエラーになり、既定の `default` へ切り替わることはない。ビルドは構成を適用せず、出力された store path に対する activation も実行しない。
 通常の build は lock を更新しない。新しい Nix ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` へ切り替えたり、一括 stage したりしない。
 
 通常設定と自作スキルの配置は[mise の直接リンク](#管理の分担と通常配置)で行い、Nix は同じ宛先を所有しない。Nix に残す Hermes 本体・生成 wrapper / plist・停止検査、外部スキル・外部 plugin は store 管理とする。通常の fish 関数や起動スクリプトは Git 正本を使い、Safehouse / dotenvx の実行先は `/opt/homebrew/bin` に固定する。Hermes は Nix 管理の安定パス `~/.local/libexec/hermes` を参照する。
