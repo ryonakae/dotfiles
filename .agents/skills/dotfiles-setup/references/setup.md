@@ -293,7 +293,7 @@ statusline は設定内の npm version を固定し、通常の `npx` で利用�
 
 ## Pi
 
-`settings.json`、footer、fast-mode の設定3件は追跡済み正本への通常の live link。Pi からリンク先への書き込みは Git 差分になり、merger やローカル通常ファイルへの複製は使わない。日常の内容編集で Pi の停止を一律に求めない。アプリがリンク自体を置換した場合は衝突として保持し、force overwrite しない。認証・session を移行用設定や store へ含めない。
+`settings.json` と footer の設定は追跡済み正本への通常の live link。Pi からリンク先への書き込みは Git 差分になり、merger やローカル通常ファイルへの複製は使わない。日常の内容編集で Pi の停止を一律に求めない。アプリがリンク自体を置換した場合は衝突として保持し、force overwrite しない。認証・session を移行用設定や store へ含めない。
 
 拡張の本体版は `config/.pi/agent/settings.json` の npm version / Git commit で固定する。これは npm の推移依存全体の lock ではなく、新規取得時の全機能の復元を保証しない。拡張のインストール先は通常の Pi 管理ディレクトリに保ち、Nix build / activation では取得・更新しない。Pi 本体は Homebrew で更新し、別 installer / 自己更新コマンドを併用しない。
 
