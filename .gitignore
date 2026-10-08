@@ -2,3 +2,4 @@
 .env
 /config/.config/fish/fish_variables
 /.ruff_cache/
+__pycache__/
