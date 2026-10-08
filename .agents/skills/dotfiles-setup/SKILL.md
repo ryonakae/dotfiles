@@ -55,7 +55,7 @@ HOME 全体を `symlink-each` の配置先にせず、アプリ・設定ディ�
 
 1. 必要な更新だけを行い、宣言・lock の差分を確認する。非秘密の Nix ホスト定義以外の、Git 管理外のマシン固有ファイルや秘密を Git / store に含めない。
 2. 新規ファイルを Git ソースへ含める場合は、対象を確認してパスを明示して追加する。他者差分を一括 stage しない。`path:.` で未追跡ファイルをまとめて取り込まない。
-3. `bash scripts/dotfiles.sh build` を実行する。既定の `mac` 以外を使う場合は、定義済みの構成名を `--configuration NAME` で指定する。build は適用せず、lock も更新しない。変更に関係する生成物と構文・テストを確認する。
+3. `bash scripts/dotfiles.sh build` を実行する。既定の `default` 以外を使う場合は、定義済みの構成名を `--configuration NAME` で指定する。build は適用せず、lock も更新しない。変更に関係する生成物と構文・テストを確認する。
 4. 適用範囲の承認後に、対象ユーザーの通常の対話端末で `bash scripts/dotfiles.sh switch` を実行する。build と同じ構成名を使う。switch はその呼び出しで snapshot / check / build を行い、過去 build の出力を受け渡す方式ではない。スクリプト全体を sudo で起動しない。
 5. 終了コードと現在の system、変更したリンク・ツールを確認する。スキル配置を変えた場合は選択集合・自作参照・管理外の兄弟項目も確認する。ビルド成功を適用成功と報告しない。
 

@@ -52,8 +52,8 @@ class DotfilesCliTests(unittest.TestCase):
     for name in ('hosts', 'public', 'replacement'):
       (self.root / name).mkdir()
       (self.root / name / 'value').write_text(name)
-    (self.root / 'hosts' / 'mac.nix').write_text('{ username = "fixture-user"; }\n')
-    (self.root / 'hosts' / 'work.nix').write_text('{ username = "work-user"; }\n')
+    (self.root / 'hosts' / 'default.nix').write_text('{ username = "fixture-user"; }\n')
+    (self.root / 'hosts' / 'private.nix').write_text('{ username = "private-user"; }\n')
     (self.root / 'flake.nix').write_text('''{
   inputs.public = { url = "path:./public"; flake = false; };
   outputs = { self, public }: let
@@ -68,8 +68,8 @@ class DotfilesCliTests(unittest.TestCase):
       '' ];
     };
   in {
-    darwinConfigurations.mac.system = system (import ./hosts/mac.nix);
-    darwinConfigurations."work-mac".system = system (import ./hosts/work.nix);
+    darwinConfigurations.default.system = system (import ./hosts/default.nix);
+    darwinConfigurations.private.system = system (import ./hosts/private.nix);
   };
 }
 ''')
@@ -100,19 +100,19 @@ class DotfilesCliTests(unittest.TestCase):
     self.assertFalse((Path((output / 'source').read_text()) / 'untracked-secret.txt').exists())
 
   def test_explicit_configuration_uses_the_named_host(self):
-    result = self.cli('build', '--configuration', 'work-mac')
+    result = self.cli('build', '--configuration', 'private')
     self.assertEqual(result.returncode, 0, result.stderr)
-    self.assertEqual((Path(result.stdout.strip()) / 'username').read_text(), 'work-user')
+    self.assertEqual((Path(result.stdout.strip()) / 'username').read_text(), 'private-user')
 
   def test_configuration_name_cannot_select_an_attribute_path(self):
-    for name in ('work.mac', '"mac"', 'mac#other', '${builtins.abort "bad"}'):
+    for name in ('private.config', '"default"', 'default#other', '${builtins.abort "bad"}'):
       with self.subTest(name=name):
         result = self.cli('build', '--configuration', name)
         self.assertEqual(result.returncode, 2)
         self.assertIn('configuration', result.stderr)
         self.assertEqual(result.stdout, '')
 
-  def test_unknown_configuration_does_not_fall_back_to_mac(self):
+  def test_unknown_configuration_does_not_fall_back_to_default(self):
     result = self.cli('build', '--configuration', 'missing')
     self.assertNotEqual(result.returncode, 0)
     self.assertIn('missing', result.stderr)
@@ -120,7 +120,7 @@ class DotfilesCliTests(unittest.TestCase):
 
   def test_update_rejects_configuration_selection(self):
     before = (self.root / 'flake.lock').read_bytes()
-    result = self.cli('update', '--configuration', 'mac')
+    result = self.cli('update', '--configuration', 'default')
     self.assertNotEqual(result.returncode, 0)
     self.assertEqual((self.root / 'flake.lock').read_bytes(), before)
 
@@ -153,6 +153,54 @@ class DotfilesCliTests(unittest.TestCase):
     lock = json.loads((self.root / 'flake.lock').read_text())
     self.assertEqual(lock['nodes']['public']['original']['path'], './replacement')
     self.assertNotIn('/nix/store/', result.stdout)
+
+
+@unittest.skipUnless(Path(NIX).is_file(), 'Nix is required for configuration evaluation tests')
+class NixConfigurationTests(unittest.TestCase):
+  def evaluate(self, configuration, option):
+    result = subprocess.run([
+      NIX, '--extra-experimental-features', 'nix-command flakes',
+      'eval', f'git+{ROOT.as_uri()}#darwinConfigurations.{configuration}.config.{option}',
+      '--no-update-lock-file', '--json',
+    ], cwd=ROOT, capture_output=True, text=True)
+    self.assertEqual(result.returncode, 0, result.stderr)
+    return json.loads(result.stdout)
+
+  def test_default_and_private_configurations_merge_their_application_sets(self):
+    common_casks = {'blender', 'coteditor', 'framer'}
+    private_casks = {
+      'air-video-server-hd',
+      'autodesk-fusion',
+      'eagle',
+      'freecad',
+      'kicad',
+      'parallels',
+      'private-internet-access',
+      'qmk-toolbox',
+      'timemachineeditor',
+    }
+
+    default_casks = {
+      cask['name'] for cask in self.evaluate('default', 'homebrew.casks')
+    }
+    private_configuration_casks = {
+      cask['name'] for cask in self.evaluate('private', 'homebrew.casks')
+    }
+    default_mas_apps = self.evaluate('default', 'homebrew.masApps')
+    private_mas_apps = self.evaluate('private', 'homebrew.masApps')
+
+    self.assertTrue(common_casks <= default_casks)
+    self.assertTrue(default_casks <= private_configuration_casks)
+    self.assertEqual(private_configuration_casks - default_casks, private_casks)
+    self.assertNotIn('CotEditor', default_mas_apps)
+    self.assertEqual(
+      {name: private_mas_apps.get(name) for name in default_mas_apps},
+      default_mas_apps,
+    )
+    self.assertEqual(
+      {name: app_id for name, app_id in private_mas_apps.items() if name not in default_mas_apps},
+      {'EdgeView 2': 1206246482},
+    )
 
 
 class SwitchSafetyTests(unittest.TestCase):
@@ -204,22 +252,29 @@ class SwitchSafetyTests(unittest.TestCase):
       return ''
     self.fail(f'Unexpected Nix command: {args}')
 
-  def invoke(self):
-    with patch('sys.argv', ['dotfiles.py', 'switch', '--configuration', 'work-mac']):
+  def invoke(self, *args):
+    with patch('sys.argv', ['dotfiles.py', 'switch', *args]):
       self.module.main()
 
-  def test_named_configuration_is_used_for_validation_build_and_switch(self):
+  def test_default_configuration_is_used_for_validation_build_and_switch(self):
     self.invoke()
+    self.assert_configuration_used('default')
+
+  def test_named_configuration_is_used_for_validation_build_and_switch(self):
+    self.invoke('--configuration', 'private')
+    self.assert_configuration_used('private')
+
+  def assert_configuration_used(self, configuration):
     commands = [call.args for call in self.nix.call_args_list]
-    self.assertIn(('eval', 'path:/nix/store/fixture-source#darwinConfigurations.work-mac.config'),
+    self.assertIn(('eval', f'path:/nix/store/fixture-source#darwinConfigurations.{configuration}.config'),
                   [args[:2] for args in commands])
-    self.assertIn(('build', 'path:/nix/store/fixture-source#darwinConfigurations.work-mac.system'),
+    self.assertIn(('build', f'path:/nix/store/fixture-source#darwinConfigurations.{configuration}.system'),
                   [args[:2] for args in commands])
     self.assertTrue(all('--no-update-lock-file' in args for args in commands))
     self.assertEqual(self.run.call_args_list[0].args[0], ['/fixture/check-hermes'])
     self.assertEqual(self.run.call_args_list[1].args[0], [
       '/usr/bin/sudo', '/nix/store/fixture-system/sw/bin/darwin-rebuild',
-      'switch', '--flake', 'path:/nix/store/fixture-source#work-mac', '--no-update-lock-file',
+      'switch', '--flake', f'path:/nix/store/fixture-source#{configuration}', '--no-update-lock-file',
     ])
     self.assertEqual(self.run.call_count, 2)
 
