@@ -33,7 +33,7 @@ Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動�
 ## 起動・保護設定の変更
 
 - `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature 指定を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
-- 保護ポリシーは互換性優先。機密・個人データの独自 deny は設けず、ごみ箱保護と `/bin/rm` 実行拒否を維持する。通常の `rm` が失敗しても、別実装や削除 API へ無断で切り替えない。`~/.hermes` はごみ箱保護の例外なので、復旧用データの保護先にしない。
+- 保護ポリシーは互換性優先。機密・個人データの独自 deny は設けず、ごみ箱保護と `/bin/rm` 実行拒否を維持する。通常の `rm` が失敗しても、別実装や削除 API へ無断で切り替えない。ごみ箱保護にアプリ固有の例外を追加しない。
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。
 - 実秘密の移行、Keychain 登録・バックアップ、ごみ箱の復元・掃除は人間が sandbox 外で行う。
 - Hermes のサービス操作は `hermes-gateway` / `hermes-dashboard` から fork 標準処理を使う。dotfiles の適用処理に自動停止・再開や状態保存を追加しない。直接の `launchctl` や installer による plist 再生成で管理を迂回しない。

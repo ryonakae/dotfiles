@@ -11,12 +11,9 @@
 (deny process-exec (literal "/bin/rm"))
 
 ;; 復旧先の内容を保護し、復元・掃除は人間がsandbox外で行う。
-;; renameによる投入とmetadata処理は維持する。既存のHermes例外は狭めない。
+;; renameによる投入とmetadata処理は維持する。
 (deny file-read-data file-write-data file-write-unlink
-    (require-all
-        (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")
-        (require-not (home-subpath "/.hermes"))
-    )
+    (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")
     (require-all
         (home-subpath "/.Trash")
         (require-not (home-literal "/.Trash"))

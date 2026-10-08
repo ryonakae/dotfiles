@@ -15,7 +15,7 @@ def main():
     raise SystemExit('Run this check outside Safehouse; nested policies cannot validate new grants.')
   with tempfile.TemporaryDirectory(prefix='dotfiles-policy-') as temporary:
     home = Path(temporary).resolve()
-    trash_roots = ['.local/share/Trash', 'custom data/Trash',
+    trash_roots = ['.local/share/Trash', 'custom data/Trash', '.hermes/Trash',
                    'volume/.Trash-' + str(os.getuid()), 'volume/.Trash/' + str(os.getuid())]
     ordinary = ['Downloads/normal.txt', '.env', '.aws/credentials', '.gnupg/private.txt',
                 '.ssh/id_ed25519', '.ssh/config', '.ssh/known_hosts',
@@ -24,7 +24,7 @@ def main():
                 'vendor/fixture/.env', '.hermes/.env', '.config/fish/config.fish']
     payloads = [root + '/files/private.txt' for root in trash_roots] + ['.Trash/private.txt']
     metadata = [root + '/info/item.trashinfo' for root in trash_roots]
-    for relative in ordinary + payloads + metadata + ['.hermes/Trash/files/exception.txt']:
+    for relative in ordinary + payloads + metadata:
       target = home / relative
       target.parent.mkdir(parents=True, exist_ok=True)
       target.write_text('dummy data')
@@ -47,7 +47,7 @@ a.send(b'ok')
 assert b.recv(2) == b'ok'
 subprocess.run(['/usr/bin/true'], check=True)
 ''')
-    for relative in ordinary + metadata + ['.hermes/Trash/files/exception.txt']:
+    for relative in ordinary + metadata:
       check('allow read/write ' + relative,
             f'from pathlib import Path; p=Path({str(home / relative)!r}); '
             'assert p.read_text() == "dummy data"; p.write_text("changed"); '
