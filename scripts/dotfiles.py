@@ -74,7 +74,7 @@ def main():
   parser = argparse.ArgumentParser(description="Build, apply, or update the locked macOS configuration")
   parser.add_argument("action", choices=["build", "switch", "update"])
   parser.add_argument("target", nargs="?")
-  parser.add_argument("--configuration", help="darwinConfigurations name (default: mac)")
+  parser.add_argument("--configuration", help="darwinConfigurations name (default: default)")
   args = parser.parse_args()
   if args.action == "update":
     if args.configuration is not None:
@@ -90,7 +90,7 @@ def main():
     return
   if args.target:
     parser.error(f"{args.action} does not accept an update target")
-  configuration = args.configuration if args.configuration is not None else "mac"
+  configuration = args.configuration if args.configuration is not None else "default"
   if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", configuration):
     parser.error("configuration must be a Nix identifier (letters, digits, underscores or hyphens)")
   if args.action == "switch":

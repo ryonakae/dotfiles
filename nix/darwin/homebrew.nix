@@ -72,6 +72,7 @@
       "antigravity-cli"
       "appcleaner"
       "bettertouchtool"
+      "blender"
       "chatgpt"
       "claude"
       "claude-code@latest"
@@ -79,6 +80,7 @@
       "cmd-eikana"
       "codex"
       "contexts"
+      "coteditor"
       "cursor"
       "cursorsense"
       "discord"
@@ -91,6 +93,7 @@
       "font-sf-mono"
       "font-sf-pro"
       "font-source-han-code-jp"
+      "framer"
       "gcloud-cli"
       "ghostty"
       "google-chrome"
@@ -127,11 +130,9 @@
       "zoom"
     ];
 
-    # CotEditor currently has an App Store receipt; do not also install its cask.
     masApps = {
       Barbee = 1548711022;
       Bear = 1091189122;
-      CotEditor = 1024640650;
       "Ethernet Menubar" = 1549412235;
       GarageBand = 682658836;
       iMovie = 408981434;
