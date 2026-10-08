@@ -2,7 +2,7 @@
 
 ## Requirements
 
-参照: [設計記録](../dig/2026-10-02-safehouse-compatibility.md)の「2026-10-09 再開」と本セッションの後続合意。Q14の確認待ちは、ユーザーの「じゃあgtrashでいいか」「お願いします」で解決。今回確定した構成は次のとおり。
+参照: [設計記録](../../dig/2026-10-02-safehouse-compatibility.md)の「2026-10-09 再開」と本セッションの後続合意。Q14の確認待ちは、ユーザーの「じゃあgtrashでいいか」「お願いします」で解決。今回確定した構成は次のとおり。
 
 - 普段のターミナル、PATHを継承する子shell、エージェント、Hermes gateway/dashboardの通常rmをgtrash putへ転送する。OSの/bin/rm実体は変更せず、Safehouse内ではその実行を拒否する。
 - Safehouseのdeny-first、HOME RW、wide-read、全環境継承、既存feature/IPC許可は維持する。機密・個人データの独自denyを撤廃し、それだけのための例外を整理する。allow defaultや/全体のRWは追加しない。
@@ -59,17 +59,25 @@ Review base: `675d1815ec2b01919bf40be266c0dd33534495dd`。開始時は `origin/m
 
 ### 配置テスト失敗と追加承認
 
-- `test_dotfiles_links.py`は初回9 test中、新規rmリンクのtestだけ通過。多くは未追跡wrapperがテスト用checkoutへコピーされないため失敗した。正本`config/.local/bin/rm`を明示的にstageし、追跡対象に追加した（commitはまだ行っていない）。
+- `test_dotfiles_links.py`は初回9 test中、新規rmリンクのtestだけ通過。多くは未追跡wrapperがテスト用checkoutへコピーされないため失敗した。正本`config/.local/bin/rm`を明示的にstageし、追跡対象に追加した（この時点では未commit）。
 - 追跡後の全配置test再実行は120秒の実行制限で中断。途中にClaude専用スキルの衝突があり、全件成功とは扱わない。ログ: `test_dotfiles_links-tracked.log`。
 - `test_claude_specific_skill_entry_overrides_shared_glob`は、開始時HEADの`mise.toml`とtest本体を隔離した一時Git checkoutへ取り出しても再現。`~/.claude`と`~/.claude/skills/ask-codex`のsymlink-each宣言が衝突する。今回のrm宣言がない状態でも同じ失敗で、所要2.55秒。ログ: `base-claude-conflict.log`。
-- 既存失敗を自動修正・対象外扱いせず停止。新規rmリンクの実配置と単独test、Safehouse/gtrashの隔離検証、Nix buildは成功しているが、必須配置suiteの成功が未確定。
+- この時点では既存失敗を自動修正・対象外扱いせず停止した。新規rmリンクの実配置と単独test、Safehouse/gtrashの隔離検証、Nix buildは成功していたが、必須配置suiteの成功が未確定だった。
 - ユーザーが既存衝突の修正を追加承認。`mise.toml`の`~/.claude`親宣言に`exclude = ["skills"]`を追加し、共通glob・専用明示宣言との二重所有を解消する。現在`config/.claude/skills/`に追跡ファイルはないため、実配置の解除・移行は不要。仕様と配置手順は既に専用明示宣言を前提としており、手順変更はない。
-- 変更前HEADでの失敗をRedとして使用し、既存回帰testを含む配置suiteを600秒上限で再実行する。mise.tomlはNixのスキル選択からも参照されるためNix buildも再確認する。
+- 変更前HEADでの失敗をRedとして使用し、既存回帰testを含む配置suiteを600秒上限で再実行した。mise.tomlはNixのスキル選択からも参照されるためNix buildも再確認した。
 - 修正後の配置suiteは9件すべて成功（166.8秒、skipなし）。ログ: `test_dotfiles_links-fixed.log`。修正後Nix buildも成功し、出力は前回と同一。ログ: `nix-build-fixed.log`。必須validationの未解決失敗はない。
 - 検証済みunit/integration testは合計23件（rm 3、runtime 10、配置 9、Hermes tmpdir 1）。配置以外の成功結果は入力・挙動が変わっていないため再利用する。
 - 再実行コマンド: `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_dotfiles_links.py'`（他3 suiteはpatternを対応するファイル名へ変更）、sandbox外で `uv run --no-project python scripts/tests/check_gtrash_runtime.py` と `uv run --no-project python scripts/tests/check_safehouse_runtime.py`。Nix管理miseをPATHで優先する。
 - 本文の既存長文は今回の変更に必要な箇所だけ更新し、文書全体の分割は対象外。Markdownローカルリンクと変更範囲を確認済み。
-- 独立レビュー、commit/push、計画archiveは検証後に実施する。他者変更`config/.claude/settings.json`は未変更・未stage。
+- 他者変更`config/.claude/settings.json`は未変更・未stage。
+
+## Gate summary
+
+- 実装commit・レビュー対象HEAD: `c03d0e443887c926a7cfb7eee72a9bfcfb85f95b`。base `675d1815ec2b01919bf40be266c0dd33534495dd`からの1 commit・18ファイルをread-onlyの独立reviewerが確認した。
+- blocking/high、decision required、medium/lowはいずれもなし。採用finding・correction commitなし。既存のClaude配置衝突も追加承認の範囲内として確認済み。
+- 必須の23 test、実policyとgtrashの隔離検証、Nix build、構文・リンク・差分チェックは成功。review後に実行コードを変更していないため、成功結果を再利用する。独立reviewerもshell/Python/TOML構文、実行権限、起動経路を確認した。
+- 未実施の範囲はNix switch、稼働Hermes再起動・認証通信・実サービス全経路、別volume実機投入、実秘密・既存ごみ箱の操作。実配置とHomebrew版の検証は親が確認し、reviewerはリポジトリ外を調査していない。
+- 未解決blockerなし。計画archiveのcommit後、開始時と同じ`origin/master`へ通常pushする。force pushや履歴書換えは行わない。
 
 ごみ箱保護下でgtrashの投入・並列保存・終了処理が成立しない場合は、保護を緩めて通さず停止して相談する。実秘密移行、既存ごみ箱削除、復元元の不明なデータ整理は行わない。
 
