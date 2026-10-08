@@ -26,7 +26,6 @@
       "age"
       "agent-browser"
       "eugene1g/safehouse/agent-safehouse"
-      "awscli"
       "cocoapods"
       "ctx7"
       "dotenvx/brew/dotenvx"

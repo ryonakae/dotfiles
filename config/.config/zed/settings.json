@@ -40,12 +40,14 @@
   },
   "terminal": {
     "cursor_shape": "bar",
-    "flexible": false,
     "option_as_meta": true,
   },
 
   // AI
   "agent": {
+    "threads_sidebar": {
+      "default_width": 240.0
+    },
     "commit_message_model": {
       "model": "zen/deepseek-v4-flash",
       "provider": "opencode",
@@ -53,10 +55,9 @@
     "default_model": {
       "enable_thinking": true,
       "effort": "medium",
-      "model": "gpt-6-sol",
+      "model": "gpt-6.1-sol",
       "provider": "openai-subscribed",
     },
-    "flexible": false,
     "inline_assistant_model": {
       "model": "gpt-6-sol",
       "provider": "openai-subscribed",

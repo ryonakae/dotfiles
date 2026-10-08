@@ -412,6 +412,8 @@ worktree の作成・削除には Worktrunk を使う。Herdr 本体の作成機
 
 ## ランタイム
 
+AWS CLI v2 も `config/.config/mise/config.base.toml` で mise の `aqua:aws/aws-cli` として管理する。Homebrew 版 Python と macOS 標準ライブラリの不整合を避けるため、AWS 公式配布の同梱 Python を使う。`symlink_bins = true` を維持し、同梱 Python を開発用の PATH に出さない。更新後は `aws --version` と `mise which python` で実行先を確認する。Homebrew の導入一覧には重複登録せず、移行時も `~/.aws` の設定・認証キャッシュは削除しない。
+
 共通の Node / Python / Ruby / Bun は `config/.config/mise/config.base.toml` の exact pin を初期指定とする。値の一覧はこの設定を参照する。HOME の `~/.config/mise/config.toml` はこの正本への直接リンク。Ruby の `compile = true` を維持し、ビルドに必要な依存を準備する。
 
 リンク配置後、個別プロジェクトの設定が混ざらない HOME から宣言版を導入する。
