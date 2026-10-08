@@ -36,7 +36,7 @@ mise -C ~/dotfiles dot apply
 ## 手動設定・運用
 
 - **秘密・認証・サービス初期設定:** [同梱の手順](.agents/skills/dotfiles-setup/references/setup.md)に従い、人間が sandbox 外で行う。
-- **削除と復元:** `rm` は直接削除する。ごみ箱へ移す場合は `gomi` を明示し、[復元手順](.agents/skills/dotfiles-setup/references/setup.md#削除したファイルの復元)を使う。
+- **削除と復元:** 通常の `rm` は gtrash でごみ箱へ移す。復元・掃除は人間が sandbox 外で[復元手順](.agents/skills/dotfiles-setup/references/setup.md#削除したファイルの復元)に従って行う。
 - **mosh:** Homebrew で更新するたびに `bash scripts/allow-mosh-firewall.sh` を実行し、署名とファイアウォール登録をやり直す。
 - **iOS Simulator の検証:** [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) を参照する。
 
