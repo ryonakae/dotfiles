@@ -43,6 +43,27 @@
         }
       },
       {
+        "id": "context-length-muzsj918-n5wmle",
+        "type": "context-length",
+        "enabled": true,
+        "options": {
+          "raw": true,
+          "hideWhenZero": false,
+          "icon": "",
+          "fg": "pi:dim",
+          "bg": "default",
+          "bold": false,
+          "tokenFormatStyle": "compact",
+          "contextConditionalColors": true,
+          "contextWarningPercent": 70,
+          "contextDangerPercent": 90,
+          "warningFg": "yellow",
+          "warningBg": "default",
+          "dangerFg": "red",
+          "dangerBg": "default"
+        }
+      },
+      {
         "id": "context-mq60daet-ihxr1v",
         "type": "context",
         "enabled": true,
