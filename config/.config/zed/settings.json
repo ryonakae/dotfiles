@@ -49,7 +49,7 @@
       "default_width": 240.0
     },
     "commit_message_model": {
-      "model": "zen/deepseek-v4.1-flash",
+      "model": "zen/qwen3.8-flash",
       "provider": "opencode",
     },
     "default_model": {
