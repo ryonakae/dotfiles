@@ -51,7 +51,7 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 
 ### 6つの拡張ポイント
 
-1. **カスタム `.sb` オーバーレイ**: `--append-profile` で読み込み。認証情報 deny 等を追加
+1. **カスタム `.sb` オーバーレイ**: `--append-profile` で追加
 2. **`profiles/20-network.sb`**: ネットワーク動作の調整
 3. **`profiles/40-shared/`**: クロスエージェント共有ルールの変更
 4. **`profiles/60-agents/`**: 新しいエージェントプロファイルの追加
@@ -62,8 +62,8 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 
 - このdotfiles環境では開発の互換性を優先し、HOME RW、`wide-read`、全環境継承、既存の `process-control` と広域IPC許可を維持する。`allow default` や `/` のRWには変更しない
 - 標準機能と生成policyの最終順序を確認し、必要性と保護への影響を説明して、ユーザー承認後に最小修正する
-- 機密・個人データの独自denyは設けない。ごみ箱payloadと `/bin/rm` 実行は後段のprofileで拒否する。OS重要領域は標準のdeny-first構成で書き込み許可を広げず、最終policyで範囲を確認する。拒否された操作や機密へのprobeを無断で外側に回さない
-- worktree が安定した親ディレクトリ配下にある場合、`--add-dirs-ro` で親を指定してクロス worktree 読み取りアクセスを許可
+- OS重要領域は標準のdeny-first構成で書き込み許可を広げず、最終policyで範囲を確認する。拒否された操作や機密へのprobeを無断で外側に回さない
+- HOME 外の worktree の参照で読み取り許可が不足する場合は、必要な範囲を `--add-dirs-ro` で指定する
 - 検証は変更範囲に合わせる。dotfilesの文書修正にフルsuiteやSandbox外実行を一律に要求しない
 - Safehouse本体のプロファイルやランタイムロジックを変更する場合は、必要に応じて `./scripts/generate-dist.sh` で配布アーティファクトを再生成する。dotfilesの追加profileだけの変更では不要
 
@@ -75,11 +75,9 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 ~/.config/agent-safehouse/local-overrides.sb
 ```
 
-この環境は `compatibility.sb` → `local-overrides.sb` の順で追加する。広域IPCとSimulatorの `system-fsctl` は前者、ごみ箱保護と `/bin/rm` 実行拒否は後者にまとめる。既存の広域allowと重複する個別Mach/network/signalルールは追加しない。
+この環境は `compatibility.sb` → `local-overrides.sb` の順で追加する。広域IPCとSimulatorの `system-fsctl` は `compatibility.sb` にまとめる。既存の広域allowと重複する個別Mach/network/signalルールは追加しない。
 
-機密・個人データの独自denyと、それだけのためのvendor・Hermes等のallow例外は撤廃済み。ごみ箱payloadの直接読み取り・上書き・削除の拒否は維持し、metadataとrenameによる投入は許可する。Hermes配下もごみ箱保護の対象とし、アプリ固有の例外は設けない。親・ごみ箱ルートのrenameに関する限界は残り、完全な削除防止ではない。Safehouse内のrmだけをgtrashへ転送し、失敗しても直接削除へ戻らない。Safehouse外では通常の/bin/rmを使い、復元・掃除は人間がsandbox外で行う。
-
-Safehouse標準のappend profile書き込み保護は独自denyとは別で、3起動経路の `--allow-profile-writes` で省く。これは書き込みgrantを追加せず、`.safehouse` の標準保護も解除しない。承認後に `config/` の正本を編集し、次回起動で反映する。実行中のsandboxは変更できず、現在の拒否を無断で迂回しない。
+Safehouse標準のappend profile書き込み保護は、3起動経路の `--allow-profile-writes` で省く。これは書き込みgrantを追加せず、`.safehouse` の標準保護も解除しない。承認後に `config/` の正本を編集し、次回起動で反映する。実行中のsandboxは変更できず、現在の拒否を無断で迂回しない。
 
 ### ワーキングディレクトリ設定ファイル
 

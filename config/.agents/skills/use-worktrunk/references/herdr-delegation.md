@@ -11,17 +11,17 @@ test "$HERDR_ENV" = 1
 herdr pane current --current
 ```
 
-`HERDR_ENV` が不一致、または herdr CLI がエラー（stderr の JSON、exit 1/2）を返したら、このファイルの手順を使わず SKILL.md §6 の通常 shell 案内へフォールバックする。session 内で一度失敗した herdr 呼び出しを黙って再試行して押し切らない。
+`HERDR_ENV` が不一致、または herdr CLI が利用できなければ、このファイルの手順を使わず SKILL.md §6 の通常 shell 案内へフォールバックする。実行拒否の場合はフォールバックせず停止する。session 内で一度失敗した herdr 呼び出しを黙って再試行して押し切らない。
 
 ## ペインは sandbox 外 — 実行制限
 
-herdr のペイン内シェルは Agent Safehouse の外で動く。これは safehouse が制限する `wt` 操作を完遂するための意図的な迂回路であり、汎用の実行経路ではない。herdr ペインで実行してよいのは次だけ。
+herdr のペイン内シェルは Agent Safehouse の外で動く。現在の grant 外に及ぶ操作の事前委譲と、明示された fork フローに使う。herdr ペインで実行してよいのは次だけ。
 
 - SKILL.md と公式 worktrunk Skill が定める `wt` コマンド
 - その完了・状態確認に必要な読み取り（sentinel の echo、`git status` 等の read-only 確認）
 - fork フローの Agent wrapper 起動（`herdr agent start` 経由）
 
-それ以外のコマンドを safehouse 回避の目的でペインへ送らない。
+実行拒否に遭遇したら、失敗した操作と秘密値を伏せたエラーを報告して停止する。再試行や別経路での実行は行わない。
 
 ## 共通規則
 

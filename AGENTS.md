@@ -33,9 +33,8 @@ Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動�
 ## 起動・保護設定の変更
 
 - `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature 指定を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
-- 保護ポリシーは互換性優先。機密・個人データの独自 deny は設けず、ごみ箱保護と `/bin/rm` 実行拒否を維持する。通常の `rm` が失敗しても、別実装や削除 API へ無断で切り替えない。ごみ箱保護にアプリ固有の例外を追加しない。
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。
-- 実秘密の移行、Keychain 登録・バックアップ、ごみ箱の復元・掃除は人間が sandbox 外で行う。
+- 実秘密の移行、Keychain 登録・バックアップは人間が sandbox 外で行う。
 - Hermes のサービス操作は `hermes-gateway` / `hermes-dashboard` から fork 標準処理を使う。dotfiles の適用処理に自動停止・再開や状態保存を追加しない。直接の `launchctl` や installer による plist 再生成で管理を迂回しない。
 - Herdr の Claude hook は Homebrew 本体の標準 integration installer で管理する。実設定への適用は別途承認し、既存 settings 差分を保持する。
 - Herdr プラグインには復元用 lock がない。追加・削除したら同梱手順の導入一覧を更新する。worktree の作成・削除には Herdr 本体の機能を使わず Worktrunk を使う。

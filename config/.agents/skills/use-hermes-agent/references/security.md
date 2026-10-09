@@ -137,7 +137,7 @@ secrets:
 
 ## オプション: agent-safehouse 連携
 
-macOS では `agent-safehouse` (sandbox-exec ベース) を `hermes` 起動の外側に被せて、システムレベルの追加サンドボックスを掛けられる。`config/.config/agent-safehouse/hermes-overrides.sb` 参照。
+macOS では `agent-safehouse` (sandbox-exec ベース) を `hermes` 起動の外側に被せて、システムレベルの追加サンドボックスを掛けられる。この dotfiles 環境の起動経路・ポリシーは [use-agent-safehouse](../../use-agent-safehouse/SKILL.md) を参照する。
 
 ## 監査ログ
 

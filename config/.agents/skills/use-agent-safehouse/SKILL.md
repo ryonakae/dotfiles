@@ -30,46 +30,11 @@ Agent Safehouse は macOS ネイティブの `sandbox-exec` を利用した、LL
 3. 必要なら **`/usr/bin/log stream`** で既存の拒否ログを確認する。実秘密へのprobeや無断の迂回は行わない。
 4. 標準の `--enable` とgrantで対応できるかを確認し、残るdenyとの衝突なら理由と承認が必要な最小変更を提示する。実行中のsandboxのpolicyは更新できず、変更は次回起動から反映される。
 
-### `.env` / 鍵ファイルの拒否が残る場合
-
-機密・個人データの独自 deny は撤廃済み。新しい起動では、HOME や許可された一時ディレクトリのダミー `.env` を名前だけで拒否しない。以前から動いているプロセスには旧 policy が残るため、正本と起動時の設定を区別する。実秘密を probe せず、再起動や追加 grant が必要ならユーザーへ確認する。
-
-### Hermes の parallel test runner と kanban write guard を併用する場合
-
-`scripts/run_tests_parallel.py` は test file ごとに pytest subprocess を起動する。全 subprocess へ同じ `PYTEST_ADDOPTS=--basetemp=...` を渡すと、各 pytest が同じ directory を削除・再作成してraceするため、共有 `--basetemp` は使わない。
-
-また、`TMPDIR=~/.hermes/...` だけでは `tests/conftest.py` の kanban write guard が一時DBを実 `~/.hermes` 配下と判定して拒否する。短いTMPDIRとkanban guardを併用するには、pre-sandboxのcustom homeとkanban deny sentinelを兄弟pathへ分ける：
-
-既存の実データへ書かないテスト専用pathを確認したうえで使う例：
-
-```fish
-mkdir -p "$HOME/.hermes/t/home"
-env HERMES_HOME="$HOME/.hermes/t/home" \
-  HERMES_KANBAN_HOME="$HOME/.hermes/t/deny" \
-  TMPDIR="$HOME/.hermes/t" \
-  PYTEST_ADDOPTS='' \
-  HERMES_TEST_WORKERS=8 \
-  uv run python scripts/run_tests_parallel.py
-```
-
-`tests/conftest.py` は `HERMES_KANBAN_HOME` をimport時にdeny rootとしてcaptureし、各test開始時には環境から消す。そのため実test DBはTMPDIRへ書ける一方、deny sentinel配下への誤書込みは拒否される。`TMPDIR`を短くすることでmacOSのAF_UNIX socket path上限も回避できる。
-
-この構成を使う場合は、必要な範囲の代表testで確認する。フルsuiteは完了条件にしない。上の `env` 指定を同じように付けて実行する：
-
-```fish
-uv run python -m pytest -q \
-  tests/agent/test_codex_stream_activity_watchdog.py \
-  tests/gateway/test_kanban_notifier_zero_sub_gate.py \
-  tests/gateway/test_scale_to_zero.py
-```
-
 ## 設計哲学
 
 - **deny-first**: デフォルトで全アクセスを拒否し、必要なものだけ明示的に許可する
 - **実用的な被害軽減**: 絶対的な隔離ではなく、プロンプトインジェクションや誤操作時の被害範囲を最小化する
 - このdotfiles環境は普段の開発の互換性を優先し、HOME RW、`wide-read`、全環境継承、既存の `process-control` と広域IPC許可を維持する。`allow default` や `/` のRWには変更しない
-- 機密・個人データの独自 deny は設けない。Safehouse 内の `rm` は Homebrew の `gtrash put` へ転送し、`/bin/rm` 実行を拒否する。Safehouse 外の通常端末では wrapper から `/bin/rm` を実行する。ごみ箱 payload の直接読み取り・上書き・削除は拒否し、復元・掃除は人間が sandbox 外で行う。gomi と既存データは保持する
-- 独自の管理wrapper・policyディレクトリの編集禁止、保護対象の親とごみ箱ルートのrename禁止は撤廃する。完全な迂回封鎖は保証しない
 - ネットワーク経由のデータ流出、サンドボックスエスケープ、許可済みチャネルの悪用は防げない
 
 ## 隔離モデルの位置づけ
@@ -211,7 +176,7 @@ workdir が Git worktree の場合、Safehouse は自動的に：
 - 共有 Git メタデータへのアクセスを許可
 - 他の worktree パスへの読み取り専用アクセスを付与
 
-worktree を安定した親ディレクトリ配下で作成する場合は `--add-dirs-ro` で親を指定。
+HOME 外の worktree を参照する場合は、既存の許可範囲を確認し、不足する読み取り範囲だけを `--add-dirs-ro` で指定する。
 
 ## デスクトップアプリケーション対応
 
@@ -282,18 +247,18 @@ dtracehelper や Apple サービスのフォルスポジティブを除外。`DY
 
 6つの拡張ポイント：
 
-1. `--append-profile` で読み込むカスタム `.sb` オーバーレイに認証情報拒否を追加
+1. `--append-profile` でカスタム `.sb` オーバーレイを追加
 2. `profiles/20-network.sb` でネットワーク動作を調整
 3. `profiles/40-shared/` で共有クロスエージェントルールを変更
 4. `profiles/60-agents/` にエージェントプロファイルを追加
 5. `profiles/65-apps/` にデスクトップアプリプロファイルを追加
 6. `profiles/30-toolchains/` にツールチェーンプロファイルを追加
 
-**この環境の原則**: 開発の互換性を優先し、OS重要領域への書き込み範囲とごみ箱の保護を維持する。標準機能と最終profile順から原因を診断し、承認された最小変更を行う。広いgrantを一律に避けたり、拒否ログをそのままallowへ変換したりしない。
+**この環境の原則**: 開発の互換性を優先し、OS重要領域への書き込み範囲を維持する。標準機能と最終profile順から原因を診断し、承認された最小変更を行う。広いgrantを一律に避けたり、拒否ログをそのままallowへ変換したりしない。
 
-対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。独自の管理wrapper/policy編集denyの撤廃とは別に、Safehouse標準のappend profile保護を省く設定であり、ごみ箱の deny や `.safehouse` の保護は解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
+対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。Safehouse標準のappend profile書き込み保護を省く設定であり、`.safehouse` の保護は解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
 
-IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめ、ごみ箱保護と `/bin/rm` 実行拒否は後段の `local-overrides.sb` に置く。すでに許可されたMach/network/signalの個別allowを重複追加しない。
+IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめる。すでに許可されたMach/network/signalの個別allowを重複追加しない。
 
 ## 配布
 
