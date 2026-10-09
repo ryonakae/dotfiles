@@ -9,7 +9,7 @@
 - [Nix の初回導入](#nix-の初回導入)
 - [Nix の事前ビルド](#nix-の事前ビルド)・[適用と復旧準備](#nix-の適用と復旧準備)
 - [初回の配置と既存 Mac の切替](#初回の配置と既存-mac-の切替)
-- [共通ツール用の秘密](#共通ツール用の秘密)・[削除したファイルの復元](#削除したファイルの復元)
+- [共通ツール用の秘密](#共通ツール用の秘密)
 - [外部スキル](#外部スキル)
 - [Claude Code](#claude-code)・[Pi](#pi)・[Hermes Agent](#hermes-agent)・[Herdr](#herdr)
 - [Homebrew の依存と状態](#homebrew-の依存と状態)・[ランタイム](#ランタイム)・[Unity CLI](#unity-cli)・[Vim](#vim)
@@ -212,38 +212,14 @@ dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
 
 Keychain への保存を確認し、鍵ファイルが残る場合や保存エラーは解消してからエージェントを起動する。
 起動処理は鍵ファイルへ自動で切り替えないため、Keychain から復号できないと停止する。
-API キーを `config.fish` に保存しない。以前キーを export していた場合は、その設定と現在のシェルに残る値を除く。既存の環境変数が dotenvx より優先されるため。Safehouse の `config.fish` 専用 deny は設けず、秘密は dotenvx の暗号化ファイルと Keychain で管理する。
+API キーを `config.fish` に保存しない。以前キーを export していた場合は、その設定と現在のシェルに残る値を除く。既存の環境変数が dotenvx より優先されるため。秘密は dotenvx の暗号化ファイルと Keychain で管理する。
 
 暗号化した `.env` と login Keychain の両方を、暗号化されたバックアップに含める。
 OS 移行時は Keychain も復元する。暗号化ファイルだけでは復号できない。
 初期設定後は新しい端末で CLI を起動し、常駐中の Hermes は管理関数から再起動する。
 
 起動できなくなったら再起動を繰り返さず、sandbox 外で変更した管理ファイルを以前の版へ戻す。
-暗号化 `.env`、Keychain 項目、ごみ箱データは削除しない。
-
-## 削除したファイルの復元
-
-`~/.local/bin/rm` は `APP_SANDBOX_CONTAINER_ID=agent-safehouse` のときだけ Homebrew の `gtrash put` へ転送し、それ以外では `/bin/rm` を実行する。人間の通常端末での `rm` は直接削除となり、ごみ箱からは復元できない。人間がごみ箱へ移したい場合は `gtrash put` を明示する。
-
-どちらの経路も引数と終了コードを保持する。Safehouse 内では gtrash の未導入・失敗時に直接削除へ戻らない。gtrash は rm の完全互換実装ではないため、非対応のオプションで失敗しても別の削除コマンドへ無断で切り替えない。判定は操作者ではなく環境で行い、Safehouse から起動した子シェルも gtrash を使う。環境変数を削除しても、Safehouse の `/bin/rm` 実行拒否は解除されない。
-
-Safehouse 内の rm 転送では、同一 volume のごみ箱へ移動し、別 volume から HOME へのコピー fallback は無効にしている。HOME volume の既定先は `~/.local/share/Trash`（`XDG_DATA_HOME` 指定時はその配下）。他の volume はその volume のごみ箱を使い、利用できなければ失敗する。Finder のごみ箱とは別。
-
-Safehouse 内では `/bin/rm` の実行と、ごみ箱 payload の直接の読み取り・上書き・削除を拒否する。エージェントの削除操作が終わってから、人間が sandbox 外で一覧確認・復元する。
-
-```fish
-gtrash restore
-```
-
-TUI の `?` で操作方法を確認する。元の場所に別のデータがある場合は、先に復元先を確認し、必要なら `--restore-to` で別の場所へ戻す。復元・掃除中は別の rm / gtrash / gomi を並行実行しない。永久削除は人間が復元・バックアップを確認してから行い、自動掃除は設定しない。
-
-gomi 本体・設定・既存ごみ箱データは保持する。以前の gomi データは従来どおり次で復元できる。
-
-```fish
-gomi --config "$HOME/.config/gomi/config.yaml" --restore
-```
-
-導入時は `~/.local/bin/rm` と旧 fish 関数・リンクの実体を確認し、未知の設定を上書きしない。gtrash を導入してから標準 mise apply でリンクを配置し、新しい fish と子 shell の `type -a rm` / `command -v rm` で wrapper が選ばれることを確認する。既に起動しているエージェントの policy は変わらず、新しい policy は次回起動から適用される。
+暗号化 `.env`、Keychain 項目は削除しない。
 
 ## 外部スキル
 

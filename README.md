@@ -36,8 +36,28 @@ mise -C ~/dotfiles dot apply
 ## 手動設定・運用
 
 - **秘密・認証・サービス初期設定:** [同梱の手順](.agents/skills/dotfiles-setup/references/setup.md)に従い、人間が sandbox 外で行う。
-- **削除と復元:** 人間の通常端末では `rm` は直接削除し、Safehouse 内では gtrash でごみ箱へ移す。復元・掃除は人間が sandbox 外で[復元手順](.agents/skills/dotfiles-setup/references/setup.md#削除したファイルの復元)に従って行う。
+- **削除と復元:** [削除したファイルの復元](#削除したファイルの復元)を参照する。
 - **mosh:** Homebrew で更新するたびに `bash scripts/allow-mosh-firewall.sh` を実行し、署名とファイアウォール登録をやり直す。
 - **iOS Simulator の検証:** [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) を参照する。
 
 エージェントは fish の起動関数から Safehouse 内で使う。HOME への広いアクセスを許可する互換性重視の構成で、完全隔離は保証しない。
+
+### 削除したファイルの復元
+
+Safehouse 内の `rm` は gtrash でごみ箱へ移す。人間の通常端末では直接削除となり、ごみ箱からは復元できない。通常端末でもごみ箱へ移したい場合は `gtrash put` を使う。
+
+保存先は Finder のごみ箱とは別で、HOME volume では既定で `~/.local/share/Trash`（`XDG_DATA_HOME` 指定時はその配下）。別 volume ではその volume のごみ箱を使い、利用できなければ失敗する。
+
+削除操作が終わってから、人間が Safehouse 外の通常端末で復元する。
+
+```fish
+gtrash restore
+```
+
+TUI の `?` で操作方法を確認する。復元先に別のデータがある場合は、必要に応じて `--restore-to` で別の場所へ戻す。復元・掃除中は削除操作を並行実行せず、永久削除は復元・バックアップを確認してから行う。
+
+既存の gomi データを復元する場合：
+
+```fish
+gomi --config "$HOME/.config/gomi/config.yaml" --restore
+```

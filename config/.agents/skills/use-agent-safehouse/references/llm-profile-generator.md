@@ -56,8 +56,7 @@ git -C ~/[project] worktree list 2>/dev/null
 ## 設計原則
 
 - **deny-by-default** ルール
-- このdotfiles環境では互換性優先のHOME RWと `wide-read` を前提に、OS重要領域への書き込み範囲とごみ箱保護を維持する
+- このdotfiles環境では互換性優先のHOME RWと `wide-read` を前提に、OS重要領域への書き込み範囲を維持する
 - 標準機能と最終profile順を先に確認し、ユーザー承認後に必要な最小変更を行う。`allow default` や `/` のRWに変更しない
-- 機密・個人データの独自denyは設けない。ごみ箱payloadの保護と `/bin/rm` 実行拒否を維持し、拒否操作を別の削除手段へ無断で切り替えない
 - 実秘密の内容やセッション、拒否対象をprobeせず、必要なpath名とアクセス要件はユーザーへ確認する
 - コメントは許可・拒否の理由を記す
