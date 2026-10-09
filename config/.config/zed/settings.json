@@ -43,6 +43,13 @@
     "option_as_meta": true,
   },
 
+  // Languages
+  "languages": {
+    "Nix": {
+      "language_servers": ["nixd", "!nil"],
+    },
+  },
+
   // AI
   "agent": {
     "threads_sidebar": {
