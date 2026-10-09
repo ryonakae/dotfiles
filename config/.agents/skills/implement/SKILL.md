@@ -60,15 +60,20 @@ Plan の Task、または Direct mode のレビュー可能な単位ごとに繰
 2. 同じ context で self-review する。要件対応、scope、明白な欠陥、テスト漏れを見て、必要な refactor はここで行う。独立レビューに refactor を持ち込むと、reviewer が本来見るべき要件適合の確認が薄まる。
 3. 成果物に最も近い focused validation を実行する。
 4. Plan mode では、変更ファイル、判断に影響する差分、validation 結果だけを該当 Task に反映し、タスクのチェック状態（独立した Progress があればそちら）を更新する。Requirement、Out of Scope、Contract はユーザー承認なしに変えない。
-5. [`commit-push`](../commit-push/SKILL.md) の **commit-only** で、この成果物、commit-push が doc-updater 経由で更新した文書、Plan 更新だけを local commit する。commit 成功で Task 完了。
+5. [`commit-push`](../commit-push/SKILL.md) の **commit-only** で、この成果物、commit-push が doc-updater 経由で更新した文書、Plan 更新だけを local commit する。実装・focused validation の完了と独立レビューの完了は区別して記録する。
+6. 機能の一区切りやコンポーネント間の契約が成立したところで、以下の独立レビューへ渡す。レビュー単位は commit 単位と同一にせず、小さな関連変更はまとめる。手戻りを局所化できるまとまりで区切り、全実装の終了まで先送りしない。
 
 Direct mode には Plan の Progress がないので、成果物が複数あって順序や完了状態を追う必要があれば todo を使う。進捗記録だけの文書は作らない。
 
 ## 独立レビュー
 
-全成果物を commit した後、Plan や project の標準 validation（test、lint、typecheck、build のうち local で非対話・非破壊に実行できるもの）を実行し、実装由来の residue（一時ファイル、デバッグ出力、未追跡の生成物、commit し漏れた変更）が worktree に残っていないことを確認してから、reviewer に渡す。
+対象単位の focused validation と local commit を済ませ、その単位に属する実装由来の residue（一時ファイル、デバッグ出力、未追跡の生成物、commit し漏れた変更）がないことを確認してから、対象の base/head を固定して reviewer に渡す。
 
-独立レビューは Plan mode では必須。Direct mode で省略できるのは、変更がすべて非実行の prose/comment で、契約や運用手順を定義しない場合だけ。事前の validation と residue 確認はどちらのモードでも省略しない。
+独立レビューは Plan mode では必須。Direct mode で省略できるのは、変更がすべて非実行の prose/comment で、契約や運用手順を定義しない場合だけ。対象単位の事前 validation と residue 確認はどちらのモードでも省略しない。
+
+実行環境が非同期の委譲に対応していれば原則として使い、親は結果に依存せず、レビュー対象・検証環境と競合しない作業を進める。全体の build/test も競合しなければ並行してよい。非同期に対応しない環境では同じレビュー単位と依存関係を保って順次実行する。結果に依存する工程へ進む前に指摘を確認・反映し、未レビューの契約を前提とする後続実装を積み上げない。
+
+レビュー中の対象は不用意に変更しない。後続変更が対象へ影響した場合は、その差分と直接影響する経路を追加レビューする。レビュー記録だけの追記を理由に再レビューは追加しない。
 
 reviewer の条件:
 
@@ -78,7 +83,7 @@ reviewer の条件:
 reviewer に渡すもの:
 
 - Plan、または Direct mode で確定した Requirements、Contracts、Out of Scope。
-- base から HEAD までの diff と commit 一覧。
+- 対象単位の固定した base/head、diff と commit 一覧。後続作業の HEAD や作業ツリーと区別する。
 - 実行した validation とその結果。
 - 既存の無関係な worktree 変更。
 - 調査範囲はリポジトリ内に限ること。リポジトリ外を調べないと確認できない事項は「未検証」として報告させる。
@@ -102,7 +107,7 @@ reviewer 出力が証拠形式を満たさなければ、1 度だけ補足を求
 
 修正は Plan の Implementation Decisions の範囲内で行う。範囲を出る finding は Triage の時点で `decision required` になっているはずで、修正の途中で範囲を出ることが分かった場合も、その cycle を打ち切って同じ扱いにする。
 
-scoped re-review が「対象 finding はすべて解消、新しい `blocking/high` なし」を返したら final validation へ進む。次のどれかに当たる場合は、次の修正を自動で始めず停止する。
+scoped re-review が「対象 finding はすべて解消、新しい `blocking/high` なし」を返したら、残りの実装へ戻る。全実装が済んでいれば final validation へ進む。次のどれかに当たる場合は、次の修正を自動で始めず停止する。
 
 - 直した finding が解消されていない。
 - correction diff が新しい `blocking/high` を生んだ。
@@ -114,15 +119,16 @@ scoped re-review が「対象 finding はすべて解消、新しい `blocking/h
 
 ## Final validation と delivery
 
-`blocking/high` と `decision required` がなくなったら final validation を行う。
+全実装が済んだら、有効な途中レビューを再利用し、未レビューの差分、単位間の統合、後続変更で既存レビューが無効になった箇所を確認する。追加レビューはそれらの範囲に絞り、同じ変更の全体レビューを繰り返さない。レビュー必須の変更に漏れがなく、`blocking/high` と `decision required` がなくなったら final validation を行う。
 
-- review 前に成功した validation のうち、入力と対象挙動が変わっていないものは再利用する。
-- 外部環境・手動確認が必要なもの、変更で無効になったものだけを実行する。
+- Plan や project の標準 validation（test、lint、typecheck、build のうち local で非対話・非破壊に実行できるもの）が揃っていることを確認する。
+- すでに成功した validation のうち、入力と対象挙動が変わっていないものは再利用する。
+- 未実施の必須 validation、変更で無効になったもの、承認範囲内の外部環境・手動確認を実行する。
 - ここで substantive fix が必要になれば、修正 cycle として扱い、同じ停止条件を適用する。
 
 full suite の失敗が base でも再現し無関係と確認できても、自動修正、N/A 化、成功扱いはしない。どれも実装側が受入条件を勝手に緩めることになるため、受入条件を変えるかどうかをユーザーに確認する。
 
-review と validation が同じ HEAD に対して有効になったら:
+途中レビューと必要な追加レビュー、および validation が最終 HEAD の全変更に対して有効になり、実装由来の residue がないことを確認したら:
 
 1. Plan mode では、review 対象 commit、採用した finding と correction commit、未解決なしの旨を gate summary として Plan に書き、同名のまま `docs/plans/archived/` へ移す。移動と summary を **1 つの archive commit** にまとめる（commit-push の commit-only を使う）。archive 後に管理用 commit を追加しない。
 2. `git status --short`、`git diff --cached`、`git diff` を再確認する。実装由来の residue があれば validation と review へ戻る。
