@@ -44,6 +44,7 @@
       "imagemagick"
       "jq"
       "trasta298/tap/keifu"
+      "ketch"
       "mas"
       "mkcert"
       "mole"
