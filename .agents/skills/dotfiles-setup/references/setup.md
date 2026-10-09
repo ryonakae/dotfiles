@@ -223,9 +223,11 @@ OS 移行時は Keychain も復元する。暗号化ファイルだけでは復�
 
 ## 削除したファイルの復元
 
-通常の `rm` は `~/.local/bin/rm` から Homebrew の `gtrash put` へ転送する。引数と終了コードは gtrash に委ね、未導入・失敗時に直接削除へ戻らない。これは rm の完全互換実装ではないため、非対応のオプションで失敗しても別の削除コマンドへ無断で切り替えない。
+`~/.local/bin/rm` は `APP_SANDBOX_CONTAINER_ID=agent-safehouse` のときだけ Homebrew の `gtrash put` へ転送し、それ以外では `/bin/rm` を実行する。人間の通常端末での `rm` は直接削除となり、ごみ箱からは復元できない。人間がごみ箱へ移したい場合は `gtrash put` を明示する。
 
-同一 volume ではごみ箱へ移動し、別 volume から HOME へのコピー fallback は無効にしている。HOME volume の既定先は `~/.local/share/Trash`（`XDG_DATA_HOME` 指定時はその配下）。他の volume はその volume のごみ箱を使い、利用できなければ失敗する。Finder のごみ箱とは別。
+どちらの経路も引数と終了コードを保持する。Safehouse 内では gtrash の未導入・失敗時に直接削除へ戻らない。gtrash は rm の完全互換実装ではないため、非対応のオプションで失敗しても別の削除コマンドへ無断で切り替えない。判定は操作者ではなく環境で行い、Safehouse から起動した子シェルも gtrash を使う。環境変数を削除しても、Safehouse の `/bin/rm` 実行拒否は解除されない。
+
+Safehouse 内の rm 転送では、同一 volume のごみ箱へ移動し、別 volume から HOME へのコピー fallback は無効にしている。HOME volume の既定先は `~/.local/share/Trash`（`XDG_DATA_HOME` 指定時はその配下）。他の volume はその volume のごみ箱を使い、利用できなければ失敗する。Finder のごみ箱とは別。
 
 Safehouse 内では `/bin/rm` の実行と、ごみ箱 payload の直接の読み取り・上書き・削除を拒否する。エージェントの削除操作が終わってから、人間が sandbox 外で一覧確認・復元する。
 

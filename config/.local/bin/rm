@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if [ "${APP_SANDBOX_CONTAINER_ID:-}" != "agent-safehouse" ]; then
+    exec "/bin/rm" "$@"
+fi
+
 # Keep failed cross-volume moves recoverable instead of copying and deleting.
 export GTRASH_ONLY_HOME_TRASH=false
 export GTRASH_HOME_TRASH_FALLBACK_COPY=false

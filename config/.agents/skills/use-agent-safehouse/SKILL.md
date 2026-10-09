@@ -68,7 +68,7 @@ uv run python -m pytest -q \
 - **deny-first**: デフォルトで全アクセスを拒否し、必要なものだけ明示的に許可する
 - **実用的な被害軽減**: 絶対的な隔離ではなく、プロンプトインジェクションや誤操作時の被害範囲を最小化する
 - このdotfiles環境は普段の開発の互換性を優先し、HOME RW、`wide-read`、全環境継承、既存の `process-control` と広域IPC許可を維持する。`allow default` や `/` のRWには変更しない
-- 機密・個人データの独自 deny は設けない。通常の `rm` は Homebrew の `gtrash put` へ転送し、Safehouse 内では `/bin/rm` 実行を拒否する。ごみ箱 payload の直接読み取り・上書き・削除は拒否し、復元・掃除は人間が sandbox 外で行う。gomi と既存データは保持する
+- 機密・個人データの独自 deny は設けない。Safehouse 内の `rm` は Homebrew の `gtrash put` へ転送し、`/bin/rm` 実行を拒否する。Safehouse 外の通常端末では wrapper から `/bin/rm` を実行する。ごみ箱 payload の直接読み取り・上書き・削除は拒否し、復元・掃除は人間が sandbox 外で行う。gomi と既存データは保持する
 - 独自の管理wrapper・policyディレクトリの編集禁止、保護対象の親とごみ箱ルートのrename禁止は撤廃する。完全な迂回封鎖は保証しない
 - ネットワーク経由のデータ流出、サンドボックスエスケープ、許可済みチャネルの悪用は防げない
 
