@@ -1,13 +1,13 @@
 {
   pin = {
     type = "github";
-    owner = "mblode";
-    repo = "agent-skills";
+    owner = "1broseidon";
+    repo = "ketch";
     branch = "main";
   };
   subdir = "skills";
   filter = {
     maxDepth = 1;
-    nameRegex = "readme-creator";
+    nameRegex = "ketch";
   };
 }

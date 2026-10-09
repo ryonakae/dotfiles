@@ -12,7 +12,6 @@
   "packages": [
     "git:github.com/ryonakae/pi-subagents@be898c753e9eb32cf1315f63b1c1f5ef0cf6f782",
     "npm:pi-footer@0.5.1",
-    "npm:pi-web-access@0.35.0",
     "npm:@tifan/pi-inline-skills@1.0.6",
     "npm:@normful/pi-auto-name@2.0.0",
     "npm:@pi-kaush/pi-tool-call-markers@0.3.9",
