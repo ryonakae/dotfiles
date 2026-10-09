@@ -109,6 +109,7 @@ class AgentRuntimeTests(unittest.TestCase):
         self.assertEqual(payload['node'], str(self.project.resolve()))
 
   def test_noninteractive_runtime_resolves_rm_to_trash_wrapper(self):
+    self.env['APP_SANDBOX_CONTAINER_ID'] = 'agent-safehouse'
     gtrash = self.program('gtrash', (self.bin / 'probe').read_text())
     wrapper = self.bin / 'rm'
     wrapper.write_text((ROOT / 'config/.local/bin/rm').read_text().replace(

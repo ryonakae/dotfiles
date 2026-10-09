@@ -44,6 +44,8 @@ def main():
 
     def run(command, *, sandbox=True, environment=None, profile=None):
       if sandbox:
+        # Direct sandbox-exec reuses the policy without Safehouse's env setup.
+        environment = dict(environment or env, APP_SANDBOX_CONTAINER_ID='agent-safehouse')
         command = ['/usr/bin/sandbox-exec', '-f', str(profile or policy), *command]
       return subprocess.run([str(x) for x in command], env=environment or env, cwd=work,
                             input='', capture_output=True, text=True, timeout=30)
@@ -79,6 +81,13 @@ def main():
       result = run([gtrash, 'restore', '--force', *paths], sandbox=False,
                    environment=dict(env, GTRASH_ONLY_HOME_TRASH='true'))
       assert result.returncode == 0, result.stderr
+
+    outside = work / 'outside-rm.txt'
+    outside.write_text('disposable test data')
+    result = run([wrapper, '--', outside], sandbox=False)
+    assert result.returncode == 0 and not outside.exists(), result.stderr
+    assert not entries(), 'outside rm must not use the trash'
+    print('PASS outside Safehouse uses system rm', flush=True)
 
     for kind in ['file', 'directory', 'broken-link']:
       path = work / kind

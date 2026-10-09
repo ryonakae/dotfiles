@@ -27,11 +27,33 @@ class RmTrashTests(unittest.TestCase):
       '"fallback": os.getenv("GTRASH_HOME_TRASH_FALLBACK_COPY")}))\n'
       'sys.exit(23)\n')
     self.gtrash.chmod(0o755)
+    self.system_rm = self.home / 'system-rm'
+    self.system_rm.write_text(self.gtrash.read_text().replace('sys.exit(23)', 'sys.exit(31)'))
+    self.system_rm.chmod(0o755)
     self.wrapper = self.bin / 'rm'
-    self.wrapper.write_text(WRAPPER.read_text().replace('/opt/homebrew/bin/gtrash', str(self.gtrash)))
+    self.wrapper.write_text(WRAPPER.read_text().replace(
+      '/opt/homebrew/bin/gtrash', str(self.gtrash)).replace('/bin/rm', str(self.system_rm)))
     self.wrapper.chmod(0o755)
     self.env = dict(os.environ, HOME=str(self.home), PATH='/usr/bin:/bin',
+                    APP_SANDBOX_CONTAINER_ID='agent-safehouse',
                     GTRASH_ONLY_HOME_TRASH='true', GTRASH_HOME_TRASH_FALLBACK_COPY='true')
+
+  def test_outside_safehouse_uses_system_rm_without_gtrash(self):
+    self.gtrash.unlink()
+    args = ['-rf', '--', 'argument with spaces', '']
+    for marker in [None, '', 'other-container']:
+      with self.subTest(marker=marker):
+        env = dict(self.env)
+        if marker is None:
+          env.pop('APP_SANDBOX_CONTAINER_ID')
+        else:
+          env['APP_SANDBOX_CONTAINER_ID'] = marker
+        result = subprocess.run([str(self.wrapper), *args], env=env,
+                                capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 31, result.stderr)
+        self.assertEqual(json.loads(result.stdout), {
+          'args': args, 'only_home': 'true', 'fallback': 'true',
+        })
 
   def test_forwards_arguments_and_failure_without_copy_fallback(self):
     args = ['-rf', '--', 'name with spaces', '-option-like', '']

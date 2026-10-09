@@ -77,7 +77,7 @@ Safehouse はモジュール式のプロファイルを特定の順序でレイ�
 
 この環境は `compatibility.sb` → `local-overrides.sb` の順で追加する。広域IPCとSimulatorの `system-fsctl` は前者、ごみ箱保護と `/bin/rm` 実行拒否は後者にまとめる。既存の広域allowと重複する個別Mach/network/signalルールは追加しない。
 
-機密・個人データの独自denyと、それだけのためのvendor・Hermes等のallow例外は撤廃済み。ごみ箱payloadの直接読み取り・上書き・削除の拒否は維持し、metadataとrenameによる投入は許可する。Hermes配下もごみ箱保護の対象とし、アプリ固有の例外は設けない。親・ごみ箱ルートのrenameに関する限界は残り、完全な削除防止ではない。通常rmのgtrash転送は失敗しても直接削除へ戻らず、復元・掃除は人間がsandbox外で行う。
+機密・個人データの独自denyと、それだけのためのvendor・Hermes等のallow例外は撤廃済み。ごみ箱payloadの直接読み取り・上書き・削除の拒否は維持し、metadataとrenameによる投入は許可する。Hermes配下もごみ箱保護の対象とし、アプリ固有の例外は設けない。親・ごみ箱ルートのrenameに関する限界は残り、完全な削除防止ではない。Safehouse内のrmだけをgtrashへ転送し、失敗しても直接削除へ戻らない。Safehouse外では通常の/bin/rmを使い、復元・掃除は人間がsandbox外で行う。
 
 Safehouse標準のappend profile書き込み保護は独自denyとは別で、3起動経路の `--allow-profile-writes` で省く。これは書き込みgrantを追加せず、`.safehouse` の標準保護も解除しない。承認後に `config/` の正本を編集し、次回起動で反映する。実行中のsandboxは変更できず、現在の拒否を無断で迂回しない。
 
