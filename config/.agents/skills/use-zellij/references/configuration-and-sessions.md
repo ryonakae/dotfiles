@@ -169,14 +169,6 @@ keybinds {
 }
 ```
 
-既存 config を編集するときは、dotfiles 管理下なら `~/.config/...` の symlink 先ではなく repo 側の `config/.config/zellij/config.kdl` や `config/.config/ghostty/config` を編集する。Zellij 設定の検証は、ホーム側が sandbox などで見えない場合でも repo 側を明示して確認できる。
-
-```bash
-zellij --config-dir "$PWD/config/.config/zellij" setup --check
-```
-
-`[CONFIG FILE]: Well defined.` が出れば KDL としては読めている。通常起動で反映されていない場合は、実際に読み込む設定パスと symlink の参照先を確認する。この dotfiles では Zellij を導入・配布対象から外しているため、設定が自動配置されるとは仮定しない。
-
 ## 一次情報
 
 - https://zellij.dev/documentation/configuration.html

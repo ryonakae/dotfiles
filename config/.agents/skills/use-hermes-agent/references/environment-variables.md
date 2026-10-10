@@ -35,7 +35,6 @@
 | `MISTRAL_API_KEY` | Mistral API キー |
 | `OPENCODE_ZEN_API_KEY` | OpenCode Zen API キー |
 | `OPENCODE_GO_API_KEY` | OpenCode Go API キー |
-| `AI_GATEWAY_API_KEY` | ~~Vercel AI Gateway API キー（v0.15.0 で削除）~~ |
 | `NOVITA_API_KEY` | NovitaAI（v0.14.0） |
 | `GMI_API_KEY` | GMI Cloud（v0.12.0） |
 | `BRAVE_API_KEY` | Brave Search（v0.14.0、free tier） |

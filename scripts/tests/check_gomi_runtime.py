@@ -10,7 +10,6 @@ import shutil
 import signal
 import struct
 import subprocess
-import sys
 import tempfile
 import termios
 import time

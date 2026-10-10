@@ -31,7 +31,6 @@
 | xAI (Grok) | Grok 4 | `XAI_API_KEY` |
 | GitHub Copilot | GPT-5.x, Claude 等 | OAuth / `COPILOT_GITHUB_TOKEN` |
 | GitHub Copilot ACP | ACP agent backend | `hermes model` |
-| Vercel AI Gateway | （v0.15.0 で削除） | — |
 | OpenAI（first-class） | OpenAI API ネイティブ（Codex runtime とは別、v0.15.0） | `OPENAI_API_KEY` |
 | GMI Cloud | first-class（v0.12.0） | `GMI_API_KEY` |
 | Azure AI Foundry | auto-detection（v0.12.0）、Microsoft Entra ID auth（v0.15.0） | `AZURE_*` |

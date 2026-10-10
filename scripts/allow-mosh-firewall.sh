@@ -12,7 +12,6 @@ set -euo pipefail
 
 SOCKETFILTERFW=/usr/libexec/ApplicationFirewall/socketfilterfw
 
-# mosh-server の実体パス(symlink を解決したもの)を取得する関数
 function resolve_mosh_server() {
   local link
   link="$(command -v mosh-server)" || return 1
@@ -21,7 +20,6 @@ function resolve_mosh_server() {
   readlink -f "$link"
 }
 
-# 読み取り専用のバイナリに ad-hoc 署名を打ち込む関数
 function sign_adhoc() {
   local binary="$1"
   local mode
@@ -32,7 +30,6 @@ function sign_adhoc() {
   sudo chmod "$mode" "$binary"
 }
 
-# 登録済みの古い mosh-server エントリを削除する関数
 function remove_stale_entries() {
   local current="$1"
 

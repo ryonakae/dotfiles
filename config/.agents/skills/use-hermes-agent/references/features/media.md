@@ -28,7 +28,7 @@ image_gen:
 
 | バックエンド | 環境変数 | 検索 | 抽出 | クロール | 備考 |
 |-----------|---------|:---:|:---:|:---:|-----|
-| Firecrawl | `FIRECRAWL_API_KEY` | o | o | o | （v0.15.0 で `firecrawl_integration` tag が revert された経緯あり） |
+| Firecrawl | `FIRECRAWL_API_KEY` | o | o | o | |
 | Parallel | `PARALLEL_API_KEY` | o | o | - | |
 | Tavily | `TAVILY_API_KEY` | o | o | o | |
 | Exa | `EXA_API_KEY` | o | o | - | |

@@ -211,36 +211,6 @@ Electron アプリには `--no-sandbox` フラグを維持してネストされ�
 
 ## デバッグ（サンドボックス拒否の調査）
 
-`Operation not permitted` エラーが発生した場合の調査手順：
-
-```bash
-# ライブで拒否ログをストリーム
-/usr/bin/log stream --style compact \
-  --predicate 'eventMessage CONTAINS "Sandbox:" AND eventMessage CONTAINS "deny("'
-
-# 特定 PID パターンでフィルタ
-/usr/bin/log stream --style compact \
-  --predicate 'eventMessage CONTAINS "Sandbox: 2.1.34(" AND eventMessage CONTAINS "deny("'
-
-# カーネルレベルの拒否を監視
-/usr/bin/log stream --style compact \
-  --predicate '(processID == 0) AND (senderImagePath CONTAINS "/Sandbox")'
-```
-
-**重要**: `/usr/bin/log` のフルパスを使うこと（シェルの `log` エイリアスと区別するため）。
-
-### 拒否ログからルールへの変換
-
-| ログの操作 | sandbox ポリシールール |
-|------------|----------------------|
-| ファイル操作 | `(allow <operation> (literal "<path>"))` |
-| sysctl | `(allow sysctl-read (sysctl-name "<name>"))` |
-| mach-lookup | `(allow mach-lookup (global-name "<name>"))` |
-
-### ノイズ除去
-
-dtracehelper や Apple サービスのフォルスポジティブを除外。`DYLD_USE_DTRACE=0` で dtrace を抑制可能。
-
 詳細は `references/debugging-and-testing.md` を参照。
 
 ## カスタマイズ

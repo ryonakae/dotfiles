@@ -10,7 +10,7 @@
 
 ## trailer の解決
 
-profile は従来の選択順で 1 つ選ぶ。そのうえで、現在適用されている上位指示に完全な commit trailer、または一意に trailer を導出できる生成規則があれば、その値だけを使う。該当する上位指示がない場合は、選択した profile の fallback commit trailer を使う。
+profile は選択順で 1 つ選ぶ。そのうえで、現在適用されている上位指示に完全な commit trailer、または一意に trailer を導出できる生成規則があれば、その値だけを使う。該当する上位指示がない場合は、選択した profile の fallback commit trailer を使う。
 
 上位指示の trailer と profile の fallback commit trailer は併用しない。自動付与するエージェント帰属 trailer は最大 1 件とする。上位指示の trailer を使う場合も、選択した profile の subject/body 追加ルールは適用する。
 
