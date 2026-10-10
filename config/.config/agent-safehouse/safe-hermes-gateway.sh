@@ -1,8 +1,4 @@
 #!/bin/bash
-# launchd から safehouse 経由で hermes gateway を起動するラッパー。
-# hermes.fish + __safehouse_args.fish の bash 版。
-
-
 
 # 別ユーザー用の TMPDIR を継承しても Safehouse の mktemp を失敗させない。
 if [ ! -d "${TMPDIR:-}" ] || [ ! -w "$TMPDIR" ] || [ ! -x "$TMPDIR" ]; then

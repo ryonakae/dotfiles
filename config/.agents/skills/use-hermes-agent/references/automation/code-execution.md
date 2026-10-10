@@ -47,4 +47,3 @@ agent:
 - **modal** — Modal Labs serverless
 - **daytona**
 - **singularity**
-- ~~**Vercel Sandbox**~~（v0.12.0 で導入されたが v0.15.0 で削除）

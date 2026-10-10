@@ -70,7 +70,7 @@ nix --version
 
 Nix と Command Line Tools 付属の `/usr/bin/python3` が必要。`scripts/dotfiles.sh` はこの Python を使い、mise の導入・配置やプロジェクトの Python に依存しない。ホスト定義は `nix/hosts/` の Nix module を正本とし、`flake.nix` の `darwinConfigurations` から読み込む。既定の `default` は共通設定、`private` は共通設定に家用アプリを加えた構成。適用前に `system.primaryUser` と `users.users.<name>.home` が実機に合うことを確認する。
 
-別の構成を追加するときは、その差分用 module を作り、`darwinConfigurations` に対応する構成を定義する。構成名は英字または `_` で始め、以降は英数字・`_`・`-` を使う。ユーザー名・ホームなどの非秘密の定義は Git 管理し、秘密や認証情報は書かない。ローカルの `host.json` は不要で、以前の実ファイルが残っていても読み込まない。
+別の構成を追加するときは、その差分用 module を作り、`darwinConfigurations` に対応する構成を定義する。構成名は英字または `_` で始め、以降は英数字・`_`・`-` を使う。ユーザー名・ホームなどの非秘密の定義は Git 管理し、秘密や認証情報は書かない。
 
 ```fish
 cd ~/dotfiles
@@ -94,11 +94,11 @@ bash scripts/dotfiles.sh update all
 
 Bash は nix-darwin の標準導入と初期化を維持する。mise の補完用 `usage` も Home Manager の mise モジュールで Nix 導入し、どちらも Homebrew へ重複宣言しない。
 
-Bash / fish / mise 本体や Nix に残した依存は `update nixpkgs`、Hermes は `update hermes-agent`、Homebrew 本体は `update nix-homebrew`、スキル管理ライブラリは `update agent-skills` で更新する。通常 CLI / GUI は[Homebrew](#homebrew-本体とアプリの管理)、共通ランタイムは[mise](#ランタイム)で更新する。`update all` は全公開 input を更新するが、Source registry の外部スキルは含まない。外部スキルは[専用の標準コマンド](#追加更新復元)で更新する。`update ai` や独自 updater は使わない。
+Bash / fish / mise 本体や Nix に残した依存は `update nixpkgs`、Hermes は `update hermes-agent`、Homebrew 本体は `update nix-homebrew`、スキル管理ライブラリは `update agent-skills` で更新する。通常 CLI / GUI は[Homebrew](#homebrew-本体とアプリの管理)、共通ランタイムは[mise](#ランタイム)で更新する。`update all` は全公開 input を更新するが、Source registry の外部スキルは含まない。外部スキルは[専用の標準コマンド](#追加更新復元)で更新する。独自 updater は使わない。
 
 更新は update → lock 差分確認 → build → 承認した範囲で switch の順に行う。update は適用・起動を行わず、通常の build / switch は lock を更新しない。復元時は更新を混ぜず、既存の lock でビルドする。Nix 管理の Yazi プラグインを `ya pkg` で重ねて更新しない。
 
-fish の `config.fish` は Git 正本を mise で直接リンクする。旧 Git 管理外の本文を読み出して移植せず、example も再作成しない。Home Manager の標準生成設定は `~/.config/fish/nix-init.fish` に分離し、Git 側から source する。外部 plugin と標準 `conf.d` は Nix に残し、Fisher を併用しない。非対話の `shell-init.fish` は mise shims を PATH に含め、対話時の mise / zoxide activation は Git 側で行う。二重 activation を避け、`fish_variables` と履歴は管理対象にしない。
+fish の `config.fish` は Git 正本を mise で直接リンクする。Home Manager の標準生成設定は `~/.config/fish/nix-init.fish` に分離し、Git 側から source する。外部 plugin と標準 `conf.d` は Nix に残し、Fisher を併用しない。非対話の `shell-init.fish` は mise shims を PATH に含め、対話時の mise / zoxide activation は Git 側で行う。二重 activation を避け、`fish_variables` と履歴は管理対象にしない。
 
 ### ツールのバージョン差を確認する
 
@@ -370,7 +370,7 @@ herdr plugin install devashish2203/herdr-worktrunk --ref a3107ca566bafcd463bc138
 
 更新時も採用する commit をこの一覧へ反映し、`--ref` を省略しない。省略して再インストールすると、保存済み ref を引き継がず remote HEAD へ移る。
 
-Agent Context の installer は release binary と同じ release の checksum を取得するため、ネットワークが必要。source commit の固定は binary の Nix 固定出力管理とは異なる。Shepherd 本体と plugin は復元対象から外す。既存導入物・稼働中 daemon・保存データの停止や削除は、宣言の変更と分けて行う。
+Agent Context の installer は release binary と同じ release の checksum を取得するため、ネットワークが必要。source commit の固定は binary の Nix 固定出力管理とは異なる。既存導入物・稼働中 daemon・保存データの停止や削除は、宣言の変更と分けて行う。
 
 Zerdr は Homebrew 版を使う。導入対象は nix-darwin で宣言するが、本体は Homebrew が管理し、`flake.lock` による版固定・ロールバックの対象にはならない。
 
@@ -391,7 +391,7 @@ worktree の作成・削除には Worktrunk を使う。Herdr 本体の作成機
 
 ## Homebrew の依存と状態
 
-1Password CLI と Google Cloud CLI は Homebrew cask で管理する。依存ライブラリは依存元のパッケージ管理に任せ、直接の導入一覧へ重ねて追加しない。以前の暫定保持対象だった `icu4c@76` / `libpq` / `oniguruma` / `pcre2` / `postgresql@17` は直接管理せず、必要なら移行時に手動導入する。PostgreSQL のデータ・サービスは別扱いとし、宣言からの除外を理由に削除・停止しない。Homebrew の自動 cleanup は無効のまま維持する。
+1Password CLI と Google Cloud CLI は Homebrew cask で管理する。依存ライブラリは依存元のパッケージ管理に任せ、直接の導入一覧へ重ねて追加しない。PostgreSQL のデータ・サービスは別扱いとし、宣言からの除外を理由に削除・停止しない。Homebrew の自動 cleanup は無効のまま維持する。
 
 ## ランタイム
 
@@ -424,7 +424,7 @@ Homebrew の `unity-cli` cask で本体を管理する。更新は `brew upgrade
 
 ## Vim
 
-Vim は外部プラグインを使わない補助的な編集用の最小構成。NeoBundle の導入・更新は不要で、本体は Homebrew で更新する。
+Vim は外部プラグインを使わない補助的な編集用の最小構成。本体は Homebrew で更新する。
 旧 `~/.vim/bundle` の実体は設定変更だけでは削除しない。不要物の整理は対象を確認して行う。
 
 ## macOS と手動復元

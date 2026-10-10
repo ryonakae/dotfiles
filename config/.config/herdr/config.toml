@@ -66,7 +66,6 @@ type = "plugin_action"
 command = "worktrunk.open-current"
 description = "Worktree: switch / create from current branch"
 
-# prefix+shift+d は本体の close_workspace なので避ける
 [[keys.command]]
 key = "prefix+shift+k"
 type = "plugin_action"

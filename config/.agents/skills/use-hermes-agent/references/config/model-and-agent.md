@@ -50,4 +50,4 @@ agent:
 
 `hermes model` に「Configure auxiliary models」専用画面が追加。タスク別（compression / vision / session_search / title_generation）に個別モデルを GUI で設定できる。
 
-`auxiliary.*.provider: "auto"` のデフォルト挙動が変更され、メインモデルにフォールバックするようになった（旧: 集計プロバイダー固有のデフォルトに silent 切替）。意図しないモデル切替を防ぐ。
+`auxiliary.*.provider: "auto"` はメインモデルにフォールバックする。意図しないモデル切替を防ぐ。
