@@ -124,6 +124,7 @@
       "typeface"
       "unity-cli"
       "unity-hub"
+      "utm"
       "via"
       "visual-studio-code"
       "visual-studio-code@insiders"
