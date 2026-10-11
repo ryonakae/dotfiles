@@ -10,7 +10,7 @@
     "+codemode"
   ],
   "packages": [
-    "git:github.com/ryonakae/pi-subagents@be898c753e9eb32cf1315f63b1c1f5ef0cf6f782",
+    "git:github.com/ryonakae/pi-subagents@5f4be85487118ad1e4b992544acde3571cd32f6a",
     "npm:pi-footer@0.5.1",
     "npm:@tifan/pi-inline-skills@1.0.6",
     "npm:@normful/pi-auto-name@2.0.0",
