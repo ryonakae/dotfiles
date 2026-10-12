@@ -81,7 +81,7 @@ dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
 "$HOME/.config/agent-safehouse/run-with-agent-env.sh" /usr/bin/true
 ```
 
-エラーなく終了すれば、[エージェントを起動](setup.md#8-共通-api-キーを準備してエージェントを起動する)できる。
+エラーなく終了すれば、[エージェントを起動](setup.md#9-共通-api-キーを準備してエージェントを起動する)できる。
 
 ## 変更を反映する
 

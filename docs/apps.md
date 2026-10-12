@@ -111,17 +111,20 @@ env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
 
 ## Herdr
 
-プラグインの復元は通常端末で行う。再インストールは既存 checkout の交換と有効化を伴うので、稼働中の利用状態を確認する。
+dotfiles の setup は Herdr の設定・キーバインド・プラグイン設定を配置するが、プラグイン本体のインストールと登録は行わない。初回導入や別 Mac への復元では、以下も実施する。設定だけでは、Worktrunk・Zerdr のキーバインドや Agent Context の表示は動かない。
+
+### プラグインの導入・登録
+
+Safehouse 外の通常の fish 端末で、各コマンドが成功してから次へ進む。再インストールは既存 checkout の交換と有効化を伴うので、導入済みの場合は稼働中の利用状態を確認する。
 
 ```fish
 herdr plugin install ryonakae/herdr-agent-context --ref 10b8ead9d86b2cbb7b13d87ef50dec4b87ee21cd --yes
 herdr plugin install devashish2203/herdr-worktrunk --ref a3107ca566bafcd463bc138007a0c01051970784 --yes
-herdr plugin list
 ```
 
 `--ref` は省略しない。更新時はこの一覧の commit も変更する。Agent Context の導入には release binary と checksum を取得するネットワーク接続が必要。Worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
 
-Zerdr は Homebrew 版を使う。登録先を切り替える場合は fish で次を実行する。
+Zerdr は Homebrew 版を使う。初回導入・復元時や登録先を切り替える場合は、次を実行する。`brew --prefix` が未インストールのエラーになった場合は止めて、本体の導入状態を確認する。
 
 ```fish
 set -l zerdr_bin (brew --prefix ryonakae/tap/zerdr)/bin/zerdr
@@ -132,7 +135,9 @@ Herdr の登録と Zed tasks が変更される。両方の実行先が Homebrew
 
 worktree の作成・削除は Worktrunk を使う。Herdr の `worktree open` は既存 checkout の登録だけに使う。
 
-Herdr の設定変更後：
+### 設定の反映と稼働確認
+
+Herdr を起動し、そのセッション内の通常端末で設定を検証する。設定変更後も同じ手順を使う。
 
 ```fish
 herdr config check
@@ -142,6 +147,45 @@ herdr config check
 
 ```fish
 herdr server reload-config
+```
+
+登録と常駐プロセスを確認する。
+
+```fish
+herdr plugin list
+herdr plugin action list
+pgrep -fl herdr-agent-context
+```
+
+- プラグイン一覧で Agent Context・Worktrunk・Zerdr が有効になっている。
+- アクション一覧に `worktrunk.open`・`worktrunk.open-current`・`worktrunk.remove`・`zerdr.open-zed`・`zerdr.detach-thread` がある。
+- `herdr-agent-context listen` のプロセスがある。登録一覧の有効表示や `reload-config` の成功だけでは、このプロセスの稼働確認にはならない。
+
+`prefix + Shift + g` で Worktrunk の選択画面が開くことを確認し、操作せずキャンセルする。Pi などの対応エージェントを起動・再開し、Agent Context によるタブ名とサイドバーの最終メッセージが更新されることも確認する。
+
+### Agent Context が起動しない場合
+
+Agent Context は Herdr 起動時に常駐プロセスを開始する。稼働中のセッションへ後から導入した場合、設定の再読み込みだけでは起動しないことがある。上のプロセス確認で何も表示されなければ、セッションを再起動する。
+
+**停止すると、そのセッション内のペインとエージェントを含む実行中プロセスが終了する。** 作業を保存し、必要な会話の再開方法を確認してから、Herdr 外の通常端末で実行する。画面の開き直しだけではサーバーの再起動にならない。
+
+```fish
+herdr session list
+```
+
+対象を確認する。以下は `default` セッションの場合。停止が成功してから起動する。
+
+```fish
+herdr session stop default
+herdr
+```
+
+名前付きセッションの場合は `default` を対象名に置き換え、起動には `herdr session attach セッション名` を使う。
+
+再起動後、対象セッション内でプロセスと表示を再確認する。別セッションの listener もプロセス一覧に出るため、プロセスの存在だけで表示の更新まで確認済みとしない。まだ動かない場合は、再インストールを繰り返さずログを確認する。
+
+```fish
+herdr plugin log list --plugin ryonakae.agent-context --limit 20
 ```
 
 ## CuaDriver
