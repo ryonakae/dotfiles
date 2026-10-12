@@ -67,6 +67,8 @@ cd ~/dotfiles
 
 ## 5. アプリと設定を導入する
 
+[適用する macOS 設定](../nix/darwin/preferences.nix)を確認し、変更対象だけ現在の値・型・未設定かどうかを控える。Nix の旧世代に戻しても、これらの設定は元に戻らない場合がある。
+
 ```sh
 bash scripts/dotfiles.sh setup --configuration private
 ```
