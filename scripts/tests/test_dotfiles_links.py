@@ -1,9 +1,15 @@
+import importlib.util
+import io
+import json
 import os
 from pathlib import Path
+import pwd
 import shutil
 import subprocess
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -59,6 +65,86 @@ class DotfilesLinksTests(unittest.TestCase):
     return subprocess.run([MISE, '-C', str(self.repo), 'dot', *args],
                           cwd=self.base, env=self.env, capture_output=True,
                           text=True, timeout=30)
+
+  def test_setup_trusts_only_the_reviewed_declaration_in_isolated_home(self):
+    self.env.pop('MISE_TRUSTED_CONFIG_PATHS')
+    self.assertNotIn('CI', self.env)
+    self.assertNotIn('MISE_YES', self.env)
+    for name in ('.config/fish/config.fish', '.config/mise/config.base.toml'):
+      self.source(name)
+    spec = importlib.util.spec_from_file_location('dotfiles', ROOT / 'scripts/dotfiles.py')
+    module = importlib.util.module_from_spec(spec)
+    with patch('sys.dont_write_bytecode', True):
+      spec.loader.exec_module(module)
+    module.ROOT = self.repo
+    module.STORE = self.base / 'store'
+    module.PROFILE = self.base / 'profile'
+    module.CURRENT = self.base / 'current'
+    system = module.STORE / 'system'
+    (system / 'etc/dotfiles').mkdir(parents=True)
+    (system / 'sw/bin').mkdir(parents=True)
+    (system / 'systemConfig').write_text(str(system))
+    snapshot = module.STORE / 'snapshot'
+    snapshot.mkdir()
+    (snapshot / 'mise.toml').write_bytes((self.repo / 'mise.toml').read_bytes())
+    mise = module.STORE / 'mise/bin/mise'
+    mise.parent.mkdir(parents=True)
+    mise.write_text(f'#!/bin/sh\nexec "{Path(MISE).resolve()}" "$@"\n')
+    check = module.STORE / 'check-hermes'
+    check.write_text('#!/bin/sh\nexit 0\n')
+    for path in (system / 'activate', system / 'sw/bin/nix-env', system / 'sw/bin/darwin-rebuild'):
+      path.write_text('#!/bin/sh\nexit 0\n')
+      path.chmod(0o755)
+    mise.chmod(0o755)
+    check.chmod(0o755)
+    module.BREW = self.base / 'brew'
+    module.BREW.write_text('#!/bin/sh\nexit 0\n')
+    module.BREW.chmod(0o755)
+    username = pwd.getpwuid(os.getuid()).pw_name
+    target = dict(configuration='default', source=str(snapshot), username=username,
+                  homeDirectory=str(self.home), hermesCheck=str(check), mise=str(mise))
+    (system / 'etc/dotfiles/build.json').write_text(json.dumps(target))
+    real_run = subprocess.run
+    commands = []
+    def run(command, **kwargs):
+      commands.append(command)
+      if command[0] == str(mise):
+        result = real_run(command, env=self.env, input='y\n', capture_output=True,
+                          text=True, **kwargs)
+        print(result.stdout)
+        return result
+      if command[0] == str(check) or command[:2] == ['/usr/bin/sudo', '-v']:
+        return subprocess.CompletedProcess(command, 0)
+      if command[1] == str(system / 'sw/bin/nix-env'):
+        module.PROFILE.symlink_to(system)
+      elif command[1] == str(system / 'sw/bin/darwin-rebuild'):
+        module.CURRENT.symlink_to(system)
+      else:
+        self.fail(f'Unexpected subprocess: {command}')
+      return subprocess.CompletedProcess(command, 0)
+    def nix(*args, **kwargs):
+      if args[:2] == ('flake', 'metadata'):
+        return {'path': str(snapshot)}
+      if args[0] == 'eval':
+        return target
+      if args[:2] == ('flake', 'check'):
+        return ''
+      if args[0] == 'build':
+        return [{'outputs': {'out': str(system)}}]
+      self.fail(f'Unexpected Nix command: {args}')
+    with patch.dict(os.environ, dict(self.env, APP_SANDBOX_CONTAINER_ID=''), clear=True), \
+         patch.object(module, 'nix', side_effect=nix), \
+         patch.object(module.subprocess, 'run', side_effect=run), \
+         patch.object(module.pwd, 'getpwuid', return_value=SimpleNamespace(pw_name=username, pw_dir=str(self.home))), \
+         patch.object(module.sys.stdin, 'isatty', return_value=True), \
+         patch('builtins.input', side_effect=['switch', 'trust', 'apply']), \
+         patch('sys.argv', ['dotfiles.py', 'setup']), \
+         patch('sys.stdout', new_callable=io.StringIO):
+      module.main()
+    trust = [command for command in commands if 'trust' in command]
+    self.assertEqual(trust, [[str(mise), '-C', str(self.repo), 'trust', str(self.repo / 'mise.toml')]])
+    self.assertEqual((self.home / '.config/fish/config.fish').readlink(), self.repo / 'config/.config/fish/config.fish')
+    self.assertEqual((self.home / '.config/mise/config.toml').readlink(), self.repo / 'config/.config/mise/config.base.toml')
 
   def test_initial_operations_do_not_walk_unmanaged_home_directories(self):
     blocked = ['Library', 'Documents']

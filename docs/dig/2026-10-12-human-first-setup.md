@@ -26,5 +26,11 @@
 - 実機の設定変更・適用、秘密の操作、TCC 権限の自動付与、失敗時の自動再試行、commit / push は行わない。
 - macOS 設定とアプリ導入の適用順序は変更しない。
 
+## 後続の決定
+
+- ユーザーの追加依頼により、上記の「通常経路は switch 一回」「switch 内で check と build を行う」は置き換えられた。build は検査・ビルド、switch は明示された成果物の適用、setup は両者と確認付き mise 配置を組み合わせる。初回・既存 Mac 共通で使い、chsh と runtime install は含めない。
+- sudo は適用直前に認証し、適用中だけ標準キャッシュを更新する。パスワード保持や expect・sudoers の変更は行わない。
+- 詳細は[後続計画](../plans/2026-10-12-setup-build-switch.md)を参照する。
+
 ## 計画
 - [実装計画](../plans/archived/2026-10-12-human-first-setup.md) に要件・進捗・検証を記録する。

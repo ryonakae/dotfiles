@@ -26,8 +26,11 @@
         manifestsDir = "nix/skill-sources";
         lockFile = "nix/skill-sources.lock.json";
       };
-      mkDarwinConfiguration = hostModules: nix-darwin.lib.darwinSystem {
-        specialArgs = { inherit inputs; };
+      mkDarwinConfiguration = configuration: hostModules: nix-darwin.lib.darwinSystem {
+        specialArgs = {
+          inherit inputs;
+          dotfilesBuild = { inherit configuration; source = toString inputs.self; };
+        };
         modules = hostModules ++ [
           ./nix/darwin
           inputs.nix-homebrew.darwinModules.nix-homebrew
@@ -53,8 +56,8 @@
         program = "${sourceLockProgram}/bin/skills-sources-lock";
       };
       darwinConfigurations = {
-        default = mkDarwinConfiguration [ ./nix/hosts/default.nix ];
-        private = mkDarwinConfiguration [
+        default = mkDarwinConfiguration "default" [ ./nix/hosts/default.nix ];
+        private = mkDarwinConfiguration "private" [
           ./nix/hosts/default.nix
           ./nix/hosts/private.nix
         ];

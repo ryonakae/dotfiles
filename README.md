@@ -8,7 +8,7 @@ Nix で macOS と基盤、Homebrew でアプリ、mise で共通ランタイム�
 **[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md#新しい-mac-のセットアップ)を上から順に進める。**
 
 標準の「ターミナル」と zsh から始め、エージェントを起動できるところまで案内する。
-Xcode・App Store・端末の権限を準備してから Nix を導入し、`switch` でビルドと適用、その後に設定配置とランタイム導入を行う。認証方法の解説は含めない。
+Xcode・App Store・端末の権限を準備してから Nix を導入し、`setup` でビルド・適用・設定配置まで進める。その後、fish への切替とランタイム導入を行う。エージェントの認証方法の解説は含めない。
 
 家用は `private`、共通設定だけなら `default` を選ぶ。導入中に止まったら、最初からやり直さず[該当する対処](.agents/skills/dotfiles-setup/references/setup.md#初回導入で止まったとき)を確認する。
 

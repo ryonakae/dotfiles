@@ -6,7 +6,7 @@ macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・
 
 - ホーム側を経由せず、`config/` 内の正本を編集する。通常配置はルートの `mise.toml`、アプリ導入一覧は Nix 宣言を正本とし、自前 Brewfile やコピー運用を追加しない。
 - 通常設定の本文編集は即時反映。アプリ・設定ディレクトリ単位の Git manifest で配置し、HOME 一括の symlink-each は使わない。既存 manifest 内の追跡ファイル増減は mise apply、個別リンク・管理ディレクトリの追加は `mise.toml` も更新する。削除・改名は宣言を消す前に対象を標準 unapply する。
-- 未知の実体を force で置換せず、Nix build / switch に apply や runtime install を組み込まない。初回の管理記録欠落時には配置先全体の走査があるため、所有解除前に実 HOME の mise dry-run を時間制限付きで完了確認する。既知の旧 HM 衝突以外の問題やタイムアウトがあれば switch しない。後続成功は保証せず、切替中の新規アプリ起動を避ける。失敗時は現状を確認し、所有リンク引渡し・旧世代復旧は承認下で行う。自動 rollback・独自配置ツールは追加しない。
+- build は検査・ビルドだけ、switch は明示した成果物の適用だけとし、再ビルドしない。setup が両者と確認付き mise 配置を順に実行する。未知の実体を force で置換せず、build / switch に apply や runtime install を組み込まない。初回の管理記録欠落時には配置先全体の走査があるため、所有解除前に実 HOME の mise dry-run を時間制限付きで完了確認する。既知の旧 HM 衝突以外の問題やタイムアウトがあれば switch しない。後続成功は保証せず、切替中の新規アプリ起動を避ける。失敗時は現状を確認し、所有リンク引渡し・旧世代復旧は承認下で行う。自動 rollback・独自配置ツールは追加しない。
 - 非秘密の Nix ホスト定義は Git 管理する。それ以外のマシン固有値・秘密は Git 管理外の実ファイルへ置き、管理するのは値を含まない `*.example`。マシン非依存の定数は wrapper に置く。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。
 - Hermes の認証・memory・session・自己更新する hooks / cron / skills、Herdr の plugins 実体・session・log は管理対象に加えない。

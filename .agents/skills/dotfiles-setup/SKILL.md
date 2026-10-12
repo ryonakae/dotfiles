@@ -3,7 +3,7 @@ name: dotfiles-setup
 description: >-
   ryonakae/dotfiles の macOS 環境を導入・更新・復元するための運用スキル。
   この dotfiles の Nix / Homebrew / mise 設定変更、パッケージ追加、外部スキルの
-  Source registry 管理、build / switch、直接リンクの配置、ツールのバージョン差・更新相談、別 Mac への復元、適用失敗の調査で使う。
+  Source registry 管理、build / switch / setup、直接リンクの配置、ツールのバージョン差・更新相談、別 Mac への復元、適用失敗の調査で使う。
   一般的な Nix の質問や、別プロジェクトの環境構築には使わない。
 ---
 
@@ -31,7 +31,7 @@ description: >-
 | 通常 CLI / GUI の追加・削除 | `nix/darwin/homebrew.nix` の一覧を整合させ、対象限定の `brew install` / `brew uninstall`。Nix build / switch は必須でない |
 | 通常 CLI / GUI の更新 | Homebrew。cask の自己更新・`auto_updates` / `latest` の扱いを確認し、無条件に全件 greedy 更新しない |
 | 共通ランタイムの導入・更新 | `config/.config/mise/config.base.toml` の版指定と mise install / upgrade。個別プロジェクトは変更しない |
-| OS・Nix・Homebrew 本体・Bash / fish / mise と補完依存・管理ライブラリの更新 | `bash scripts/dotfiles.sh update <公開input名>` → 差分確認 → 承認後に switch。適用せず検証する場合は build。名前は root `flake.lock` / `flake.nix` で確認 |
+| OS・Nix・Homebrew 本体・Bash / fish / mise と補完依存・管理ライブラリの更新 | `bash scripts/dotfiles.sh update <公開input名>` → 差分確認 → build → 成果物を確認・承認して switch。設定配置までまとめるなら setup。名前は root `flake.lock` / `flake.nix` で確認 |
 | 外部スキルの追加・選択変更 | `nix/skill-sources/` の取得元・探索範囲と `nix/home/skills.nix` の選択を確認 |
 | 外部スキル取得元の更新 | `nix run .#skills-sources-lock`。標準の全取得元更新で、単体更新引数はない |
 | 固定版からの復元・管理方式だけの移行 | 更新しない。root と registry の両 lock の revision を維持 |
@@ -55,21 +55,22 @@ HOME 全体を `symlink-each` の配置先にせず、アプリ・設定ディ�
 
 1. 必要な更新だけを行い、宣言・lock の差分を確認する。非秘密の Nix ホスト定義以外の、Git 管理外のマシン固有ファイルや秘密を Git / store に含めない。
 2. 新規ファイルを Git ソースへ含める場合は、対象を確認してパスを明示して追加する。他者差分を一括 stage しない。`path:.` で未追跡ファイルをまとめて取り込まない。
-3. エージェントによる検証や生成物の事前確認には `bash scripts/dotfiles.sh build` を使う。既定の `default` 以外は `--configuration NAME` を指定する。build は適用・退避・lock 更新を行わない。変更に関係する生成物と構文・テストを確認する。
-4. 適用範囲の承認後に、対象ユーザーの通常の対話端末で `bash scripts/dotfiles.sh switch` を実行する。ユーザーの通常導入はこの1コマンドでよく、別途 build は必須ではない。switch 内で snapshot / check / build と確認を行い、過去 build の出力は受け渡さない。別途 build した場合は同じ構成名を使う。スクリプト全体を sudo で起動しない。
-5. 終了コードと現在の system、変更したリンク・ツールを確認する。スキル配置を変えた場合は選択集合・自作参照・管理外の兄弟項目も確認する。ビルド成功を適用成功と報告しない。
+3. 検査・ビルドだけ行う場合は `bash scripts/dotfiles.sh build` を使う。既定の `default` 以外は `--configuration NAME` を指定する。stdout の system store path を控え、生成物と構文・テストを確認する。build は適用・退避・lock 更新・mise 配置を行わない。
+4. 適用範囲の承認後、対象ユーザーの通常の対話端末で `bash scripts/dotfiles.sh switch SYSTEM_PATH` に確認済みの成果物パスを渡す。switch は成果物内のメタデータを使い、現在の checkout の再評価・再ビルドを行わない。`--configuration` は受け付けない。旧メタデータなし・消失した成果物は新しく build する。スクリプト全体を sudo で起動しない。
+5. ビルドから設定配置までまとめる場合は `bash scripts/dotfiles.sh setup [--configuration NAME]` を使う。新規・既存 Mac 共通だが、旧 HM の所有権移行を自動で行うものではない。適用成功後、候補の Nix 版 mise で checkout の設定だけを確認・trust し、60秒制限付き dry-run と別承認を経て配置する。chsh と runtime install は含めない。
+6. 終了コードと profile / current-system、変更したリンク・ツールを確認する。スキル配置を変えた場合は選択集合・自作参照・管理外の兄弟項目も確認する。ビルド成功や profile の存在だけを適用成功と報告しない。
 
-Safehouse 内から switch しない。既存の制限を回避せず、Herdr の利用が依頼・承認されていて `HERDR_ENV=1` なら、そのスキルに従って通常ペインへ渡す。それ以外はユーザーの通常端末へコマンドを案内する。sudo パスワードはユーザーが端末へ直接入力する。
+Safehouse 内から setup / switch しない。既存の制限を回避せず、Herdr の利用が依頼・承認されていて `HERDR_ENV=1` なら、そのスキルに従って通常ペインへ渡す。それ以外はユーザーの通常端末へコマンドを案内する。sudo パスワードはユーザーが端末へ直接入力する。適用承認・必要な退避承認・Hermes 停止検査の後に認証し、適用中だけ標準キャッシュを維持する。終了・失敗・中断時に更新処理を止め、mise 配置へ持ち越さない。パスワード保持・expect・sudoers 変更は行わず、会社のポリシーや App Store の再認証を回避しない。
 
 switch は候補が管理する `/etc/bashrc`・`/etc/zshrc` の通常ファイルだけを内容・退避先の表示と別途承認の後に退避する。既存退避先は上書きせず、未知のリンクや確認後の変更、退避失敗では適用しない。自動再試行・rollback は行わず、途中失敗時は元ファイルと退避先の両方を確認する。
 
-fish は Nix で導入し `/etc/shells` に登録する。既存ユーザーのログインシェルは switch で変更せず、[初回手順](references/setup.md#7-fish-をログインシェルにする)に従って設定配置後にユーザーが `chsh` で切り替える。管理者ユーザーを `users.knownUsers` へ追加しない。
+fish は Nix で導入し `/etc/shells` に登録する。既存ユーザーのログインシェルは switch で変更せず、[初回手順](references/setup.md#6-fish-をログインシェルにする)に従って設定配置後にユーザーが `chsh` で切り替える。管理者ユーザーを `users.knownUsers` へ追加しない。
 
 一律のアプリ停止・全件棚卸し・全設定の退避を前提にしない。実際の衝突や書き込み競合がある対象についてだけ、必要な停止・保全と承認を確認する。Hermes が稼働する Mac では管理関数による停止が必要で、適用入口が自動停止・再開するわけではない。組織管理アプリは宣言から勝手に除かず、セットアップ手順のローカル skip を使う。
 
 ## 失敗・復旧
 
-- エラー時は自動再試行せず、失敗段階・profile・既に変更された範囲を確認する。activation は非原子的で、失敗しても profile や一部設定が変わっている場合がある。
+- エラー時は自動再試行せず、失敗段階・profile・current-system・既に変更された範囲を確認する。setup の設定配置だけ失敗した場合は[配置だけ再開](references/setup.md#設定配置だけ再開する)し、成功した適用を繰り返さない。activation は非原子的で、失敗しても profile や一部設定が変わっている場合がある。
 - 通常設定の未知の実体を force や一括削除で通さない。mise apply 前に対象の実体とリンク先を確認し、未知の symlink を自動拒否すると仮定しない。外部スキルの標準 HM link 置換とは区別する。親ディレクトリ全体や Claude の `synced` を移動・削除しない。
 - 初回の所有権移行・Herdr integration は[同梱手順](references/setup.md#既存-mac-の切替)に従い、実機操作を別途承認する。Nix 所有解除前に実 HOME の mise dry-run を時間制限付きで完了確認し、既知の旧 HM リンクによる衝突以外の問題やタイムアウトがあれば switch しない。dry-run 成功だけで後続成功を保証しない。切替中の新規アプリ起動を避け、失敗時は現状を確認して、所有リンクの引渡し・旧世代復旧を承認下で行う。自動 rollback や独自配置ツールは追加しない。標準の switch による確認付き shell 退避を、未知の HOME 設定への一括退避に広げない。Hermes の installer 禁止とサービス運用は変えない。
 - Nix 世代の切替だけでは mise 所有リンク、正本の本文、Homebrew アプリ、mise runtime、preferences、DB は戻らない。所有権の引渡しと内容の復旧を分ける。検証目的の Nix activation / dry-run、サービス再起動、GC は行わない。

@@ -71,25 +71,34 @@ mise 参照: [dotfiles](https://github.com/jdx/mise/blob/main/docs/dotfiles.md)�
 
 レビュー基点: `7736860e78bcb4910d4067d35a1570029ca7c602`。開始時点は `master` と `origin/master` が一致、既存 staged なし。アプリ一覧の既存差分はこの会話で承認・変更済みの対象として引き継ぐ。CLI 分離・sudo 認証・setup・対応文書は共有契約のため1つの成果物としてまとめ、アプリ一覧は独立した commit にする。ユーザー側の Claude / Pi 差分4件は保持して除外する。
 
-- [ ] 成果物と適用 CLI: `flake.nix`、`nix/darwin/default.nix` と必要な小さな metadata module、`scripts/dotfiles.py`、`scripts/tests/test_dotfiles_cli.py` を変更する。TDD で build の独立性と成果物の明示選択を守り、メタデータと対象チェックを成果物に固定し、標準 profile 更新と activate を使って switch を分離する。
-- [ ] sudo 認証: `scripts/dotfiles.py` と `scripts/tests/test_dotfiles_cli.py` に、初回認証と適用中だけのキャッシュ更新・終了処理を追加する。共通の switch 処理にまとめ、setup と単独 switch で同じ契約を守る。実 sudo を使わない代替 subprocess と制御可能な待機で TDD を行う。
-- [ ] 一括 setup: 同 CLI とテストに build → switch → trust → dry-run → apply → 配置確認を追加する。既存の `/usr/bin/python3` を用いる shell 入口は維持し、実機を操作しない fixture と一時 HOME で段階別停止を確認する。配置の契約に必要な統合ケースだけ `scripts/tests/test_dotfiles_links.py` の既存基盤へ追加する。
+- [x] 成果物と適用 CLI: `flake.nix`、`nix/darwin/default.nix` と必要な小さな metadata module、`scripts/dotfiles.py`、`scripts/tests/test_dotfiles_cli.py` を変更する。TDD で build の独立性と成果物の明示選択を守り、メタデータと対象チェックを成果物に固定し、標準 profile 更新と activate を使って switch を分離する。
+- [x] sudo 認証: `scripts/dotfiles.py` と `scripts/tests/test_dotfiles_cli.py` に、初回認証と適用中だけのキャッシュ更新・終了処理を追加する。共通の switch 処理にまとめ、setup と単独 switch で同じ契約を守る。実 sudo を使わない代替 subprocess と制御可能な待機で TDD を行う。
+- [x] 一括 setup: 同 CLI とテストに build → switch → trust → dry-run → apply → 配置確認を追加する。既存の `/usr/bin/python3` を用いる shell 入口は維持し、実機を操作しない fixture と一時 HOME で段階別停止を確認する。配置の契約に必要な統合ケースだけ `scripts/tests/test_dotfiles_links.py` の既存基盤へ追加する。
 - [x] アプリ一覧: `nix/darwin/homebrew.nix` の `cmd-eikana` 宣言を削除する。既に承認・変更済みの Pages / Numbers / Keynote ID 更新、Transmit の cask 化、Okta 宣言削除を保持する。cleanup は `none` のままとし、実アプリの削除を行わない。
   - 検証: 対象 module を fixture の primaryUser で Nix 評価し、3 ID・Transmit cask・cmd-eikana / Okta / Transmit mas の除去・cleanup=none を確認。直接 import は pure 評価で拒否されたため、読取対象をこの非秘密 module に限定して `--impure` で評価した。実インストール・アンインストールなし。両構成の生成物確認と独立レビューは最終ゲートで行う。
-- [ ] 運用文書: `README.md`、`AGENTS.md`、`.agents/skills/dotfiles-setup/SKILL.md` と `references/setup.md` を新 CLI に合わせる。初回手順5〜6は setup にまとめ、既存 Mac の通常更新と移行・失敗後の再開を区別する。適用だけの例では build 出力パスを明示する。手順番号とリンクも整合させる。履歴文書を一括書換えせず、前回 dig log には置換された決定と本計画への参照だけを追記する。
+- [x] 運用文書: `README.md`、`AGENTS.md`、`.agents/skills/dotfiles-setup/SKILL.md` と `references/setup.md` を新 CLI に合わせる。初回手順5〜6は setup にまとめ、既存 Mac の通常更新と移行・失敗後の再開を区別する。適用だけの例では build 出力パスを明示する。手順番号とリンクも整合させる。履歴文書を一括書換えせず、前回 dig log には置換された決定と本計画への参照だけを追記する。
 
 ## Final Validation
 
-- [ ] `uv run --no-project python scripts/tests/test_dotfiles_cli.py`：実 Nix 必須の統合テストを skip せず通す。Git snapshot・lock 非更新・未追跡ファイル非混入・default/private 選択を維持する。switch が metadata / eval / check / build を呼ばず指定成果物だけを適用し、checkout の変更でも候補が変わらないことを確認する。
-- [ ] 同 CLI テストで引数不足・旧構文・不正/消失/metadata 欠落の成果物、ユーザー/HOME 不一致、root・Safehouse・非対話、承認拒否、Hermes 検査失敗、profile 登録失敗、activation 失敗、適用結果の不一致を確認する。いずれも該当段階より後の処理を実行しない。既存の shell 退避の競合・途中失敗の回帰テストを新入口に合わせて維持する。
-- [ ] sudo 認証のテストで、適用承認・必要な退避承認・停止検査より前には認証しないこと、認証失敗時は変更しないこと、非対話更新・有限 timeout、更新失敗時の後続停止と実行中適用の結果回収を確認する。正常終了・例外・中断・通常の終了シグナルで更新が終了・回収され、mise 段階と build / update では更新しないことを確認する。モックだけで寿命を確認できない箇所は、隔離した代替実行ファイルで検証する。パスワード保持・expect・sudoers 変更・キャッシュの一括失効を追加しない。
-- [ ] setup のテストで build は一度、同じ成果物を適用、既存 PATH の mise を使わない、対象ファイルだけの trust、dry-run の60秒制限、拒否・timeout・各 subprocess 失敗・宣言変更時の停止、代表リンクの不一致と完了済み段階の報告を確認する。実 sudo・profile・`/etc`・実 HOME は触らない。
-- [ ] 候補 Nix 版 mise の bin ディレクトリを PATH の先頭に置いて `uv run --no-project python scripts/tests/test_dotfiles_links.py` を実行し、既存の直接リンク・未追跡ファイル除外・衝突保全を確認する。setup の trust / dry-run / apply 連携は隔離された一時 HOME と state/cache/config ディレクトリでも確認し、親環境の広域 trust や CI 自動承認に依存しない。
-- [ ] `bash scripts/dotfiles.sh build` と `bash scripts/dotfiles.sh build --configuration private`：両方成功し、生成 metadata が各成果物の設定名・ユーザー・HOME・Hermes check・mise に対応することを確認する。生成 Brewfile の iWork ID と Transmit cask を確認し、cmd-eikana・Okta・旧 Transmit mas 指定の除去は一度きりの成果物確認で済ませる。新規 Nix module を使う場合はそのパスだけを Git に追加してから build し、Git 外の設定を取り込まない。
-- [ ] 変更 Python の構文、`bash -n scripts/dotfiles.sh`、文書リンク・掲載コマンド構文、`git diff --check` を確認する。README とエージェント指示の両方で旧 switch 例が運用手順に残っていないかを対象限定検索で確認する。
+- [x] `uv run --no-project python scripts/tests/test_dotfiles_cli.py`：実 Nix 必須の統合テストを skip せず通す。Git snapshot・lock 非更新・未追跡ファイル非混入・default/private 選択を維持する。switch が metadata / eval / check / build を呼ばず指定成果物だけを適用し、checkout の変更でも候補が変わらないことを確認する。
+- [x] 同 CLI テストで引数不足・旧構文・不正/消失/metadata 欠落の成果物、ユーザー/HOME 不一致、root・Safehouse・非対話、承認拒否、Hermes 検査失敗、profile 登録失敗、activation 失敗、適用結果の不一致を確認する。いずれも該当段階より後の処理を実行しない。既存の shell 退避の競合・途中失敗の回帰テストを新入口に合わせて維持する。
+- [x] sudo 認証のテストで、適用承認・必要な退避承認・停止検査より前には認証しないこと、認証失敗時は変更しないこと、非対話更新・有限 timeout、更新失敗時の後続停止と実行中適用の結果回収を確認する。正常終了・例外・中断・通常の終了シグナルで更新が終了・回収され、mise 段階と build / update では更新しないことを確認する。モックだけで寿命を確認できない箇所は、隔離した代替実行ファイルで検証する。パスワード保持・expect・sudoers 変更・キャッシュの一括失効を追加しない。
+- [x] setup のテストで build は一度、同じ成果物を適用、既存 PATH の mise を使わない、対象ファイルだけの trust、dry-run の60秒制限、拒否・timeout・各 subprocess 失敗・宣言変更時の停止、代表リンクの不一致と完了済み段階の報告を確認する。実 sudo・profile・`/etc`・実 HOME は触らない。
+- [x] 候補 Nix 版 mise の bin ディレクトリを PATH の先頭に置いて `uv run --no-project python scripts/tests/test_dotfiles_links.py` を実行し、既存の直接リンク・未追跡ファイル除外・衝突保全を確認する。setup の trust / dry-run / apply 連携は隔離された一時 HOME と state/cache/config ディレクトリでも確認し、親環境の広域 trust や CI 自動承認に依存しない。
+- [x] `bash scripts/dotfiles.sh build` と `bash scripts/dotfiles.sh build --configuration private`：両方成功し、生成 metadata が各成果物の設定名・ユーザー・HOME・Hermes check・mise に対応することを確認する。生成 Brewfile の iWork ID と Transmit cask を確認し、cmd-eikana・Okta・旧 Transmit mas 指定の除去は一度きりの成果物確認で済ませる。新規 Nix module を使う場合はそのパスだけを Git に追加してから build し、Git 外の設定を取り込まない。
+- [x] 変更 Python の構文、`bash -n scripts/dotfiles.sh`、文書リンク・掲載コマンド構文、`git diff --check` を確認する。README とエージェント指示の両方で旧 switch 例が運用手順に残っていないかを対象限定検索で確認する。
 - [ ] 実装側の独立レビューで、成果物選択と昇格の境界、非原子的な適用、確認・競合・失敗時の保全を確認する。実 sudo / profile 更新 / activation / App Store / アプリ導入 / chsh / 実 HOME 配置は未検証範囲として明記し、検証目的で実行しない。
 
 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
+
+## 実装・検証記録
+
+- CLI / sudo / setup は同じ適用境界を共有するため、対応テスト・Nix metadata・運用文書とまとめて検証。新しい Nix module は不要で、`flake.nix` と `nix/darwin/default.nix` に metadata を追加した。
+- CLI の成果物指定、sudo 初回認証失敗、setup 一括経路の red → green を確認。ログは `/tmp/dotfiles-setup-implementation-{artifact,sudo,setup}-red.log` と各 green log。境界ケースも追加し、最終 CLI 60件成功・skip 0（`/tmp/dotfiles-setup-implementation-cli-focused.log`）。
+- 候補 mise 2026.9.18 でリンク11件成功（`/tmp/dotfiles-setup-implementation-links-focused.log`）。setup 連携は実 sudo を代替し、実 mise の trust / dry-run / apply を一時 HOME・独立した state/cache/config、広域 trust / CI なしで実行した。
+- Python構文・Bash入口構文・変更Nix parse・差分チェック成功。文書のローカルリンク・アンカー63件、掲載 shell コード40ブロックを確認。ROOT の README / AGENTS とスキルの運用契約を更新済み。
+- 両 build 終了0。default: `/nix/store/k6f3rg45gh4lsb8p2sbxcyfj90p8a5kg-darwin-system-26.11.4cff07d`、private: `/nix/store/gfvc5m6mas5v3zz0y5nhgq6ry077f9h2-darwin-system-26.11.4cff07d`。ログ: `/tmp/dotfiles-setup-build-default.log` / `/tmp/dotfiles-setup-build-private.log`。実際の artifact 検証関数で両 metadata のユーザー・HOME・実行可能性・設定名を確認し、生成 Brewfile も確認済み。実適用は行っていない。
+- アプリ一覧の local commit: `b1a7b04`。CLI と文書の独立レビューは local commit 後に実施する。まだ push していない。
 
 ## 作業開始時点
 
