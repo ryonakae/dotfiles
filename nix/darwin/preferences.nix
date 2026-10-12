@@ -11,10 +11,9 @@ in
       ApplePressAndHoldEnabled = false;
       AppleShowScrollBars = "WhenScrolling";
       "com.apple.keyboard.fnState" = true;
-      "com.apple.swipescrolldirection" = true;
-      _HIHideMenuBar = false;
       InitialKeyRepeat = 15;
       KeyRepeat = 2;
+      NSTableViewDefaultSizeMode = 2;
       NSAutomaticCapitalizationEnabled = false;
       NSAutomaticDashSubstitutionEnabled = false;
       NSAutomaticPeriodSubstitutionEnabled = false;
@@ -25,7 +24,6 @@ in
       autohide = true;
       autohide-delay = 0.0;
       autohide-time-modifier = 0.0;
-      tilesize = 64;
       show-recents = false;
       mru-spaces = false;
       expose-group-apps = true;
@@ -76,12 +74,9 @@ in
       FXPreferredViewStyle = "Nlsv";
       FXDefaultSearchScope = "SCcf";
       NewWindowTarget = "Home";
-      ShowHardDrivesOnDesktop = false;
-      ShowExternalHardDrivesOnDesktop = true;
-      ShowRemovableMediaOnDesktop = true;
       _FXSortFoldersFirst = true;
+      _FXSortFoldersFirstOnDesktop = true;
     };
-    screencapture.show-thumbnail = true;
     menuExtraClock = {
       ShowDate = 0;
       ShowDayOfWeek = true;
@@ -90,7 +85,11 @@ in
       BatteryShowPercentage = true;
       Sound = true;
     };
-    WindowManager.GloballyEnabled = false;
+    WindowManager = {
+      EnableTilingByEdgeDrag = false;
+      EnableTopTilingByEdgeDrag = false;
+    };
+    universalaccess.closeViewScrollWheelToggle = true;
     CustomUserPreferences = {
       NSGlobalDomain = {
         AppleLanguages = [
@@ -107,10 +106,6 @@ in
         wvous-bl-modifier = 0;
         wvous-br-modifier = 0;
       };
-    };
-    trackpad = {
-      Clicking = false;
-      TrackpadThreeFingerDrag = false;
     };
   };
 }
