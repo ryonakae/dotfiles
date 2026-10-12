@@ -10,7 +10,7 @@
 - sudo の再入力を減らすため、適用直前に標準の `sudo -v` で認証し、適用中だけ `sudo -n -v` で認証キャッシュを維持する。パスワードをスクリプトで取得・保持・転送せず、expect や sudoers の変更は使わない。ユーザー承認済み。
 - `chsh`、runtime install、Xcode・App Store・FDA の準備、上記 sudo 認証以外の秘密・認証の操作、サービスの自動停止・再開、実機適用・アプリのアンインストールは対象外。`update` の既存契約は維持する。
 
-背景: [前回の初回セットアップの議論](../dig/2026-10-12-human-first-setup.md)。同ログの「switch がビルドを含み、過去成果物を受け渡さない」という以前の方針は今回の会話で置き換えられた。それ以外の安全条件と初回準備は継続する。今回の公開 CLI の具体的な構文・実装方針は以下の計画承認対象とする。
+背景: [前回の初回セットアップの議論](../../dig/2026-10-12-human-first-setup.md)。同ログの「switch がビルドを含み、過去成果物を受け渡さない」という以前の方針は今回の会話で置き換えられた。それ以外の安全条件と初回準備は継続する。今回の公開 CLI の具体的な構文・実装方針は以下の計画承認対象とする。
 
 ## Implementation Decisions
 
@@ -87,7 +87,7 @@ mise 参照: [dotfiles](https://github.com/jdx/mise/blob/main/docs/dotfiles.md)�
 - [x] 候補 Nix 版 mise の bin ディレクトリを PATH の先頭に置いて `uv run --no-project python scripts/tests/test_dotfiles_links.py` を実行し、既存の直接リンク・未追跡ファイル除外・衝突保全を確認する。setup の trust / dry-run / apply 連携は隔離された一時 HOME と state/cache/config ディレクトリでも確認し、親環境の広域 trust や CI 自動承認に依存しない。
 - [x] `bash scripts/dotfiles.sh build` と `bash scripts/dotfiles.sh build --configuration private`：両方成功し、生成 metadata が各成果物の設定名・ユーザー・HOME・Hermes check・mise に対応することを確認する。生成 Brewfile の iWork ID と Transmit cask を確認し、cmd-eikana・Okta・旧 Transmit mas 指定の除去は一度きりの成果物確認で済ませる。新規 Nix module を使う場合はそのパスだけを Git に追加してから build し、Git 外の設定を取り込まない。
 - [x] 変更 Python の構文、`bash -n scripts/dotfiles.sh`、文書リンク・掲載コマンド構文、`git diff --check` を確認する。README とエージェント指示の両方で旧 switch 例が運用手順に残っていないかを対象限定検索で確認する。
-- [ ] 実装側の独立レビューで、成果物選択と昇格の境界、非原子的な適用、確認・競合・失敗時の保全を確認する。実 sudo / profile 更新 / activation / App Store / アプリ導入 / chsh / 実 HOME 配置は未検証範囲として明記し、検証目的で実行しない。
+- [x] 実装側の独立レビューで、成果物選択と昇格の境界、非原子的な適用、確認・競合・失敗時の保全を確認する。実 sudo / profile 更新 / activation / App Store / アプリ導入 / chsh / 実 HOME 配置は未検証範囲として明記し、検証目的で実行しない。
 
 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
 
@@ -98,7 +98,15 @@ mise 参照: [dotfiles](https://github.com/jdx/mise/blob/main/docs/dotfiles.md)�
 - 候補 mise 2026.9.18 でリンク11件成功（`/tmp/dotfiles-setup-implementation-links-focused.log`）。setup 連携は実 sudo を代替し、実 mise の trust / dry-run / apply を一時 HOME・独立した state/cache/config、広域 trust / CI なしで実行した。
 - Python構文・Bash入口構文・変更Nix parse・差分チェック成功。文書のローカルリンク・アンカー63件、掲載 shell コード40ブロックを確認。ROOT の README / AGENTS とスキルの運用契約を更新済み。
 - 両 build 終了0。default: `/nix/store/k6f3rg45gh4lsb8p2sbxcyfj90p8a5kg-darwin-system-26.11.4cff07d`、private: `/nix/store/gfvc5m6mas5v3zz0y5nhgq6ry077f9h2-darwin-system-26.11.4cff07d`。ログ: `/tmp/dotfiles-setup-build-default.log` / `/tmp/dotfiles-setup-build-private.log`。実際の artifact 検証関数で両 metadata のユーザー・HOME・実行可能性・設定名を確認し、生成 Brewfile も確認済み。実適用は行っていない。
-- アプリ一覧の local commit: `b1a7b04`。CLI と文書の独立レビューは local commit 後に実施する。まだ push していない。
+- 成果物 commit: アプリ一覧 `b1a7b04`、CLI・テスト・文書 `80920c1`。アーカイブ前に実装由来の未コミット変更がないことを確認した。
+
+## Gate Summary
+
+- 独立レビュー対象: `7736860e78bcb4910d4067d35a1570029ca7c602` → `80920c1369181267cd14b00e36b773afeda008aa`。計画・コード・テスト・文書・アプリ宣言の固定差分全12ファイルを確認。
+- 結果: blocking/high・decision required・medium/low とも指摘なし。採用 finding なし、correction cycle 0、未解決事項なし。レビューでは実 subprocess 待機中の SIGTERM を代替 sudo で再現し、refresh 子と thread の回収も確認した。
+- Final Validation は上記の成功結果を再利用。以後はレビュー記録と計画のアーカイブ・参照リンクだけを変更し、CLI・Nix・テスト・運用契約は変更していない。アーカイブ後のリンク・差分チェックを行い、archive commit を含む commit 列を通常 push する。
+- 未検証: 実 sudo の認証・端末別キャッシュ共有、実 profile 更新・activation・shell 退避、App Store / アプリ導入、実 HOME の配置、chsh、サービス操作。実機への適用成功とは扱わず、必要な確認はユーザーが通常端末で行う。
+- 維持する制約: 認証1回は保証しない。適用は非原子的で、更新失敗時も実行中 activation を強制終了せず結果を回収して停止する。未知の symlink の全面自動拒否は保証せず、配置前の確認が必要。
 
 ## 作業開始時点
 
