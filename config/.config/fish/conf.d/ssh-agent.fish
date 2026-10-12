@@ -1,3 +1,13 @@
+# mosh 接続で継承した PATH に macOS 標準のパスが欠ける場合に備える。
+begin
+    set -l dir
+    for dir in /usr/bin /bin /usr/sbin /sbin
+        if not contains -- "$dir" $PATH
+            set -gx PATH $PATH "$dir"
+        end
+    end
+end
+
 # mosh/ssh 経由の非 Aqua シェルには launchd の SSH_AUTH_SOCK が降りてこないため、
 # GUI セッションが持っている socket パスを引っ張ってくる。直接ログイン時には既に
 # 設定済みなので、`set -q` ガードで触らない。
