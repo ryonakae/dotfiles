@@ -1,5 +1,9 @@
 {
   homebrew = {
+    brews = [
+      "rtk"
+    ];
+
     casks = [
       "air-video-server-hd"
       "autodesk-fusion"

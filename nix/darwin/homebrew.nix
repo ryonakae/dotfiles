@@ -55,7 +55,6 @@
       "qrencode"
       "ripgrep"
       "rsync"
-      "rtk"
       "terminal-notifier"
       "tmux"
       "tree"
