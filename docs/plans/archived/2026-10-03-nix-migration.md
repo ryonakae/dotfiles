@@ -10,7 +10,7 @@
 
 最後に成功した実機 `switch` は終了コード0で完了。その後の Mole 追加時の `switch` は Homebrew 段階で失敗した（下記）。`/run/current-system` は `/nix/store/c4mnqzv56k8sr9bsxaasj7mlw8nbbbvr-darwin-system-26.11.4cff07d`（`readlink /run/current-system` で確認）。宣言した48 preferences の実機値との一致も確認済み。外部スキルは Source registry 方式、非秘密のホスト定義は `nix/hosts/mac.nix` に移行済みで、旧 `host.json` 入力は廃止した。CLI は既定の `mac` を使い、別構成は `--configuration NAME` で選ぶ。廃止した `--host` は再開時に使わない。
 
-導入・更新・復旧の正本は [dotfiles-setup のセットアップ手順](../../../.agents/skills/dotfiles-setup/references/setup.md)。旧 `docs/setup.md` は存在しない。以下の過去記録に出てくる旧パス・コマンドは当時の履歴であり、現行の操作案内ではない。
+導入・更新・復旧の入口は [README](../../../README.md#使い方)。以下の過去記録に出てくる旧パス・コマンドは当時の履歴であり、現行の操作案内ではない。
 
 ### Mole 追加と App Store 対象の整理
 
@@ -390,7 +390,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 ## 切替・復旧手順（初回適用前に提示した履歴）
 
-初回切替は完了済み。以下は当時の候補手順で、実施結果は冒頭と T10 を優先する。現在の通常適用・失敗時対応は [セットアップ手順](../../../.agents/skills/dotfiles-setup/references/setup.md) を使い、この初回手順を再実行しない。
+初回切替は完了済み。以下は当時の候補手順で、実施結果は冒頭と T10 を優先する。現在の通常適用・失敗時対応は [日常操作](../../usage.md)と[トラブル対応](../../troubleshooting.md)を使い、この初回手順を再実行しない。
 
 1. **切替前**: 完成した構成を現在の Mac 向けに build。生成された activation とパッケージ参照を確認し、更新する入力・実機パス・サービス・preferences と旧構成への戻し方を用意する。破壊的な Homebrew cleanup や Nix GC は実行しない。
 2. **承認と停止**: ユーザーへ影響を提示し、必要なエージェント・端末・アプリの停止を確認。この Mac は Hermes 未使用のため停止・待機は不要。別の Mac の稼働中環境へ適用する場合は、利用者確認後に管理関数で正規停止し、失敗したら中止する。実行中のエージェント自身が途切れる場合は、ユーザー用の再開手順を先に渡す。
@@ -443,7 +443,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 ```
 
-この一時 host ディレクトリや store 成果物は消えている可能性がある。旧 host 入力を再作成せず、現在のビルドは [セットアップ手順](../../../.agents/skills/dotfiles-setup/references/setup.md#nix-の事前ビルド) と `nix/hosts/mac.nix` に従う。bootstrap をやり直さない。新規の参照ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` を使わない。
+この一時 host ディレクトリや store 成果物は消えている可能性がある。旧 host 入力を再作成せず、現在のビルドは [ビルド手順](../../usage.md#ビルドと適用を分ける)と `nix/hosts/` に従う。bootstrap をやり直さない。新規の参照ファイルは対象を明示して Git に追加してからビルドする。未追跡ファイルを含めるために `path:.` を使わない。
 
 ### 旧方式の部分構成レビュー
 

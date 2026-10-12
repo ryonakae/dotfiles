@@ -2,7 +2,7 @@
 
 この文書は、2026-10-03 の Nix 初回移行で検討した資料を旧 `docs/setup.md` から保存したもの。以下の手順を全部実施済みという意味ではない。実際の適用では、全件台帳・一括事前バックアップではなく、実際に報告された衝突を個別に対処する方針へ変更した。
 
-**現行の必須手順ではなく、この資料だけを根拠に実行しない。** 必要になった対象について現在の実機状態・候補生成物・操作範囲・復旧方法を確認し、個別の承認を得る。現行の初期設定・運用は [dotfiles-setup の同梱資料](../../../.agents/skills/dotfiles-setup/references/setup.md)を参照する。
+**現行の必須手順ではなく、この資料だけを根拠に実行しない。** 必要になった対象について現在の実機状態・候補生成物・操作範囲・復旧方法を確認し、個別の承認を得る。現行の初期設定・運用は [ユーザー向け手順](../../../README.md#使い方)を参照する。
 
 以下は当時の原文。リンクだけを移動先に合わせて修正した。当時の「この Mac」や未実施事項の記述は現在の状態を示さず、実施結果は [移行計画](2026-10-03-nix-migration.md)に記録されている。
 
@@ -34,7 +34,7 @@ Pi や端末を止める前に、`resume` へリポジトリと host 入力の�
 | `.gemini/antigravity-cli/skills` | 共通スキル置き場への参照を記録。配置対象のリンク自体だけを扱い、共通置き場は動かさない |
 | `.config/fish/config.fish` | 秘密を含み得るためユーザーが保全・退避する。内容を Git・会話・検証ログへ出さない |
 | 旧 fzf / bobthefish | 候補 plugin source と照合した既存ファイルだけを個別退避する。旧 `conf.d/fzf.fish` と9関数、bobthefish の9関数が対象。差分のある旧関数も保存し、`fish_frozen_*`・由来不明の `fish_logo` を一括退避しない |
-| 旧 Unity CLI 初期化・既知の Zellij リンク | `conf.d/unity-cli.fish`、`functions/zl.fish`、Zellij の `config.kdl` は個別に記録。Unity 本体・PATH の整理は[Unity CLI](../../../.agents/skills/dotfiles-setup/references/setup.md#unity-cli)と T9 の別作業で、ここでは本体や Hub データを削除しない |
+| 旧 Unity CLI 初期化・既知の Zellij リンク | `conf.d/unity-cli.fish`、`functions/zl.fish`、Zellij の `config.kdl` は個別に記録。Unity 本体・PATH の整理は[Unity CLI](../../apps.md#unity-cli)と T9 の別作業で、ここでは本体や Hub データを削除しない |
 | 新規配置 | 元が未作成と記録し、退避物を作らない。通常配置以外に Hermes plist 2件、`~/Applications/Home Manager Apps`、`~/Library/Fonts/HomeManager` を含む。アプリ・フォント配置は rsync の削除を伴うため、直前に既存実体が見つかったら保全方針を確認して止まる |
 
 Pi は次の3ファイルを、1件ずつこの順に処理する。
@@ -59,7 +59,7 @@ Pi は次の3ファイルを、1件ずつこの順に処理する。
 - `org.nixos.activate-system.plist`、system profile、`/run/current-system`、current-system GC root、`/etc/static` の元の有無と参照先。HOME 側も home-manager profile と `current-home` GC root の有無・リンク先を記録する。既存のユーザー Nix profile を HM profile と混同しない。
 - `/etc/synthetic.conf` の内容・mode、`/run` の元の状態、PAM の `/etc/pam.d/sudo`、必要な Nix custom config。SSH host key の有無と保全はユーザーが扱い、秘密鍵をエージェントやログへ渡さない。`hosts.before-nix-darwin` 等の既存退避がある場合は、候補の復元処理と衝突しないか確認する。
 - `/Applications/Nix Apps`・`/Library/Fonts/Nix Fonts` と `/var/lib/linux-builder` の有無。前二者は同期で削除が起こり、後者は候補 activation の冒頭で削除される。既存実体があれば適用を止め、保全と扱いを確認する。
-- Nix build users / group、PAM、SSH、TCC について、候補が変更する条件と実機の状態を照合する。変更が必要ならその範囲と戻し方を承認する。ログイン shell・権限・秘密の変更を、通常のファイル退避へ紛れ込ませない。preferences は[対象キーだけを控える](../../../.agents/skills/dotfiles-setup/references/setup.md#macos-と手動復元)。
+- Nix build users / group、PAM、SSH、TCC について、候補が変更する条件と実機の状態を照合する。変更が必要ならその範囲と戻し方を承認する。ログイン shell・権限・秘密の変更を、通常のファイル退避へ紛れ込ませない。preferences は[対象キーだけを控える](../../../.agents/skills/dotfiles-setup/references/setup.md#macos-設定)。
 
 旧 daemon の復元元・登録し直す操作、system 固有の変更条件の確認が終わるまでは `switch` へ進まない。実機を変えずに読み取った生成物だけでは、復旧時の daemon 起動や権限の復元を検証したことにならない。復旧が終わるまで Nix GC・旧 profile の更新・バックアップ削除をしない。
 

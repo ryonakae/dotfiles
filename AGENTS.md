@@ -1,41 +1,44 @@
 # dotfiles
 
-macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・復元、Nix / Homebrew / mise の操作、外部スキル管理では [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を読む。ユーザー向け手順も同スキルの [references/setup.md](.agents/skills/dotfiles-setup/references/setup.md) を正本とする。
+macOS 用の個人設定。ユーザー向け手順の入口は [README.md](README.md)。エージェントが導入・更新・復元、Nix / Homebrew / mise、外部スキルを扱うときは [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を読む。
 
 ## 編集
 
-- ホーム側を経由せず、`config/` 内の正本を編集する。通常配置はルートの `mise.toml`、アプリ導入一覧は Nix 宣言を正本とし、自前 Brewfile やコピー運用を追加しない。
-- 通常設定の本文編集は即時反映。アプリ・設定ディレクトリ単位の Git manifest で配置し、HOME 一括の symlink-each は使わない。既存 manifest 内の追跡ファイル増減は mise apply、個別リンク・管理ディレクトリの追加は `mise.toml` も更新する。削除・改名は宣言を消す前に対象を標準 unapply する。
-- build は検査・ビルドだけ、switch は明示した成果物の適用だけとし、再ビルドしない。setup が両者と確認付き mise 配置を順に実行する。未知の実体を force で置換せず、build / switch に apply や runtime install を組み込まない。初回の管理記録欠落時には配置先全体の走査があるため、所有解除前に実 HOME の mise dry-run を時間制限付きで完了確認する。既知の旧 HM 衝突以外の問題やタイムアウトがあれば switch しない。後続成功は保証せず、切替中の新規アプリ起動を避ける。失敗時は現状を確認し、所有リンク引渡し・旧世代復旧は承認下で行う。自動 rollback・独自配置ツールは追加しない。
-- 非秘密の Nix ホスト定義は Git 管理する。それ以外のマシン固有値・秘密は Git 管理外の実ファイルへ置き、管理するのは値を含まない `*.example`。マシン非依存の定数は wrapper に置く。
+- ホーム側を経由せず、`config/` 内の正本を編集する。配置はルート `mise.toml`、アプリ一覧は Nix 宣言。自前 Brewfile・コピー運用・独自配置ツールを追加しない。
+- 本文編集は即時反映。配置の追加・削除は mise を使い、個別リンクや管理ディレクトリの削除・改名は、宣言を消す前に標準 unapply する。HOME 一括の symlink-each は使わない。
+- build は検査・ビルドのみ、switch は指定成果物の適用のみ、setup は両者と確認付き配置。build / switch に apply・runtime install を追加しない。
+- 未知の実体を force で置換しない。旧 HM からの所有移行は[運用条件](.agents/skills/dotfiles-setup/references/setup.md#失敗と復旧)に従い、所有解除前の実 HOME dry-run を時間制限付きで確認する。自動再試行・rollback は追加しない。
+- 非秘密の Nix ホスト定義は Git 管理する。それ以外のマシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。マシン非依存の定数は wrapper に置く。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。
 - Hermes の認証・memory・session・自己更新する hooks / cron / skills、Herdr の plugins 実体・session・log は管理対象に加えない。
-- README とこのファイルに、コードで分かる設定値・ファイル一覧・処理説明を転記しない。進捗は計画に記録し、日常手順へ混ぜない。
 
 ## 検証
 
-変更したファイルの構文、差分、関連テストを確認する。配布やサービス再起動は検証だけを目的に実行しない。
+変更したファイルの構文、差分、関連テストを確認する。配布やサービス再起動は検証目的では実行しない。
 
-- fish: `fish --no-execute`、shell: shebang に対応する shell の `-n`。
-- 起動 wrapper・Nix 操作入口: `scripts/tests/` の関連する `test_*.py` を `uv run --no-project python` で実行する。Nix CLI の統合テストは実 Nix が必要で、未導入による skip を成功と扱わない。
-- Nix: `dotfiles-setup` のビルド手順を使う。Git ソースへ含める新規ファイルは対象を明示して追加し、Git 外の設定を store へ取り込まない。
-- 文書・スキル: 参照パス・リンク、手順と現行コードの整合、`git diff --check`。
+- fish は `fish --no-execute`、shell は shebang に対応する shell の `-n`。
+- 起動 wrapper・Nix 操作入口は `scripts/tests/` の関連 `test_*.py` を `uv run --no-project python` で実行する。実 Nix がないための統合テスト skip は成功と扱わない。
+- Nix はスキルの build 手順を使う。新規ファイルは対象を明示して Git に追加し、Git 外の設定を store に取り込まない。bootstrap はユーザーが sandbox 外で実行し、検証目的では起動しない。
+- 文書・スキルはリンク・参照パス、掲載コマンドと現行コードの整合、`git diff --check`。
 
-Nix の bootstrap はユーザーが sandbox 外で実行し、検証目的で起動しない。
+## 文書
+
+- `docs/` はユーザー向け。操作と成功の確認を順に書き、例外はトラブル対応、内部制約はスキル側へ分ける。ユーザーへエージェント用資料の通読を求めない。
+- エージェント向け判断基準は [スキルの運用条件](.agents/skills/dotfiles-setup/references/setup.md)。ユーザー手順のコマンドを複製せず、必要な箇所へリンクする。
+- README とこのファイルに、コードで分かる設定値・全ファイル一覧・処理説明を転記しない。進捗は計画に記録し、日常手順へ混ぜない。
 
 ## スキル
 
-- このリポジトリ専用のスキルは `.agents/skills/` が正本。`.claude/skills/` から相対 symlink で参照し、HOME への配布対象とは分ける。
-- `config/.agents/skills/` は他のプロジェクトでも使う自作スキルのみ。外部スキルの追加・更新・復元は `dotfiles-setup` に従う。
-- 自作スキルは mise の共通・Claude 向け2 glob で追跡ファイルごとに正本へ直接リンクする。通常の追加で名前を列挙しない。削除・`.disabled/` への移動前に対象を unapply し、外部スキルとの優先関係が変わる場合だけ Nix 側も適用する。
-- 共通の配置先は `~/.agents/skills/`。Claude 専用の同名優先と Antigravity CLI の共通参照を維持し、配布先を増やさない。
+- このリポジトリ専用は `.agents/skills/` が正本。`.claude/skills/` の相対 symlink で参照し、HOME への配布対象とは分ける。
+- `config/.agents/skills/` は他プロジェクトでも使う自作スキルのみ。外部の追加・更新・復元は dotfiles-setup に従う。
+- 自作は mise の共通・Claude 向け2 glob で追跡ファイルごとに直接リンクする。通常追加で名前を列挙しない。削除・`.disabled/` 移動は先に対象を unapply し、外部との優先関係が変わる場合だけ Nix 側も適用する。
+- 共通配置先は `~/.agents/skills/`。Claude 専用同名優先と Antigravity CLI の共通参照を維持し、配布先を増やさない。
 
-## 起動・保護設定の変更
+## 起動・保護設定
 
-- `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature 指定を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
-- ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。
-- 実秘密の移行、Keychain 登録・バックアップはユーザーが sandbox 外で行う。
-- Hermes のサービス操作は `hermes-gateway` / `hermes-dashboard` から fork 標準処理を使う。dotfiles の適用処理に自動停止・再開や状態保存を追加しない。直接の `launchctl` や installer による plist 再生成で管理を迂回しない。
-- Herdr の Claude hook は Homebrew 本体の標準 integration installer で管理する。実設定への適用は別途承認し、既存 settings 差分を保持する。
-- Herdr プラグインには復元用 lock がない。追加・削除したら同梱手順の導入一覧を更新する。worktree の作成・削除には Herdr 本体の機能を使わず Worktrunk を使う。
-- Pi の `extensions/` に通知処理を置く場合も、`hooks/` という名前のディレクトリを作らない。Pi が extension として自動読み込みするため。
+- `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
+- ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。実秘密の移行、Keychain 登録・バックアップはユーザーが通常端末で行う。
+- Hermes は `hermes-gateway` / `hermes-dashboard` から fork 標準処理で操作する。自動停止・再開・状態保存を適用処理に追加せず、直接の launchctl や installer の plist 再生成で管理を迂回しない。
+- Herdr の Claude hook は Homebrew 本体の標準 integration installer。実設定への適用は別承認し、既存 settings 差分を保持する。
+- Herdr plugin の追加・削除時は [導入一覧](docs/apps.md#herdr)を更新する。worktree の作成・削除は Herdr 本体ではなく Worktrunk を使う。
+- Pi の `extensions/` に `hooks/` という名前のディレクトリを作らない。通知処理も extension として自動読込されるため。
