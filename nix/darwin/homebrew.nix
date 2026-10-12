@@ -127,7 +127,7 @@
       "unity-cli"
       "unity-hub"
       "utm"
-      "via"
+      # "via" # Disabled by Homebrew: fails the macOS Gatekeeper check.
       "visual-studio-code"
       "visual-studio-code@insiders"
       "vlc"
