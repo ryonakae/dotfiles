@@ -2,7 +2,7 @@
 
 [README](../README.md) / [日常操作](usage.md) / 共通 API キー
 
-共通ツール用の API キーは dotenvx で暗号化し、復号鍵は macOS Keychain に保存する。1Password への移行は行わない。
+共通ツール用の API キーは dotenvx で暗号化し、復号鍵は macOS Keychain に保存する。
 
 - 初めて準備する：[初回設定](#初回設定)
 - キーを追加・変更する：[値の追加・更新](#値を追加更新する)
