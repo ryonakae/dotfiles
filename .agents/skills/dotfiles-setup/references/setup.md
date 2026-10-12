@@ -11,7 +11,7 @@
 - [初回の配置と既存 Mac の切替](#初回の配置と既存-mac-の切替)
 - [共通ツール用の秘密](#共通ツール用の秘密)
 - [外部スキル](#外部スキル)
-- [Claude Code](#claude-code)・[Pi](#pi)・[Hermes Agent](#hermes-agent)・[Herdr](#herdr)
+- [Claude Code](#claude-code)・[Pi](#pi)・[CuaDriver](#cuadriver)・[Hermes Agent](#hermes-agent)・[Herdr](#herdr)
 - [Homebrew の依存と状態](#homebrew-の依存と状態)・[ランタイム](#ランタイム)・[Unity CLI](#unity-cli)・[Vim](#vim)
 - [macOS と手動復元](#macos-と手動復元)・[アプリ設定](#アプリ設定)
 
@@ -283,6 +283,14 @@ statusline は設定内の npm version を固定し、通常の `npx` で利用�
 OpenAI は Pi 内の `/login openai` から `Sign in with ChatGPT` を選んで認証する。
 MCP の個人設定は `~/.pi/agent/mcp.json` に置く。OAuth が必要なサーバーには `pi mcp login <server>` を使う。
 
+## CuaDriver
+
+CuaDriver 本体は共通の Homebrew 一覧で管理する。[通常の Brew 運用](#homebrew-本体とアプリの管理)に従い、公式 installer を重ねない。外部 `cua-driver` スキルの配置と本体の導入は別である。
+
+初回利用時のアクセシビリティ・画面収録等の TCC 許可と daemon 起動は、変更範囲を確認して人間が [公式 Quickstart](https://cua.ai/docs/cua-driver/quickstart) に従う。アプリ導入だけで権限が復元されるとは扱わない。
+
+以前の手動導入で `~/.local/bin/cua-driver` がある Mac では、`type -a cua-driver` と `cua-driver --version` で解決先・版を確認する。既存リンクを無断で削除せず、Homebrew 版を使うために必要な PATH 整理は対象を確認して行う。
+
 ## Hermes Agent
 
 gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。同じ `~/.hermes` を使う Docker dashboard をホスト版と同時起動しない。
@@ -438,9 +446,11 @@ preferences は宣言や Nix 世代を戻すだけでは元に戻らない場合
 - App Store / Apple ID へのサインイン、iCloud、Touch ID、TCC（アクセシビリティ・画面収録・自動化等）の許可。許可や認証を preferences 全量コピーで移さない。
 - Xcode の初回起動・ライセンス確認、必要な SDK / Simulator platform の取得。署名証明書・provisioning profile・VPN 認証・秘密・Keychain は各製品の正規手順で復元する。
 - Docker runtime の初期設定と必要な volume の移行。Hindsight のデータや認証は Nix 世代に含まれず、アプリ導入だけでは復元されない。
-- 入力ソース、macOS 標準ショートカット、アプリ別ショートカット、デバイス別キー割り当て、バッテリー／AC 別の電源設定、未宣言のアプリ独自設定は必要なものだけ個別に復元する。
+- 入力ソース、macOS 標準ショートカット、アプリ別ショートカット、Karabiner 管理外のデバイス別キー割り当て、バッテリー／AC 別の電源設定、未宣言のアプリ独自設定は必要なものだけ個別に復元する。
 - Dock の固定項目・並びは Nix 管理するが、項目を宣言してもアプリ本体は導入されない。Chrome 製アプリなど、別途復元が必要なものは先に用意する。未導入のアプリは Dock 項目だけあっても起動できない。
 
 ## アプリ設定
+
+Karabiner は `config/.config/karabiner/karabiner.json` のルール・デバイス別設定を共通管理し、通常設定と同じ mise の Git manifest で配置する。初回は既存ファイルとの衝突・アプリによる書き込みを確認してから配置する。実行時状態・履歴・バックアップは管理しない。Karabiner 本体の初期設定と必要な macOS 権限の許可は別に行う。
 
 Git 管理していないアプリ設定は `Dropbox/App` にも保存している。新しい Mac では必要なものを個別にインポートする。

@@ -8,19 +8,23 @@ in
       AppleShowAllExtensions = true;
       AppleInterfaceStyleSwitchesAutomatically = true;
       AppleKeyboardUIMode = 2;
+      ApplePressAndHoldEnabled = false;
       AppleShowScrollBars = "WhenScrolling";
       "com.apple.keyboard.fnState" = true;
+      "com.apple.swipescrolldirection" = true;
       _HIHideMenuBar = false;
       InitialKeyRepeat = 15;
       KeyRepeat = 2;
       NSAutomaticCapitalizationEnabled = false;
+      NSAutomaticDashSubstitutionEnabled = false;
       NSAutomaticPeriodSubstitutionEnabled = false;
+      NSAutomaticQuoteSubstitutionEnabled = false;
       NSAutomaticSpellingCorrectionEnabled = false;
     };
     dock = {
       autohide = true;
       autohide-delay = 0.0;
-      autohide-time-modifier = 0.15;
+      autohide-time-modifier = 0.0;
       tilesize = 64;
       show-recents = false;
       mru-spaces = false;
@@ -73,7 +77,7 @@ in
       FXDefaultSearchScope = "SCcf";
       NewWindowTarget = "Home";
       ShowHardDrivesOnDesktop = false;
-      ShowExternalHardDrivesOnDesktop = false;
+      ShowExternalHardDrivesOnDesktop = true;
       ShowRemovableMediaOnDesktop = true;
       _FXSortFoldersFirst = true;
     };
@@ -88,7 +92,15 @@ in
     };
     WindowManager.GloballyEnabled = false;
     CustomUserPreferences = {
-      NSGlobalDomain.WebAutomaticSpellingCorrectionEnabled = false;
+      NSGlobalDomain = {
+        AppleLanguages = [
+          "ja-JP"
+          "en-JP"
+        ];
+        AppleLocale = "ja_JP";
+        WebAutomaticSpellingCorrectionEnabled = false;
+      };
+      "com.apple.desktopservices".DSDontWriteNetworkStores = true;
       "com.apple.dock" = {
         wvous-tl-modifier = 0;
         wvous-tr-modifier = 0;
