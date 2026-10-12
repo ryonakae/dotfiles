@@ -434,19 +434,61 @@ setup / switch は適用と必要な shell 退避の承認・Hermes 停止検査
 ## 共通ツール用の秘密
 
 共通 API キーは `config/.config/.env` にまとめ、dotenvx で暗号化し、復号鍵を macOS Keychain に保存する。
-プロジェクト・本番環境の秘密や各エージェント自身の認証は混ぜない。秘密のファイルは mise の自動配置対象外。既存の `~/.config/.env` リンクは保持し、未配置なら既存実体との衝突がないことを確認して、ユーザーがこの正本へのローカルリンクを準備する。秘密や鍵を Git / store に追加しない。
+プロジェクト・本番環境の秘密や各エージェント自身の認証は混ぜない。秘密や鍵を Git / store に追加しない。
 
-```fish
+**このファイルは mise の自動配置対象外。setup が成功しても、以下のファイルとリンクは自動では作られない。** ユーザーが Safehouse 外の通常端末で準備する。以下のコマンドは zsh・fish 共通。
+
+- 実ファイル：`~/dotfiles/config/.config/.env`
+- ツールが読むリンク：`~/.config/.env` → 上記の実ファイル
+
+### 1. 実ファイルを用意する
+
+まず内容を表示せず、存在を確認する。
+
+```sh
 cd ~/dotfiles
+ls -l config/.config/.env
+```
+
+`No such file or directory` で、まだファイルがない場合だけ、ひな形をコピーする。
+
+```sh
 cp -n config/.config/.env.example config/.config/.env
+```
+
+既存の通常ファイルがある場合はコピーせず、そのファイルを使う。リンクやディレクトリだった場合は、対象を確認するまで止める。`cp -n` は既存ファイルを上書きせず、コピーをスキップした際に非ゼロで終了することがある。失敗表示だけを見て上書きし直さない。
+
+実ファイルの存在を確認できたら、読み書きを自分だけに制限する。
+
+```sh
 chmod 600 config/.config/.env
 ```
 
-エディタで実値を入力する。既存ファイルは上書きせず、値をチャットやログに貼らない。
-`~/.config/.env` がこのファイルへのリンクであることを確認してから暗号化する。
+### 2. ツールが読むリンクを作る
 
-```fish
-ls -l ~/.config/.env
+```sh
+ls -l "$HOME/.config/.env"
+```
+
+- `~/dotfiles/config/.config/.env` を指すリンクがあれば、そのまま次へ進む。
+- `No such file or directory` なら、次のコマンドでリンクを作る。
+- 通常ファイル・ディレクトリ・別のリンクがあれば、削除や上書きをせず、必要な内容とリンク先を確認してから扱いを決める。
+
+```sh
+mkdir -p "$HOME/.config"
+ln -s "$HOME/dotfiles/config/.config/.env" "$HOME/.config/.env"
+ls -l "$HOME/.config/.env"
+```
+
+`ln` が `File exists` などで失敗した場合は止める。`-f` で強制置換しない。最後の表示が実ファイルへのリンクになっていることを確認する。**手順1のコピーだけでは、このリンクは作られない。**
+
+### 3. 値を設定して暗号化する
+
+新規作成した実ファイルをエディタで開き、必要な値を入力する。値をチャットやログに貼らない。既存の暗号化済みファイルを復元した場合は、ひな形や平文で置き換えず、対応する鍵の復元を別途行う。
+
+新規に値を設定したファイルを暗号化し、復号鍵を Keychain に保存する。最初のコマンドが成功してから、次を実行する。
+
+```sh
 dotenvx encrypt --quiet --no-armor -f "$HOME/.config/.env"
 dotenvx native up --quiet -f "$HOME/.config/.env" -fk "$HOME/.config/.env.keys"
 ```
