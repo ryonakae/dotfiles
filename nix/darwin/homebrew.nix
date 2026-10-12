@@ -74,7 +74,6 @@
       "android-studio"
       "antigravity-cli"
       "appcleaner"
-      "bettertouchtool"
       "blender"
       "chatgpt"
       "claude"
@@ -114,13 +113,13 @@
       "raycast"
       "readdle-spark"
       "rectangle"
-      "ryonakae/tap/sheltie"
       "sf-symbols"
       "slack"
       "smoothcsv"
       "sourcetree"
       "spotify"
       "tailscale-app"
+      "thaw@beta"
       "the-unarchiver"
       "transmit"
       "typeface"
@@ -136,9 +135,7 @@
     ];
 
     masApps = {
-      Barbee = 1548711022;
       Bear = 1091189122;
-      "Ethernet Menubar" = 1549412235;
       GarageBand = 682658836;
       iMovie = 408981434;
       Keynote = 361285480;
