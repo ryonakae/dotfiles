@@ -451,6 +451,10 @@ preferences は宣言や Nix 世代を戻すだけでは元に戻らない場合
 
 ## アプリ設定
 
-Karabiner は `config/.config/karabiner/karabiner.json` のルール・デバイス別設定を共通管理し、通常設定と同じ mise の Git manifest で配置する。初回は既存ファイルとの衝突・アプリによる書き込みを確認してから配置する。実行時状態・履歴・バックアップは管理しない。Karabiner 本体の初期設定と必要な macOS 権限の許可は別に行う。
+Karabiner は `config/.config/karabiner/karabiner.json` のルール・デバイス別設定を共通管理する。通常のファイル単位の Git manifest 配置とは異なり、mise の `symlink` で `~/.config/karabiner` ディレクトリ全体を `config/.config/karabiner` へ直接リンクする。[公式手順](https://karabiner-elements.pqrs.org/docs/manual/misc/configuration-file-path/)のとおり、JSON 単体のリンクでは変更検知・自動再読込が働かないため。
+
+初回は既存ディレクトリ・JSON の実体とリンク先、アプリによる書き込みを確認する。既存のファイル単位の管理リンクがあれば旧宣言を維持した状態で標準 unapply による解除を、実ディレクトリや管理外の内容があれば必要な保全・退避を、対象限定で別途承認してから配置する。未知の内容を force や一括削除で置換しない。実行時状態・履歴・バックアップは Git 管理しない。Karabiner 本体の初期設定と必要な macOS 権限の許可は別に行う。
+
+配置によって JSON の実際の場所が変わった後は、新しい場所の監視を開始するため、公式手順に従って `Karabiner-Console-User-Server` を一度再起動する。再起動までは変更が自動検知されない。この実機操作は配置と分けて承認し、人間が sandbox 外の通常端末で行う。検証や mise apply に自動再起動を組み込まない。
 
 Git 管理していないアプリ設定は `Dropbox/App` にも保存している。新しい Mac では必要なものを個別にインポートする。

@@ -21,7 +21,7 @@ mode = "symlink-each"
 manifest = "git"
 exclude = [
   "tests", "*.example",
-  "mise", "hermes/check-stopped.sh", "agent-safehouse/safe-hermes-*.sh",
+  "mise", "karabiner", "hermes/check-stopped.sh", "agent-safehouse/safe-hermes-*.sh",
 ]
 
 [dotfiles."~/.gemini"]
@@ -58,4 +58,5 @@ manifest = "git"
 "~/.gemini/GEMINI.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.pi/agent/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.config/mise/config.toml" = { source = "config/.config/mise/config.base.toml", mode = "symlink" }
+"~/.config/karabiner" = { source = "config/.config/karabiner", mode = "symlink" }
 "~/.gemini/antigravity-cli/skills" = { source = "~/.agents/skills", mode = "symlink" }
