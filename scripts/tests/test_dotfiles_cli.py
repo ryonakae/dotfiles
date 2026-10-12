@@ -634,15 +634,36 @@ class SetupTests(unittest.TestCase):
     self.assertEqual([c.args[0] for c in self.nix.call_args_list], ['flake', 'eval', 'flake', 'build'])
     commands = [c.args[0] for c in self.run.call_args_list]
     self.assertIn(['/usr/bin/sudo', str(self.system / 'sw/bin/darwin-rebuild'), 'activate'], commands)
-    self.assertEqual(commands[-3:], [
+    self.assertEqual(commands[-4:], [
       [self.target['mise'], '-C', str(self.module.ROOT), 'trust', str(self.module.ROOT / 'mise.toml')],
       [self.target['mise'], '-C', str(self.module.ROOT), 'dot', 'apply', '--dry-run'],
       [self.target['mise'], '-C', str(self.module.ROOT), 'dot', 'apply'],
+      [self.target['mise'], '-C', str(self.home), 'install'],
     ])
-    self.assertEqual(self.run.call_args_list[-2].kwargs['timeout'], 60)
+    self.assertEqual(self.run.call_args_list[-3].kwargs['timeout'], 60)
+    self.assertEqual(self.run.call_args_list[-1].kwargs['cwd'], self.home)
     self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
     self.assertEqual((self.home / '.config/fish/config.fish').readlink(),
                      self.module.ROOT / 'config/.config/fish/config.fish')
+
+  def test_failed_runtime_install_preserves_placement_and_reports_install_only_resume(self):
+    def run(command, **kwargs):
+      if command == [self.target['mise'], '-C', str(self.home), 'install']:
+        self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
+        self.assertEqual((self.home / '.config/mise/config.toml').readlink(),
+                         self.module.ROOT / 'config/.config/mise/config.base.toml')
+        raise subprocess.CalledProcessError(12, command)
+      return self.run_command(command, **kwargs)
+    self.run.side_effect = run
+    with self.assertRaises(subprocess.CalledProcessError) as error:
+      self.invoke()
+    self.assertEqual(error.exception.returncode, 12)
+    self.assertIn('link verification', self.module.sys.stderr.getvalue())
+    self.assertIn('Resume runtime installation only', self.module.sys.stderr.getvalue())
+    self.assertNotIn('Resume with standard mise trust', self.module.sys.stderr.getvalue())
+    self.assertNotIn('Setup complete:', self.module.sys.stdout.getvalue())
+    self.assertEqual(sum(c.args[0][-1] == 'activate' for c in self.run.call_args_list), 1)
+    self.assertEqual(sum(c.args[0][-1] == 'install' for c in self.run.call_args_list), 1)
 
   def test_setup_guards_run_before_snapshot_or_build(self):
     for guard in ('root', 'sandbox', 'terminal'):
@@ -787,6 +808,7 @@ class SetupTests(unittest.TestCase):
     with self.assertRaisesRegex(ValueError, 'live checkout'):
       self.invoke()
     self.assertIn('mise apply', self.module.sys.stderr.getvalue())
+    self.assertFalse(any(c.args[0][-1] == 'install' for c in self.run.call_args_list))
 
 
 class ShellBackupTests(unittest.TestCase):

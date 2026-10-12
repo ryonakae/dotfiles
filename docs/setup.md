@@ -73,7 +73,7 @@ cd ~/dotfiles
 bash scripts/dotfiles.sh setup --configuration private
 ```
 
-ビルド、システム適用、設定配置を順に行う。全体を sudo で起動せず、表示された確認に応答する。
+ビルド、システム適用、設定配置、共通ランタイムの導入を順に行う。全体を sudo で起動せず、表示された確認に応答する。
 
 | 表示された確認 | 進めてよい条件 | 入力 |
 |---|---|---|
@@ -125,13 +125,12 @@ echo $status
 
 `0` なら完了。この切替は一度だけでよい。失敗した場合は[fish の切替](troubleshooting.md#fish-に切り替わらない)を確認する。
 
-## 7. ランタイムを導入する
+## 7. ランタイムを確認する
 
-新しい fish の端末で実行する。
+ランタイムは手順5の setup で導入済み。新しい fish の端末で版を確認する。
 
 ```fish
 cd ~
-mise install
 node --version
 python --version
 ruby --version

@@ -32,7 +32,7 @@ description: >-
 ## 変更と検証
 
 - 通常設定の本文は直接リンクで即時反映。配置変更は mise、アプリ一覧は Nix 宣言、通常アプリの導入・更新は Homebrew、共通 runtime は mise を使う。別の管理方式を重ねない。
-- build は検査・ビルド、switch は明示した成果物の適用、setup は両者と確認付き配置。runtime install・chsh は別操作。Git 管理外のファイルを Nix store に取り込まない。
+- build は検査・ビルド、switch は明示した成果物の適用、setup は両者と確認付き配置・HOME からの runtime install。chsh は別操作。Git 管理外のファイルを Nix store に取り込まない。
 - 外部スキルは Source registry と専用 lock、自作は mise の2 glob。取得元の追加・選択・配布優先順位は[運用条件](references/setup.md#外部自作スキル)を確認する。
 - 最新版の相談では、解決先・使用版・管理元の提供版を調べる。更新済みと希望版の取得・動作成功を区別する。固定版からの復元に更新を混ぜない。
 - 変更ファイルの構文・差分・関連テストを検証する。Nix 変更は対象構成を build する。検証のために activation、サービス再起動、GC を実行しない。

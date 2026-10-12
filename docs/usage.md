@@ -111,7 +111,7 @@ cd ~/dotfiles
 bash scripts/dotfiles.sh setup --configuration private
 ```
 
-家用以外は `--configuration private` を省く。対象と配置予定を確認して承認する。成功条件は[初回セットアップの確認](setup.md#5-アプリと設定を導入する)と同じ。停止したサービスは、成功確認後に必要なものだけ再開する。
+家用以外は `--configuration private` を省く。対象と配置予定を確認して承認する。設定リンクの確認後、HOME から `mise install` を実行し、共通設定の指定版を導入する。成功条件は[初回セットアップの確認](setup.md#5-アプリと設定を導入する)と同じ。停止したサービスは、成功確認後に必要なものだけ再開する。
 
 ### ビルドと適用を分ける
 

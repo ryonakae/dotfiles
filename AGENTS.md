@@ -6,7 +6,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 
 - ホーム側を経由せず、`config/` 内の正本を編集する。配置はルート `mise.toml`、アプリ一覧は Nix 宣言。自前 Brewfile・コピー運用・独自配置ツールを追加しない。
 - 本文編集は即時反映。配置の追加・削除は mise を使い、個別リンクや管理ディレクトリの削除・改名は、宣言を消す前に標準 unapply する。HOME 一括の symlink-each は使わない。
-- build は検査・ビルドのみ、switch は指定成果物の適用のみ、setup は両者と確認付き配置。build / switch に apply・runtime install を追加しない。
+- build は検査・ビルドのみ、switch は指定成果物の適用のみ、setup は両者と確認付き配置・共通ランタイム導入。build / switch に apply・runtime install を追加しない。
 - 未知の実体を force で置換しない。旧 HM からの所有移行は[運用条件](.agents/skills/dotfiles-setup/references/setup.md#失敗と復旧)に従い、所有解除前の実 HOME dry-run を時間制限付きで確認する。自動再試行・rollback は追加しない。
 - 非秘密の Nix ホスト定義は Git 管理する。それ以外のマシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。マシン非依存の定数は wrapper に置く。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。

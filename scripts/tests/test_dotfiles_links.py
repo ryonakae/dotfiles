@@ -143,6 +143,7 @@ class DotfilesLinksTests(unittest.TestCase):
       module.main()
     trust = [command for command in commands if 'trust' in command]
     self.assertEqual(trust, [[str(mise), '-C', str(self.repo), 'trust', str(self.repo / 'mise.toml')]])
+    self.assertEqual(commands[-1], [str(mise), '-C', str(self.home), 'install'])
     self.assertEqual((self.home / '.config/fish/config.fish').readlink(), self.repo / 'config/.config/fish/config.fish')
     self.assertEqual((self.home / '.config/mise/config.toml').readlink(), self.repo / 'config/.config/mise/config.base.toml')
 

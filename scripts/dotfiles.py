@@ -367,10 +367,15 @@ def setup(source, configuration):
           or Path(os.path.abspath(link.parent / link.readlink())) != source_file):
         raise ValueError(f'configuration link does not point to live checkout: {link}')
     completed.append('link verification')
+    print(f'Installing configured runtimes from {home}', flush=True)
+    subprocess.run([mise, '-C', str(home), 'install'], cwd=home, check=True)
+    completed.append('mise install')
     print('Setup complete: ' + ', '.join(completed))
   except BaseException:
     print(f"Setup stopped. Completed: {', '.join(completed) or 'none'}", file=sys.stderr)
-    if 'switch' in completed:
+    if 'link verification' in completed:
+      print(f'Nix application and configuration placement succeeded; do not repeat switch or dot apply. Resume runtime installation only with {target["mise"]} -C {target["homeDirectory"]} install after reviewing the failure.', file=sys.stderr)
+    elif 'switch' in completed:
       print(f'Nix application succeeded; do not automatically switch again. Resume with standard mise trust / dot apply --dry-run / dot apply using {target["mise"]} -C {ROOT} after reviewing the failed stage.', file=sys.stderr)
     raise
 

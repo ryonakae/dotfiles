@@ -24,7 +24,7 @@
 - `scripts/dotfiles.sh` は CLT の `/usr/bin/python3` を使う。mise の配置やプロジェクトの Python を前提にしない。
 - ホスト定義は `nix/hosts/`、構成選択は `flake.nix` の `darwinConfigurations`。構成名は英字または `_` で始め、以降は英数字・`_`・`-`。不明な構成から default へ自動で切り替わらない。
 - 非秘密のユーザー名・HOME は Git 管理する。適用前に実機との一致を確認する。
-- build は検査・ビルドのみ。switch は指定成果物のみを適用し、現在の checkout を再評価・再ビルドしない。setup は build → switch → 確認付き mise 配置。runtime install と chsh は含めない。
+- build は検査・ビルドのみ。switch は指定成果物のみを適用し、現在の checkout を再評価・再ビルドしない。setup は build → switch → 確認付き mise 配置 → リンク検証 → HOME からの mise install。候補の Nix 版 mise を使い、sudo は付けない。chsh は含めない。
 - update だけが lock を更新する。復元には update を混ぜない。新規 Nix ファイルは対象を明示して Git に追加し、`path:.` で未追跡ファイルを取り込まない。
 - switch の成果物メタデータには構成・ソース・対象ユーザー・HOME・停止検査・mise が入る。メタデータがない旧成果物や GC 済み成果物は再ビルドする。store 内にあるだけで未知の成果物を信頼しない。
 - setup はビルド時の `mise.toml` と checkout を照合し、候補の mise で当該設定だけを trust する。配置本文は live checkout の `config/`。dry-run は60秒制限付き、apply は別承認。
@@ -45,7 +45,7 @@
 
 - 適用は非原子的。system profile は activation より前に更新される。profile の存在だけを成功とせず、終了コード・current-system・変更済み範囲を確認する。
 - 標準 `check` / `--dry-run` activation を安全な事前検査として実行しない。検証目的の実機適用・サービス再起動・GC は行わない。
-- 失敗後は自動再試行・rollback をしない。設定配置だけが失敗した場合に成功済みの switch を繰り返さない。
+- 失敗後は自動再試行・rollback をしない。設定配置だけが失敗した場合に成功済みの switch を繰り返さない。runtime install の失敗時は配置も繰り返さず、install だけを再開する。
 - [移行・復旧](../../../../docs/migration.md)では、リンクの所有引渡しと本文・アプリ・状態の復元を分ける。旧 Nix 世代で全状態が戻るとは扱わない。
 - 旧 HM からの初回移行では、所有解除前の実 HOME dry-run の完了を確認する。既知の旧 HM 衝突以外の問題や timeout があれば switch しない。後続の成功は保証せず、切替中に新しい実体ができた場合も保持する。
 - 初回移行の経緯が必要な場合だけ[過去の検討](../../../../docs/plans/archived/2026-10-03-initial-migration-procedures.md)を参照する。現在の操作許可には使わない。
