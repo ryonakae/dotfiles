@@ -1,16 +1,113 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import pwd
 import re
 import shutil
+import stat
 import subprocess
 import sys
 
 
 ROOT = Path(__file__).resolve().parents[1]
+ETC = Path('/etc')
+
+
+SHELL_BACKUP_PROGRAM = '''
+import ctypes
+import hashlib
+import json
+import os
+import stat
+import sys
+
+
+def verify(path, expected):
+  fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+  with os.fdopen(fd, 'rb') as file:
+    info = os.fstat(file.fileno())
+    if not stat.S_ISREG(info.st_mode):
+      raise ValueError(f"Not a regular file: {path}")
+    metadata = {key: getattr(info, key) for key in expected['metadata']}
+    if metadata != expected['metadata'] or hashlib.sha256(file.read()).hexdigest() != expected['sha256']:
+      raise ValueError(f"File changed after confirmation: {path}")
+
+
+try:
+  libc = ctypes.CDLL(None, use_errno=True)
+  rename_exclusive = libc.renamex_np
+  rename_exclusive.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
+  rename_exclusive.restype = ctypes.c_int
+  RENAME_EXCL = 0x00000004
+  files = json.loads(sys.argv[1])
+  for path, expected in files:
+    verify(path, expected)
+    if os.path.lexists(path + '.before-nix-darwin'):
+      raise FileExistsError(f"Backup already exists: {path}.before-nix-darwin")
+  for path, expected in files:
+    backup = path + '.before-nix-darwin'
+    verify(path, expected)
+    # Rename preserves even a concurrently replaced source without clobbering a backup.
+    if rename_exclusive(os.fsencode(path), os.fsencode(backup), RENAME_EXCL) != 0:
+      error = ctypes.get_errno()
+      raise OSError(error, os.strerror(error), backup)
+    verify(backup, expected)
+    print(f"Preserved {path} as {backup}", flush=True)
+  for path, expected in files:
+    if os.path.lexists(path):
+      raise ValueError(f"Shell file reappeared during backup: {path}")
+except (OSError, ValueError, AttributeError) as error:
+  print(f"Shell backup stopped: {error}. Inspect both paths before retrying; no automatic restore was attempted.", file=sys.stderr)
+  sys.exit(1)
+'''
+
+
+def prepare_shell_files(system):
+  files = []
+  for name in ('bashrc', 'zshrc'):
+    if not (Path(system) / 'etc' / name).is_symlink():
+      continue
+    path = ETC / name
+    try:
+      info = path.lstat()
+    except FileNotFoundError:
+      continue
+    if stat.S_ISLNK(info.st_mode):
+      if os.readlink(path) == str(ETC / 'static' / name):
+        continue
+      raise ValueError(f"Unexpected shell link; inspect before switching: {path}")
+    if not stat.S_ISREG(info.st_mode):
+      raise ValueError(f"Not a regular shell file: {path}")
+    backup = Path(str(path) + '.before-nix-darwin')
+    if os.path.lexists(backup):
+      raise ValueError(f"Backup already exists; inspect both paths: {path}, {backup}")
+    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    with os.fdopen(fd, 'rb') as file:
+      info = os.fstat(file.fileno())
+      if not stat.S_ISREG(info.st_mode):
+        raise ValueError(f"Not a regular shell file: {path}")
+      content = file.read()
+    expected = {
+      'metadata': {key: getattr(info, key) for key in (
+        'st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_size', 'st_mtime_ns')},
+      'sha256': hashlib.sha256(content).hexdigest(),
+    }
+    files.append((str(path), expected))
+    print(f"\nShell file: {path}\nPreserve as: {backup}\nContents (escaped):")
+    for line in content.decode('utf-8', errors='backslashreplace').splitlines():
+      print(repr(line))
+  if not files:
+    return
+  print("These files will stop being active shell configuration. Keep this terminal open.")
+  print("If custom settings still need migration, cancel now. Backups will not be overwritten.")
+  if input("Type 'backup' to preserve these shell files and continue: ").strip() != 'backup':
+    raise ValueError('shell backup cancelled; no activation performed')
+  subprocess.run([
+    '/usr/bin/sudo', '/usr/bin/python3', '-c', SHELL_BACKUP_PROGRAM, json.dumps(files),
+  ], check=True)
 
 
 def nix(*args, json_output=False):
@@ -60,10 +157,11 @@ def switch(system, source, configuration, target):
   print("This applies system settings, Homebrew and Home Manager configuration.")
   print("Review the changes; stop apps or preserve files only where conflicts require it.")
   print("Native file checks run during activation. Failure may leave a new profile and partial changes.")
-  print("This entrypoint does not back up files, manage Hermes, or roll back automatically.")
+  print("Shell files may require a separately confirmed backup; no general backup, Hermes management, or automatic rollback is performed.")
   if input("Type 'switch' to confirm application: ").strip() != "switch":
     raise ValueError("switch cancelled; no activation performed")
   subprocess.run([target["hermesCheck"]], check=True)
+  prepare_shell_files(system)
   subprocess.run([
     "/usr/bin/sudo", str(Path(system) / "sw/bin/darwin-rebuild"),
     "switch", "--flake", f"{source}#{configuration}", "--no-update-lock-file",
@@ -95,9 +193,9 @@ def main():
     parser.error("configuration must be a Nix identifier (letters, digits, underscores or hyphens)")
   if args.action == "switch":
     if os.geteuid() == 0:
-      parser.error("run switch as the target user, not with sudo; only darwin-rebuild is elevated")
+      parser.error("run switch as the target user, not with sudo; shell backup and darwin-rebuild are elevated when needed")
     if os.environ.get("APP_SANDBOX_CONTAINER_ID") == "agent-safehouse":
-      parser.error("switch must be run by a human outside Safehouse after migration approval")
+      parser.error("switch must be run by the user outside Safehouse after migration approval")
     if not sys.stdin.isatty():
       parser.error("switch requires an interactive terminal for confirmation")
   source = locked_source()

@@ -1,54 +1,40 @@
 # dotfiles
 
 macOS の開発環境と AI エージェントの設定を、新しい Mac に引き継ぐための個人用 dotfiles。
-Nix で macOS と基盤、Homebrew で普段使うアプリ、mise で共通ランタイムと設定の直接リンクを管理する。
+Nix で macOS と基盤、Homebrew でアプリ、mise で共通ランタイムと設定のリンクを管理する。
 
-## Install
+## 新しい Mac に導入する
 
-Git が未導入なら、先に `xcode-select --install` で Command Line Tools を導入する。
-新規 Mac では、sandbox 外の通常端末で実行する。
+**[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md#新しい-mac-のセットアップ)を上から順に進める。**
 
-```fish
-git clone https://github.com/ryonakae/dotfiles.git ~/dotfiles
-cd ~/dotfiles
-bash scripts/bootstrap-nix.sh --install
-```
+標準の「ターミナル」と zsh から始め、エージェントを起動できるところまで案内する。
+Xcode・App Store・端末の権限を準備してから Nix を導入し、`switch` でビルドと適用、その後に設定配置とランタイム導入を行う。認証方法の解説は含めない。
 
-導入済みの Mac で bootstrap をやり直さない。続きは `dotfiles-setup` スキル同梱の[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)。Nix のホスト定義、秘密・認証、既存設定との衝突を必要な範囲で確認する。Homebrew の別途 bootstrap や Fisher による導入は併用しない。
+家用は `private`、共通設定だけなら `default` を選ぶ。導入中に止まったら、最初からやり直さず[該当する対処](.agents/skills/dotfiles-setup/references/setup.md#初回導入で止まったとき)を確認する。
 
-## 日常の変更
+## 導入後に使う手順
 
-通常設定と自作スキルの本文は `config/` の正本を編集する。HOME からの直接リンクに即時反映されるため、本文変更だけなら再適用は不要。アプリ・設定ディレクトリ単位の Git manifest で配置する。既存 manifest 内の追跡ファイル増減は apply で反映し、個別リンクや管理ディレクトリの追加はルートの `mise.toml` も更新する。削除・改名は宣言を消す前に対象を unapply する。
+| 目的 | 参照先 |
+|---|---|
+| 設定・アプリ・ランタイムを更新する | [日常の変更と更新](.agents/skills/dotfiles-setup/references/setup.md#日常の変更と更新) |
+| 設定ファイルの配置を変える | [管理の分担と通常配置](.agents/skills/dotfiles-setup/references/setup.md#管理の分担と通常配置) |
+| 既存の Home Manager 配置から移行する | [既存 Mac の切替](.agents/skills/dotfiles-setup/references/setup.md#既存-mac-の切替) |
+| 任意のアプリ・サービスを設定する | [機能別リファレンス](.agents/skills/dotfiles-setup/references/setup.md#機能別リファレンス) |
+| エージェントに dotfiles の操作を任せる | [dotfiles-setup スキル](.agents/skills/dotfiles-setup/SKILL.md) |
+| iOS Simulator で検証する | [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) |
 
-```fish
-mise -C ~/dotfiles dot apply
-```
-
-- **CLI / GUI:** Homebrew で更新する。導入一覧は Nix 宣言に保ち、追加・削除は一覧と対象の install / uninstall を整合させる。
-- **共通ランタイム:** mise の Git 正本で版を指定し、install / upgrade を使い分ける。個別プロジェクトの版指定は維持する。
-- **Nix 基盤・外部スキル:** 宣言・lock を確認して `bash scripts/dotfiles.sh build`、適用承認後に通常の対話端末で `bash scripts/dotfiles.sh switch` を使う。
-
-既定では共通の `default` 構成を使う。家用Macでは build／switch の両方に `--configuration private` を指定する。
-自作スキルの glob 配置と削除前の unapply、依存更新・初回切替の事前確認・復元・失敗時の扱いは[セットアップ手順](.agents/skills/dotfiles-setup/references/setup.md)を参照。外部スキルの Source registry 更新は、システムの Flake input 更新とは別操作。
-
-エージェントに作業を任せる場合は [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を使う。リポジトリ共通の編集・検証上の制約は [AGENTS.md](AGENTS.md) を参照する。
-
-## 手動設定・運用
-
-- **秘密・認証・サービス初期設定:** [同梱の手順](.agents/skills/dotfiles-setup/references/setup.md)に従い、人間が sandbox 外で行う。
-- **削除と復元:** [削除したファイルの復元](#削除したファイルの復元)を参照する。
-- **mosh:** Homebrew で更新するたびに `bash scripts/allow-mosh-firewall.sh` を実行し、署名とファイアウォール登録をやり直す。
-- **iOS Simulator の検証:** [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) を参照する。
+mosh を Homebrew で更新した後は、`bash scripts/allow-mosh-firewall.sh` で署名とファイアウォール登録をやり直す。
+リポジトリの編集・検証ルールは [AGENTS.md](AGENTS.md) を参照する。
 
 エージェントは fish の起動関数から Safehouse 内で使う。HOME への広いアクセスを許可する互換性重視の構成で、完全隔離は保証しない。
 
-### 削除したファイルの復元
+## 削除したファイルの復元
 
-Safehouse 内の `rm` は gtrash でごみ箱へ移す。人間の通常端末では直接削除となり、ごみ箱からは復元できない。通常端末でもごみ箱へ移したい場合は `gtrash put` を使う。
+Safehouse 内の `rm` は gtrash でごみ箱へ移す。ユーザーの通常端末では直接削除となり、ごみ箱からは復元できない。通常端末でもごみ箱へ移したい場合は `gtrash put` を使う。
 
 保存先は Finder のごみ箱とは別で、HOME volume では既定で `~/.local/share/Trash`（`XDG_DATA_HOME` 指定時はその配下）。別 volume ではその volume のごみ箱を使い、利用できなければ失敗する。
 
-削除操作が終わってから、人間が Safehouse 外の通常端末で復元する。
+削除操作が終わってから、ユーザーが Safehouse 外の通常端末で復元する。
 
 ```fish
 gtrash restore

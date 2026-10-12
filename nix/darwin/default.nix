@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, ... }:
 {
   imports = [
     ./homebrew.nix
@@ -9,6 +9,7 @@
   system.stateVersion = 6;
 
   programs.fish.enable = true;
+  environment.shells = [ pkgs.fish ];
 
   nix.enable = true;
   nix.settings.experimental-features = [

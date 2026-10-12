@@ -166,6 +166,12 @@ class NixConfigurationTests(unittest.TestCase):
     self.assertEqual(result.returncode, 0, result.stderr)
     return json.loads(result.stdout)
 
+  def test_both_configurations_allow_fish_for_manual_login_shell_selection(self):
+    for configuration in ('default', 'private'):
+      with self.subTest(configuration=configuration):
+        shells = self.evaluate(configuration, 'environment.etc.shells.text')
+        self.assertIn('/run/current-system/sw/bin/fish', shells.splitlines())
+
   def test_default_and_private_configurations_merge_their_application_sets(self):
     common_casks = {'blender', 'coteditor', 'framer'}
     private_casks = {
@@ -321,6 +327,334 @@ class SwitchSafetyTests(unittest.TestCase):
       self.invoke()
     self.assertEqual(self.run.call_count, 1)
     self.assertEqual(self.run.call_args.args[0], ['/fixture/check-hermes'])
+
+
+class ShellBackupTests(unittest.TestCase):
+  def setUp(self):
+    spec = importlib.util.spec_from_file_location('dotfiles', ROOT / 'scripts/dotfiles.py')
+    self.module = importlib.util.module_from_spec(spec)
+    with patch('sys.dont_write_bytecode', True):
+      spec.loader.exec_module(self.module)
+    self.directory = tempfile.TemporaryDirectory()
+    self.addCleanup(self.directory.cleanup)
+    self.root = Path(self.directory.name)
+    self.etc = self.root / 'etc'
+    self.etc.mkdir()
+    self.system = self.root / 'system'
+    (self.system / 'etc').mkdir(parents=True)
+    for name in ('bashrc', 'zshrc'):
+      (self.system / 'etc' / name).symlink_to('/fixture/generated-' + name)
+    self.module.ETC = self.etc
+    self.activated = False
+    self.real_run = subprocess.run
+    self.target = {
+      'username': 'fixture-user', 'homeDirectory': '/Users/fixture-user',
+      'hermesCheck': '/fixture/check-hermes',
+    }
+    patches = [
+      patch.object(self.module, 'nix', side_effect=self.nix_response),
+      patch.object(self.module.os, 'geteuid', return_value=501),
+      patch.object(self.module.pwd, 'getpwuid', return_value=SimpleNamespace(
+        pw_name='fixture-user', pw_dir='/Users/fixture-user')),
+      patch.object(self.module.sys.stdin, 'isatty', return_value=True),
+      patch.dict(os.environ, {'APP_SANDBOX_CONTAINER_ID': ''}),
+      patch('sys.stdout', new_callable=io.StringIO),
+      patch('sys.stderr', new_callable=io.StringIO),
+    ]
+    for patcher in patches:
+      patcher.start()
+      self.addCleanup(patcher.stop)
+    self.prompts = patch('builtins.input', side_effect=['switch', 'backup'])
+    self.prompt = self.prompts.start()
+    self.addCleanup(self.prompts.stop)
+    runner = patch.object(self.module.subprocess, 'run', side_effect=self.run_command)
+    self.run = runner.start()
+    self.addCleanup(runner.stop)
+
+  def nix_response(self, *args, **kwargs):
+    if args[:2] == ('flake', 'metadata'):
+      return {'path': '/nix/store/fixture-source'}
+    if args[0] == 'eval':
+      return self.target
+    if args[:2] == ('flake', 'check'):
+      return ''
+    if args[0] == 'build':
+      return [{'outputs': {'out': str(self.system)}}]
+    self.fail(f'Unexpected Nix command: {args}')
+
+  def run_command(self, command, **kwargs):
+    if command == ['/fixture/check-hermes']:
+      return subprocess.CompletedProcess(command, 0)
+    if 'darwin-rebuild' in command[1]:
+      self.activated = True
+      return subprocess.CompletedProcess(command, 0)
+    self.assertEqual(command[:2], ['/usr/bin/sudo', '/usr/bin/python3'])
+    return self.real_run(command[1:], **kwargs)
+
+  def invoke(self, action='switch'):
+    with patch('sys.argv', ['dotfiles.py', action]):
+      self.module.main()
+
+  def test_confirmed_shell_files_are_preserved_before_activation(self):
+    contents = {'bashrc': '# bash fixture\n', 'zshrc': '# zsh fixture\n'}
+    for name, content in contents.items():
+      (self.etc / name).write_text(content)
+      (self.etc / name).chmod(0o444)
+    self.invoke()
+    for name, content in contents.items():
+      self.assertFalse(os.path.lexists(self.etc / name))
+      backup = self.etc / (name + '.before-nix-darwin')
+      self.assertEqual(backup.read_text(), content)
+      self.assertEqual(backup.stat().st_mode & 0o777, 0o444)
+      self.assertIn(content.strip(), self.module.sys.stdout.getvalue())
+    self.assertEqual(self.prompt.call_count, 2)
+    self.assertTrue(self.activated)
+
+  def test_declining_backup_preserves_active_files_and_prevents_activation(self):
+    source = self.etc / 'bashrc'
+    source.write_text('custom settings\n')
+    self.prompt.side_effect = ['switch', 'no']
+    with self.assertRaisesRegex(ValueError, 'cancelled'):
+      self.invoke()
+    self.assertEqual(source.read_text(), 'custom settings\n')
+    self.assertFalse(os.path.lexists(str(source) + '.before-nix-darwin'))
+    self.assertFalse(self.activated)
+
+  def test_existing_backup_file_directory_or_broken_link_stops_before_any_move(self):
+    for kind in ('file', 'directory', 'link'):
+      with self.subTest(kind=kind):
+        for name in ('bashrc', 'zshrc'):
+          (self.etc / name).write_text('active\n')
+        backup = self.etc / 'zshrc.before-nix-darwin'
+        if kind == 'file':
+          backup.write_text('previous backup\n')
+        elif kind == 'directory':
+          backup.mkdir()
+        else:
+          backup.symlink_to(self.etc / 'missing')
+        with self.assertRaisesRegex(ValueError, 'Backup already exists'):
+          self.invoke()
+        for name in ('bashrc', 'zshrc'):
+          self.assertEqual((self.etc / name).read_text(), 'active\n')
+        self.assertFalse(os.path.lexists(self.etc / 'bashrc.before-nix-darwin'))
+        self.assertFalse(self.activated)
+        if kind == 'directory':
+          backup.rmdir()
+        else:
+          if kind == 'file':
+            self.assertEqual(backup.read_text(), 'previous backup\n')
+          else:
+            self.assertTrue(backup.is_symlink())
+          backup.unlink()
+        self.prompt.side_effect = ['switch', 'backup']
+
+  def test_managed_links_and_previously_backed_up_files_need_no_backup_prompt(self):
+    source = self.etc / 'bashrc'
+    source.symlink_to(self.etc / 'static/bashrc')
+    backup = self.etc / 'zshrc.before-nix-darwin'
+    backup.write_text('preserved\n')
+    self.invoke()
+    self.assertEqual(os.readlink(source), str(self.etc / 'static/bashrc'))
+    self.assertEqual(backup.read_text(), 'preserved\n')
+    self.assertEqual(self.prompt.call_count, 1)
+    self.assertTrue(self.activated)
+
+  def test_unknown_link_or_directory_is_not_moved(self):
+    source = self.etc / 'bashrc'
+    for kind in ('link', 'directory'):
+      with self.subTest(kind=kind):
+        if kind == 'link':
+          source.symlink_to(self.etc / 'missing')
+        else:
+          source.mkdir()
+        with self.assertRaises(ValueError):
+          self.invoke()
+        self.assertTrue(os.path.lexists(source))
+        self.assertFalse(os.path.lexists(str(source) + '.before-nix-darwin'))
+        self.assertFalse(self.activated)
+        source.unlink() if kind == 'link' else source.rmdir()
+        self.prompt.side_effect = ['switch', 'backup']
+
+  def test_backup_created_during_confirmation_is_not_overwritten(self):
+    source = self.etc / 'bashrc'
+    source.write_text('active\n')
+    backup = self.etc / 'bashrc.before-nix-darwin'
+
+    def confirm(prompt):
+      if "'backup'" in prompt:
+        backup.write_text('concurrent backup\n')
+        return 'backup'
+      return 'switch'
+
+    self.prompt.side_effect = confirm
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    self.assertEqual(source.read_text(), 'active\n')
+    self.assertEqual(backup.read_text(), 'concurrent backup\n')
+    self.assertFalse(self.activated)
+
+  def test_file_changed_during_confirmation_is_not_moved(self):
+    source = self.etc / 'bashrc'
+    source.write_text('before\n')
+
+    def confirm(prompt):
+      if "'backup'" in prompt:
+        source.write_text('after\n')
+        return 'backup'
+      return 'switch'
+
+    self.prompt.side_effect = confirm
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    self.assertEqual(source.read_text(), 'after\n')
+    self.assertFalse(os.path.lexists(str(source) + '.before-nix-darwin'))
+    self.assertFalse(self.activated)
+
+  def test_failed_backup_prevents_activation(self):
+    (self.etc / 'bashrc').write_text('active\n')
+
+    def run(command, **kwargs):
+      if command[:2] == ['/usr/bin/sudo', '/usr/bin/python3']:
+        raise subprocess.CalledProcessError(1, command)
+      return self.run_command(command, **kwargs)
+
+    self.run.side_effect = run
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    self.assertEqual((self.etc / 'bashrc').read_text(), 'active\n')
+    self.assertFalse(self.activated)
+
+  def test_late_source_replacement_is_preserved_and_blocks_activation(self):
+    source = self.etc / 'bashrc'
+    source.write_text('approved\n')
+
+    def run(command, **kwargs):
+      if command[:2] != ['/usr/bin/sudo', '/usr/bin/python3']:
+        return self.run_command(command, **kwargs)
+      program = '''import ctypes, os
+real_cdll = ctypes.CDLL
+def replacing_cdll(*args, **kwargs):
+  libc = real_cdll(*args, **kwargs)
+  real_rename = libc.renamex_np
+  def replacing_rename(source, destination, flags):
+    replacement = source + b'.replacement'
+    with open(replacement, 'w') as file:
+      file.write('concurrent settings\\n')
+    os.replace(replacement, source)
+    return real_rename(source, destination, flags)
+  libc.renamex_np = replacing_rename
+  return libc
+ctypes.CDLL = replacing_cdll
+''' + command[3]
+      result = self.real_run([command[1], '-c', program, command[4]],
+                             capture_output=True, text=True)
+      result.check_returncode()
+      return result
+
+    self.run.side_effect = run
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    copies = [p.read_text() for p in self.etc.iterdir() if p.is_file()]
+    self.assertIn('concurrent settings\n', copies)
+    self.assertFalse(self.activated)
+
+  def test_backup_created_at_move_time_is_not_overwritten(self):
+    source = self.etc / 'bashrc'
+    source.write_text('approved\n')
+
+    def run(command, **kwargs):
+      if command[:2] != ['/usr/bin/sudo', '/usr/bin/python3']:
+        return self.run_command(command, **kwargs)
+      program = '''import ctypes
+real_cdll = ctypes.CDLL
+def racing_cdll(*args, **kwargs):
+  libc = real_cdll(*args, **kwargs)
+  real_rename = libc.renamex_np
+  def racing_rename(source, destination, flags):
+    with open(destination, 'x') as file:
+      file.write('concurrent backup\\n')
+    return real_rename(source, destination, flags)
+  libc.renamex_np = racing_rename
+  return libc
+ctypes.CDLL = racing_cdll
+''' + command[3]
+      result = self.real_run([command[1], '-c', program, command[4]],
+                             capture_output=True, text=True)
+      result.check_returncode()
+      return result
+
+    self.run.side_effect = run
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    self.assertEqual(source.read_text(), 'approved\n')
+    self.assertEqual((self.etc / 'bashrc.before-nix-darwin').read_text(), 'concurrent backup\n')
+    self.assertFalse(self.activated)
+
+  def test_partial_backup_failure_keeps_preserved_data_and_prevents_activation(self):
+    for name in ('bashrc', 'zshrc'):
+      (self.etc / name).write_text(name + '\n')
+    errors = []
+
+    def run(command, **kwargs):
+      if command[:2] != ['/usr/bin/sudo', '/usr/bin/python3']:
+        return self.run_command(command, **kwargs)
+      program = '''import ctypes, errno
+real_cdll = ctypes.CDLL
+def failing_cdll(*args, **kwargs):
+  libc = real_cdll(*args, **kwargs)
+  real_rename = libc.renamex_np
+  def failing_rename(source, destination, flags):
+    if source.endswith(b'/zshrc'):
+      ctypes.set_errno(errno.EIO)
+      return -1
+    return real_rename(source, destination, flags)
+  libc.renamex_np = failing_rename
+  return libc
+ctypes.CDLL = failing_cdll
+''' + command[3]
+      result = self.real_run([command[1], '-c', program, command[4]],
+                             capture_output=True, text=True)
+      errors.append(result.stderr)
+      result.check_returncode()
+      return result
+
+    self.run.side_effect = run
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    self.assertFalse(os.path.lexists(self.etc / 'bashrc'))
+    self.assertEqual((self.etc / 'bashrc.before-nix-darwin').read_text(), 'bashrc\n')
+    self.assertEqual((self.etc / 'zshrc').read_text(), 'zshrc\n')
+    self.assertFalse(os.path.lexists(self.etc / 'zshrc.before-nix-darwin'))
+    self.assertIn('Inspect both paths before retrying', errors[0])
+    self.assertFalse(self.activated)
+
+  def test_failed_service_check_does_not_back_up_shell_files(self):
+    source = self.etc / 'bashrc'
+    source.write_text('active\n')
+    self.run.side_effect = subprocess.CalledProcessError(1, ['/fixture/check-hermes'])
+    with self.assertRaises(subprocess.CalledProcessError):
+      self.invoke()
+    self.assertEqual(source.read_text(), 'active\n')
+    self.assertFalse(os.path.lexists(str(source) + '.before-nix-darwin'))
+    self.assertFalse(self.activated)
+
+  def test_build_does_not_prompt_or_change_shell_files(self):
+    source = self.etc / 'bashrc'
+    source.write_text('active\n')
+    self.invoke('build')
+    self.assertEqual(source.read_text(), 'active\n')
+    self.assertFalse(os.path.lexists(str(source) + '.before-nix-darwin'))
+    self.prompt.assert_not_called()
+    self.run.assert_not_called()
+
+  def test_files_not_managed_by_candidate_are_untouched(self):
+    (self.system / 'etc/bashrc').unlink()
+    source = self.etc / 'bashrc'
+    source.write_text('not managed\n')
+    self.invoke()
+    self.assertEqual(source.read_text(), 'not managed\n')
+    self.assertEqual(self.prompt.call_count, 1)
+    self.assertTrue(self.activated)
 
 
 if __name__ == '__main__':
