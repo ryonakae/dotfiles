@@ -380,16 +380,25 @@ apply 前に対象の実体・リンク先と変更範囲を確認する。未�
 
 **適用範囲を確認・承認した後にだけ使う。** 秘密・サービス・OS 設定の変更を無断で含めない。対象ユーザーの通常の対話端末から、Safehouse 外で実行する。スクリプト全体を `sudo` で起動しない。
 
-まず build を実行し、成功時に出力される成果物パスを保存する。家用は `--configuration private`、共通構成は同オプションなし。
+まず build を実行し、成功時に出力される成果物パスを保存する。家用は `--configuration private`、共通構成は同オプションなし。**現在使っている shell に合う方だけを実行する。** fish へ切り替える前の標準ターミナルでは zsh 用を使う。
+
+**zsh の場合：**
+
+```zsh
+cd ~/dotfiles
+system=$(bash scripts/dotfiles.sh build --configuration private)
+```
+
+**fish の場合：**
 
 ```fish
 cd ~/dotfiles
 set system (bash scripts/dotfiles.sh build --configuration private)
 ```
 
-build の成功と成果物を確認した後、同じ端末で次を実行する。
+`set system (...)` は fish 専用で、zsh では使えない。build の成功と成果物を確認した後、**同じ端末で**次を実行する。この switch コマンドは zsh・fish 共通。
 
-```fish
+```sh
 bash scripts/dotfiles.sh switch "$system"
 ```
 
@@ -480,13 +489,23 @@ nix run .#skills-sources-lock
 
 管理ライブラリだけなら `bash scripts/dotfiles.sh update agent-skills`、システムの全公開 input なら `update all` を使う。どちらも専用 lock の更新とは別操作。外部取得元の更新は、同じ repository から選択したスキルすべてに影響する。新規ファイルを Git ソースに含めてから、宣言・lock・選択の差分を確認してビルドする。
 
+現在の shell に合う方だけを実行する。家用構成なら build に `--configuration private` を付ける。
+
+**zsh の場合：**
+
+```zsh
+system=$(bash scripts/dotfiles.sh build)
+```
+
+**fish の場合：**
+
 ```fish
 set system (bash scripts/dotfiles.sh build)
 ```
 
-build の成功と生成物を確認し、[適用条件](#nix-の適用と復旧準備)を満たした後に Safehouse 外の対話端末で実行する。別端末では変数の代わりに確認した成果物パスを渡す。
+build の成功と生成物を確認し、[適用条件](#nix-の適用と復旧準備)を満たした後に同じ通常端末で実行する。次のコマンドは zsh・fish 共通。別端末では変数の代わりに確認した成果物パスを渡す。
 
-```fish
+```sh
 bash scripts/dotfiles.sh switch "$system"
 ```
 
