@@ -80,7 +80,6 @@
       "claude"
       "claude-code@latest"
       "cleanshot"
-      "cmd-eikana"
       "codex"
       "contexts"
       "coteditor"
@@ -123,6 +122,7 @@
       "spotify"
       "tailscale-app"
       "the-unarchiver"
+      "transmit"
       "typeface"
       "unity-cli"
       "unity-hub"
@@ -141,17 +141,15 @@
       "Ethernet Menubar" = 1549412235;
       GarageBand = 682658836;
       iMovie = 408981434;
-      Keynote = 409183694;
+      Keynote = 361285480;
       LINE = 539883307;
       "Microsoft Excel" = 462058435;
       "Microsoft OneNote" = 784801555;
       "Microsoft Outlook" = 985367838;
       "Microsoft PowerPoint" = 462062816;
       "Microsoft Word" = 462054704;
-      Numbers = 409203825;
-      "Okta Extension App" = 1439967473;
-      Pages = 409201541;
-      Transmit = 403388562;
+      Numbers = 361304891;
+      Pages = 361309726;
       Transporter = 1450874784;
       "Unsplash Wallpapers" = 1284863847;
       Velja = 1607635845;
