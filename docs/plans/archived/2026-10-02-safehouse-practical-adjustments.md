@@ -10,7 +10,7 @@ Status: アーカイブ済み（Nix移行に伴う旧計画の終了）。ユー
 
 - 目的は完全な隔離ではなく、普段の開発・テスト・ツール利用を妨げにくくし、重要ファイルの直接アクセスと通常rmの誤削除に備えること。使い勝手と管理の簡単さを優先する。
 - 実装済みのHOME読み書き許可、環境変数全継承、ホストプロセス操作、IPC・Macサービス連携を維持する。Documents、Music/Musics、Movies、Downloads、Picturesは許可のままとする。HOME外への全面書き込み許可は追加しない。
-- 追加のファイル許可は、`.secrets`のメタデータ・追跡用`.gitkeep`と、`~/.android/debug.keystore`の2点だけ。その他の実.env、秘密鍵、本番署名鍵、実config.fish、人間用ブラウザ・Mail/Messages等の保護と、既存のvendor/Hermes例外は維持する。
+- 追加のファイル許可は、`.secrets`のメタデータ・追跡用`.gitkeep`と、`~/.android/debug.keystore`の2点だけ。その他の実.env、秘密鍵、本番署名鍵、実config.fish、ユーザー用ブラウザ・Mail/Messages等の保護と、既存のvendor/Hermes例外は維持する。
 - OpenHandsは未使用なので例外を追加せず、アンインストールもしない。原因未確定のnice/cwdエラー、テスト用.env領域の新設、OS権限/TCC変更を今回へ追加しない。
 - 通常rmは普段のfish、子shell、エージェント、Hermesサービスでgomiへ転送する。OSのrmは改変せず、実rmへのfallback、コピー＋元データ削除、永久削除の自動化は行わない。絶対パスrm、言語API、Git、上書きによるデータ損失まで保証しない。
 - dotenvxの共通注入を維持する。共通キーにTYPESAFE_API_KEYを含め、Git管理するテンプレートは空値のみ。実秘密の移行・暗号化・実鍵の登録・バックアップはユーザー操作とする。復号済みの値はエージェントと子プロセスから利用できることを許容する。

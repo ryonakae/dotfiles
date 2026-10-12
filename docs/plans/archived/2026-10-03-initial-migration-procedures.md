@@ -10,7 +10,7 @@
 
 以下は初回移行用の手順であり、退避・復旧の実行承認ではない。実行直前に候補の生成物と実機を照合し、[移行計画の T9](2026-10-03-nix-migration.md) に残る確認を終える。古い `/tmp` の調査結果だけを使って移動しない。
 
-退避先は Git / store 外に、今回専用の未使用ディレクトリを用意する。HOME 用は `~/.local/state/dotfiles-backups/<移行ID>/`（本人所有・0700）、system 用は `/var/root/dotfiles-backups/<移行ID>/`（root 所有・0700）とする。system 側の作成・保全は人間が sandbox 外で行う。親経路に予期しないリンクがないことを確認し、既存バックアップへ上書きしない。
+退避先は Git / store 外に、今回専用の未使用ディレクトリを用意する。HOME 用は `~/.local/state/dotfiles-backups/<移行ID>/`（本人所有・0700）、system 用は `/var/root/dotfiles-backups/<移行ID>/`（root 所有・0700）とする。system 側の作成・保全はユーザーが sandbox 外で行う。親経路に予期しないリンクがないことを確認し、既存バックアップへ上書きしない。
 
 | 保存先（各退避ルートからの相対パス） | 保存内容 |
 |---|---|
@@ -21,7 +21,7 @@
 
 台帳の通常配置対象は、完成ビルドに対応する Home Manager の `home-files` の各末端ファイル・リンクとする。store 側でディレクトリへのリンクになっているスキル・plugin は、そのリンクを1対象として扱い、リンク先の中を展開して列挙しない。下表の activation の追加配置先・旧 fish ファイルも台帳へ加える。Pi 設定3件は通常配置に含める。非秘密のリンク先正本も切替時点の内容を保全し、旧リンクの復元を Git の巻き戻しに依存させない。
 
-Pi や端末を止める前に、`resume` へリポジトリと host 入力の場所、候補 system / HM の store path、旧 profile または「なし」、両退避ルート、未完了の行を記録する。人間がこの文書と台帳を開ける別の通常端末を残す。停止後に自動でエージェントを起動する手順にはしない。
+Pi や端末を止める前に、`resume` へリポジトリと host 入力の場所、候補 system / HM の store path、旧 profile または「なし」、両退避ルート、未完了の行を記録する。ユーザーがこの文書と台帳を開ける別の通常端末を残す。停止後に自動でエージェントを起動する手順にはしない。
 
 ### HOME の退避と Pi 設定の準備
 
@@ -32,7 +32,7 @@ Pi や端末を止める前に、`resume` へリポジトリと host 入力の�
 | 通常配置の旧リンク | 元のリンク文字列を台帳へ記録し、リンク自体を `before/home/` の同じ相対パスへ移す。元パスを空ける |
 | 外部スキル・Yazi plugin の実ディレクトリ、Herdr hook の実ファイル | 対象単位で保全してから同じ相対パスへ退避する。`.agents/skills` や `.claude/skills` 全体、`synced` は動かさない |
 | `.gemini/antigravity-cli/skills` | 共通スキル置き場への参照を記録。配置対象のリンク自体だけを扱い、共通置き場は動かさない |
-| `.config/fish/config.fish` | 秘密を含み得るため人間が保全・退避する。内容を Git・会話・検証ログへ出さない |
+| `.config/fish/config.fish` | 秘密を含み得るためユーザーが保全・退避する。内容を Git・会話・検証ログへ出さない |
 | 旧 fzf / bobthefish | 候補 plugin source と照合した既存ファイルだけを個別退避する。旧 `conf.d/fzf.fish` と9関数、bobthefish の9関数が対象。差分のある旧関数も保存し、`fish_frozen_*`・由来不明の `fish_logo` を一括退避しない |
 | 旧 Unity CLI 初期化・既知の Zellij リンク | `conf.d/unity-cli.fish`、`functions/zl.fish`、Zellij の `config.kdl` は個別に記録。Unity 本体・PATH の整理は[Unity CLI](../../../.agents/skills/dotfiles-setup/references/setup.md#unity-cli)と T9 の別作業で、ここでは本体や Hub データを削除しない |
 | 新規配置 | 元が未作成と記録し、退避物を作らない。通常配置以外に Hermes plist 2件、`~/Applications/Home Manager Apps`、`~/Library/Fonts/HomeManager` を含む。アプリ・フォント配置は rsync の削除を伴うため、直前に既存実体が見つかったら保全方針を確認して止まる |
@@ -52,12 +52,12 @@ Pi は次の3ファイルを、1件ずつこの順に処理する。
 
 ### system の保全と適用前の確認
 
-初回は旧 nix-darwin 世代がない。人間が次を system 側台帳へ記録し、必要な旧ファイルを保全する。`/etc` 配置だけで初回復旧を完了した扱いにしない。
+初回は旧 nix-darwin 世代がない。ユーザーが次を system 側台帳へ記録し、必要な旧ファイルを保全する。`/etc` 配置だけで初回復旧を完了した扱いにしない。
 
 - 候補 system の `etc` 配置先と同名の `.before-nix-darwin` の有無。既存の `/etc/bashrc`・`/etc/zshrc`・`/etc/zprofile`・`/etc/nix/nix.conf` は私有バックアップにも保存する。既知 hash と一致するファイルも適用で置き換わる。未知内容の bashrc / zshrc を標準退避名へ移すのは、保全と直前承認の後に限る。既存の退避名へ上書きしない。
 - `/Library/LaunchDaemons/org.nixos.nix-daemon.plist` の実ファイルと metadata、実行先、launchd の登録・disabled 状態。installer の `/nix/var/nix/profiles/default` から root profile・旧 store environment までのリンク鎖を記録して保持する。旧 daemon の実配置と未比較の store 内 plist を復旧用コピーの代わりにしない。
 - `org.nixos.activate-system.plist`、system profile、`/run/current-system`、current-system GC root、`/etc/static` の元の有無と参照先。HOME 側も home-manager profile と `current-home` GC root の有無・リンク先を記録する。既存のユーザー Nix profile を HM profile と混同しない。
-- `/etc/synthetic.conf` の内容・mode、`/run` の元の状態、PAM の `/etc/pam.d/sudo`、必要な Nix custom config。SSH host key の有無と保全は人間が扱い、秘密鍵をエージェントやログへ渡さない。`hosts.before-nix-darwin` 等の既存退避がある場合は、候補の復元処理と衝突しないか確認する。
+- `/etc/synthetic.conf` の内容・mode、`/run` の元の状態、PAM の `/etc/pam.d/sudo`、必要な Nix custom config。SSH host key の有無と保全はユーザーが扱い、秘密鍵をエージェントやログへ渡さない。`hosts.before-nix-darwin` 等の既存退避がある場合は、候補の復元処理と衝突しないか確認する。
 - `/Applications/Nix Apps`・`/Library/Fonts/Nix Fonts` と `/var/lib/linux-builder` の有無。前二者は同期で削除が起こり、後者は候補 activation の冒頭で削除される。既存実体があれば適用を止め、保全と扱いを確認する。
 - Nix build users / group、PAM、SSH、TCC について、候補が変更する条件と実機の状態を照合する。変更が必要ならその範囲と戻し方を承認する。ログイン shell・権限・秘密の変更を、通常のファイル退避へ紛れ込ませない。preferences は[対象キーだけを控える](../../../.agents/skills/dotfiles-setup/references/setup.md#macos-と手動復元)。
 
@@ -67,7 +67,7 @@ Pi は次の3ファイルを、1件ずつこの順に処理する。
 
 自動再試行せず、台帳と出力から変更済みの対象を確認する。標準 `switch` 起動前に止まった場合も、手動で退避済みの HOME・`/etc` はそのままなので、再開するか下記の方法で戻すか決める。標準 `switch` 起動後は、エラーが早い段階でも profile や一部変更が残り得る。
 
-system を戻す場合は、人間が管理操作可能な端末を維持し、次の順で行う。各 service・権限・秘密・削除操作は直前承認の対象であり、未登録のサービスを推測で停止しない。
+system を戻す場合は、ユーザーが管理操作可能な端末を維持し、次の順で行う。各 service・権限・秘密・削除操作は直前承認の対象であり、未登録のサービスを推測で停止しない。
 
 1. 今回登録された `org.nixos.activate-system` があれば登録を解除し、今回配置した plist を保全して元の状態へ戻す。このサービスは system profile から `/etc` と current-system を再設定するため、先に止める。
 2. daemon を置換済みなら新 daemon の登録を解除する。今回の `/etc/static` への管理リンクだけを外して保存した旧設定を戻し、必要な PAM の変更も戻す。各リンクの参照先と切替後の変更を確認してから処理し、最後に `/etc/static` を元の状態へ戻す。

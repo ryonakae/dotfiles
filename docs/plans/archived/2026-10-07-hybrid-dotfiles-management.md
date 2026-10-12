@@ -83,7 +83,7 @@ nix-homebrew の `autoMigrate`、既存の GUI / App Store 一覧、`homebrew.on
 
 ### 3. fish・ランタイム・起動経路
 
-`config.fish` は現在の公開済み `shell-init.fish` / `interactive-init.fish` と必要な初期化から構成する。Git 管理外の旧実ファイルをそのまま stage せず、保全が必要な場合は人間が先に扱う。旧計画では追加で引き継ぐ非秘密差分はないと確認済みであり、旧本文や秘密を読み出して移植しない。`.gitignore` の `config.fish` 除外を外し、秘密・実行時状態の除外は残す。
+`config.fish` は現在の公開済み `shell-init.fish` / `interactive-init.fish` と必要な初期化から構成する。Git 管理外の旧実ファイルをそのまま stage せず、保全が必要な場合はユーザーが先に扱う。旧計画では追加で引き継ぐ非秘密差分はないと確認済みであり、旧本文や秘密を読み出して移植しない。`.gitignore` の `config.fish` 除外を外し、秘密・実行時状態の除外は残す。
 
 Home Manager の fish 標準生成処理は、Nix profile・外部 plugin 等のために必要な補助ファイルへ配置先を分離し、Git 正本の `config.fish` から読み込む。HOME の `config.fish` 自体を HM が生成しない。bobthefish / fzf plugin の取得・標準ロード処理は Nix に残し、Fisher や独自 plugin manager は導入しない。mise / zoxide の初期化と通常の環境設定は Git 側へ置き、二重 activation を防ぐ。
 
@@ -155,7 +155,7 @@ Herdr の Claude hook は HM 配置を外し、Homebrew で導入した本体の
 
 - 承認された20 formula と必要依存の更新を実行した。Python 3.14 の link エラー表示により全体の終了コードは1だったが、20件の候補版・opt リンク、Python の prefix リンク18件・主要拡張・AWS CLI 実行、`brew missing` と21件の `brew linkage --test` は正常。強制 relink や全件再更新はしていない。旧 keg を保持し、developer mode は off に戻した。
 - `~/.local/bin/agy` は、退避ではなく削除するというユーザーの明示指示で削除済み。確認した root `mise.toml` のみ trust し、共通 runtime 4件の選択と実行を確認した。
-- 人間の sudo 入力後、Nix switch は終了0。実 system は `/nix/store/ddnp75vsmggvphdlqwlb1bda2bl8903h-darwin-system-26.11.4cff07d`。旧 HM の通常リンクは解除済みで、Nix switch の再実行は不要。
+- ユーザーの sudo 入力後、Nix switch は終了0。実 system は `/nix/store/ddnp75vsmggvphdlqwlb1bda2bl8903h-darwin-system-26.11.4cff07d`。旧 HM の通常リンクは解除済みで、Nix switch の再実行は不要。
 - その後の mise apply は、HOME の iCloud 配下を走査して進まなくなったため中断した。リンク作成は0件だった。新しく起動された Pi が settings を生成したため、その Pi の終了確認と削除許可を得て、新規 settings だけを削除し、Pi の11リンクを正本へ応急復旧した。既存の Git 正本4差分、認証・session・履歴は保持している。その後、アプリディレクトリ単位の宣言で実 HOME の dry-run と apply がともに終了0となり、299リンクすべてが予定の正本を直接参照することを確認した。未知の実体との衝突はなかった。ログは `/tmp/dotfiles-hybrid-build.GRTGTZ/scoped-{dry-run,apply}.log`。
 - Homebrew Herdr 0.9.3 の標準 installer は成功し、`~/.claude/hooks/herdr-agent-state.sh` の実行属性・設定内の登録2件・settings symlink の維持を確認した。ただし、比較用スクリプトが hook 名を誤認して失敗したため、無関係な設定の保持を実機比較で確認済みとは扱わない。Claude settings は既存変更と混在するため今回の commit から除外する。
 - 古い mise activation の継承状態を外した新規 login fish で、mise が Nix 管理先、共通 runtime が Node 22.23.3 / Python 3.11.17 / Ruby 3.3.10 / Bun 1.4.2 であることと prompt の存在を確認した。

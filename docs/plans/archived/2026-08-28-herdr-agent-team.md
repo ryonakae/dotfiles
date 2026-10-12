@@ -17,7 +17,7 @@ Piの通常のsubagent委譲はMain Piのturnを待機させ、Herdr UIにも独
 - 同一checkout・最大4 worker・同時1 writerの範囲で、dependency-readyなworkerだけを非同期起動する。
 - Shepherd wakeを完了契機として使い、構造化履歴、実diff、validationを確認してから次工程へ進む。
 - Plan modeと`/implement`の既存契約を正本として、Herdr上のimplementerと独立reviewerへ作業を割り当てる。
-- Skill Creatorのpaired evaluationと人間のreviewを通じて、通常のHerdr操作、owner境界、Safehouse、review、worktree対象外などの判断を検証する。
+- Skill Creatorのpaired evaluationとユーザーのreviewを通じて、通常のHerdr操作、owner境界、Safehouse、review、worktree対象外などの判断を検証する。
 
 ## Out of Scope
 

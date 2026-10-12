@@ -29,11 +29,11 @@ Status: アーカイブ済み（Nix移行に伴う旧計画の終了）。ユー
 - インストール済みSafehouse 0.12.0の`--env`と`--add-dirs="$HOME"`を使い、個別の`--env-pass`とHOME内top-level許可の列挙を置き換える。現在のworkdir検出とHOME外に必要な標準ランタイム許可は維持する。
 - `process-control`と`launch-services`を明示的に有効化する。IPC・Machサービス・Unix socket通信は、ファイルアクセスと切り離した互換性オーバーレイ`config/.config/agent-safehouse/compatibility.sb`で緩める。具体的なoperationは0.12.0の定義・コンパイラで確認する。`allow default`でファイル制限ごと解除しない。
 - 読み込み順は標準profile/HOME許可 → `compatibility.sb` → `local-overrides.sb`とする。Safehouse標準の末尾のprofile書き込み保護と`.safehouse`書き込み保護を維持し、`--allow-profile-writes`等は通常起動に追加しない。
-- `local-overrides.sb`には、HOME許可で再開放される保護を明示する。対象は現行の.env/credentials/秘密鍵等のパターン、fish実設定と実体、GnuPG/AWS/netrc/Git/Kubernetes credential、SSH秘密鍵、Mail/Messages/人間用ブラウザデータ等。`~/Library`全体を拒否してGUIやキャッシュを壊す構成にはしない。SSHのconfig/known_hosts/socketと`~/.config/agent-browser/profile`は必要な例外を残す。
+- `local-overrides.sb`には、HOME許可で再開放される保護を明示する。対象は現行の.env/credentials/秘密鍵等のパターン、fish実設定と実体、GnuPG/AWS/netrc/Git/Kubernetes credential、SSH秘密鍵、Mail/Messages/ユーザー用ブラウザデータ等。`~/Library`全体を拒否してGUIやキャッシュを壊す構成にはしない。SSHのconfig/known_hosts/socketと`~/.config/agent-browser/profile`は必要な例外を残す。
 - symlinkの実体側にも保護が効くことを確認する。保護ディレクトリやその親のrenameで保護が外れる経路も確認し、必要な親ディレクトリ自体の移動・削除を止める場合も、その配下の通常ファイルの書き込みは広く許可する。
-- 通常のrmラッパー・gomi設定・起動時の秘密注入処理がエージェントから書き換えられないよう、管理ファイルと実体の書き込みを保護する。人間のsandbox外での編集は妨げない。共通.envはsandboxの外でdotenvxに読み込ませるため、そのファイルをsandbox内から読む許可は追加しない。
+- 通常のrmラッパー・gomi設定・起動時の秘密注入処理がエージェントから書き換えられないよう、管理ファイルと実体の書き込みを保護する。ユーザーのsandbox外での編集は妨げない。共通.envはsandboxの外でdotenvxに読み込ませるため、そのファイルをsandbox内から読む許可は追加しない。
 - rm転送のtrash祖先検出はHOME/指定XDGと、operandの祖先/直下に存在する既知の外部trashまでとする。深いmountを含む任意のdirectoryの網羅は対象外（実装中にユーザーがAを承認）。既知の外部XDG形式の内容保護は対象外にしない。
-- 人間が捨てた機密ファイルが共有のごみ箱へ移って保護対象外になる点にも対処する。XDGごみ箱のpayloadにはsandbox内からの内容読み取りを許可せず、gomiのPutに必要なmetadataアクセス・書き込みと`.trashinfo`の処理を維持できるか検証する。復元・内容確認は人間がsandbox外で行う。
+- ユーザーが捨てた機密ファイルが共有のごみ箱へ移って保護対象外になる点にも対処する。XDGごみ箱のpayloadにはsandbox内からの内容読み取りを許可せず、gomiのPutに必要なmetadataアクセス・書き込みと`.trashinfo`の処理を維持できるか検証する。復元・内容確認はユーザーがsandbox外で行う。
 
 ### 通常rmの転送
 
@@ -105,12 +105,12 @@ HOME配布前のmetadata確認では、`~/.config/gomi/config.yaml`は既存実�
 - [x] **継続的なテスト**: `uv run python -m unittest discover -s scripts/tests -p 'test_*.py'` → 通過。起動処理のargv境界、空白を含むパス、全環境継承、共通ファイルの明示パス、rm優先PATH、CLI引数/終了コード、既存TMPDIR補正が保たれる。stubの復号失敗・依存欠落では後続コマンドを起動せず、ログにsentinelの秘密値を出さない。
 - [x] **rmの通常動作と失敗経路**: 単体テストで`-rf/-R/-v/--`、`-i`確認、`-f`と不存在/対象なし、オプション風ファイル名、空のdirectory/non-recursive directory、symlink、不正オプションを確認する。fake gomiの移動失敗・設定/実行ファイル不存在で実rmへfallbackしない。複数対象/同名の並列呼び出しは一つずつ処理され、signal後も排他が破れない。
 - [ ] **シェルと配布の確認**: 変更対象のfishに`fish --no-execute`、bash/shに構文チェック、Pythonに構文チェック、差分に`git diff --check`を行う。`.env.example`を一時的な配置先へコピー・symlinkし、Git管理外の実体と参照先が正しく対応することを確認する。ユーザーの既存実体は上書きしない。
-- [ ] **実際のrm解決**: 配布後の新しいfish、そこから起動したbash/sh、エージェント、miseを通るサービスで`command -v rm`とダミー対象の削除を確認する → 共通ラッパーを使う。人間の実config.fishによるPATH上書きがあれば、秘密を読まずユーザーに調整を依頼する。
-- [ ] **gomiでのデータ保全・復元**: 空白・オプション風の名前、directory、symlink、同名の複数対象を含むダミーだけを実gomiでごみ箱化し、人間の復元操作で元のパス・内容が戻る。並列呼び出しでも全データとmetadataを保持する。移動先が使えない場合やコピーが必要な場合はエラーで元データを保持し、永久削除経路へ進まない。異なるvolumeの確認はユーザーが許可したダミーvolumeだけで行い、実データやpruneを使わない。
-- [ ] **Safehouseの実効保護**: 全起動経路の生成profileを確認し、sandbox外で用意したダミーHOME/ダミーの保護対象をsandbox内から操作する。通常のHOME内別リポジトリやDownloads等は読み書きでき、保護対象は読めず書けない。symlink、保護ディレクトリ/親の移動、trash payload経由でも保護が外れない。SSH非機密metadata/socket、vendor fixture、Hermes例外は意図どおり利用できる。実秘密・人間のブラウザデータは検証で読まない。
+- [ ] **実際のrm解決**: 配布後の新しいfish、そこから起動したbash/sh、エージェント、miseを通るサービスで`command -v rm`とダミー対象の削除を確認する → 共通ラッパーを使う。ユーザーの実config.fishによるPATH上書きがあれば、秘密を読まずユーザーに調整を依頼する。
+- [ ] **gomiでのデータ保全・復元**: 空白・オプション風の名前、directory、symlink、同名の複数対象を含むダミーだけを実gomiでごみ箱化し、ユーザーの復元操作で元のパス・内容が戻る。並列呼び出しでも全データとmetadataを保持する。移動先が使えない場合やコピーが必要な場合はエラーで元データを保持し、永久削除経路へ進まない。異なるvolumeの確認はユーザーが許可したダミーvolumeだけで行い、実データやpruneを使わない。
+- [ ] **Safehouseの実効保護**: 全起動経路の生成profileを確認し、sandbox外で用意したダミーHOME/ダミーの保護対象をsandbox内から操作する。通常のHOME内別リポジトリやDownloads等は読み書きでき、保護対象は読めず書けない。symlink、保護ディレクトリ/親の移動、trash payload経由でも保護が外れない。SSH非機密metadata/socket、vendor fixture、Hermes例外は意図どおり利用できる。実秘密・ユーザーのブラウザデータは検証で読まない。
 - [ ] **互換性のスモーク確認**: 合成した非機密環境変数と空白を含む値の継承、子プロセス、IPC/Unix socket、ダミーの別プロセスへのsignal、Macサービス/GUI、agent-browserの既存のno-sandbox起動、利用するSimulator経路を確認する → ファイル以外の緩和が成立し、ファイル拒否は残る。無関係なホストプロセスへsignalを送らない。OSのTCC/SIPやChromiumのsandboxネストまで解決済みとは扱わない。
 - [ ] **dotenvx/Keychainの実効確認**: ユーザー承認を得たダミーの暗号化ファイルとKeychain登録でCLIとlaunchd相当の限定環境から復号する → 子がsentinelを受け取り、元シェルへexportされず、平文一時ファイル/恒久鍵ファイル/値を含む起動ログを作らない。共通.envの欠落・鍵の取得失敗・復号失敗は起動を止める。検証用鍵だけを承認済み手順で片付ける。実鍵の初期移行とバックアップはユーザー操作として完了状況のみ確認する。
-- [ ] **全CLIと実Hermesサービス**: 人間の秘密移行が完了してから各CLIで通常のツール起動を確認する。Hermesは既存の`hermes-gateway`/`hermes-dashboard`管理関数で正規再起動し、gatewayの`http://localhost:8642/health`とdashboardの`http://127.0.0.1:9120/api/status`、PATH/注入/停止を確認する。launchdのbootout/bootstrapは直接実行しない。Keychainで対話要求・ハング・起動失敗があれば適用を完了扱いせず相談する。
+- [ ] **全CLIと実Hermesサービス**: ユーザーの秘密移行が完了してから各CLIで通常のツール起動を確認する。Hermesは既存の`hermes-gateway`/`hermes-dashboard`管理関数で正規再起動し、gatewayの`http://localhost:8642/health`とdashboardの`http://127.0.0.1:9120/api/status`、PATH/注入/停止を確認する。launchdのbootout/bootstrapは直接実行しない。Keychainで対話要求・ハング・起動失敗があれば適用を完了扱いせず相談する。
 - [ ] **差分とロールバック手順**: 他者変更の保持、実秘密・実鍵がGitへ入っていないこと、CLIとサービスの意図したfeature差分を確認する。ユーザーの既存設定・既存鍵・ごみ箱の内容を削除しない戻し方をREADMEに記す。必須のsandbox外検証が実行できなければ未検証範囲を報告し、代替方式を無断採用しない。
 
 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま`docs/plans/archived/`へ移す。

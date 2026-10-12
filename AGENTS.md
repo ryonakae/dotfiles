@@ -1,6 +1,6 @@
 # dotfiles
 
-macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・復元、Nix / Homebrew / mise の操作、外部スキル管理では [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を読む。人間向け手順も同スキルの [references/setup.md](.agents/skills/dotfiles-setup/references/setup.md) を正本とする。
+macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・復元、Nix / Homebrew / mise の操作、外部スキル管理では [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を読む。ユーザー向け手順も同スキルの [references/setup.md](.agents/skills/dotfiles-setup/references/setup.md) を正本とする。
 
 ## 編集
 
@@ -21,7 +21,7 @@ macOS 用の個人設定。概要は [README.md](README.md)。導入・更新・
 - Nix: `dotfiles-setup` のビルド手順を使う。Git ソースへ含める新規ファイルは対象を明示して追加し、Git 外の設定を store へ取り込まない。
 - 文書・スキル: 参照パス・リンク、手順と現行コードの整合、`git diff --check`。
 
-Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動しない。
+Nix の bootstrap はユーザーが sandbox 外で実行し、検証目的で起動しない。
 
 ## スキル
 
@@ -34,7 +34,7 @@ Nix の bootstrap は人間が sandbox 外で実行し、検証目的で起動�
 
 - `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature 指定を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。
-- 実秘密の移行、Keychain 登録・バックアップは人間が sandbox 外で行う。
+- 実秘密の移行、Keychain 登録・バックアップはユーザーが sandbox 外で行う。
 - Hermes のサービス操作は `hermes-gateway` / `hermes-dashboard` から fork 標準処理を使う。dotfiles の適用処理に自動停止・再開や状態保存を追加しない。直接の `launchctl` や installer による plist 再生成で管理を迂回しない。
 - Herdr の Claude hook は Homebrew 本体の標準 integration installer で管理する。実設定への適用は別途承認し、既存 settings 差分を保持する。
 - Herdr プラグインには復元用 lock がない。追加・削除したら同梱手順の導入一覧を更新する。worktree の作成・削除には Herdr 本体の機能を使わず Worktrunk を使う。

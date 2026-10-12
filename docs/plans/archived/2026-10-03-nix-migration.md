@@ -16,7 +16,7 @@
 
 nixpkgs を `73e728d` から `aa48d34` へ更新し、標準 `mole-cleaner` 1.46.0 を追加した。上流版への override は行わない。通常端末の別ペインで build は成功したが、switch は Perplexity（App Store ID `6714467650`）が見つからず終了コード1となった。system profile は更新され得るため、`/run/current-system` が以前のままでも変更全体が未適用とは扱わない。
 
-ユーザー指示により Disk Diag と Perplexity を導入宣言から削除した。変更後の build は終了コード0、成果物は `/nix/store/qpmlxh33wkk5mpi0vnbybiw9l1z5lasm-darwin-system-26.11.4cff07d`。再適用は未実施で、Mole の実機導入完了は未確認。Disk Diag 本体は別途承認と人間の sudo 入力後にごみ箱へ移動済み。Perplexity 本体は `/Applications` と `~/Applications` に見つからず、設定・ユーザーデータは削除していない。
+ユーザー指示により Disk Diag と Perplexity を導入宣言から削除した。変更後の build は終了コード0、成果物は `/nix/store/qpmlxh33wkk5mpi0vnbybiw9l1z5lasm-darwin-system-26.11.4cff07d`。再適用は未実施で、Mole の実機導入完了は未確認。Disk Diag 本体は別途承認とユーザーの sudo 入力後にごみ箱へ移動済み。Perplexity 本体は `/Applications` と `~/Applications` に見つからず、設定・ユーザーデータは削除していない。
 
 この失敗後の switch は後続計画で成功した。コミット・プッシュのためだけに再適用しない。
 
@@ -75,8 +75,8 @@ nixpkgs を `73e728d` から `aa48d34` へ更新し、標準 `mole-cleaner` 1.46
 当時提示した初回適用の順序を以下に残す。現在の再開指示ではなく、初回 switch をやり直さない。
 
 1. **既存状態の確認**: `git status -sb` と直近の差分を確認し、Claude / Pi の他プロセス変更を保持する。Homebrew の暫定保持5件除外は `e439e32`、退避・復旧手順は `3e940ac` にコミット済み。未 push のコミットを再作成しない。
-2. **切替を妨げる点だけ確認**: 旧 Nix daemon の復元元・登録状態・復元操作と、候補が実際に変更する system 設定の条件を限定確認する。HOME の既知の衝突対象は既存の調査・[当時の退避検討記録](2026-10-03-initial-migration-procedures.md#初回の退避台帳と停止前の引継ぎ)を使い、直前の変化だけ確認する。秘密・権限・sandbox 制限により人間が必要な操作は、対象と手順をまとめて渡す。新たな全件棚卸しや、解決済みの設計検討は行わない。
-3. **候補の一括提示**: live link 方式への変更と5件除外を含む固定ビルド・変更分の生成物確認は完了済み。追加した nix-homebrew の検証結果は下記の記録を確認し、候補に変更がなければ繰り返さない。停止対象、個別の退避先、適用操作、失敗時の戻し方、Pi 等の終了後に人間が実行する手順を一度に提示し、具体的な操作範囲の承認を得る。
+2. **切替を妨げる点だけ確認**: 旧 Nix daemon の復元元・登録状態・復元操作と、候補が実際に変更する system 設定の条件を限定確認する。HOME の既知の衝突対象は既存の調査・[当時の退避検討記録](2026-10-03-initial-migration-procedures.md#初回の退避台帳と停止前の引継ぎ)を使い、直前の変化だけ確認する。秘密・権限・sandbox 制限によりユーザーが必要な操作は、対象と手順をまとめて渡す。新たな全件棚卸しや、解決済みの設計検討は行わない。
+3. **候補の一括提示**: live link 方式への変更と5件除外を含む固定ビルド・変更分の生成物確認は完了済み。追加した nix-homebrew の検証結果は下記の記録を確認し、候補に変更がなければ繰り返さない。停止対象、個別の退避先、適用操作、失敗時の戻し方、Pi 等の終了後にユーザーが実行する手順を一度に提示し、具体的な操作範囲の承認を得る。
 4. **退避 → 適用 → 動作確認**: 承認後は T10 の初回 `switch` と PATH・rm 保護・主要 CLI / アプリの確認まで続ける。T5 の拡張の実導入・実行時確認はこの切替作業に組み込み、全機能の事前検証が終わるまで適用を待つ進め方はしない。失敗や未知の衝突が出た場合だけ、その箇所で止めて原因と復旧を判断する。
 5. **切替成功後の整理**: 旧ツール・重複管理・旧配布経路の整理と、運用文書の仕上げは受入後に行う。未確認機能は記録して残し、成功扱いにはしない。
 
@@ -100,11 +100,11 @@ nixpkgs を `73e728d` から `aa48d34` へ更新し、標準 `mole-cleaner` 1.46
 - [x] Homebrew の導入 metadata と App Store 一覧を取得。installed-on-request は44 formula、cask は59件、App Store は22件。移行先は下の対応表に記録。
 - [x] Homebrew 外の npm / uv / mise / 主要手動配置先を照合。ユーザー承認により、インストール済み・グローバル配置・Nix 未宣言という理由だけで dotfiles の管理漏れと扱わない。共通環境は合意済みの対象だけを管理し、他プロジェクトのツール・runtime は各プロジェクトの設定と mise 等に任せる。未宣言分の全件分類・追加調査を切替条件にせず、棚卸しはここで終了する。既存実体・プロジェクト設定は変更・削除しない。合意済みの Pi / Herdr 等の拡張は T5 の範囲で扱い、未知のアプリ拡張まで調査を広げない。
   - 調査済み metadata は `/tmp/dotfiles-brew-inventory.json`。一時ファイルの存続を前提にせず、なければ非秘密の package metadata だけ再取得する。
-  - Git 外の実 `config.fish` は秘密を含むため読まない。example と実設定の差分は T9 で人間に確認してもらう。example の PGDATA を実 DB の保存先と仮定しない。
+  - Git 外の実 `config.fish` は秘密を含むため読まない。example と実設定の差分は T9 でユーザーに確認してもらう。example の PGDATA を実 DB の保存先と仮定しない。
 
 ### T2. Nix 基盤・固定ビルド・更新入口 — 完了
 
-- [x] 公式 upstream Nix 2.34.0 の checksum 固定済み bootstrap を実装し、人間が sandbox 外で初回導入。daemon 接続を確認。`f358e81`。
+- [x] 公式 upstream Nix 2.34.0 の checksum 固定済み bootstrap を実装し、ユーザーが sandbox 外で初回導入。daemon 接続を確認。`f358e81`。
 - [x] `flake.nix` / `flake.lock`、nix-darwin + Home Manager、非秘密 host 入力を実装。`4f10ae9`。Darwin stateVersion は6、HM は `26.05`。
 - [x] `scripts/dotfiles.{sh,py}` の `build` と `update [all|input]` を実装。通常 build は公開依存の lock を検査し、host leaf 以外の変更を拒否して同じ snapshot を check / build する。現在の構成でビルド成功。
 - `switch` の入口は T9 で実装済み、初回と後続の実機適用は T10 と冒頭に記録済み。ホスト定義は現在 `nix/hosts/mac.nix`、CLI は既定 `mac` / `--configuration` を使う。旧 host snapshot の実装説明は履歴として扱う。
@@ -270,7 +270,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - dotenvx + Keychain + Safehouse を維持する。機密ファイルの直接アクセスを拒否し、共通ツール用の値は sandbox 外で復号して起動時に注入する。注入済み環境変数の利用は許容し、完全隔離を追加要件にしない。プロジェクト用秘密を共通ファイルへ混ぜない。
 - ユーザーの追加承認により通常 rm の gomi 転送は廃止し、標準 rm を使う。gomi は明示的なごみ箱操作のため本体・設定・既存データを保持し、旧転送コードも撤去する。Hermes の正規停止と DB 保全を維持する。互換性優先の Safehouse 設計と既存の意図的な例外を狭めない。対話 CLI の承認モード・内蔵 sandbox 引数の自動追加を禁じる規約は後続のユーザー承認で撤廃し、Antigravity CLI は Safehouse 下の YOLO 起動に変更する。
 - 準備・ビルド・復旧準備の後、現在の Mac をなるべくまとめて完全切替する。長期二重管理を完成形としない。停止・再起動・ログアウト・OS 再起動は必要性を示して実行直前に確認する。
-- 秘密、認証、memory、session、DB、cache、アプリ生成データは設定世代の復元対象と分離する。実秘密の移行・Keychain 登録・バックアップは人間が sandbox 外で行う。設定の復元とデータの巻き戻しを混同しない。
+- 秘密、認証、memory、session、DB、cache、アプリ生成データは設定世代の復元対象と分離する。実秘密の移行・Keychain 登録・バックアップはユーザーが sandbox 外で行う。設定の復元とデータの巻き戻しを混同しない。
 - Intel / Linux / WSL、macOS 自体の再インストール、Mac 全体の完全復元、無関係な開発プロジェクトの Nix 化は対象外。
 
 ## Implementation Decisions
@@ -320,7 +320,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 - 起動・停止・再起動は既存の `hermes-gateway` / `hermes-dashboard` から fork 標準 CLI と launchd を使う。timeout 後の強制終了を含む fork 標準の停止仕様はユーザー承認済み。旧 Q18 の強制終了禁止と独自 controller は撤回し、dotfiles で停止アルゴリズムを再実装しない。コマンドの失敗は後続操作へ伝播する。
 - Q17 の配置と運用の分離は維持する。wrapper / plist の生成・必要最小限の配置は Home Manager が担当し、Hermes に標準 HM launchd activation を使わない。installer による plist 再生成とは併用しない。未知の実ファイルは強制上書きしない。
 - 配置上必要な確認は、write boundary 前の読み取り専用チェックで行う。未停止・取得失敗・未知の形式ならエラーにするだけで、適用入口と activation から停止・再開しない。適用前の利用状態を保存して後で復元する仕組みや、PID / 子プロセス管理は追加しない。
-- この Mac は Hermes 未使用。配置だけでは起動せず、既存データの移行・初期化・自動起動をしない。別 Mac の停止・バックアップ・適用・再開は人間の別操作とし、それぞれ直前に承認を得る。初回起動・schema 更新より前に必要なデータを保全し、Nix 世代を戻す操作を DB の巻き戻しと混同しない。
+- この Mac は Hermes 未使用。配置だけでは起動せず、既存データの移行・初期化・自動起動をしない。別 Mac の停止・バックアップ・適用・再開はユーザーの別操作とし、それぞれ直前に承認を得る。初回起動・schema 更新より前に必要なデータを保全し、Nix 世代を戻す操作を DB の巻き戻しと混同しない。
 - config / auth / DB / memory / skills / cron は実機の可変データとして残す。非秘密の明示した設定だけを配置し、実設定や秘密を無差別に読み込まない。Safehouse / dotenvx の保護・環境継承・サービスと対話用 feature の差は維持する。
 - Hindsight は独立した Docker 運用とし、Compose と image digest だけを宣言する。volume・認証・Docker runtime は Nix 世代から分離し、停止・データ移行・起動を自動化しない。
 
@@ -328,7 +328,7 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 
 - macOS 設定は Dock / Finder / キーボード / トラックパッド / スクリーンショット等、再現に必要な非秘密のキーへ取得対象を絞る。nix-darwin 専用オプションを優先し、未対応項目だけ選別した preferences または手動手順にする。`defaults read` の全量取得や全 plist のコピーはしない。
 - Apple ID・Touch ID・TCC・アクセシビリティ・署名鍵・VPN 認証・データ復元は手動作業として分離する。macOS preferences は宣言削除だけでは戻らない場合があるため、変更するキーの旧値・未設定状態を控えて戻し方を用意する。
-- Nix bootstrap は公式の版固定済み aarch64-darwin 配布物と checksum を使う。導入版・hash は実装時に公式公開物から確定して記録し、浮動する install URL を無確認で実行しない。multi-user installer による APFS volume、mount、build users、daemon、shell 初期化の変更範囲を説明してから、人間が sandbox 外で実行する。
+- Nix bootstrap は公式の版固定済み aarch64-darwin 配布物と checksum を使う。導入版・hash は実装時に公式公開物から確定して記録し、浮動する install URL を無確認で実行しない。multi-user installer による APFS volume、mount、build users、daemon、shell 初期化の変更範囲を説明してから、ユーザーが sandbox 外で実行する。
 - macOS 26.2 / arm64 で Nix の導入と構成のビルドは確認済み。nix-darwin / Home Manager の実適用は終了コード0、48 preferences の一致も確認済み。既存 Nix 残骸・OS 管理ファイルとの衝突があれば先に止める。UID / GID の固定値や既存 `/etc` ファイルの強制置換を参考例から流用しない。
 - インストーラは初期導入に限定し、以後の Nix 本体・設定は nix-darwin へ渡す。現在の sandbox の回避、権限変更、Keychain 操作を bootstrap の副作用として無断実行しない。
 
@@ -393,12 +393,12 @@ plist は既知の生成物だけユーザー所有の実ファイルへ配置�
 初回切替は完了済み。以下は当時の候補手順で、実施結果は冒頭と T10 を優先する。現在の通常適用・失敗時対応は [セットアップ手順](../../../.agents/skills/dotfiles-setup/references/setup.md) を使い、この初回手順を再実行しない。
 
 1. **切替前**: 完成した構成を現在の Mac 向けに build。生成された activation とパッケージ参照を確認し、更新する入力・実機パス・サービス・preferences と旧構成への戻し方を用意する。破壊的な Homebrew cleanup や Nix GC は実行しない。
-2. **承認と停止**: ユーザーへ影響を提示し、必要なエージェント・端末・アプリの停止を確認。この Mac は Hermes 未使用のため停止・待機は不要。別の Mac の稼働中環境へ適用する場合は、利用者確認後に管理関数で正規停止し、失敗したら中止する。実行中のエージェント自身が途切れる場合は、人間用の再開手順を先に渡す。
-3. **状態保全**: この Mac には Hermes の既存データがなく、移行やバックアップは不要。別の Mac の既存環境では DB・認証・memory 等を保持し、停止後、新しい本体の初回起動・schema 更新より前に、人間が sandbox 外で必要な状態を整合した形でバックアップする。関連 WAL 等を取りこぼさず、ログや Git / store へ内容を出さない。Hindsight のイメージやデータを変える場合は別途整合したバックアップを取る。既存の秘密・Keychain は変更しない。
+2. **承認と停止**: ユーザーへ影響を提示し、必要なエージェント・端末・アプリの停止を確認。この Mac は Hermes 未使用のため停止・待機は不要。別の Mac の稼働中環境へ適用する場合は、利用者確認後に管理関数で正規停止し、失敗したら中止する。実行中のエージェント自身が途切れる場合は、ユーザー用の再開手順を先に渡す。
+3. **状態保全**: この Mac には Hermes の既存データがなく、移行やバックアップは不要。別の Mac の既存環境では DB・認証・memory 等を保持し、停止後、新しい本体の初回起動・schema 更新より前に、ユーザーが sandbox 外で必要な状態を整合した形でバックアップする。関連 WAL 等を取りこぼさず、ログや Git / store へ内容を出さない。Hindsight のイメージやデータを変える場合は別途整合したバックアップを取る。既存の秘密・Keychain は変更しない。
 4. **適用**: 確認済みの旧リンク / plist / shell 設定のみを退避して新構成を適用。既存実ファイルを一括強制上書きしない。秘密の参照と PATH を確認し、起動を承認されたサービスだけ起動する。この Mac の Hermes は起動しない。別の Mac では適用前の利用状態と利用者の承認に従う。
 5. **スモーク確認**: 下記「検証記録と最終完了条件」の実機項目を確認する。設定変更を伴う再起動・ログアウト等は必要なものだけ直前確認する。
 6. **失敗時**: 新サービスを正規停止し、原因に応じて旧生成物 / 旧リンク / 旧 plist / 旧 preferences へ戻す。初回は以前の Nix 世代が存在しないので、退避した非 Nix 構成への復旧手順を使う。以後は保持した Nix 世代を使えるが、live link 先の本文は Git で別に戻す。Homebrew アプリや OS preferences、DB も同じ操作で戻らない。
-7. **DB を変更した場合**: 旧バイナリを新 schema の DB へそのまま向けない。必要なら停止状態で人間がバックアップを復元し、切替後の新規データが失われ得ることを確認してから実施する。自動 rollback で DB を巻き戻さない。
+7. **DB を変更した場合**: 旧バイナリを新 schema の DB へそのまま向けない。必要なら停止状態でユーザーがバックアップを復元し、切替後の新規データが失われ得ることを確認してから実施する。自動 rollback で DB を巻き戻さない。
 8. **整理**: 新構成の受入後、承認済みの旧パッケージ・配布経路を整理する。復旧用世代・バックアップの削除は移行成功と同時に自動実行しない。Nix 自体のアンインストールは通常の復旧手順にしない。
 
 ## 検証記録と最終完了条件
@@ -555,7 +555,7 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 **HOME の確認**
 
-- 既存 HM 成果物 `8dcbikjbxvyfi7jg1mi5k9725i5pkgxj` の `home-files` は135配置先。Pi 可変設定3件と Hermes plist 2件を加えた140対象は、リンク111、実ディレクトリ16、通常ファイル1、未作成11、人間による確認待ち1。Antigravity の参照は通常配置135件に含まれる。確認できた既存対象は本人所有、HOME 以下の親経路に別実体へのリンクなし。内容は取得せず、実 `config.fish` は以前の拒否を尊重して再取得・再試行していない。
+- 既存 HM 成果物 `8dcbikjbxvyfi7jg1mi5k9725i5pkgxj` の `home-files` は135配置先。Pi 可変設定3件と Hermes plist 2件を加えた140対象は、リンク111、実ディレクトリ16、通常ファイル1、未作成11、ユーザーによる確認待ち1。Antigravity の参照は通常配置135件に含まれる。確認できた既存対象は本人所有、HOME 以下の親経路に別実体へのリンクなし。内容は取得せず、実 `config.fish` は以前の拒否を尊重して再取得・再試行していない。
 - 実ディレクトリは外部スキル13件と Yazi の `full-border.yazi` / `git.yazi` / `smart-enter.yazi`。通常ファイルは `.claude/hooks/herdr-agent-state.sh`。Pi 3件はリポジトリへの旧リンク、Antigravity は共通スキルへのリンクのまま。cua-driver の共通・Claude 両配置、Hermes plist 2件は未作成。
 - 通常配置以外に HM activation が作る `~/Applications/Home Manager Apps` と `~/Library/Fonts/HomeManager` も未作成。生成 activation の `copyApps` / font hook は rsync の `--delete` を含むため、直前に既存実体があれば止める条件を追加した。
 - HM profile の候補（`~/.local/state/nix/profiles/home-manager`、旧 `~/.local/state/home-manager/profiles/home-manager`、`/nix/var/nix/profiles/per-user/<user>/home-manager`）と HOME / 旧 global の `current-home` GC root は未作成。`~/.nix-profile` は `~/.local/state/nix/profiles/profile` へのリンクで、後者は未作成。汎用 Nix profile を HM の初回生成物として削除しない。
@@ -565,9 +565,9 @@ bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p
 
 - `/etc` 20配置先の従来記録は `/tmp/dotfiles-system-collision-metadata.json`。既存4件と未作成16件、対応する退避名は未作成。後続の限定 hash 比較で bashrc / zshrc は不一致、zprofile / nix.conf は一致（下記「棚卸し終了後のビルドと適用前の実衝突」）。今回実 `/etc` の内容・hash は再取得していない。既知 hash 一致のファイルも保全対象とした。
 - 読み取り専用の独立調査は既存の生成 activation と標準処理を確認。親も daemon 配置順と起動時の再適用処理を読んだ。`org.nixos.activate-system` は system profile を読み、current-system と `/etc` を再設定する。初回の途中失敗でも、末尾まで到達したかだけでは変更済み範囲を判定できない。復旧はこの登録を先に解除し、旧設定・daemon、HOME、profile / GC root、synthetic 設定の順で対象別に戻す。
-- `/Library/LaunchDaemons/org.nixos.nix-daemon.plist` は root 所有0644の通常ファイル。default profile は root profile へのリンク、root profile は `profile-3-link` を参照。独立調査で旧 store environment `qs84cyfhvpn6mcs80i5vh47vsf976197` と installer plist の存在を確認したが、実配置との同一性・実行先・launchd 登録状態は未確認。元の実ファイルを人間が保全し、復元操作を確定するまで適用へ進まない。
+- `/Library/LaunchDaemons/org.nixos.nix-daemon.plist` は root 所有0644の通常ファイル。default profile は root profile へのリンク、root profile は `profile-3-link` を参照。独立調査で旧 store environment `qs84cyfhvpn6mcs80i5vh47vsf976197` と installer plist の存在を確認したが、実配置との同一性・実行先・launchd 登録状態は未確認。元の実ファイルをユーザーが保全し、復元操作を確定するまで適用へ進まない。
 - 今回親が追加確認した `/var/lib/linux-builder`、`/Applications/Nix Apps`、`/Library/Fonts/Nix Fonts`、`/etc/hosts.before-nix-darwin`、activate-system plist は未作成。独立調査でも system profile・`/run`・current-system・current-system GC root は未作成。候補 activation 冒頭の linux-builder 削除と Apps / Fonts 同期を変更範囲へ追加した。
-- build users / group の更新、PAM・SSH・TCC の条件付き変更は実機の条件成立が未確認。秘密・権限・サービスの操作をエージェントが実行せず、人間が対象を絞って確認・承認する。標準 uninstaller は今回以外の退避や shell 設定も変更し、途中失敗では旧 daemon 復元が省略され得るため初回復旧の既定手段にしない。
+- build users / group の更新、PAM・SSH・TCC の条件付き変更は実機の条件成立が未確認。秘密・権限・サービスの操作をエージェントが実行せず、ユーザーが対象を絞って確認・承認する。標準 uninstaller は今回以外の退避や shell 設定も変更し、途中失敗では旧 daemon 復元が省略され得るため初回復旧の既定手段にしない。
 
 根拠は既存 system `46ag235bdr3bwg2b3y9nyzwf5mjww9y6` の `activate`（冒頭、service 配置、HM 呼出し）、生成 `wilxng1wk5a2fk22rv4gnndr94cmncv4-activate-system-start`、上記 HM の `activate`（profile / GC root、copyApps、font hook）、リポジトリの `home/pi.nix` / `home/files.nix`。公開 HM のファイル衝突資料も確認し、手動の対象別退避方針を維持した。`git diff --check` と2文書のローカル Markdown 参照9件（anchor を含む）の実在確認は成功。独立した read-only reviewer が今回の文書差分とリポジトリ内の配置定義を確認し、blocking/high・decision required・medium/low の指摘なし。既存の Homebrew 文書差分と設定3ファイルは対象外、実 HOME / system・外部 store はレビュー側では未検証。新たな build・回帰テスト・通常 shell の起動・実退避・サービス操作・適用・復旧演習は行っていない。T9 全体は未完了。
 
@@ -596,7 +596,7 @@ T9 は未完了。universal 値の変更と旧ファイルの退避は行って�
 - 通常の `bash scripts/dotfiles.sh build --host /tmp/dotfiles-machine.SyCOAn6p` が exit 0。公開 lock 検査・flake check・build を通過。ログは `/tmp/dotfiles-final-build.A2q3Qr/build.log`、source snapshot は `/nix/store/z63f6hznh3c2ka4wsmfj1bpxggsgbq16-source`。root lock SHA256 は `6d7c28a5e15bbc7037913dd0b1e0782baf12d39e49d936ddd9b13fb52181988d` で不変。承認済みの Herdr 別ペイン `w3W:pH` を使用し、完了後に閉鎖した。
 - 生成 Brewfile `/nix/store/9b978fh3bbif80xqrflnjc68n82byq44-Brewfile` に Unity CLI / Hub を確認。Homebrew bundle・activation は未実行。Claude / Pi の既存未コミット設定も snapshot に含まれるが、コミット対象には含めない。
 - 最新の activation が持つ既知 hash と `/etc` の既存4ファイルを、内容を出力せず比較した。`/etc/bashrc` / `/etc/zshrc` は不一致で標準衝突検査により中止する対象。`/etc/zprofile` / `/etc/nix/nix.conf` は一致。4件とも `.before-nix-darwin` は未作成。`/etc/profile` に installer の `etc/profile.d/nix-daemon.sh` 参照はなかった。これは対象を絞った確認で、activation 全体を実行した検証ではない。
-- 実退避では、未知内容の `/etc/bashrc` / `/etc/zshrc` を私有バックアップへ保全してから標準の `.before-nix-darwin` へ移し、HOME 衝突対象・Pi 可変設定も保全する。実行前に上記「T9 の初回復旧準備」の旧 daemon 等の残る確認を終える。root 所有ファイルの退避と Pi 終了を伴うため、人間の操作と切替直前の具体的な承認が必要。既存ファイルを force overwrite しない。
+- 実退避では、未知内容の `/etc/bashrc` / `/etc/zshrc` を私有バックアップへ保全してから標準の `.before-nix-darwin` へ移し、HOME 衝突対象・Pi 可変設定も保全する。実行前に上記「T9 の初回復旧準備」の旧 daemon 等の残る確認を終える。root 所有ファイルの退避と Pi 終了を伴うため、ユーザーの操作と切替直前の具体的な承認が必要。既存ファイルを force overwrite しない。
 
 ### Final Validation（残る最終確認）
 
@@ -626,13 +626,13 @@ T9 は未完了。universal 値の変更と旧ファイルの退避は行って�
 - **独立 package 管理の撤回**: gomi / dotenvx / Safehouse の独立定義は `44688a4` で撤回。AI の独立定義を加えた `b9f7ab5` は `23a7c38` で置換。現行版合わせの override、`config/nix/packages/`、nix-update app、`update ai` / ツール別更新は復活させない。
 - **古い検証記録**: bootstrap 8件、初期 CLI 統合4件は当時通過。その後の全36テストはダミー Trash 保護で2ケース・4 errors となったが、ユーザー指示でテスト追加・再実行を受入条件から外した。sandbox 外での再試験承認待ちではない。
 - **拒否された一時ファイルの後片付け**: `/tmp/dotfiles-tests.log` に記録。macOS の一時ディレクトリ配下の `tmp8ud28y15` / `tmpgumdah3_` は当時残置。制限を回避して削除せず、通常の移行完了条件に追加しない。
-- **初回導入の待ち**: installer の `vifs` 待ちは macOS の許可ダイアログ待ちで、人間の許可後に解消。再インストールや volume 修復は不要だった。
+- **初回導入の待ち**: installer の `vifs` 待ちは macOS の許可ダイアログ待ちで、ユーザーの許可後に解消。再インストールや volume 修復は不要だった。
 - 初期計画の独立レビューは lock 検査の指摘修正後に Approved。これは当時の計画レビューであり、現在の全実装のレビュー・実機適用完了を示さない。過去の中間 build path・版・失敗修正の詳細は対応コミットを参照し、現行の到達点と混在させない。
 
 ## 調査根拠
 
 - [nix-darwin README](https://github.com/nix-darwin/nix-darwin/blob/master/README.md): rolling 系列、upstream Nix の管理、installer と interpreter の区別。公式はアンインストールの容易さから Lix installer を推奨しているが、本計画では合意済み upstream Nix の公式配布を使い、通常復旧をアンインストールに依存させない。
-- [Nix binary installation](https://nix.dev/manual/nix/stable/installation/installing-binary): macOS multi-user、版固定配布、APFS / mount / daemon の変更範囲。本実装では macOS 26.2 で人間による導入と Nix 2.34.0 の応答を確認済み。
+- [Nix binary installation](https://nix.dev/manual/nix/stable/installation/installing-binary): macOS multi-user、版固定配布、APFS / mount / daemon の変更範囲。本実装では macOS 26.2 でユーザーによる導入と Nix 2.34.0 の応答を確認済み。
 - [Nix flake metadata](https://nix.dev/manual/nix/stable/command-ref/new-cli/nix3-flake-metadata): JSON の lock graph、no-update と no-write の相違、override-input の意味を確認。
 - [HM nix-darwin 統合](https://github.com/nix-community/home-manager/blob/master/docs/manual/installation/nix-darwin.md)、[launchd activation](https://github.com/nix-community/home-manager/blob/master/modules/launchd/default.nix)、[Homebrew module](https://github.com/nix-darwin/nix-darwin/blob/master/modules/homebrew.nix): 統合・再読み込み・更新 / cleanup の境界。
 - Hermes / Herdr / Safehouse / Pi / skills の調査根拠と未検証事項は dig log に記録。公開 main/master は調査資料であり、適用時にそのまま浮動参照しない。

@@ -10,7 +10,7 @@
 ;; 通常rmはgtrashへ転送し、絶対パス指定による直接削除を防ぐ。
 (deny process-exec (literal "/bin/rm"))
 
-;; 復旧先の内容を保護し、復元・掃除は人間がsandbox外で行う。
+;; 復旧先の内容を保護し、復元・掃除はユーザーがsandbox外で行う。
 ;; renameによる投入とmetadata処理は維持する。
 (deny file-read-data file-write-data file-write-unlink
     (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")

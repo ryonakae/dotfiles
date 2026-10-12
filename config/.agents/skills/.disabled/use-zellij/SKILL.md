@@ -21,7 +21,7 @@ Zellij を主に CLI 制御と KDL 編集から扱う。セッション、タブ
 - シェル依存を避けたいときは `new-pane -- <command>` や `run -- <command>` を優先する。`paste` や `send-keys` は既存シェル状態を使う必要があるときだけ使う。
 - 既存セッションを壊す変更の前に `list-panes --json`, `list-tabs --json`, `dump-layout` で現在状態を確認する。
 - レイアウトはゼロから書き始めるより `zellij setup --dump-layout default` や `zellij setup --dump-swap-layout default` を土台にする。
-- 人間向けショートカットやモード操作には依存しない。エージェントから再現可能な CLI と KDL 編集を優先する。
+- ユーザー向けショートカットやモード操作には依存しない。エージェントから再現可能な CLI と KDL 編集を優先する。
 
 ## 進め方
 

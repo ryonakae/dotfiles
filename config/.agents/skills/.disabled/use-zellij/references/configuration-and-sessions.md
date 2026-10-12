@@ -4,7 +4,7 @@
 
 - 設定ファイルの場所
 - 主要オプション
-- 任意: 人間向け導線
+- 任意: ユーザー向け導線
 - セッション復元
 - Web 共有
 - 一次情報
@@ -83,7 +83,7 @@ zellij setup --dump-config > ~/.config/zellij/config.kdl
 | `show_startup_tips` | 起動時 tips | onboarding 向け |
 | `show_release_notes` | 新版の release notes 表示 | 更新直後の導線になる |
 
-## 任意: 人間向け導線
+## 任意: ユーザー向け導線
 
 エージェント運用では通常 `attach`, `list-sessions`, `switch-session` を優先する。この節は、ユーザーが human-facing な起動導線を求めたときだけ参照する。
 

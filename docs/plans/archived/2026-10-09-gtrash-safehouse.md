@@ -6,7 +6,7 @@
 
 - 普段のターミナル、PATHを継承する子shell、エージェント、Hermes gateway/dashboardの通常rmをgtrash putへ転送する。OSの/bin/rm実体は変更せず、Safehouse内ではその実行を拒否する。
 - Safehouseのdeny-first、HOME RW、wide-read、全環境継承、既存feature/IPC許可は維持する。機密・個人データの独自denyを撤廃し、それだけのための例外を整理する。allow defaultや/全体のRWは追加しない。
-- ごみ箱payloadへの直接の読み取り・書き換え・削除の既存保護は維持する。投入に必要なmetadata・rename・復元情報の保存を妨げない。復元・内容確認・掃除は人間がsandbox外で行う。エージェントによる復元は不要。
+- ごみ箱payloadへの直接の読み取り・書き換え・削除の既存保護は維持する。投入に必要なmetadata・rename・復元情報の保存を妨げない。復元・内容確認・掃除はユーザーがsandbox外で行う。エージェントによる復元は不要。
 - gtrashはHomebrew公式formulaで管理する。別volumeからHOMEへのコピーfallbackは有効にしない。永久削除・ごみ箱の自動掃除は通常rmに組み込まない。
 - gomi本体・設定・既存ごみ箱データは保持し、今回削除・移行しない。他者変更config/.claude/settings.jsonを保持する。
 - 追加承認（既存衝突についてユーザー「ついでに直して」）: Claude専用スキルを明示宣言したときの親ディレクトリとの配置衝突も修正する。共通globと専用の明示宣言による優先順位は変えない。
@@ -39,7 +39,7 @@ Review base: `675d1815ec2b01919bf40be266c0dd33534495dd`。開始時は `origin/m
 - [x] **wrapperと起動契約**: `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_agent_runtime.py'`と追加したrm転送の関連testを実行し、引数/失敗/PATHの契約を通過する。追加testの正確な実行コマンドは実装時にここへ記録する。`test_dotfiles_links.py`・`test_hermes_tmpdir.py`は関連する配置/環境変更がある場合に実行する。
 - [x] **構文・差分**: 変更fishを`fish --no-execute`、POSIX shellを`sh -n`、Bashを`bash -n`、Pythonを一時bytecode先で構文確認する。Nixの変更はdotfiles-setupに従い`bash scripts/dotfiles.sh build`で確認する。`git diff --check`、参照パス、変更範囲を確認する。
 - [x] **実policy**: sandbox外で`uv run --no-project python scripts/tests/check_safehouse_runtime.py`を更新済みのダミーHOMEで実行。旧保護対象を模したダミー.env/鍵/個人データの読み書きは成功し、/bin/rm実行、ごみ箱payloadの読み取り・書き換え・unlinkは失敗する。既存Trash/XDG形式とHermes例外の意図した差分を明示して確認する。実秘密をprobeしない。
-- [x] **gtrash投入と人間の復元**: 実gtrash＋最終policy＋専用ごみ箱で、ファイル・directory・broken symlink、1コマンドの同名対象、16プロセス同名投入の内容/metadata保全、移動拒否時の非zeroと元保持を確認する。sandbox内からのpayload操作は拒否され、sandbox外でダミーだけを元パスへ復元できる。投入後の復元で内容確認を行い、検証のためにごみ箱保護を解除しない。
+- [x] **gtrash投入とユーザーの復元**: 実gtrash＋最終policy＋専用ごみ箱で、ファイル・directory・broken symlink、1コマンドの同名対象、16プロセス同名投入の内容/metadata保全、移動拒否時の非zeroと元保持を確認する。sandbox内からのpayload操作は拒否され、sandbox外でダミーだけを元パスへ復元できる。投入後の復元で内容確認を行い、検証のためにごみ箱保護を解除しない。
 - [x] **終了処理**: 転送PATHと最終policyの実Safehouseで、mktemp/EXIT trap、起動・終了が0で、内容が専用ごみ箱へ保存される。gtrashの実行先、version、検証結果とログパスを記録する。以前の許可追加済み13項目は最終構成の合格として流用しない。
 - [x] **実配置**: 導入前に対象の`type -a`と配置先の実体/管理状況を確認する。`brew install gtrash`は対象限定、mise配置はdotfiles-setupの標準手順・時間制限付きdry-runを用い、既存データを上書きしない。新規fishと子shellで通常rmがwrapper、gtrashがHomebrew版に解決されることを確認する。実ごみ箱には検証データを投入しない。稼働Hermesの再起動・認証通信は未実施範囲として報告する。
 
