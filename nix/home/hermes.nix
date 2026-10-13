@@ -55,10 +55,50 @@ let
       builtins.readFile ../../config/.config/hermes/check-stopped.sh
     );
   };
+  comparePlists = ''
+    hermes_changed=()
+    hermes_home=$(${pkgs.coreutils}/bin/realpath -m -- ${lib.escapeShellArg home})
+    for name in ${lib.escapeShellArgs services}; do
+      hermes_plist=${lib.escapeShellArg "${home}/Library/LaunchAgents"}/ai.hermes.$name.plist
+      if [[ "$(${pkgs.coreutils}/bin/realpath -m -- "$hermes_plist")" != "$hermes_home/Library/LaunchAgents/ai.hermes.$name.plist" || -L "$hermes_plist" ]]; then
+        echo "Hermes: plist path resolves through a symlink: $hermes_plist" >&2
+        exit 1
+      fi
+      if [[ ! -e "$hermes_plist" ]]; then
+        hermes_changed+=("$name")
+        continue
+      fi
+      if [[ ! -f "$hermes_plist" || ! -O "$hermes_plist" || ! -r "$hermes_plist" ]]; then
+        echo "Hermes: plist is not a readable user-owned regular file: $hermes_plist" >&2
+        exit 1
+      fi
+      if ${pkgs.diffutils}/bin/cmp -s "$hermes_plist" ${definitions}/ai.hermes.$name.plist; then
+        continue
+      else
+        hermes_cmp_status=$?
+        if [[ "$hermes_cmp_status" != 1 ]]; then
+          echo "Hermes: cannot compare plist: $hermes_plist" >&2
+          exit 1
+        fi
+      fi
+      hermes_changed+=("$name")
+    done
+  '';
+  checkActivation = pkgs.writeShellScript "hermes-check-activation" ''
+    set -euo pipefail
+    ${comparePlists}
+    if [[ ''${#hermes_changed[@]} -gt 0 ]]; then
+      ${checkStopped}
+    fi
+  '';
 in
 {
   home.file.".local/libexec/hermes".source = "${hermes}/bin/hermes";
   xdg.configFile = {
+    "hermes/check-activation.sh" = {
+      source = checkActivation;
+      executable = true;
+    };
     "hermes/check-stopped.sh" = {
       source = checkStopped;
       executable = true;
@@ -78,38 +118,29 @@ in
     ln -s ${definitions} $out/hermes-launch-agents
   '';
 
-  home.activation.checkHermesServices = lib.hm.dag.entryBefore [ "writeBoundary" ] (
-    ''
-      ${checkStopped}
-      hermes_home=$(${pkgs.coreutils}/bin/realpath -m -- ${lib.escapeShellArg home})
-    ''
-    + lib.concatMapStringsSep "\n" (name: ''
-      hermes_plist=${lib.escapeShellArg "${home}/Library/LaunchAgents/ai.hermes.${name}.plist"}
-      if [[ "$(${pkgs.coreutils}/bin/realpath -m -- "$hermes_plist")" != "$hermes_home/Library/LaunchAgents/ai.hermes.${name}.plist" || -L "$hermes_plist" ]]; then
-        errorEcho "Hermes plist path resolves through a symlink; prepare the destination before activation."
-        exit 1
-      fi
-      if [[ -e "$hermes_plist" ]]; then
-        if [[ ! -f "$hermes_plist" || ! -O "$hermes_plist" ]]; then
-          errorEcho "Hermes plist is not a user-owned regular file; refusing replacement."
-          exit 1
-        fi
-        if ! ${pkgs.diffutils}/bin/cmp -s "$hermes_plist" ${plists.${name}}; then
-          if [[ -z "''${oldGenPath:-}" ]] || ! ${pkgs.diffutils}/bin/cmp -s "$hermes_plist" "$oldGenPath/hermes-launch-agents/ai.hermes.${name}.plist"; then
+  home.activation.checkHermesServices = lib.hm.dag.entryBefore [ "writeBoundary" ] ''
+    ${comparePlists}
+    if [[ ''${#hermes_changed[@]} -gt 0 ]]; then
+      for name in "''${hermes_changed[@]}"; do
+        hermes_plist=${lib.escapeShellArg "${home}/Library/LaunchAgents"}/ai.hermes.$name.plist
+        if [[ -e "$hermes_plist" ]]; then
+          if [[ -z "''${oldGenPath:-}" ]] || ! ${pkgs.diffutils}/bin/cmp -s "$hermes_plist" "$oldGenPath/hermes-launch-agents/ai.hermes.$name.plist"; then
             errorEcho "Unmanaged or modified Hermes plist: back it up explicitly before activation."
             exit 1
           fi
         fi
-      fi
-    '') services
-  );
+      done
+    fi
+    ${checkActivation}
+  '';
 
-  home.activation.installHermesPlists = lib.hm.dag.entryAfter [ "linkGeneration" ] (
-    ''
+  home.activation.installHermesPlists = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+    ${comparePlists}
+    if [[ ''${#hermes_changed[@]} -gt 0 ]]; then
       ${checkStopped}
-    ''
-    + lib.concatMapStringsSep "\n" (name: ''
-      run ${pkgs.coreutils}/bin/install -D -m 444 ${plists.${name}} ${lib.escapeShellArg "${home}/Library/LaunchAgents/ai.hermes.${name}.plist"}
-    '') services
-  );
+      for name in "''${hermes_changed[@]}"; do
+        run ${pkgs.coreutils}/bin/install -D -m 444 ${definitions}/ai.hermes.$name.plist ${lib.escapeShellArg "${home}/Library/LaunchAgents"}/ai.hermes.$name.plist
+      done
+    fi
+  '';
 }

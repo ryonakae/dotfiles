@@ -217,7 +217,7 @@ def configured_target(source, configuration):
     "--apply", '''c: let h = c.home-manager.users.${c.system.primaryUser}; in {
       username = h.home.username;
       homeDirectory = h.home.homeDirectory;
-      hermesCheck = toString h.xdg.configFile."hermes/check-stopped.sh".source;
+      hermesCheck = toString h.xdg.configFile."hermes/check-activation.sh".source;
     }''', "--json", json_output=True,
   )
   validate_user(target)

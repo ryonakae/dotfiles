@@ -14,7 +14,7 @@ in
   environment.etc."dotfiles/build.json".text = builtins.toJSON (dotfilesBuild // {
     username = home.home.username;
     homeDirectory = home.home.homeDirectory;
-    hermesCheck = toString home.xdg.configFile."hermes/check-stopped.sh".source;
+    hermesCheck = toString home.xdg.configFile."hermes/check-activation.sh".source;
     mise = "${home.programs.mise.package}/bin/mise";
   });
 

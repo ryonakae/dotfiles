@@ -78,7 +78,7 @@ AWS CLI も同じ設定で管理する。更新後は `aws --version` を確認�
 
 ## Nix を更新・適用する
 
-`private` 構成は家用 Mac の常時稼働向け。[電源設定](../nix/hosts/private.nix)で本体・ディスクの自動スリープと電源ボタンによるスリープを無効にし、停電復旧後の自動起動を有効にする。画面は20分でスリープ、スクリーンセーバーはユーザー設定で10分。FileVault や自動ログインは変更しないため、再起動後の無人復旧までは保証しない。
+`private` 構成は家用 Mac の常時稼働向け。[電源設定](../nix/hosts/private.nix)で本体・ディスクの自動スリープと電源ボタンによるスリープを無効にし、停電復旧後の自動起動を有効にする。画面は20分でスリープ、スクリーンセーバーはユーザー設定で10分。スクリーンセーバー開始・画面スリープ後のパスワード要求は即時にする。FileVault や自動ログインは変更しないため、再起動後の無人復旧までは保証しない。
 
 適用後は `pmset -g custom` で `sleep 0`・`disksleep 0`・`displaysleep 20`・`autorestart 1`・`Sleep On Power Button 0`、`defaults read com.apple.screensaver idleTime` で `600` を確認する。スクリーンセーバーのマシン固有設定（ByHost）が残っている場合は、ユーザー設定と競合する可能性があるため別途確認する。
 
@@ -106,7 +106,7 @@ git diff -- flake.lock
 
 ### 設定配置までまとめて適用する
 
-稼働中の Hermes があれば、[管理関数で停止](apps.md#hermes-を停止更新する)してから実行する。既存 Home Manager からの切替では、先に[移行手順](migration.md)を済ませる。
+Hermes の起動定義が変わらなければ、稼働したまま適用できる。本体・wrapper・起動環境などの変更で停止を求められた場合だけ、[管理関数で停止](apps.md#hermes-を停止更新する)してから適用する。既存 Home Manager からの切替では、先に[移行手順](migration.md)を済ませる。
 
 macOS 設定を変更する場合は、変更対象だけ現在の値・型・未設定かどうかを控える。Nix の旧世代に戻しても、これらの設定は元に戻らない場合がある。
 
@@ -137,7 +137,7 @@ cd ~/dotfiles
 set system (bash scripts/dotfiles.sh build --configuration private)
 ```
 
-ビルドが成功したら成果物と適用範囲を確認する。[適用前の確認](#設定配置までまとめて適用する)に従って、変更する macOS 設定の旧値を控え、稼働中の Hermes を停止してから同じ端末で適用する。
+ビルドが成功したら成果物と適用範囲を確認する。[適用前の確認](#設定配置までまとめて適用する)に従って、変更する macOS 設定の旧値を控えてから同じ端末で適用する。Hermes の停止は、起動定義が変わる場合だけ必要。
 
 ```sh
 bash scripts/dotfiles.sh switch "$system"

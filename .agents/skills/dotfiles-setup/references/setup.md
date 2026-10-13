@@ -97,7 +97,7 @@
 - `voice` グループは fork 標準 override で除外。Apple Silicon で CTranslate2 の検証依存を通じた PyTorch ソースビルドが必要になり得るため。Hindsight・メッセージング・TTS 用の追加グループは維持する。
 - `hermes gateway install` による plist 再生成、旧 installer、専用 mise / venv の復元を併用しない。認証・DB・memory・session・cache は store に入れない。
 - サービス操作は既存管理関数から fork 標準処理を使う。停止 controller、自動停止・再開・状態保存・バックアップを適用処理へ追加しない。
-- 配置前に launchd 登録・判別可能なプロセス・plist 所有を検査し、未停止・読み取り失敗・未知形式なら止める。検査自体は停止しない。GUI セッションを前提とし、全子プロセスの追跡を保証しない。
+- 起動定義が実配置と同じなら停止確認・再配置を省く。本体・wrapper・PATH の store 参照を含む定義が変わる場合と初回配置だけ、GUI セッションで launchd 登録・判別可能なプロセスの停止を確認する。plist 所有・symlink・手動変更の保護は維持し、比較エラーは中断する。検査自体は停止せず、全子プロセスの追跡は保証しない。
 - 未知の plist、旧 mise / venv の整理はその環境で対象限定の承認を得る。Hindsight の停止・データ移行は別承認。Compose の tag / digest 固定を volume 復元の保証としない。
 
 ### Claude・Pi・Herdr
