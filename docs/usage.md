@@ -106,7 +106,7 @@ git diff -- flake.lock
 
 ### 設定配置までまとめて適用する
 
-稼働中の Hermes があれば、[管理関数で停止](apps.md#hermes-を停止更新する)してから実行する。既存 Home Manager からの切替では、先に[移行手順](migration.md)を済ませる。
+Hermes の起動定義が変わらなければ、稼働したまま適用できる。本体・wrapper・起動環境などの変更で停止を求められた場合だけ、[管理関数で停止](apps.md#hermes-を停止更新する)してから適用する。既存 Home Manager からの切替では、先に[移行手順](migration.md)を済ませる。
 
 macOS 設定を変更する場合は、変更対象だけ現在の値・型・未設定かどうかを控える。Nix の旧世代に戻しても、これらの設定は元に戻らない場合がある。
 
@@ -137,7 +137,7 @@ cd ~/dotfiles
 set system (bash scripts/dotfiles.sh build --configuration private)
 ```
 
-ビルドが成功したら成果物と適用範囲を確認する。[適用前の確認](#設定配置までまとめて適用する)に従って、変更する macOS 設定の旧値を控え、稼働中の Hermes を停止してから同じ端末で適用する。
+ビルドが成功したら成果物と適用範囲を確認する。[適用前の確認](#設定配置までまとめて適用する)に従って、変更する macOS 設定の旧値を控えてから同じ端末で適用する。Hermes の停止は、起動定義が変わる場合だけ必要。
 
 ```sh
 bash scripts/dotfiles.sh switch "$system"
