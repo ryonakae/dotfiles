@@ -13,7 +13,7 @@ fi
 # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
 export HISTFILE=/dev/null
 
-# launchd は対話 fish の shell-init.fish を読まないため、キャッシュ用の環境値を補う。
+# launchd は fish の config.fish を読まないため、キャッシュ用の環境値を補う。
 # 機密ではない実行環境値は .env ではなく wrapper に置く。
 export UV_CACHE_DIR="$HOME/.hermes/cache/uv"
 export PIP_CACHE_DIR="$HOME/.hermes/cache/pip"

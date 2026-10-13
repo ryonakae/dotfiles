@@ -13,7 +13,7 @@ fi
 # シェル履歴汚染を抑制 (~/.zsh_history などへの書き込み denied 警告も同時に消える)。
 export HISTFILE=/dev/null
 
-# launchd は対話 fish の shell-init.fish を読まないため、ブラウザー用の環境値を補う。
+# launchd は fish の config.fish を読まないため、ブラウザー用の環境値を補う。
 # agent-safehouse 内で Chrome の内側 sandbox 初期化が失敗するため --no-sandbox 系を渡す。
 export AGENT_BROWSER_ARGS="--no-sandbox,--disable-gpu,--disable-dev-shm-usage"
 export AGENT_BROWSER_PROFILE="$HOME/.config/agent-browser/profile"

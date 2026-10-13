@@ -79,8 +79,9 @@ class RmTrashTests(unittest.TestCase):
 
   def test_fish_and_child_shell_resolve_the_managed_rm(self):
     command = [shutil.which('fish'), '--no-config', '-c',
+               'set -g __fish_home_manager_config_sourced 1; '
                'source "$argv[1]"; /bin/sh -c \'rm -f -- "argument with spaces"\'',
-               str(ROOT / 'config/.config/fish/shell-init.fish')]
+               str(ROOT / 'config/.config/fish/config.fish')]
     result = subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=10)
     self.assertEqual(result.returncode, 23, result.stderr)
     self.assertEqual(json.loads(result.stdout)['args'], ['put', '-f', '--', 'argument with spaces'])
