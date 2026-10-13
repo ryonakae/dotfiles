@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "lmstudio/qwen3.8-9b-heretic-uncensored-mtplx",
+  "model": "omlx/Qwen3.8-9B-heretic-uncensored-4bit-MTPLX",
   "permissions": [
     {
       "action": "*",
@@ -9,25 +9,28 @@
     }
   ],
   "providers": {
-    "lmstudio": {
+    "omlx": {
+      "name": "oMLX",
+      "package": "@opencode/ai/providers/openai-compatible",
       "settings": {
-        "baseURL": "http://127.0.0.1:1234/v1"
+        "baseURL": "http://127.0.0.1:8000/v1",
+        "apiKey": "{env:OMLX_API_KEY}"
+      },
+      "models": {
+        "Qwen3.8-9B-heretic-uncensored-4bit-MTPLX": {
+          "modelID": "Qwen3.8-9B-heretic-uncensored-4bit-MTPLX",
+          "capabilities": {
+            "tools": true,
+            "input": ["text"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 262144,
+            "output": 8192
+          }
+        }
       }
     }
-  },
-  "experimental": {
-    "policies": [
-      {
-        "action": "provider.use",
-        "resource": "*",
-        "effect": "deny"
-      },
-      {
-        "action": "provider.use",
-        "resource": "lmstudio",
-        "effect": "allow"
-      }
-    ]
   },
   "mcp": {
     "servers": {
