@@ -34,6 +34,10 @@
   },
   "mcp": {
     "servers": {
+      "cua": {
+        "type": "local",
+        "command": ["cua", "daemon", "mcp", "--permissions", "spaces:all"]
+      },
       "context7": {
         "type": "remote",
         "url": "https://mcp.context7.com/mcp",

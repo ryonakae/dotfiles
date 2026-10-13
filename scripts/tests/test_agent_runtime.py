@@ -184,7 +184,8 @@ class AgentRuntimeTests(unittest.TestCase):
     self.program('safehouse', (self.bin / 'probe').read_text())
     fish_dir = self.fish_dir
     for name in ['claude', 'codex', 'gemini', 'hermes', 'pi', 'opencode']:
-      for arguments in [[], ['--model', 'model with spaces', '']]:
+      for arguments in [[], ['--model', 'model with spaces', ''], ['prompt with spaces'],
+                        ['--', 'prompt with spaces', '--'], ['--model', 'model', '--', 'prompt']]:
         with self.subTest(wrapper=name, arguments=arguments):
           command = [shutil.which('fish'), '--no-config', '-c',
                      'source "$argv[1]/__safehouse_args.fish"; '
@@ -196,7 +197,11 @@ class AgentRuntimeTests(unittest.TestCase):
           self.assertEqual(result.returncode, 23, result.stderr)
           args = json.loads(result.stdout)['args']
           executable = str(self.home / '.local/libexec/hermes') if name == 'hermes' else name
-          self.assertEqual(args[args.index('--') + 1:], [executable, *arguments])
+          expected = [executable, *arguments]
+          if name == 'claude':
+            insertion = 1 + arguments.index('--') if '--' in arguments else len(expected)
+            expected[insertion:insertion] = ['--mcp-config', str(self.home / '.claude/mcp.json')]
+          self.assertEqual(args[args.index('--') + 1:], expected)
 
   def test_pi_disables_telemetry_at_sandbox_boundary(self):
     self.install_runtime()

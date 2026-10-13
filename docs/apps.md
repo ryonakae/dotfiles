@@ -10,6 +10,7 @@
 - [Hermes](#hermes)
 - [Herdr](#herdr)
 - [CuaDriver](#cuadriver)
+- [Cua Spaces](#cua-spaces)
 - [Unity CLI](#unity-cli)
 - [Karabiner](#karabiner)
 - [macOS とその他のアプリ](#macos-とその他のアプリ)
@@ -212,6 +213,30 @@ herdr plugin log list --plugin ryonakae.agent-context --limit 20
 本体は Homebrew 管理。公式 installer を重ねず、初回のアクセシビリティ・画面収録の許可と daemon 起動は[公式 Quickstart](https://cua.ai/docs/cua-driver/quickstart)に従う。
 
 以前の `~/.local/bin/cua-driver` がある場合は、`type -a cua-driver` と `cua-driver --version` で Homebrew 版が選ばれるか確認する。古いリンクは確認せず削除しない。
+
+## Cua Spaces
+
+`cua` は Cua Spaces アプリ同梱の CLI を使う。`command -v cua` と `cua --version` で利用可能か確認する。アプリ本体の導入・認証は別途行い、`cua agents setup` によるスキル・MCP の自動配置は使わない。
+
+Pi・Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[Nix のビルド・適用](usage.md#ビルドと適用を分ける)で反映する。既存の `cua-driver` スキルはこの Mac の GUI 操作用として残す。
+
+Claude Code は fish の `claude` 関数が `~/.claude/mcp.json` を追加指定する。関数を経由せず起動するときは `claude --mcp-config ~/.claude/mcp.json` を使う。`--strict-mcp-config` は付けず、プロジェクトの MCP 設定も読み込む。他のクライアントは標準のユーザー設定を使う。プロジェクトの信頼・承認は各クライアントで行い、グローバル設定の追加を自動承認とみなさない。同名の MCP・スキルの優先順位はクライアントごとに異なるため、プロジェクト専用のものは `cua` / `cua-spaces` と別名にする。
+
+Hermes の `~/.hermes/config.yaml` は管理外。既存の設定に次を追加・統合する。既に同じキーがある場合は重複させない。
+
+```yaml
+mcp_servers:
+  cua:
+    command: cua
+    args: [daemon, mcp, --permissions, "spaces:all"]
+skills:
+  external_dirs:
+    - ~/.agents/skills
+```
+
+MCP は Spaces の作成・削除・コマンド実行を含む `spaces:all` を許可し、必要に応じて共通の Cua daemon を起動する。Space の作成や認証情報・アプリセッションの転送は別途確認してから行う。Hermes は対話セッションの `/reload-mcp` で反映でき、起動中の gateway は設定変更を自動反映する場合がある。Hermes のプロジェクトスキルには信頼設定が必要で、プロジェクトの `.mcp.json` の自動読込は前提にしない。
+
+反映後は各エージェントの MCP 一覧に `cua`、スキル一覧に `cua-spaces` があることを確認する。プロジェクト内でも既存の MCP・スキルが残っていることを確認する。MCP 一覧の取得自体が接続・daemon 起動を伴うクライアントもある。
 
 ## Unity CLI
 

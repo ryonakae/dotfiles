@@ -26,7 +26,6 @@ let
     "agent-browser"
     "agent-device"
     "cognitive-rhythm-writing"
-    "cua-driver"
     "find-docs"
     "ghostwriter"
     "herdr"
@@ -40,6 +39,14 @@ let
     "worktrunk"
   ];
   shadowed = name: builtins.hasAttr name shared || builtins.hasAttr name claude;
+  cuaSkills = {
+    cua-driver = "cua-driver/rust/Skills/cua-driver";
+    cua-spaces = "cua/skills/cua-spaces";
+  };
+  targetsFor =
+    name:
+    lib.optional (!(builtins.hasAttr name shared)) "agents"
+    ++ lib.optional (!(builtins.hasAttr name claude)) "claude";
 in
 {
   programs.agent-skills = {
@@ -49,20 +56,23 @@ in
       lockFile = ../skill-sources.lock.json;
     };
     skills.enable = lib.filter (name: !shadowed name) external;
-    # Only local overrides need explicit per-target selection.
-    skills.explicit = lib.genAttrs (lib.filter shadowed external) (
-      name:
-      let
-        skill = config.programs.agent-skills.catalog.${name};
-      in
-      {
-        from = skill.source;
-        path = if skill.relPath == "" then "." else skill.relPath;
-        agents =
-          lib.optional (!(builtins.hasAttr name shared)) "agents"
-          ++ lib.optional (!(builtins.hasAttr name claude)) "claude";
-      }
-    );
+    skills.explicit =
+      lib.mapAttrs (name: path: {
+        from = "cua-driver";
+        inherit path;
+        agents = targetsFor name;
+      }) cuaSkills
+      // lib.genAttrs (lib.filter shadowed external) (
+        name:
+        let
+          skill = config.programs.agent-skills.catalog.${name};
+        in
+        {
+          from = skill.source;
+          path = if skill.relPath == "" then "." else skill.relPath;
+          agents = targetsFor name;
+        }
+      );
     targets = {
       agents = {
         enable = true;

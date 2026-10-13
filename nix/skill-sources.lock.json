@@ -55,7 +55,7 @@
         "type": "github",
         "versionUpperBound": null
       },
-      "subdir": "libs/cua-driver/rust/Skills/cua-driver"
+      "subdir": "libs"
     },
     "find-docs": {
       "filter": {
@@ -284,42 +284,42 @@
       },
       "agent-device": {
         "branch": "main",
-        "hash": "sha256-xiR6PmLYySiOkQtboM4XSLaU2PYbfjP1US69HxSepDk=",
+        "hash": "sha256-Ns55awdmLnJOh79F11ELzpOr/FaQqOIaW7Fv1AsB2jQ=",
         "repository": {
           "owner": "callstack",
           "repo": "agent-device",
           "type": "GitHub"
         },
-        "revision": "3417a77de16fd25febfdceeacd4eb342ffd05b16",
+        "revision": "352ad624db8ca6558a580e702f0bb741631daad7",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/callstack/agent-device/archive/3417a77de16fd25febfdceeacd4eb342ffd05b16.tar.gz"
+        "url": "https://github.com/callstack/agent-device/archive/352ad624db8ca6558a580e702f0bb741631daad7.tar.gz"
       },
       "cua-driver": {
         "branch": "main",
-        "hash": "sha256-4asZHVlMoSjI8e8opYN2hbEkXtC5TkGUQhiuXw+RLek=",
+        "hash": "sha256-5G1vDPSS2SQiMTabu31KPVDzbe6MON9csz00kRCdHAs=",
         "repository": {
           "owner": "trycua",
           "repo": "cua",
           "type": "GitHub"
         },
-        "revision": "dfb49015a741851c99f2c4ab3b726cf599629b68",
+        "revision": "97fea581e214dbec0a80132945886409aa5c3874",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/trycua/cua/archive/dfb49015a741851c99f2c4ab3b726cf599629b68.tar.gz"
+        "url": "https://github.com/trycua/cua/archive/97fea581e214dbec0a80132945886409aa5c3874.tar.gz"
       },
       "find-docs": {
         "branch": "master",
-        "hash": "sha256-cChMAOd8cYTcNZt0AaUcJ4G+tT0w/64PRsbKJ3ADeY8=",
+        "hash": "sha256-9sNEGDeOqsdhMEjst9XFQIc1X+8MyjNhnINMVWWP4aE=",
         "repository": {
           "owner": "upstash",
           "repo": "context7",
           "type": "GitHub"
         },
-        "revision": "522c4db4fa2e1e31f1b320f09fa8c8fab376987a",
+        "revision": "6dfa6d150b8291e1e6d3070054555089235a4129",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/upstash/context7/archive/522c4db4fa2e1e31f1b320f09fa8c8fab376987a.tar.gz"
+        "url": "https://github.com/upstash/context7/archive/6dfa6d150b8291e1e6d3070054555089235a4129.tar.gz"
       },
       "ghostwriter": {
         "branch": "main",
@@ -336,16 +336,16 @@
       },
       "herdr": {
         "branch": "master",
-        "hash": "sha256-/KMQbdh5X6Sa1GTUqyKf3vHdHDgpuRfJr9iHommwiH8=",
+        "hash": "sha256-QVx+7l3929trvNm7cqGnl7rxyFotINKQsLIsSwnrxcI=",
         "repository": {
           "owner": "herdrdev",
           "repo": "herdr",
           "type": "GitHub"
         },
-        "revision": "dc6b6e5f42831ea7114f34dcf12900680eb36ae0",
+        "revision": "afd7aa94b04c481e79f2f7c9438a6775841f4227",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/herdrdev/herdr/archive/dc6b6e5f42831ea7114f34dcf12900680eb36ae0.tar.gz"
+        "url": "https://github.com/herdrdev/herdr/archive/afd7aa94b04c481e79f2f7c9438a6775841f4227.tar.gz"
       },
       "ketch": {
         "branch": "main",
@@ -440,16 +440,16 @@
       },
       "worktrunk": {
         "branch": "main",
-        "hash": "sha256-LiDEk77ksrZVQed7Mr7zfYUyg75OgB2D45X/mT7Y188=",
+        "hash": "sha256-2R5a20nuJcgoPn7yvZP2YDD2MuQbT8ukkBwA0dnY7So=",
         "repository": {
           "owner": "max-sixty",
           "repo": "worktrunk",
           "type": "GitHub"
         },
-        "revision": "40cee1efea8b4032ff3740f40534ec8fa14b741f",
+        "revision": "b280a6ac3bc4634bfbac19505d8d3c55148e42ec",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/max-sixty/worktrunk/archive/40cee1efea8b4032ff3740f40534ec8fa14b741f.tar.gz"
+        "url": "https://github.com/max-sixty/worktrunk/archive/b280a6ac3bc4634bfbac19505d8d3c55148e42ec.tar.gz"
       }
     },
     "version": 8

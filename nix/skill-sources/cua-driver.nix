@@ -5,6 +5,6 @@
     repo = "cua";
     branch = "main";
   };
-  subdir = "libs/cua-driver/rust/Skills/cua-driver";
+  subdir = "libs";
   filter.maxDepth = 0;
 }

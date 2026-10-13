@@ -1,0 +1,3 @@
+[mcp_servers.cua]
+command = "cua"
+args = ["daemon", "mcp", "--permissions", "spaces:all"]
