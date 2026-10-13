@@ -62,14 +62,87 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             hermes-gateway start
             return $status
         case status
-            command "$HOME/.local/libexec/hermes" --profile default gateway status
-            set -l native_status $status
-            command launchctl print $domain/$label
-            set -l launchd_status $status
-            if test $native_status -ne 0
-                return $native_status
+            set -l green ""
+            set -l yellow ""
+            set -l muted ""
+            set -l reset ""
+            set -l red ""
+            set -l error_reset ""
+            if isatty stdout
+                set green (set_color green)
+                set yellow (set_color yellow)
+                set muted (set_color --dim)
+                set reset (set_color normal)
             end
-            return $launchd_status
+            if isatty stderr
+                set red (set_color red)
+                set error_reset (set_color normal)
+            end
+            set -l service (command launchctl print $domain/$label)
+            set -l query_status $status
+            if test $query_status -ne 0
+                printf '%s%s%s\n' "$red" "Gateway: unavailable (not registered or launchctl query failed)" "$error_reset" >&2
+                return $query_status
+            end
+
+            set -l state (string match -rg '^\tstate = (.+)$' -- $service)
+            set -l pid (string match -rg '^\tpid = ([1-9][0-9]*)$' -- $service)
+            set -l program (string match -rg '^\tprogram = (.+)$' -- $service)
+            if test (count $state) -ne 1; or test (count $program) -ne 1
+                printf '%s%s%s\n' "$red" "Gateway: unknown (unrecognized launchctl output)" "$error_reset" >&2
+                return 1
+            end
+            if test "$state" = running
+                if test (count $pid) -ne 1
+                    printf '%s%s%s\n' "$red" "Gateway: unknown (running service has no valid PID)" "$error_reset" >&2
+                    return 1
+                end
+                printf '%sGateway:%s %srunning%s (PID %s)\n' "$muted" "$reset" "$green" "$reset" "$pid"
+            else
+                printf '%sGateway:%s %s%s%s\n' "$muted" "$reset" "$yellow" "$state" "$reset"
+            end
+            printf '%sProgram:%s %s\n' "$muted" "$reset" "$program"
+
+            # Hermes の標準 plist とは異なるため、標準 status の比較・定型表示は使わない。
+            set -l run_at_load (command plutil -extract RunAtLoad raw -expect bool -o - "$plist")
+            or return $status
+            set -l keep_alive (command plutil -extract KeepAlive raw -expect bool -o - "$plist")
+            or return $status
+            set -l disabled (command plutil -extract Disabled raw -expect bool -o - "$plist")
+            or return $status
+            set -l overrides (command launchctl print-disabled $domain)
+            or return $status
+            if not string match -rq '^\s*disabled services = \{$' -- $overrides
+                printf '%s%s%s\n' "$red" "hermes-gateway: unknown launchctl print-disabled format" "$error_reset" >&2
+                return 1
+            end
+            set -l override (string match -rg '^\s*"ai\.hermes\.gateway" => (.+)$' -- $overrides)
+            if test (count $override) -gt 1
+                printf '%s%s%s\n' "$red" "hermes-gateway: ambiguous launchd enablement" "$error_reset" >&2
+                return 1
+            end
+            if test (count $override) -eq 1
+                switch "$override"
+                    case enabled false
+                        set disabled false
+                    case disabled true
+                        set disabled true
+                    case '*'
+                        printf '%s%s%s\n' "$red" "hermes-gateway: unknown launchd enablement: $override" "$error_reset" >&2
+                        return 1
+                end
+            end
+            if test "$run_at_load" = true; and test "$disabled" = false
+                printf '%sStart at login:%s enabled\n' "$muted" "$reset"
+            else
+                printf '%sStart at login:%s disabled\n' "$muted" "$reset"
+            end
+            if test "$keep_alive" = true
+                printf '%sRestart on crash (plist):%s enabled\n' "$muted" "$reset"
+            else
+                printf '%sRestart on crash (plist):%s disabled\n' "$muted" "$reset"
+            end
+            test "$state" = running
         case update
             echo "Hermes is managed by Nix; no service was stopped or updated." >&2
             echo "In the dotfiles repository: scripts/dotfiles.sh update hermes-agent; then scripts/dotfiles.sh build." >&2

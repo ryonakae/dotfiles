@@ -37,25 +37,21 @@ MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバー�
 
 CLI・gateway・dashboard は[共通 API キー](secrets.md)を起動時に読み込む。Hermes 固有の認証・設定と共通キーは分けて管理する。
 
-gateway / dashboard はホストの launchd、Hindsight は Docker で動かす。同じ `~/.hermes` を使う Docker dashboard を同時起動しない。
+gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` を使う Docker dashboard を同時起動しない。
 
 ### 初回設定と起動
 
-共通 API キー、Hermes の認証・設定、Docker を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
+共通 API キー、Hermes の認証・設定を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
 
 起動定義は Nix が配置する。`hermes gateway install` や旧 installer で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
 
-Hindsight を使う場合は、Git 管理外の `~/.hermes/hindsight/.env` とデータを準備し、コンテナを起動する。
+起動・停止・再起動は、macOS にログインしたユーザーの GUI セッションから行う。Terminal.app などを直接開き、Herdr・tmux・SSH を経由しない端末で次を確認する。
 
 ```fish
-cd ~/.hermes/services
-docker compose up -d hindsight
-hermes memory setup
+launchctl managername
 ```
 
-memory provider に Hindsight を選ぶ。Docker volume と認証は Nix の世代に含まれない。
-
-必要なバックアップと認証設定を済ませ、使うサービスだけ開始する。
+`Aqua` と表示されたら、必要なバックアップと認証設定を済ませ、使うサービスだけ開始する。`Background` など別の値なら、その端末では操作せず、GUI から開いた別の端末で確認する。素の shell でも、起動元によっては GUI セッションに属さない。
 
 ```fish
 hermes-gateway start
@@ -70,7 +66,24 @@ start したサービスは以後のログイン時も起動対象になる。st
 
 ローカル音声認識・マイク入力用の `voice` グループは同梱しない。利用したい場合は依存構成の変更が必要。
 
+### status の表示を確認する
+
+`hermes-gateway status` は launchd の稼働状態と起動設定を表示する。
+
+```text
+Gateway: running (PID 10250)
+Program: /nix/store/…-safe-hermes-gateway.sh
+Start at login: enabled
+Restart on crash (plist): disabled
+```
+
+`Gateway: running` と PID が表示されれば、プロセスは稼働している。メッセージング連携などの正常動作までは保証しない。`Program` は launchd に登録された実行先、`Start at login` は plist と launchd の有効・無効設定から判定した値。`Restart on crash (plist)` は配置済み plist の設定であり、稼働中プロセスへの反映確認ではない。
+
+停止中・未登録・状態や設定の取得失敗時は非ゼロで終了する。`unavailable` の場合は、併記された launchctl のエラーで未登録か取得失敗かを確認する。
+
 ### Hermes を停止・更新する
+
+起動時と同様に、`launchctl managername` が `Aqua` と表示される端末で行う。
 
 ```fish
 hermes-dashboard stop
@@ -81,8 +94,6 @@ hermes-gateway stop
 
 適用後に必要なサービスだけ start する。停止や再起動が失敗した場合は先へ進まず、状態を確認する。管理関数を迂回して直接 `launchctl` を操作しない。停止処理はタイムアウト時に強制終了する場合があり、DB の整合したバックアップは別途必要。
 
-Hindsight を停止する場合は `~/.hermes/services` で `docker compose down` を使う。データ volume は削除しない。
-
 ### リモートアクセス
 
 Hermes dashboard の認証を設定し、信頼できる LAN / VPN 内で使う。`--insecure` では認証を迂回できない。
@@ -91,11 +102,10 @@ iPhone から Tailscale 経由で利用する場合は、必要なポートだ�
 
 ```fish
 tailscale serve --bg --https=9119 http://127.0.0.1:9120
-tailscale serve --bg --https=9999 http://127.0.0.1:9999
 tailscale serve status
 ```
 
-表示されたホスト名の `:9119` が Hermes、`:9999` が Hindsight の dashboard。ローカルでは `hermes-dashboard open` で開く。
+表示されたホスト名の `:9119` が Hermes の dashboard。ローカルでは `hermes-dashboard open` で開く。
 
 ### Google Workspace
 
@@ -218,7 +228,7 @@ Nix 管理の設定を GUI で変えても、次の switch で宣言値へ戻る
 
 - Apple Account・iCloud・Touch ID、アクセシビリティ・画面収録・自動化などの許可
 - Xcode の SDK / Simulator、署名証明書・provisioning profile、VPN 認証
-- Docker の初期設定、volume、Hindsight のデータと認証
+- Docker の初期設定、volume
 - 入力ソース、標準・アプリ別ショートカット、Karabiner 管理外のデバイス設定、電源設定
 - Dock に登録した Chrome 製アプリなどの実体
 - `Dropbox/App` に保存した、Git 管理外のアプリ設定

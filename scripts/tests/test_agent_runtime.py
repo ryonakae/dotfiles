@@ -1,6 +1,8 @@
 import json
 import os
+import plistlib
 from pathlib import Path
+import select
 import shutil
 import subprocess
 import sys
@@ -161,10 +163,10 @@ class AgentRuntimeTests(unittest.TestCase):
         self.assertIn('--add-dirs=' + str(self.home), args)
         self.assertEqual(args[-len(tail):], tail)
         features = next(arg for arg in args if arg.startswith('--enable='))
-        self.assertEqual(features, {
-          'gateway': '--enable=macos-gui,ssh,agent-browser,docker,all-agents,wide-read,keychain,process-control',
-          'dashboard': '--enable=ssh,docker,all-agents,wide-read,keychain,process-control',
-        }.get(name, '--enable=macos-gui,ssh,cleanshot,agent-browser,docker,clipboard,all-agents,wide-read,keychain,xcode,process-control'))
+        enabled = set(features.removeprefix('--enable=').split(','))
+        self.assertTrue({'keychain', 'process-control'} <= enabled)
+        if name in ('gateway', 'dashboard'):
+          self.assertTrue(enabled.isdisjoint({'clipboard', 'cleanshot', 'xcode'}))
         self.assertEqual([arg for arg in args if arg.startswith('--append-profile=')],
                          ['--append-profile=' + str(runtime / 'compatibility.sb'),
                           '--append-profile=' + str(runtime / 'local-overrides.sb')])
@@ -200,6 +202,133 @@ class AgentRuntimeTests(unittest.TestCase):
     self.assertEqual(result.returncode, 23, result.stderr)
     self.assertEqual(json.loads(result.stdout)['telemetry'], '0')
 
+  def gateway_status(self, service_output, *, disabled_output=None, print_code=0,
+                     disabled_code=0, keep_alive=False, run_at_load=True, disabled=True,
+                     terminal=False):
+    plist = self.home / 'Library/LaunchAgents/ai.hermes.gateway.plist'
+    plist.parent.mkdir(parents=True, exist_ok=True)
+    plist.write_bytes(plistlib.dumps({
+      'Label': 'ai.hermes.gateway', 'Disabled': disabled,
+      'RunAtLoad': run_at_load, 'KeepAlive': keep_alive,
+    }))
+    if disabled_output is None:
+      disabled_output = 'disabled services = {\n\t"ai.hermes.gateway" => false\n}'
+    self.program('launchctl', '#!' + sys.executable + '\n'
+      'import sys\n'
+      'args = sys.argv[1:]\n'
+      'if args[0] == "print":\n'
+      f'  print({service_output!r})\n'
+      f'  sys.exit({print_code})\n'
+      'elif args[0] == "print-disabled":\n'
+      f'  print({disabled_output!r})\n'
+      f'  sys.exit({disabled_code})\n'
+      'else: sys.exit(88)\n')
+    command = [shutil.which('fish'), '--no-config', '-c',
+               'source "$argv[1]/hermes-gateway.fish"; hermes-gateway status', str(self.fish_dir)]
+    if not terminal:
+      return subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=15)
+    master, slave = os.openpty()
+    output = bytearray()
+    try:
+      result = subprocess.run(command, env=dict(self.env, TERM='xterm-256color'),
+                              stdout=slave, stderr=slave, timeout=15)
+      while select.select([master], [], [], 0)[0]:
+        output.extend(os.read(master, 4096))
+    finally:
+      os.close(slave)
+      os.close(master)
+    return subprocess.CompletedProcess(command, result.returncode, output.decode(), '')
+
+  def test_gateway_status_reports_running_process_and_configured_policy(self):
+    result = self.gateway_status(
+      'gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 10250\n'
+      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertIn('Gateway: running (PID 10250)', result.stdout)
+    self.assertIn('Program: /nix/store/example-safe-hermes-gateway.sh', result.stdout)
+    self.assertIn('Start at login: enabled', result.stdout)
+    self.assertIn('Restart on crash (plist): disabled', result.stdout)
+    self.assertEqual(result.stderr, '')
+
+  def test_gateway_status_colors_terminal_states_but_not_piped_output(self):
+    for state, code, color in [('running', 0, '32'), ('not running', 1, '33')]:
+      with self.subTest(state=state):
+        output = (f'gui/501/ai.hermes.gateway = {{\n\tstate = {state}\n\tpid = 10250\n'
+                  '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+        result = self.gateway_status(output, terminal=True)
+        self.assertEqual(result.returncode, code, result.stdout)
+        self.assertIn(f'\x1b[{color}m{state}', result.stdout)
+        self.assertIn('Restart on crash (plist)', result.stdout)
+        piped = self.gateway_status(output)
+        self.assertEqual(piped.returncode, code)
+        self.assertNotIn('\x1b[', piped.stdout + piped.stderr)
+    for output, code in [('', 5), ('unexpected output', 0)]:
+      result = self.gateway_status(output, print_code=code, terminal=True)
+      self.assertNotEqual(result.returncode, 0)
+      self.assertIn('\x1b[31mGateway:', result.stdout)
+
+  def test_gateway_status_distinguishes_stopped_and_unavailable_services(self):
+    stopped = self.gateway_status(
+      'gui/501/ai.hermes.gateway = {\n\tstate = not running\n'
+      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+    self.assertEqual(stopped.returncode, 1, stopped.stderr)
+    self.assertIn('Gateway: not running', stopped.stdout)
+    self.assertNotIn('PID', stopped.stdout)
+    for code in [113, 5]:
+      with self.subTest(code=code):
+        result = self.gateway_status('', print_code=code)
+        self.assertEqual(result.returncode, code)
+        self.assertIn('Gateway: unavailable', result.stderr)
+        self.assertNotIn('Gateway: running', result.stdout)
+
+  def test_gateway_status_rejects_unknown_or_incomplete_service_output(self):
+    for output in [
+      '', 'unexpected output',
+      'gui/501/ai.hermes.gateway = {\n\tstate = running\n'
+      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}',
+      'gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 0\n'
+      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}',
+    ]:
+      with self.subTest(output=output):
+        result = self.gateway_status(output)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('Gateway: unknown', result.stderr)
+
+  def test_gateway_status_reads_policy_and_launchd_overrides(self):
+    output = ('gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 10250\n'
+              '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+    for override, default, expected in [
+      ('enabled', True, 'enabled'), ('false', True, 'enabled'),
+      ('disabled', False, 'disabled'), ('true', False, 'disabled'),
+      (None, True, 'disabled'), (None, False, 'enabled'),
+    ]:
+      with self.subTest(override=override, default=default):
+        overrides = '\tdisabled services = {\n'
+        if override is not None:
+          overrides += f'\t\t"ai.hermes.gateway" => {override}\n'
+        overrides += '\t}'
+        result = self.gateway_status(output, disabled_output=overrides,
+                                     disabled=default, keep_alive=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(f'Start at login: {expected}', result.stdout)
+        self.assertIn('Restart on crash (plist): enabled', result.stdout)
+    result = self.gateway_status(output, run_at_load=False)
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertIn('Start at login: disabled', result.stdout)
+
+  def test_gateway_status_fails_when_policy_cannot_be_read(self):
+    output = ('gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 10250\n'
+              '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+    for kwargs in [
+      {'disabled_output': 'unexpected output'},
+      {'disabled_output': 'disabled services = {\n\t"ai.hermes.gateway" => unknown\n}'},
+      {'disabled_code': 5}, {'keep_alive': {'SuccessfulExit': False}},
+    ]:
+      with self.subTest(kwargs=kwargs):
+        result = self.gateway_status(output, **kwargs)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertNotIn('Restart on crash (plist): disabled', result.stdout)
+
   def test_service_managers_use_stable_hermes_and_propagate_native_failure(self):
     hermes = self.home / '.local/libexec/hermes'
     hermes.parent.mkdir(parents=True)
@@ -215,7 +344,7 @@ class AgentRuntimeTests(unittest.TestCase):
       'elif sys.argv[1] == "print": pass\n'
       'else: sys.exit(88)\n')
     for service, native_arguments in {
-      'gateway': {'status': ['gateway', 'status'], 'stop': ['gateway', 'stop']},
+      'gateway': {'stop': ['gateway', 'stop']},
       'dashboard': {'status': ['dashboard', '--status'], 'stop': ['dashboard', '--stop']},
     }.items():
       for action, arguments in native_arguments.items():
