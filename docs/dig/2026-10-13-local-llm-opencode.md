@@ -8,7 +8,7 @@
 - nix/darwin/homebrew.nix に opencode と lm-studio の宣言がある。
 - config/.config/opencode/opencode.json に権限設定とリモート Context7 MCP がある。
 - config/.config/fish/config.fish に既存の未コミット変更があり、今回の作業では保持する。
-- 実装着手後、OpenCode の v2 設定と LM Studio 専用ポリシーを反映した。追加のモデル取得は行わず、ユーザーが GUI でサーバーを起動した。検証経過は [計画](../plans/2026-10-13-local-llm-opencode.md) に記録する。
+- 実装着手後、OpenCode の v2 設定と LM Studio 専用ポリシーを反映した。追加のモデル取得は行わず、ユーザーが GUI でサーバーを起動した。検証経過は [計画](../plans/archived/2026-10-13-local-llm-opencode.md) に記録する。
 
 ## 決定事項
 - 最初は既存の Foresee/Qwen3.8-9B-heretic-uncensored-4bit-MTPLX を使用し、接続とツール呼び出しを確認する。追加ダウンロードは行わず、品質に不満があればモデル変更を検討する。

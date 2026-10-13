@@ -6,7 +6,7 @@
 - 初期モデルは追加済みの `Foresee/Qwen3.8-9B-heretic-uncensored-4bit-MTPLX`。モデルの追加ダウンロードは行わない。
 - dotfiles 管理は既存の Homebrew アプリ宣言と OpenCode 設定に限定する。LM Studio のモデル読み込み・サーバー起動は GUI で行い、専用関数・常駐設定・モデル運用の自動化は追加しない。
 - 既存の権限設定の意味、Context7 の環境変数参照、Safehouse 起動経路を維持する。既存の `config/.config/fish/config.fish` の変更には触れない。
-- [議論の記録](../dig/2026-10-13-local-llm-opencode.md)を参照。要件・計画と下記の検証条件変更はユーザー承認済み。
+- [議論の記録](../../dig/2026-10-13-local-llm-opencode.md)を参照。要件・計画と下記の検証条件変更はユーザー承認済み。
 
 ## Implementation Decisions
 
@@ -55,7 +55,14 @@
 - 行番号を本文に含めない明示指示でユーザーが再実行済み。実ファイルを比較し、input.txt と output.txt が末尾改行を含め17 bytesで完全一致した。通常の fish / Safehouse 経由で、既定ローカルモデルの応答・読み取り・書き込みを確認済み。曖昧な読み取り表示を本文と誤認するモデルの傾向は残る。
 - 最新設定の JSON 構文、既定 model、変更した設定・利用文書の `git diff --check` は成功。
 - 2026-10-13: 上記のスキーマ検証代替・対象限定の差分チェックをユーザーが承認し、独立レビュー・commit・push の続行を承認した。
-- 残工程: local commit、独立レビュー、計画アーカイブ、push。
+
+## Gate Summary
+
+- 実装 commit: `073508ad01017c023850a3fe0200d250f554024b`。レビュー範囲は `8cd6abb3ba4ce83dabc9802293b64911223d842a..073508ad01017c023850a3fe0200d250f554024b` の全4ファイル。
+- read-only の独立 reviewer が差分、要件、JSON、MCP・権限の保持、provider ポリシー、リンク、diff-check を確認。blocking/high、decision required、medium/low の指摘なし。correction commit は不要。
+- 必須検証は、ユーザー承認済みのスキーマ代替と対象限定 diff-check を含め通過。実機検証の有効な結果を再利用した。未解決の blocking はない。
+- 残存リスク: Context7 の実接続は未検証。reload 直後の一時的なクラウドモデル表示中に選択を試す検証は行っていない。安定後の選択拒否は確認済み。モデルの行番号誤認は明示指示で解消したが、モデルの一般的な編集精度を保証するものではない。
+- アーカイブ commit に計画移動と相互リンク修正をまとめ、通常 push の対象は今回の実装・アーカイブ commit のみとする。既存の fish 変更は未コミットで保持する。
 
 ## References
 
