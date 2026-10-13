@@ -9,7 +9,13 @@
     };
   };
 
-  system.defaults.CustomUserPreferences."com.apple.screensaver".idleTime = 600;
+  system.defaults = {
+    CustomUserPreferences."com.apple.screensaver".idleTime = 600;
+    screensaver = {
+      askForPassword = true;
+      askForPasswordDelay = 0;
+    };
+  };
 
   homebrew = {
     brews = [

@@ -209,6 +209,14 @@ class NixConfigurationTests(unittest.TestCase):
     default = self.evaluate('default', preferences)
     self.assertNotIn('idleTime', default.get('com.apple.screensaver', {}))
 
+  def test_only_private_configuration_requires_password_immediately_on_wake(self):
+    private = self.evaluate('private', 'system.defaults.screensaver')
+    self.assertIs(private['askForPassword'], True)
+    self.assertEqual(private['askForPasswordDelay'], 0)
+    default = self.evaluate('default', 'system.defaults.screensaver')
+    self.assertIsNone(default['askForPassword'])
+    self.assertIsNone(default['askForPasswordDelay'])
+
   def test_default_and_private_configurations_merge_their_application_sets(self):
     common_casks = {'blender', 'coteditor', 'framer'}
     private_casks = {
