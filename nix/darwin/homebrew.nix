@@ -104,6 +104,7 @@
       "imageoptim"
       "karabiner-elements"
       "keepingyouawake"
+      "lm-studio"
       "logi-options+"
       "monitorcontrol"
       "monocle-app"
