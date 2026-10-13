@@ -2,7 +2,7 @@
 
 ## Requirements
 
-[dig log](../dig/2026-10-13-hermes-conditional-activation.md) と、その後の「起動定義の比較に集約し、シンプルにする」方針への承認に基づく。dig log の Q1 は、以下の合意で解決する。
+[dig log](../../dig/2026-10-13-hermes-conditional-activation.md) と、その後の「起動定義の比較に集約し、シンプルにする」方針への承認に基づく。dig log の Q1 は、以下の合意で解決する。
 
 - 実配置と候補の gateway / dashboard 起動定義が同じなら、Hermes の停止確認も plist の再配置もしない。
 - 起動定義が異なる、または初回配置なら、既存の停止確認を通してから配置する。本体・wrapper の変更は、起動定義内の Nix store パスの変更で検出する。
@@ -29,15 +29,23 @@
   - 他作業の変更がある `docs/apps.md`、`scripts/tests/test_agent_runtime.py`、gateway 管理関数には重ねて編集しない。必要になった場合は変更の所有者を確認する。
   - 同じセッションのパスワード即時要求設定とテストは維持する。
   - `scripts/tests/test_hermes_activation.py` を新設し、生成されたチェックと activation を一時 HOME で検証。既存の他作業テストは変更していない。
-  - focused validation: 配置テスト7件と CLI テスト64件、計71件成功・skipなし。独立レビューと全体ビルドは未完了。
+  - focused validation: 配置テスト7件と CLI テスト64件、計71件成功・skipなし。関連するリンクテスト11件も成功・skipなし。
 
 ## Final Validation
 
-- [ ] 変更なし: 稼働中を表す停止チェックでも適用前チェックが通り、配置済み plist の内容・更新時刻が変わらない。
-- [ ] 変更あり・初回配置: 停止チェックが呼ばれ、失敗時に配置しない。停止済みなら必要な plist だけ配置する。本体または wrapper の参照変更も検出する。
-- [ ] 不正配置・読み取り失敗: 変更なしと誤判定せずエラーになる。既存の所有・symlink・手動変更保護が維持される。
-- [ ] 関連テストを失敗から成功へ進め、`uv run --no-project python -m unittest scripts.tests.test_dotfiles_cli` と配置テストを実行する。実 Nix 不在による skip は成功扱いしない。
-- [ ] `bash scripts/dotfiles.sh build --configuration private` を実行し、生成したチェック・activation の構文と参照先を確認する。実際の switch は実行しない。
-- [ ] `git diff --check` と差分確認で対象外変更の混入がないことを確認する。新規 Nix 参照ファイルはパスを明示して Git 追跡対象にし、未追跡の秘密をビルドに取り込まない。
+- [x] 変更なし: 稼働中を表す停止チェックでも適用前チェックが通り、配置済み plist の内容・更新時刻が変わらない。
+- [x] 変更あり・初回配置: 停止チェックが呼ばれ、失敗時に配置しない。停止済みなら必要な plist だけ配置する。本体または wrapper の参照変更も検出する。
+- [x] 不正配置・読み取り失敗: 変更なしと誤判定せずエラーになる。既存の所有・symlink・手動変更保護が維持される。
+- [x] 関連テストを失敗から成功へ進め、`uv run --no-project python -m unittest scripts.tests.test_dotfiles_cli` と配置テストを実行する。実 Nix 不在による skip は成功扱いしない。
+- [x] `bash scripts/dotfiles.sh build --configuration private` を実行し、生成したチェック・activation の構文と参照先を確認する。実際の switch は実行しない。
+- [x] `git diff --check` と差分確認で対象外変更の混入がないことを確認する。新規 Nix 参照ファイルはパスを明示して Git 追跡対象にし、未追跡の秘密をビルドに取り込まない。
+
+## Gate summary
+
+- 実装 commit: `1ee94a7`。独立レビュー範囲: `bda85de9fae5f11216319a6d5cfd231e878bf526..1ee94a7259b045d6c857fc87ade56f32e49da8ee`。blocking/high・decision required・medium/low の指摘なし。修正 cycle なし。
+- private build: `/nix/store/bi08w7xglqk9a5nglmpikfb7gg0j7d5b-darwin-system-26.11.4cff07d`。生成された system activation、Home Manager activation、条件付きチェックは指定された Nix Bash の `-n` で成功。
+- 合計82テスト成功・skipなし。実サービスを使う検証・実機適用は未実施で、承認範囲外。
+- 実機と今回の候補は両サービスの wrapper 参照が異なるため、今回の候補の適用には停止確認が必要。同一定義の適用を無停止・再配置なしにすることは fixture で確認済み。
+- 既存の他作業変更は保持。未解決の実装ブロッカーなし。
 
 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
