@@ -266,7 +266,6 @@ class DotfilesLinksTests(unittest.TestCase):
       'nix/home/packages.nix',
       '.config/agent-safehouse/safe-hermes-gateway.sh',
       '.config/agent-safehouse/safe-hermes-dashboard.sh',
-      '.config/hermes/check-stopped.sh',
       '.config/herdr/scripts/tests/test_helper.py',
       '.config/tool/config.toml.example',
     ]

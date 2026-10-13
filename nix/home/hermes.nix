@@ -23,6 +23,13 @@ let
           (builtins.readFile (../../config/.config/agent-safehouse + "/safe-hermes-${name}.sh"));
     }
   );
+  nativeLaunchctl = pkgs.writeTextFile {
+    name = "hermes-gui-launchctl";
+    executable = true;
+    text = lib.replaceStrings [ "#!/bin/bash" ] [ "#!${pkgs.runtimeShell}" ] (
+      builtins.readFile ./hermes-gui-launchctl.sh
+    );
+  };
   plists = lib.genAttrs services (
     name:
     pkgs.writeText "ai.hermes.${name}.plist" (
@@ -34,11 +41,14 @@ let
           HOME = home;
           HERMES_HOME = "${home}/.hermes";
           PATH = "${home}/.local/bin:${home}/.local/share/mise/shims:${config.home.path}/bin:/run/current-system/sw/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin:/usr/local/bin";
+        } // lib.optionalAttrs (name == "dashboard") {
+          HERMES_DASHBOARD_HOST = "0.0.0.0";
+          HERMES_DASHBOARD_PORT = "9120";
         };
         Disabled = true;
         RunAtLoad = true;
         # Native dashboard stop must not race an automatic respawn.
-        KeepAlive = false;
+        KeepAlive = name == "gateway";
         StandardOutPath = "${home}/.hermes/logs/${name}.log";
         StandardErrorPath = "${home}/.hermes/logs/${name}.error.log";
       }
@@ -48,13 +58,6 @@ let
     "mkdir -p $out\n"
     + lib.concatMapStringsSep "\n" (name: "cp ${plists.${name}} $out/ai.hermes.${name}.plist") services
   );
-  checkStopped = pkgs.writeTextFile {
-    name = "hermes-check-stopped";
-    executable = true;
-    text = lib.replaceStrings [ "#!/bin/bash" ] [ "#!${pkgs.runtimeShell}" ] (
-      builtins.readFile ../../config/.config/hermes/check-stopped.sh
-    );
-  };
   comparePlists = ''
     hermes_changed=()
     hermes_home=$(${pkgs.coreutils}/bin/realpath -m -- ${lib.escapeShellArg home})
@@ -87,20 +90,14 @@ let
   checkActivation = pkgs.writeShellScript "hermes-check-activation" ''
     set -euo pipefail
     ${comparePlists}
-    if [[ ''${#hermes_changed[@]} -gt 0 ]]; then
-      ${checkStopped}
-    fi
   '';
 in
 {
   home.file.".local/libexec/hermes".source = "${hermes}/bin/hermes";
+  home.file.".local/libexec/hermes-gui-launchctl/launchctl".source = nativeLaunchctl;
   xdg.configFile = {
     "hermes/check-activation.sh" = {
       source = checkActivation;
-      executable = true;
-    };
-    "hermes/check-stopped.sh" = {
-      source = checkStopped;
       executable = true;
     };
   }
@@ -137,7 +134,6 @@ in
   home.activation.installHermesPlists = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     ${comparePlists}
     if [[ ''${#hermes_changed[@]} -gt 0 ]]; then
-      ${checkStopped}
       for name in "''${hermes_changed[@]}"; do
         run ${pkgs.coreutils}/bin/install -D -m 444 ${definitions}/ai.hermes.$name.plist ${lib.escapeShellArg "${home}/Library/LaunchAgents"}/ai.hermes.$name.plist
       done

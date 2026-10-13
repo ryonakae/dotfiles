@@ -10,10 +10,9 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
     end
 
     if contains -- "$argv[1]" start stop restart
-        set -l manager (command launchctl managername)
-        or return $status
-        if test "$manager" != Aqua
-            echo "hermes-gateway: run service operations from the user GUI session" >&2
+        command launchctl print $domain >/dev/null
+        or begin
+            echo "hermes-gateway: cannot inspect GUI domain $domain; service state is unknown" >&2
             return 1
         end
     end
@@ -30,28 +29,37 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             set_color cyan; echo "→ starting launchd service"; set_color normal
             command launchctl enable $domain/$label
             or return $status
-            command launchctl bootstrap $domain "$plist"
+            __hermes_bootstrap $domain $label "$plist"
             or return $status
             set_color green; echo "✓ gateway started"; set_color normal
         case stop
-            set_color cyan; echo "→ requesting native gateway shutdown"; set_color normal
-            command "$HOME/.local/libexec/hermes" --profile default gateway stop
-            or return $status
-
-            # Native gateway stop may already have unloaded the launchd job.
-            set -l jobs (command launchctl list)
-            set -l list_status $status
-            if test $list_status -ne 0
-                echo "hermes-gateway: launchctl list failed; service state is unknown" >&2
-                return $list_status
+            command launchctl print $domain/$label >/dev/null
+            set -l query_status $status
+            if test $query_status -ne 0; and test $query_status -ne 113
+                echo "hermes-gateway: cannot inspect GUI service; state is unknown" >&2
+                return $query_status
             end
-            if not string match -rq '^PID\s+Status\s+Label$' -- "$jobs[1]"
-                echo "hermes-gateway: unknown launchctl list format" >&2
+            set -l native_launchctl "$HOME/.local/libexec/hermes-gui-launchctl/launchctl"
+            if not test -x "$native_launchctl"
+                echo "hermes-gateway: GUI-only native launchctl adapter is required" >&2
                 return 1
             end
-            if string match -rq '\sai\.hermes\.gateway$' -- $jobs
+            set_color cyan; echo "→ requesting native gateway shutdown"; set_color normal
+            begin
+                set -lx PATH (path dirname "$native_launchctl") $PATH
+                command "$HOME/.local/libexec/hermes" --profile default gateway stop
+                or return $status
+            end
+
+            # Native gateway stop may already have unloaded the GUI job.
+            command launchctl print $domain/$label >/dev/null
+            set query_status $status
+            if test $query_status -eq 0
                 command launchctl bootout $domain/$label
                 or return $status
+            else if test $query_status -ne 113
+                echo "hermes-gateway: cannot inspect GUI service; state is unknown" >&2
+                return $query_status
             end
             command launchctl disable $domain/$label
             or return $status
@@ -81,7 +89,11 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             set -l service (command launchctl print $domain/$label)
             set -l query_status $status
             if test $query_status -ne 0
-                printf '%s%s%s\n' "$red" "Gateway: unavailable (not registered or launchctl query failed)" "$error_reset" >&2
+                if test $query_status -eq 113
+                    printf '%s%s%s\n' "$red" "Gateway: unavailable (not registered in $domain)" "$error_reset" >&2
+                else
+                    printf '%s%s%s\n' "$red" "Gateway: unavailable (launchctl query failed; state is unknown)" "$error_reset" >&2
+                end
                 return $query_status
             end
 
@@ -146,7 +158,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
         case update
             echo "Hermes is managed by Nix; no service was stopped or updated." >&2
             echo "In the dotfiles repository: scripts/dotfiles.sh update hermes-agent; then scripts/dotfiles.sh build." >&2
-            echo "Apply the reviewed generation only after both services are safely stopped; restart explicitly after approval." >&2
+            echo "Apply the reviewed generation while Hermes remains running if needed; restart explicitly to use the updated definitions." >&2
             return 1
         case '*'
             echo "Usage: hermes-gateway {start|stop|restart|status|update}" >&2

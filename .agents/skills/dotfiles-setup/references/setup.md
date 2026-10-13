@@ -10,7 +10,7 @@
 | 通常 CLI / GUI / App Store アプリ | `nix/darwin/homebrew.nix`。導入・更新は Homebrew |
 | 共通ランタイム | `config/.config/mise/config.base.toml`。導入は mise |
 | 通常設定・自作スクリプト・自作スキル | `config/`。配置宣言はルート `mise.toml` |
-| Hermes fork・生成 wrapper / plist・停止検査、外部スキル・fish / Yazi plugin | Nix / Home Manager |
+| Hermes fork・生成 wrapper / plist・配置前検査、外部スキル・fish / Yazi plugin | Nix / Home Manager |
 
 - Bash は nix-darwin の標準導入・初期化、`usage` は Home Manager の mise モジュールによる導入を維持する。Homebrew へ重複宣言しない。
 - Homebrew は `autoUpdate = false` / `upgrade = false` / `cleanup = "none"`。tap は Homebrew 管理、Intel 用 Homebrew は追加しない。本体の移行条件は[既存環境の移行](../../../../docs/migration.md#homebrew-を引き継ぐ場合)。
@@ -26,7 +26,7 @@
 - 非秘密のユーザー名・HOME は Git 管理する。適用前に実機との一致を確認する。
 - build は検査・ビルドのみ。switch は指定成果物のみを適用し、現在の checkout を再評価・再ビルドしない。setup は build → switch → 確認付き mise 配置 → リンク検証 → HOME からの mise install。候補の Nix 版 mise を使い、sudo は付けない。chsh は含めない。
 - update だけが lock を更新する。復元には update を混ぜない。新規 Nix ファイルは対象を明示して Git に追加し、`path:.` で未追跡ファイルを取り込まない。
-- switch の成果物メタデータには構成・ソース・対象ユーザー・HOME・停止検査・mise が入る。メタデータがない旧成果物や GC 済み成果物は再ビルドする。store 内にあるだけで未知の成果物を信頼しない。
+- switch の成果物メタデータには構成・ソース・対象ユーザー・HOME・Hermes 起動定義の配置前検査・mise が入る。メタデータがない旧成果物や GC 済み成果物は再ビルドする。store 内にあるだけで未知の成果物を信頼しない。
 - setup はビルド時の `mise.toml` と checkout を照合し、候補の mise で当該設定だけを trust する。配置本文は live checkout の `config/`。dry-run は60秒制限付き、apply は別承認。
 - build / switch に設定配置や runtime install を組み込まない。
 
@@ -52,7 +52,7 @@
 
 ### sudo 認証
 
-適用・shell 退避の承認と Hermes 停止検査後、最初の昇格直前に `sudo -v` で認証する。適用中だけ `sudo -n -v` で更新し、完了・エラー・中断時に更新処理を終了する。build・mise 配置中は維持しない。
+適用・shell 退避の承認と配置前検査後、最初の昇格直前に `sudo -v` で認証する。適用中だけ `sudo -n -v` で更新し、完了・エラー・中断時に更新処理を終了する。build・mise 配置中は維持しない。
 
 更新終了はキャッシュの即時失効ではない。同じ端末の別操作も再認証なしで実行できる場合がある。更新失敗時は実行中の適用結果を回収し、後続へ進まない。パスワード保存・expect・sudoers 変更は行わず、認証1回を保証しない。App Store 認証は別扱い。
 
@@ -93,11 +93,12 @@
 
 ### Hermes
 
-- fork の `ryonakae` ブランチを lock で固定し、同梱 Flake を使う。Home Manager が生成 wrapper / plist・停止検査を管理し、SOUL・Compose は mise。サービスモジュールは取り込まない。
+- fork の `ryonakae` ブランチを lock で固定し、同梱 Flake を使う。Home Manager が生成 wrapper / plist・配置前検査を管理し、SOUL・Compose は mise。サービスモジュールは取り込まない。
 - `voice` グループは fork 標準 override で除外。Apple Silicon で CTranslate2 の検証依存を通じた PyTorch ソースビルドが必要になり得るため。Hindsight・メッセージング・TTS 用の追加グループは維持する。
 - `hermes gateway install` による plist 再生成、旧 installer、専用 mise / venv の復元を併用しない。認証・DB・memory・session・cache は store に入れない。
 - サービス操作は既存管理関数から fork 標準処理を使う。停止 controller、自動停止・再開・状態保存・バックアップを適用処理へ追加しない。
-- 起動定義が実配置と同じなら停止確認・再配置を省く。本体・wrapper・PATH の store 参照を含む定義が変わる場合と初回配置だけ、GUI セッションで launchd 登録・判別可能なプロセスの停止を確認する。plist 所有・symlink・手動変更の保護は維持し、比較エラーは中断する。検査自体は停止せず、全子プロセスの追跡は保証しない。
+- `switch` / `setup` は Hermes 稼働中でも適用でき、Aqua セッションを要求しない。起動定義が実配置と同じなら再配置を省き、変わる場合だけ配置する。plist 所有・symlink・手動変更の保護は維持し、比較エラーは中断する。サービスの停止確認・自動停止・再起動は適用処理に含めない。稼働中のサービスへの反映は、適用成功後に管理関数で明示的に再起動する。
+- 管理関数は対象ユーザーの `gui/<UID>` を明示し、操作元の `managername` だけで可否を判断しない。対象ドメインの確認や操作に失敗した場合は中断し、別ドメインや直接起動へフォールバックしない。
 - 未知の plist、旧 mise / venv の整理はその環境で対象限定の承認を得る。Hindsight の停止・データ移行は別承認。Compose の tag / digest 固定を volume 復元の保証としない。
 
 ### Claude・Pi・Herdr

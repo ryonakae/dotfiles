@@ -3,6 +3,7 @@ import os
 import plistlib
 from pathlib import Path
 import select
+import shlex
 import shutil
 import subprocess
 import sys
@@ -35,6 +36,13 @@ class AgentRuntimeTests(unittest.TestCase):
                     UNLISTED_RUNTIME_VALUE='value with spaces')
     self.env.pop('MISE_DATA_DIR', None)
     self.env.pop('PI_TELEMETRY', None)
+    adapter_source = ROOT / 'nix/home/hermes-gui-launchctl.sh'
+    if adapter_source.exists():
+      adapter = self.home / '.local/libexec/hermes-gui-launchctl/launchctl'
+      adapter.parent.mkdir(parents=True)
+      adapter.write_text(adapter_source.read_text().replace(
+        '/bin/launchctl', shlex.quote(str(self.bin / 'launchctl'))))
+      adapter.chmod(0o755)
     self.project = Path(self.directory.name) / 'another project'
     self.project.mkdir()
     self.program('dotenvx', '#!' + sys.executable + '\n'
@@ -279,6 +287,12 @@ class AgentRuntimeTests(unittest.TestCase):
         result = self.gateway_status('', print_code=code)
         self.assertEqual(result.returncode, code)
         self.assertIn('Gateway: unavailable', result.stderr)
+        if code == 113:
+          self.assertIn('not registered', result.stderr)
+          self.assertNotIn('query failed', result.stderr)
+        else:
+          self.assertIn('query failed', result.stderr)
+          self.assertNotIn('not registered', result.stderr)
         self.assertNotIn('Gateway: running', result.stdout)
 
   def test_gateway_status_rejects_unknown_or_incomplete_service_output(self):
@@ -331,7 +345,7 @@ class AgentRuntimeTests(unittest.TestCase):
 
   def test_service_managers_use_stable_hermes_and_propagate_native_failure(self):
     hermes = self.home / '.local/libexec/hermes'
-    hermes.parent.mkdir(parents=True)
+    hermes.parent.mkdir(parents=True, exist_ok=True)
     hermes.write_text('#!' + sys.executable + '\n'
       'import json, os, sys\n'
       'print(json.dumps({"args": sys.argv[1:], "home": os.environ["HERMES_HOME"]}))\n'
@@ -358,6 +372,177 @@ class AgentRuntimeTests(unittest.TestCase):
           payload = json.loads(next(line[line.index('{'):] for line in result.stdout.splitlines() if '{' in line))
           self.assertEqual(payload, {'args': ['--profile', 'default', *arguments],
                                     'home': str(self.home / '.hermes')})
+
+  def service_action(self, service, action, **settings):
+    domain = f'gui/{os.getuid()}'
+    self.env.update(SERVICE=service, DOMAIN=domain, GUI_LOADED='1', NATIVE_EXIT='0',
+                    QUERY_EXIT='0', DOMAIN_EXIT='0', BOOTOUT_EXIT='0', NATIVE_REMOVES='0',
+                    BOOTSTRAP_FAILURES='0', BOOTSTRAP_EXIT='5')
+    self.env.update({key: str(value) for key, value in settings.items()})
+    log = Path(self.directory.name) / 'service-operations'
+    log.write_text('')
+    self.env['SERVICE_LOG'] = str(log)
+    state = Path(self.directory.name) / 'gui-loaded'
+    state.write_text(self.env['GUI_LOADED'])
+    self.env['GUI_STATE'] = str(state)
+    attempts = Path(self.directory.name) / 'bootstrap-attempts'
+    attempts.write_text('0')
+    self.env['BOOTSTRAP_ATTEMPTS'] = str(attempts)
+    self.program('sleep', '#!/bin/sh\nexit 0\n')
+    (self.home / '.hermes').mkdir(exist_ok=True)
+    plist = self.home / f'Library/LaunchAgents/ai.hermes.{service}.plist'
+    plist.parent.mkdir(parents=True, exist_ok=True)
+    plist.write_text('Nix-owned definition')
+    launchctl = self.program('launchctl', '#!' + sys.executable + '\n'
+      'import json, os, pathlib, sys\n'
+      'a = sys.argv[1:]; e = os.environ; d = e["DOMAIN"]; label = "ai.hermes." + e["SERVICE"]\n'
+      'state = pathlib.Path(e["GUI_STATE"])\n'
+      'with open(e["SERVICE_LOG"], "a") as f: f.write(json.dumps(a) + "\\n")\n'
+      'if a == ["managername"]: print("Background")\n'
+      'elif a == ["print", d]:\n'
+      '  print(d + " = {\\n\\tservices = {\\n\\t}\\n}"); sys.exit(int(e["DOMAIN_EXIT"]))\n'
+      'elif a == ["print", d + "/" + label]:\n'
+      '  if int(e["QUERY_EXIT"]): sys.exit(int(e["QUERY_EXIT"]))\n'
+      '  if state.read_text() == "0":\n'
+      '    print("Could not find service", file=sys.stderr); sys.exit(113)\n'
+      '  print(d + "/" + label + " = {\\n\\tstate = running\\n\\tpid = 123\\n\\tprogram = /nix/store/wrapper\\n}")\n'
+      'elif a == ["print", d.replace("gui/", "user/") + "/" + label]: print("user job exists")\n'
+      'elif a == ["bootout", d + "/" + label]:\n'
+      '  if int(e["BOOTOUT_EXIT"]): sys.exit(int(e["BOOTOUT_EXIT"]))\n'
+      '  state.write_text("0")\n'
+      'elif a == ["bootstrap", d, os.environ["HOME"] + "/Library/LaunchAgents/" + label + ".plist"]:\n'
+      '  attempts = pathlib.Path(e["BOOTSTRAP_ATTEMPTS"]); count = int(attempts.read_text()) + 1\n'
+      '  attempts.write_text(str(count))\n'
+      '  if count <= int(e["BOOTSTRAP_FAILURES"]): sys.exit(int(e["BOOTSTRAP_EXIT"]))\n'
+      '  state.write_text("1")\n'
+      'elif a in [["enable", d + "/" + label], ["disable", d + "/" + label]]: pass\n'
+      'else: print("forbidden launchctl request: " + repr(a), file=sys.stderr); sys.exit(88)\n')
+    hermes = self.home / '.local/libexec/hermes'
+    hermes.parent.mkdir(parents=True, exist_ok=True)
+    hermes.write_text('#!' + sys.executable + '\n'
+      'import json, os, subprocess, sys\n'
+      'e = os.environ\n'
+      'with open(e["SERVICE_LOG"], "a") as f: f.write(json.dumps(["native", *sys.argv[1:]]) + "\\n")\n'
+      'if int(e["NATIVE_EXIT"]): sys.exit(int(e["NATIVE_EXIT"]))\n'
+      'if e["SERVICE"] == "gateway":\n'
+      '  d = e["DOMAIN"]; label = "/ai.hermes.gateway"\n'
+      '  if subprocess.run(["launchctl", "print", d + label], capture_output=True).returncode:\n'
+      '    if subprocess.run(["launchctl", "print", d.replace("gui/", "user/") + label], capture_output=True).returncode == 0:\n'
+      '      d = d.replace("gui/", "user/")\n'
+      '    elif subprocess.check_output(["launchctl", "managername"], text=True).strip() != "Aqua": d = d.replace("gui/", "user/")\n'
+      '  if e["NATIVE_REMOVES"] == "1": subprocess.run(["launchctl", "bootout", d + label], check=True)\n')
+    hermes.chmod(0o755)
+    command = [shutil.which('fish'), '--no-config', '-c',
+               'set -p fish_function_path "$argv[1]"; '
+               'source "$argv[1]/hermes-$argv[2].fish"; hermes-$argv[2] $argv[3]',
+               str(self.fish_dir), service, action]
+    result = subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=15)
+    operations = [json.loads(line) for line in log.read_text().splitlines()]
+    self.assertEqual(plist.read_text(), 'Nix-owned definition')
+    return result, operations
+
+  def test_background_service_start_targets_gui_without_global_environment_mutation(self):
+    for service in ['gateway', 'dashboard']:
+      with self.subTest(service=service):
+        result, operations = self.service_action(service, 'start')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        domain = f'gui/{os.getuid()}'
+        self.assertEqual(operations, [
+          ['print', domain], ['enable', f'{domain}/ai.hermes.{service}'],
+          ['bootstrap', domain, str(self.home / f'Library/LaunchAgents/ai.hermes.{service}.plist')],
+        ])
+
+  def test_restart_retries_transient_bootstrap_eio_without_repeating_shutdown(self):
+    for service in ['gateway', 'dashboard']:
+      with self.subTest(service=service):
+        result, operations = self.service_action(service, 'restart', BOOTSTRAP_FAILURES=1)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(sum(op[0] == 'bootstrap' for op in operations), 2)
+        self.assertEqual(sum(op[0] == 'native' for op in operations), 1)
+        self.assertEqual(sum(op[0] == 'bootout' for op in operations), 1)
+        self.assertFalse(any('user/' in arg for op in operations for arg in op))
+
+  def test_bootstrap_retry_is_bounded_and_only_for_eio_with_absent_service(self):
+    cases = [
+      ({'GUI_LOADED': 0, 'BOOTSTRAP_FAILURES': 99}, 5, 5),
+      ({'GUI_LOADED': 0, 'BOOTSTRAP_FAILURES': 1, 'BOOTSTRAP_EXIT': 1}, 1, 1),
+      ({'GUI_LOADED': 0, 'BOOTSTRAP_FAILURES': 1, 'QUERY_EXIT': 3}, 3, 1),
+      ({'GUI_LOADED': 1, 'BOOTSTRAP_FAILURES': 1}, 5, 1),
+    ]
+    for service in ['gateway', 'dashboard']:
+      for settings, code, attempts in cases:
+        with self.subTest(service=service, settings=settings):
+          result, operations = self.service_action(service, 'start', **settings)
+          self.assertEqual(result.returncode, code, result.stderr)
+          self.assertEqual(sum(op[0] == 'bootstrap' for op in operations), attempts)
+          self.assertFalse(any(op[0] in ['native', 'bootout', 'disable'] for op in operations))
+
+  def test_background_stop_gracefully_stops_native_and_unloads_only_gui_job(self):
+    for service in ['gateway', 'dashboard']:
+      for loaded, native_removes in [(1, 0), (1, 1), (0, 0), (0, 1)]:
+        with self.subTest(service=service, loaded=loaded, native_removes=native_removes):
+          result, operations = self.service_action(service, 'stop', GUI_LOADED=loaded,
+                                                   NATIVE_REMOVES=native_removes)
+          self.assertEqual(result.returncode, 0, result.stderr)
+          domain = f'gui/{os.getuid()}'
+          target = f'{domain}/ai.hermes.{service}'
+          native = ['native', '--profile', 'default', service,
+                    'stop' if service == 'gateway' else '--stop']
+          self.assertIn(native, operations)
+          self.assertEqual(operations[-1], ['disable', target])
+          self.assertNotIn(['list'], operations)
+          self.assertNotIn(['managername'], operations)
+          self.assertFalse(any('user/' in arg for op in operations for arg in op))
+          if loaded:
+            self.assertIn(['bootout', target], operations)
+          else:
+            self.assertNotIn(['bootout', target], operations)
+
+  def test_service_restart_does_not_start_after_failed_shutdown_or_query(self):
+    for service in ['gateway', 'dashboard']:
+      for settings in [dict(NATIVE_EXIT=23), dict(QUERY_EXIT=5), dict(QUERY_EXIT=3),
+                       dict(QUERY_EXIT=125), dict(DOMAIN_EXIT=113), dict(BOOTOUT_EXIT=5)]:
+        with self.subTest(service=service, settings=settings):
+          result, operations = self.service_action(service, 'restart', **settings)
+          self.assertNotEqual(result.returncode, 0)
+          self.assertFalse(any(op[0] in ['bootstrap', 'enable', 'disable'] for op in operations))
+          if 'QUERY_EXIT' in settings or 'DOMAIN_EXIT' in settings:
+            self.assertFalse(any(op[0] == 'native' for op in operations))
+          if 'NATIVE_EXIT' in settings:
+            self.assertEqual(result.returncode, 23)
+
+  def test_installed_hermes_wrapper_preserves_gui_adapter_path_for_native_gateway_probe(self):
+    installed = Path(os.environ['HOME']) / '.local/libexec/hermes'
+    if not installed.is_file():
+      self.skipTest('installed Hermes wrapper is required for native PATH integration')
+    adapter_dir = self.home / '.local/libexec/hermes-gui-launchctl'
+    self.program('launchctl', '#!/bin/sh\nexit 113\n')
+    modules = Path(self.directory.name) / 'entrypoint-boundary'
+    package = modules / 'hermes_cli'
+    package.mkdir(parents=True)
+    (package / '__init__.py').write_text(
+      'from pathlib import Path\nimport sys\n'
+      '__path__.extend(str(Path(p) / "hermes_cli") for p in sys.path '
+      'if (Path(p) / "hermes_cli/gateway.py").is_file())\n'
+      'exec((Path(__path__[-1]) / "__init__.py").read_text(), globals())\n')
+    (package / 'main.py').write_text(
+      'def main():\n'
+      '  import json, os, shutil\n'
+      '  from hermes_cli.gateway import _launchd_domain\n'
+      '  print(json.dumps({"first_path": os.environ["PATH"].split(":")[0], '
+      '"launchctl": shutil.which("launchctl"), "domain": _launchd_domain()}))\n'
+      '  return 0\n')
+    (self.home / '.hermes').mkdir(exist_ok=True)
+    env = dict(HOME=str(self.home), HERMES_HOME=str(self.home / '.hermes'),
+               PATH=str(adapter_dir) + ':' + str(self.bin) + ':/usr/bin:/bin:/usr/sbin:/sbin',
+               PYTHONPATH=str(modules), LANG='en_US.UTF-8')
+    result = subprocess.run([str(installed), '--help'], env=env, cwd=self.project,
+                            capture_output=True, text=True, timeout=30)
+    self.assertEqual(result.returncode, 0, result.stderr)
+    payload = json.loads(result.stdout)
+    self.assertEqual(payload, {'first_path': str(adapter_dir),
+                              'launchctl': str(adapter_dir / 'launchctl'),
+                              'domain': f'gui/{os.getuid()}'})
 
   def test_missing_protection_profile_prevents_sandbox_start(self):
     runtime = self.install_runtime()

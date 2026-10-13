@@ -39,7 +39,6 @@
 | `Unexpected files in /etc` | エラーの対象と残したい内容を確認する。自動退避は bashrc / zshrc の確認付き処理だけ。他のファイルは個別に扱う |
 | `Could not write domain com.apple.universalaccess` | 実行元アプリの[フルディスクアクセス](setup.md#2-ターミナルにフルディスクアクセスを許可する)を確認し、端末を開き直す |
 | `brew bundle` の失敗 | 失敗した formula / cask と理由を確認する。無効化された cask は同じ成果物を再適用しても直らない。宣言を直した場合は再ビルドする |
-| Hermes が未停止 | [管理関数で停止](apps.md#hermes-を停止更新する)し、停止できたことを確認する |
 | その他の衝突 | 該当ファイル・リンク・変更済み範囲を確認する。force や一括退避を使わない |
 
 ログの `Completed` と `System profile` / `current-system` を確認する。profile 登録だけでは適用成功ではない。原因と途中状態を確認できたら、[確認済み成果物の switch](usage.md#ビルドと適用を分ける)から再開する。宣言を変更した場合は新しく build する。

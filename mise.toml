@@ -21,7 +21,7 @@ mode = "symlink-each"
 manifest = "git"
 exclude = [
   "tests", "*.example",
-  "mise", "karabiner", "hermes/check-stopped.sh", "agent-safehouse/safe-hermes-*.sh",
+  "mise", "karabiner", "agent-safehouse/safe-hermes-*.sh",
 ]
 
 [dotfiles."~/.gemini"]

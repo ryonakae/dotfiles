@@ -56,13 +56,11 @@ gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` �
 
 起動定義は Nix が配置する。`hermes gateway install` や旧 installer で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
 
-起動・停止・再起動は、macOS にログインしたユーザーの GUI セッションから行う。Terminal.app などを直接開き、Herdr・tmux・SSH を経由しない端末で次を確認する。
+起動・停止・再起動は、対象ユーザーの `gui/<UID>` ドメインで行う。macOS にそのユーザーがログイン済みで、操作する端末から対象ドメインへアクセスできる必要がある。Herdr・tmux・SSH などで操作元が `Background` でも、それだけでは拒否しない。
 
-```fish
-launchctl managername
-```
+管理関数は対象ドメインを明示して確認・操作する。ドメインが存在しない、権限不足などで確認や操作に失敗した場合は中止し、別ドメインや直接起動へ切り替えない。sandbox による拒否がある場合は、制限を変更せず通常端末から操作する。
 
-`Aqua` と表示されたら、必要なバックアップと認証設定を済ませ、使うサービスだけ開始する。`Background` など別の値なら、その端末では操作せず、GUI から開いた別の端末で確認する。素の shell でも、起動元によっては GUI セッションに属さない。
+必要なバックアップと認証設定を済ませ、使うサービスだけ開始する。
 
 ```fish
 hermes-gateway start
@@ -71,7 +69,7 @@ hermes-gateway status
 hermes-dashboard status
 ```
 
-start したサービスは以後のログイン時も起動対象になる。stop すると次の start まで無効化される。KeepAlive による自動再起動は行わないため、異常終了時は原因を確認してから再起動する。
+start したサービスは以後のログイン時も起動対象になる。stop すると次の start まで無効化される。Gateway は KeepAlive により、`/restart-gateway` による終了や異常終了後に自動再起動する。`hermes-gateway stop` はサービスをアンロードするため、自動再起動されない。Dashboard は自動再起動しない。
 
 常駐サービスの Keychain 利用は、実機のロック状態・アクセス許可を確認する。CLI で使えることだけでは、ログイン時の自動起動成功を保証しない。
 
@@ -85,7 +83,7 @@ start したサービスは以後のログイン時も起動対象になる。st
 Gateway: running (PID 10250)
 Program: /nix/store/…-safe-hermes-gateway.sh
 Start at login: enabled
-Restart on crash (plist): disabled
+Restart on crash (plist): enabled
 ```
 
 `Gateway: running` と PID が表示されれば、プロセスは稼働している。メッセージング連携などの正常動作までは保証しない。`Program` は launchd に登録された実行先、`Start at login` は plist と launchd の有効・無効設定から判定した値。`Restart on crash (plist)` は配置済み plist の設定であり、稼働中プロセスへの反映確認ではない。
@@ -94,16 +92,16 @@ Restart on crash (plist): disabled
 
 ### Hermes を停止・更新する
 
-起動時と同様に、`launchctl managername` が `Aqua` と表示される端末で行う。
+Hermes が稼働中でも、[Nix の更新・適用](usage.md#nix-を更新適用する)を実行できる。更新対象は `hermes-agent`。`hermes update` / `hermes-gateway update` は使わない。Nix の適用は Safehouse 外の通常端末から行い、`Aqua` セッションは必須ではない。
+
+適用は起動定義の配置のみで、稼働中のサービスは自動再起動しない。本体・wrapper・起動定義の変更を反映するには、適用成功後に対象ユーザーの GUI ドメインを操作できる端末から、使っているサービスだけ再起動する。
 
 ```fish
-hermes-dashboard stop
-hermes-gateway stop
+hermes-gateway restart
+hermes-dashboard restart
 ```
 
-停止が成功してから、[Nix の更新・適用](usage.md#nix-を更新適用する)を行う。更新対象は `hermes-agent`。`hermes update` / `hermes-gateway update` は使わない。
-
-適用後に必要なサービスだけ start する。停止や再起動が失敗した場合は先へ進まず、状態を確認する。管理関数を迂回して直接 `launchctl` を操作しない。停止処理はタイムアウト時に強制終了する場合があり、DB の整合したバックアップは別途必要。
+停止だけしたい場合は `hermes-gateway stop` / `hermes-dashboard stop` を使う。停止や再起動が失敗した場合は先へ進まず、状態を確認する。管理関数を迂回して直接 `launchctl` を操作しない。停止処理はタイムアウト時に強制終了する場合があり、DB の整合したバックアップは別途必要。
 
 ### リモートアクセス
 

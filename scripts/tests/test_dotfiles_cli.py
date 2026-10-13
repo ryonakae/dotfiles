@@ -285,6 +285,8 @@ class SwitchSafetyTests(unittest.TestCase):
       ['/usr/bin/sudo', str(self.system / 'sw/bin/darwin-rebuild'), 'activate'],
     ])
     self.assertIn('Configuration: private', self.module.sys.stdout.getvalue())
+    self.assertIn('Hermes may remain running', self.module.sys.stdout.getvalue())
+    self.assertIn('restart explicitly', self.module.sys.stdout.getvalue())
 
   def test_missing_or_invalid_artifact_is_rejected_before_changes(self):
     for kind in ('missing', 'metadata', 'self-reference', 'executable'):
@@ -525,7 +527,7 @@ class SwitchSafetyTests(unittest.TestCase):
     self.assertFalse(self.module.PROFILE.exists())
     self.assertFalse(self.module.CURRENT.exists())
 
-  def test_failed_service_check_prevents_activation(self):
+  def test_failed_plist_integrity_check_prevents_activation(self):
     self.run.side_effect = subprocess.CalledProcessError(1, ['/fixture/check-hermes'])
     with self.assertRaises(subprocess.CalledProcessError):
       self.invoke()
@@ -1065,7 +1067,7 @@ ctypes.CDLL = failing_cdll
     self.assertIn('Inspect both paths before retrying', errors[0])
     self.assertFalse(self.activated)
 
-  def test_failed_service_check_does_not_back_up_shell_files(self):
+  def test_failed_plist_integrity_check_does_not_back_up_shell_files(self):
     source = self.etc / 'bashrc'
     source.write_text('active\n')
     self.run.side_effect = subprocess.CalledProcessError(1, ['/fixture/check-hermes'])

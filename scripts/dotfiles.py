@@ -276,6 +276,8 @@ def switch(system, target):
   print("Review the changes; stop apps or preserve files only where conflicts require it.")
   print("Native file checks run during activation. Failure may leave a new profile and partial changes.")
   print("Shell files may require a separately confirmed backup; no general backup, Hermes management, or automatic rollback is performed.")
+  print("Hermes may remain running; activation installs plist files without stopping, reloading, or restarting services.")
+  print("To use updated Hermes definitions, restart explicitly with hermes-gateway / hermes-dashboard.")
   if input("Type 'switch' to confirm application: ").strip() != "switch":
     raise ValueError("switch cancelled; no activation performed")
   subprocess.run([target["hermesCheck"]], check=True)
