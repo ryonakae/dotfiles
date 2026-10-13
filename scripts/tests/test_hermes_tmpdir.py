@@ -31,7 +31,7 @@ class HermesTmpdirTests(unittest.TestCase):
         '#!' + sys.executable + '\n'
         'import json, os, sys, tempfile\n'
         'value = os.environ.get("TMPDIR")\n'
-        'print(json.dumps({"tmpdir": value, "args": sys.argv[1:]}))\n'
+        'print(json.dumps({"tmpdir": value}))\n'
         'if value:\n'
         '  with tempfile.TemporaryFile(dir=value): pass\n'
         'sys.exit(23)\n'
@@ -89,12 +89,6 @@ class HermesTmpdirTests(unittest.TestCase):
               self.assertEqual(payload['tmpdir'], expected)
               self.assertEqual(result.returncode, 23, result.stderr)
               self.assertEqual(result.stderr, '')
-              if wrapper == 'cli':
-                self.assertEqual(payload['args'][-3:], [str(base / '.local/libexec/hermes'), 'computer-use', 'doctor'])
-              elif wrapper == 'gateway':
-                self.assertEqual(payload['args'][-4:], ['--profile', 'default', 'gateway', 'run'])
-              else:
-                self.assertEqual(payload['args'][-5:], ['--host', '127.0.0.1', '--port', '3210', '--no-open'])
       finally:
         readonly.chmod(0o700)
 

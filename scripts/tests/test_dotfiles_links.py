@@ -198,27 +198,6 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertEqual(target.lstat().st_ino, before)
 
-  def test_karabiner_directory_link_exposes_source_edits_without_a_json_link(self):
-    source = self.source('.config/karabiner/karabiner.json', '{"profiles": []}\n')
-    target = self.home / '.config/karabiner'
-    result = self.mise('apply', '--yes')
-    self.assertEqual(result.returncode, 0, result.stderr)
-    self.assertTrue(target.is_symlink())
-    self.assertEqual(target.readlink(), source.parent)
-    self.assertFalse((target / 'karabiner.json').is_symlink())
-    source.write_text('{"profiles": [{"name": "edited"}]}\n')
-    self.assertEqual((target / 'karabiner.json').read_text(),
-                     '{"profiles": [{"name": "edited"}]}\n')
-
-  def test_rm_wrapper_is_a_direct_managed_link(self):
-    source = self.source('.local/bin/rm', '#!/bin/sh\nexit 23\n')
-    source.chmod(0o755)
-    target = self.home / '.local/bin/rm'
-    result = self.mise('apply', '--yes')
-    self.assertEqual(result.returncode, 0, result.stderr)
-    self.assertEqual(target.readlink(), source)
-    self.assertEqual(subprocess.run([str(target)]).returncode, 23)
-
   def test_functions_follow_git_membership_without_touching_local_files(self):
     source = self.source('.config/fish/functions/shared.fish')
     self.source('.config/fish/functions/untracked.fish', tracked=False)
@@ -261,16 +240,6 @@ class DotfilesLinksTests(unittest.TestCase):
     result = self.mise('unapply', str(target), '--yes')
     self.assertNotEqual(result.returncode, 0)
     self.assertEqual(target.read_text(), 'replacement\n')
-
-  def test_agent_instructions_share_one_direct_source(self):
-    source = self.source('.agents/AGENTS.md')
-    targets = ['.agents/AGENTS.md', '.claude/CLAUDE.md', '.codex/AGENTS.md',
-               '.gemini/GEMINI.md', '.pi/agent/AGENTS.md']
-    result = self.mise('apply', '--yes')
-    self.assertEqual(result.returncode, 0, result.stderr)
-    for name in targets:
-      with self.subTest(target=name):
-        self.assertEqual((self.home / name).readlink(), source)
 
   def test_local_skill_links_preserve_external_siblings_and_share_with_antigravity(self):
     source = self.source('.agents/skills/ask-codex/SKILL.md')

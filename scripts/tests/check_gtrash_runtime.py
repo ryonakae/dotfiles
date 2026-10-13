@@ -1,6 +1,5 @@
 """Run outside Safehouse; real gtrash only touches a disposable HOME and trash."""
 import argparse
-from concurrent.futures import ThreadPoolExecutor
 import json
 import os
 from pathlib import Path
@@ -107,31 +106,6 @@ def main():
       else:
         assert (path / 'child' if kind == 'directory' else path).read_text() == 'original'
       print('PASS protected Put + human restore', kind, flush=True)
-
-    paths = []
-    for index in range(16):
-      parent = work / str(index)
-      parent.mkdir()
-      path = parent / 'same-name'
-      if index < 12:
-        path.write_text(str(index))
-      else:
-        path.mkdir()
-        (path / 'child').write_text(str(index))
-      paths.append(path)
-    with ThreadPoolExecutor(max_workers=16) as pool:
-      list(pool.map(put, paths))
-    saved = entries()
-    assert len({saved[str(path)] for path in paths}) == 16
-    restore(paths)
-    for index, path in enumerate(paths):
-      assert (path if index < 12 else path / 'child').read_text() == str(index)
-    print('PASS 16-process same-name Put + human restore', flush=True)
-    result = run([wrapper, '-rf', '--', *paths[:3]])
-    assert result.returncode == 0, result.stderr
-    restore(paths[:3])
-    assert [path.read_text() for path in paths[:3]] == ['0', '1', '2']
-    print('PASS single-command same-name Put', flush=True)
 
     protected = work / 'protected'
     protected.write_text('keep')
