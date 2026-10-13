@@ -6,6 +6,7 @@
 
 - [Claude Code](#claude-code)
 - [Pi](#pi)
+- [LM Studio / OpenCode](#lm-studio--opencode)
 - [Hermes](#hermes)
 - [Herdr](#herdr)
 - [CuaDriver](#cuadriver)
@@ -32,6 +33,30 @@ OpenAI の認証は Pi 内で `/login openai` を実行し、`Sign in with ChatG
 MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバーは `pi mcp login SERVER` を使う。`SERVER` は設定したサーバー名に置き換える。
 
 本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理し、取得先は Pi の管理ディレクトリを使う。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
+
+## LM Studio / OpenCode
+
+本体は Homebrew、OpenCode の設定は `config/.config/opencode/opencode.json` で管理する。LLM の接続先は LM Studio のみ。Context7 MCP などの外部ツールは利用できる。LM Studio の設定・モデル本体・履歴は dotfiles では管理しない。
+
+### 起動して使う
+
+1. LM Studio を開き、使用するモデルを読み込む。初期モデルは追加済みの `Foresee/Qwen3.8-9B-heretic-uncensored-4bit-MTPLX`。
+2. **Model Server** の **Server Settings** で **Server Port** を `1234`、**Serve on Local Network** を OFF にする。設定を閉じて **Status: Stopped** のスイッチを ON にし、`http://127.0.0.1:1234` で待ち受けていることを確認する。
+3. 通常の fish 端末で OpenCode を起動する。
+
+   ```fish
+   opencode
+   ```
+
+4. `/models` で LM Studio のモデルを確認し、短い質問を送って応答を確認する。LM Studio 側にもリクエストが表示されることを確認する。
+
+OpenCode のバックグラウンドサーバーが設定変更前から動いている場合は、`opencode reload` で設定を再読み込みする。クラウド LLM を使うための `/connect` は不要。
+
+### モデルが見つからない・応答しない場合
+
+LM Studio のサーバー稼働状態、ポート、モデルの読み込み状態を確認する。通常の fish 端末で `opencode models` を実行すると、モデル一覧を確認できる。起動直後に空の場合は、自動検出が完了してから再確認する。LM Studio に接続できなくてもクラウド LLM へは切り替わらない。
+
+モデルを変更するときは LM Studio で追加・読み込み後、OpenCode の `/models` から選ぶ。選択はセッション単位なので、今後の既定値も変更したい場合は一覧に表示された ID を使って OpenCode 設定の `model` を更新する。
 
 ## Hermes
 
