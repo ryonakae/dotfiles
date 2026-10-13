@@ -78,6 +78,10 @@ AWS CLI も同じ設定で管理する。更新後は `aws --version` を確認�
 
 ## Nix を更新・適用する
 
+`private` 構成は家用 Mac の常時稼働向け。[電源設定](../nix/hosts/private.nix)で本体・ディスクの自動スリープと電源ボタンによるスリープを無効にし、停電復旧後の自動起動を有効にする。画面は20分でスリープ、スクリーンセーバーはユーザー設定で10分。FileVault や自動ログインは変更しないため、再起動後の無人復旧までは保証しない。
+
+適用後は `pmset -g custom` で `sleep 0`・`disksleep 0`・`displaysleep 20`・`autorestart 1`・`Sleep On Power Button 0`、`defaults read com.apple.screensaver idleTime` で `600` を確認する。スクリーンセーバーのマシン固有設定（ByHost）が残っている場合は、ユーザー設定と競合する可能性があるため別途確認する。
+
 ### 依存を更新する
 
 構成や設定だけを変えた場合は、この操作は不要。固定版から復元する場合も更新しない。

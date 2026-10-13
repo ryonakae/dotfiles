@@ -1,4 +1,16 @@
 {
+  power = {
+    restartAfterPowerFailure = true;
+    sleep = {
+      computer = "never";
+      display = 20;
+      harddisk = "never";
+      allowSleepByPowerButton = false;
+    };
+  };
+
+  system.defaults.CustomUserPreferences."com.apple.screensaver".idleTime = 600;
+
   homebrew = {
     brews = [
       "rtk"

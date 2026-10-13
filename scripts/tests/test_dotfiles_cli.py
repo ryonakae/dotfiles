@@ -189,6 +189,26 @@ class NixConfigurationTests(unittest.TestCase):
         shells = self.evaluate(configuration, 'environment.etc.shells.text')
         self.assertIn('/run/current-system/sw/bin/fish', shells.splitlines())
 
+  def test_only_private_configuration_keeps_the_mac_awake(self):
+    private = self.evaluate('private', 'power')
+    self.assertEqual(private['sleep'], {
+      'computer': 'never',
+      'display': 20,
+      'harddisk': 'never',
+      'allowSleepByPowerButton': False,
+    })
+    self.assertIs(private['restartAfterPowerFailure'], True)
+    default = self.evaluate('default', 'power')
+    self.assertTrue(all(value is None for value in default['sleep'].values()))
+    self.assertIsNone(default['restartAfterPowerFailure'])
+
+  def test_only_private_configuration_starts_the_screensaver_after_ten_minutes(self):
+    preferences = 'system.defaults.CustomUserPreferences'
+    private = self.evaluate('private', preferences)
+    self.assertEqual(private['com.apple.screensaver']['idleTime'], 600)
+    default = self.evaluate('default', preferences)
+    self.assertNotIn('idleTime', default.get('com.apple.screensaver', {}))
+
   def test_default_and_private_configurations_merge_their_application_sets(self):
     common_casks = {'blender', 'coteditor', 'framer'}
     private_casks = {
