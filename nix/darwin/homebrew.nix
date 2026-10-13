@@ -136,8 +136,6 @@
 
     masApps = {
       Bear = 1091189122;
-      GarageBand = 682658836;
-      iMovie = 408981434;
       Keynote = 361285480;
       LINE = 539883307;
       "Microsoft Excel" = 462058435;

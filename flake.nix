@@ -57,6 +57,10 @@
       };
       darwinConfigurations = {
         default = mkDarwinConfiguration "default" [ ./nix/hosts/default.nix ];
+        work = mkDarwinConfiguration "work" [
+          ./nix/hosts/default.nix
+          ./nix/hosts/work.nix
+        ];
         private = mkDarwinConfiguration "private" [
           ./nix/hosts/default.nix
           ./nix/hosts/private.nix

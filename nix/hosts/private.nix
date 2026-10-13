@@ -9,14 +9,6 @@
     };
   };
 
-  system.defaults = {
-    CustomUserPreferences."com.apple.screensaver".idleTime = 600;
-    screensaver = {
-      askForPassword = true;
-      askForPasswordDelay = 0;
-    };
-  };
-
   homebrew = {
     brews = [
       "rtk"
@@ -24,13 +16,7 @@
 
     casks = [
       "air-video-server-hd"
-      "autodesk-fusion"
-      "eagle"
-      "freecad"
-      "kicad"
-      "parallels"
       "private-internet-access"
-      "qmk-toolbox"
       "timemachineeditor"
     ];
 

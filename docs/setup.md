@@ -64,7 +64,9 @@ cd ~/dotfiles
 
 取得済みなら clone せず `cd ~/dotfiles` だけを実行する。
 
-家用 Mac は `private`、共通設定だけなら `default` を使う。以降の例は家用。共通構成では `--configuration private` を省く。
+家用 Mac は `private`、仕事用 Mac は `work`、共通設定だけなら `default` を使う。以降の例は家用。仕事用では `--configuration work` に置き換え、共通構成では `--configuration private` を省く。
+
+`work` の電源設定は Mac ノート向け。電源接続時のディスクスリープは10分で設定する。「バッテリー使用時のビデオストリーミングを最適化」は自動設定に含めていないため、システム設定の「バッテリー」でオンにする。適用後は、電源別の設定を `pmset -g custom` とシステム設定で確認する。
 
 ```sh
 id -un
