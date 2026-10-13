@@ -22,6 +22,31 @@ git --version
 
 すべて応答すれば次へ進む。CLT 未導入やライセンスのエラーは[トラブル対応](troubleshooting.md#xcodeapp-store)を参照する。
 
+### Git のコミット情報を設定する
+
+コミットする前に、名前とメールアドレスをこの Mac で設定する。dotfiles の setup では設定されない。旧 Mac と同じ値を使う場合は、旧 Mac の作業リポジトリ内で確認する。
+
+```sh
+git config --get user.name
+git config --get user.email
+```
+
+新しい Mac の通常端末で、以下の例を自分の名前・メールアドレスに置き換えて実行する。GitHub に紐づける場合は、アカウントに登録したメールアドレスか、GitHub のメール設定に表示される `noreply` アドレスを使う。
+
+```sh
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+設定はホーム側の Git 設定に保存し、dotfiles の管理対象には加えない。作業するリポジトリ内で、実際に使われる情報を確認する。
+
+```sh
+git var GIT_AUTHOR_IDENT
+git var GIT_COMMITTER_IDENT
+```
+
+両方に意図した名前・メールアドレスが表示されれば完了。リポジトリ固有の設定や環境変数で上書きされる場合がある。変更は今後のコミットに使われ、既存のコミット履歴は変わらない。
+
 ## 2. ターミナルにフルディスクアクセスを許可する
 
 システム設定の「プライバシーとセキュリティ → フルディスクアクセス」で「ターミナル」を許可し、ターミナルを完全終了して開き直す。
