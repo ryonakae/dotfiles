@@ -271,94 +271,94 @@
     "pins": {
       "agent-browser": {
         "branch": "main",
-        "hash": "sha256-NJJZD4lcZdyWhBJEGwy2IYHEWYkL1gXDgBTMe1zV6oM=",
+        "hash": "sha256-OZ8nKcn0+OqimKlQcUTZxAqzHAHNOKE1L5Cd495iP3o=",
         "repository": {
           "owner": "vercel-labs",
           "repo": "agent-browser",
           "type": "GitHub"
         },
-        "revision": "0207911f1bd4d0393eddaa90f2e50f96e0fb8974",
+        "revision": "d9570915f4dd6504dee4070379d2c4f79d81dbb2",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/vercel-labs/agent-browser/archive/0207911f1bd4d0393eddaa90f2e50f96e0fb8974.tar.gz"
+        "url": "https://github.com/vercel-labs/agent-browser/archive/d9570915f4dd6504dee4070379d2c4f79d81dbb2.tar.gz"
       },
       "agent-device": {
         "branch": "main",
-        "hash": "sha256-98huLIPmfO7x2h+GnznK2nNTG0fJjoq0qwGXa0BQEeQ=",
+        "hash": "sha256-xiR6PmLYySiOkQtboM4XSLaU2PYbfjP1US69HxSepDk=",
         "repository": {
           "owner": "callstack",
           "repo": "agent-device",
           "type": "GitHub"
         },
-        "revision": "24b2ce638d0f6fd763b4cd44a303c533573cf519",
+        "revision": "3417a77de16fd25febfdceeacd4eb342ffd05b16",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/callstack/agent-device/archive/24b2ce638d0f6fd763b4cd44a303c533573cf519.tar.gz"
+        "url": "https://github.com/callstack/agent-device/archive/3417a77de16fd25febfdceeacd4eb342ffd05b16.tar.gz"
       },
       "cua-driver": {
         "branch": "main",
-        "hash": "sha256-l3BoYJblSUdSHjYpw3NQSoDJczgkcM6/DTC9+IhqmaE=",
+        "hash": "sha256-4asZHVlMoSjI8e8opYN2hbEkXtC5TkGUQhiuXw+RLek=",
         "repository": {
           "owner": "trycua",
           "repo": "cua",
           "type": "GitHub"
         },
-        "revision": "5a364bbe60e1f8a901ceacd889606b6367dc96ab",
+        "revision": "dfb49015a741851c99f2c4ab3b726cf599629b68",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/trycua/cua/archive/5a364bbe60e1f8a901ceacd889606b6367dc96ab.tar.gz"
+        "url": "https://github.com/trycua/cua/archive/dfb49015a741851c99f2c4ab3b726cf599629b68.tar.gz"
       },
       "find-docs": {
         "branch": "master",
-        "hash": "sha256-FpMovQcvWyJkPS8yOUf9JqFCZXRXhDXUla47wLNTBsQ=",
+        "hash": "sha256-cChMAOd8cYTcNZt0AaUcJ4G+tT0w/64PRsbKJ3ADeY8=",
         "repository": {
           "owner": "upstash",
           "repo": "context7",
           "type": "GitHub"
         },
-        "revision": "feef1b2f6078ac8a33acd38d76817000af001373",
+        "revision": "522c4db4fa2e1e31f1b320f09fa8c8fab376987a",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/upstash/context7/archive/feef1b2f6078ac8a33acd38d76817000af001373.tar.gz"
+        "url": "https://github.com/upstash/context7/archive/522c4db4fa2e1e31f1b320f09fa8c8fab376987a.tar.gz"
       },
       "ghostwriter": {
         "branch": "main",
-        "hash": "sha256-3gC6vXljbKL4z0KYec/GYL044Y8S+pq1Li5WQLyeKW0=",
+        "hash": "sha256-mokD+dZyyA89Vs/UlObbJgARH5dO3Bu+iFGN3k3JQTw=",
         "repository": {
           "owner": "mblode",
           "repo": "agent-skills",
           "type": "GitHub"
         },
-        "revision": "5a781a88ed60c1033767b6b6a966887cd93dd912",
+        "revision": "872bc83bdb6dd54a9ff456fbf1181beea6db7875",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/mblode/agent-skills/archive/5a781a88ed60c1033767b6b6a966887cd93dd912.tar.gz"
+        "url": "https://github.com/mblode/agent-skills/archive/872bc83bdb6dd54a9ff456fbf1181beea6db7875.tar.gz"
       },
       "herdr": {
         "branch": "master",
-        "hash": "sha256-CCHbrAwI51iNPu7/ubU/UUmyxeIWEYoIcoFC5A6+KX8=",
+        "hash": "sha256-/KMQbdh5X6Sa1GTUqyKf3vHdHDgpuRfJr9iHommwiH8=",
         "repository": {
           "owner": "herdrdev",
           "repo": "herdr",
           "type": "GitHub"
         },
-        "revision": "2563803dca97c040beaf3dc3acdcb5a3221b4238",
+        "revision": "dc6b6e5f42831ea7114f34dcf12900680eb36ae0",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/herdrdev/herdr/archive/2563803dca97c040beaf3dc3acdcb5a3221b4238.tar.gz"
+        "url": "https://github.com/herdrdev/herdr/archive/dc6b6e5f42831ea7114f34dcf12900680eb36ae0.tar.gz"
       },
       "ketch": {
         "branch": "main",
-        "hash": "sha256-zI5c1suy5su6UwZCmecnHPt8yJeydAbyNYSDYKlVoCk=",
+        "hash": "sha256-S/vkyA2GSf97ODut3ANYvXC8wHyTrBzMkRAUcxzIt9I=",
         "repository": {
           "owner": "1broseidon",
           "repo": "ketch",
           "type": "GitHub"
         },
-        "revision": "d2692939aae6841355776dc487470c0a7a5ef880",
+        "revision": "745a2917e864ee58e9caaab421cbbab546b9b53b",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/1broseidon/ketch/archive/d2692939aae6841355776dc487470c0a7a5ef880.tar.gz"
+        "url": "https://github.com/1broseidon/ketch/archive/745a2917e864ee58e9caaab421cbbab546b9b53b.tar.gz"
       },
       "readme-i18n": {
         "branch": "main",
@@ -375,16 +375,16 @@
       },
       "skill-creator": {
         "branch": "main",
-        "hash": "sha256-APw+xMKqRvkLnuQxttiyyIeylrIMSxZovQnw3xEl1C4=",
+        "hash": "sha256-+UIqBnzyeIOvJSKYaDaE3GYPEpLw7qQqyUw5S971AfU=",
         "repository": {
           "owner": "anthropics",
           "repo": "skills",
           "type": "GitHub"
         },
-        "revision": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
+        "revision": "dbd4588f9e1033efb41dad4bef2f7947c8993d44",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/anthropics/skills/archive/683bc88e56f3e09ba94f7055977f3d3aa499f202.tar.gz"
+        "url": "https://github.com/anthropics/skills/archive/dbd4588f9e1033efb41dad4bef2f7947c8993d44.tar.gz"
       },
       "stop-slop": {
         "branch": "main",
@@ -414,16 +414,16 @@
       },
       "tdd": {
         "branch": "main",
-        "hash": "sha256-1QwFBwG+gORvDvW4HM0LrZlHZKmKtWr7pUHU0MAXF2Y=",
+        "hash": "sha256-NljCSZNI3sZ+vbCw7pRdrwR7try4BxOFp4gdjuWYtzs=",
         "repository": {
           "owner": "mattpocock",
           "repo": "skills",
           "type": "GitHub"
         },
-        "revision": "b0618bc436ad893b3c5e84e55fba86586d34a404",
+        "revision": "49dd158d1076134a641b33efb035946536778336",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/mattpocock/skills/archive/b0618bc436ad893b3c5e84e55fba86586d34a404.tar.gz"
+        "url": "https://github.com/mattpocock/skills/archive/49dd158d1076134a641b33efb035946536778336.tar.gz"
       },
       "tech-writing": {
         "branch": "main",
@@ -440,16 +440,16 @@
       },
       "worktrunk": {
         "branch": "main",
-        "hash": "sha256-6Ug6qkUAihTssYTnkSn3+Jzyf4crlXTvhGENC46LSWo=",
+        "hash": "sha256-LiDEk77ksrZVQed7Mr7zfYUyg75OgB2D45X/mT7Y188=",
         "repository": {
           "owner": "max-sixty",
           "repo": "worktrunk",
           "type": "GitHub"
         },
-        "revision": "11e8035b64f127deb27aa4481843cc35de43baa7",
+        "revision": "40cee1efea8b4032ff3740f40534ec8fa14b741f",
         "submodules": false,
         "type": "Git",
-        "url": "https://github.com/max-sixty/worktrunk/archive/11e8035b64f127deb27aa4481843cc35de43baa7.tar.gz"
+        "url": "https://github.com/max-sixty/worktrunk/archive/40cee1efea8b4032ff3740f40534ec8fa14b741f.tar.gz"
       }
     },
     "version": 8
