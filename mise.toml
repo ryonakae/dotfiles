@@ -40,11 +40,6 @@ source = "config/.pi"
 mode = "symlink-each"
 manifest = "git"
 
-[dotfiles."~/Dev/local"]
-source = "config/Dev/local"
-mode = "symlink-each"
-manifest = "git"
-
 [dotfiles."~/.agents/skills/[!.]*"]
 source = "config/.agents/skills/[!.]*"
 mode = "symlink-each"
@@ -63,10 +58,6 @@ manifest = "git"
 "~/.config/opencode/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.gemini/GEMINI.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.pi/agent/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
-"~/Dev/local/.pi/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
-"~/Dev/local/.pi/APPEND_SYSTEM.md" = { source = "config/.pi/agent/APPEND_SYSTEM.md", mode = "symlink" }
-"~/Dev/local/.pi/mcp.json" = { source = "config/.pi/agent/mcp.json", mode = "symlink" }
-"~/Dev/local/.pi/extensions/pi-footer.json" = { source = "config/.pi/agent/extensions/pi-footer.json", mode = "symlink" }
 "~/.config/mise/config.toml" = { source = "config/.config/mise/config.base.toml", mode = "symlink" }
 "~/.config/karabiner" = { source = "config/.config/karabiner", mode = "symlink" }
 "~/.gemini/antigravity-cli/skills" = { source = "~/.agents/skills", mode = "symlink" }
