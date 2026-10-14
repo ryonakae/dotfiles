@@ -35,13 +35,37 @@ MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバー�
 
 本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理し、取得先は Pi の管理ディレクトリを使う。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
 
+### ローカルモデル用の作業場所
+
+`~/Dev/local` とその配下では、mise が `PI_CODING_AGENT_DIR` を `~/Dev/local/.pi` に切り替える。通常の `pi` コマンドを使い、LFM2.5 または Qwen3.6 を oMLX 経由で選択する。pi-subagents はこの環境では読み込まない。ほかの場所の Pi 設定は変わらない。
+
+初回は[設定ファイルを配置](usage.md#設定ファイルを変更する)した後、通常の fish で設定を trust する。
+
+```fish
+mise trust ~/Dev/local/mise.toml
+cd ~/Dev/local
+```
+
+次のプロンプトが表示されたら、設定元を確認して起動する。
+
+```fish
+printf '%s\n' $PI_CODING_AGENT_DIR
+pi
+```
+
+設定元が `~/Dev/local/.pi` の絶対パスになっていればよい。子プロジェクト内でも同じ設定元を使う。外へ移動して次のプロンプトを表示すると環境変数は元に戻り、新しく起動する Pi は通常設定になる。起動済みの Pi は切り替わらない。
+
+mise のプロンプトフックが動かない非対話起動では、対象ディレクトリで `mise exec -- fish -c 'pi'` を使い、通常の Safehouse 起動関数を通す。子ディレクトリ側で環境変数や Pi のプロジェクト設定を上書きした場合は、その設定が優先される。
+
+これは設定・認証保存先の分離であり、クラウド推論の強制禁止ではない。環境変数の API キーなどで他のプロバイダーが利用可能になる場合がある。専用設定の認証・セッション・パッケージは `~/Dev/local/.pi` の実ファイルとして保持し、通常環境の認証や履歴は共有しない。
+
 ## oMLX
 
 [公式 Releases](https://github.com/jundot/omlx/releases) の DMG から手動導入し、アプリ内の更新機能で更新する。メニューバーアプリからサーバーの起動・停止を行い、モデルは管理画面 `http://127.0.0.1:8000/admin` でダウンロード・ロードする。Homebrew の Formula 版は併用しない。
 
 サーバーは `127.0.0.1:8000` で待ち受け、API キー認証を使う。発行したキーは[共通 API キーの手順](secrets.md#値を追加更新する)で `OMLX_API_KEY` として登録する。
 
-OpenCode での利用を想定し、`config/.config/opencode/opencode.json` に oMLX の provider を設定済み。
+Pi の[ローカルモデル用の作業場所](#ローカルモデル用の作業場所)で使用する。モデル定義の正本は `config/Dev/local/.pi/models.json`。OpenCode はモデル・プロバイダーを固定せず、CUA・Context7 と既存の権限設定を維持する。
 
 oMLX の設定は `~/.omlx/settings.json`、モデルの標準保存先は `~/.omlx/models/`。内部設定・モデル・キャッシュ・履歴は dotfiles では管理しない。
 

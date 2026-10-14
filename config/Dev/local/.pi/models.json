@@ -1,0 +1,43 @@
+{
+  "providers": {
+    "omlx": {
+      "baseUrl": "http://127.0.0.1:8000/v1",
+      "api": "openai-completions",
+      "apiKey": "${OMLX_API_KEY}",
+      "models": [
+        {
+          "id": "LFM2.5-24B-A2B-MLX-4bit",
+          "name": "LFM2.5 24B A2B (oMLX)",
+          "reasoning": false,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 131072,
+          "maxTokens": 8192
+        },
+        {
+          "id": "Qwen3.6-35B-A3B-OptiQ-4bit-REAP-19B",
+          "name": "Qwen3.6 35B A3B REAP 19B (oMLX)",
+          "reasoning": true,
+          "input": [
+            "text"
+          ],
+          "cost": {
+            "input": 0,
+            "output": 0,
+            "cacheRead": 0,
+            "cacheWrite": 0
+          },
+          "contextWindow": 262144,
+          "maxTokens": 81920
+        }
+      ]
+    }
+  }
+}

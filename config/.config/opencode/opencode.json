@@ -1,6 +1,5 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "omlx/Qwen3.8-9B-heretic-uncensored-4bit-MTPLX",
   "permissions": [
     {
       "action": "*",
@@ -8,30 +7,6 @@
       "effect": "allow"
     }
   ],
-  "providers": {
-    "omlx": {
-      "name": "oMLX",
-      "package": "@opencode/ai/providers/openai-compatible",
-      "settings": {
-        "baseURL": "http://127.0.0.1:8000/v1",
-        "apiKey": "{env:OMLX_API_KEY}"
-      },
-      "models": {
-        "Qwen3.8-9B-heretic-uncensored-4bit-MTPLX": {
-          "modelID": "Qwen3.8-9B-heretic-uncensored-4bit-MTPLX",
-          "capabilities": {
-            "tools": true,
-            "input": ["text"],
-            "output": ["text"]
-          },
-          "limit": {
-            "context": 262144,
-            "output": 8192
-          }
-        }
-      }
-    }
-  },
   "mcp": {
     "servers": {
       "cua": {

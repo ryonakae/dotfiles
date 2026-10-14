@@ -1,0 +1,2 @@
+[env]
+PI_CODING_AGENT_DIR = "{{ env.HOME }}/Dev/local/.pi"

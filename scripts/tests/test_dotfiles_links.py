@@ -66,6 +66,49 @@ class DotfilesLinksTests(unittest.TestCase):
                           cwd=self.base, env=self.env, capture_output=True,
                           text=True, timeout=30)
 
+  def test_local_pi_files_are_linked_without_linking_runtime_directories(self):
+    sources = {
+      name: self.source('Dev/local/' + name)
+      for name in ['mise.toml', '.pi/settings.json', '.pi/models.json']
+    }
+    local = self.home / 'Dev/local'
+    result = self.mise('apply', '--yes', str(local))
+    self.assertEqual(result.returncode, 0, result.stderr)
+    for name, source in sources.items():
+      self.assertEqual((local / name).readlink(), source)
+    self.assertFalse(local.is_symlink())
+    self.assertFalse((local / '.pi').is_symlink())
+    session = local / '.pi/sessions/test.jsonl'
+    session.parent.mkdir()
+    session.write_text('local session\n')
+    self.assertFalse((self.repo / 'config/Dev/local/.pi/sessions').exists())
+    result = self.mise('apply', '--yes', str(local))
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertEqual(session.read_text(), 'local session\n')
+
+  def test_local_pi_environment_is_inherited_only_under_local_root(self):
+    source = ROOT / 'config/Dev/local/mise.toml'
+    self.assertTrue(source.is_file(), 'local mise configuration must exist')
+    self.source('Dev/local/mise.toml', source.read_text())
+    local = self.home / 'Dev/local'
+    result = self.mise('apply', '--yes', str(local))
+    self.assertEqual(result.returncode, 0, result.stderr)
+    result = subprocess.run([MISE, 'trust', str(local / 'mise.toml')],
+                            cwd=self.base, env=self.env, capture_output=True,
+                            text=True, timeout=30)
+    self.assertEqual(result.returncode, 0, result.stderr)
+    nested = local / 'project with spaces/src'
+    nested.mkdir(parents=True)
+    outside = self.home / 'Dev/local-other'
+    outside.mkdir()
+    for cwd, expected in [(local, str(local / '.pi')),
+                          (nested, str(local / '.pi')), (outside, None)]:
+      with self.subTest(cwd=cwd):
+        result = subprocess.run([MISE, 'env', '--json'], cwd=cwd, env=self.env,
+                                capture_output=True, text=True, timeout=30)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout).get('PI_CODING_AGENT_DIR'), expected)
+
   def test_setup_trusts_only_the_reviewed_declaration_in_isolated_home(self):
     self.env.pop('MISE_TRUSTED_CONFIG_PATHS')
     self.assertNotIn('CI', self.env)
