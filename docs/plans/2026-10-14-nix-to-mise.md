@@ -114,6 +114,8 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
   2. `docs/troubleshooting.md:77` は runtime 復旧後に fish 切替・版確認だけを案内しており、その後に残る Hermes 導入・plist・選択 macOS 設定への復旧導線が不足する。全体 setup の再実行ではなく、未実施段階の個別操作へ接続する修正が推奨される。
 - 修正 cycle 1: `MISE_DATA_DIR` を継承しつつ構成選択変数の隔離を維持。カスタムデータディレクトリで Hermes 未導入／導入済みの両方を対象に Red → Green を確認し、setup テスト24件が成功。runtime 復旧後の Hermes 照会・初回限定 install・plist・選択 macOS 設定への導線を追加。Python 構文・参照先・`git diff --check` は成功。変更が及ばない統合テスト・mise・Nix の既存成功結果は再利用。correction commit `2619af5ece4afe91e78744eb2b57b3cd2a7b1b9b` を独立再レビューし、2件の解消と新たな blocking/high・decision required がないことを確認した。元 reviewer の再開が不可だったため、指摘履歴と限定差分を新しい read-only コンテキストへ引き継いだ。
 - 実機準備の読み取り確認: `/run/current-system` と HM current-home は既存 Nix 世代を参照。Homebrew 本体リンクと両 marker が存在し、`/opt/homebrew/bin/{mise,fish,bash}` は未導入、uv は導入済み。Hermes plist 2件は既存の通常ファイル。導入・リンク解除・plist 置換・サービス操作はしていない。
+- Task 6 の代替基盤準備: ユーザー承認下で通常端末から `brew install bash fish mise usage` を実行し終了0。導入版は Bash 5.3.20、fish 4.9.3、mise 2026.10.10、usage 7.0.1。4実行ファイルが Homebrew Cellar を参照することを確認。Homebrew 標準 auto-update と旧 mise ダウンロードキャッシュの cleanup が実行された（アプリ一括削除ではない）。実際の Homebrew fish/mise を優先した隔離テストは97件すべて成功、skipなし。ログは `/tmp/dotfiles-brew-foundation-install.log` と `/tmp/dotfiles-foundation-installed-tests.log`。
+- 導入済み照会: 新 mise で Node 22.23.3 / Python 3.11.17 / Ruby 3.3.10 / Bun 1.4.2 / AWS CLI 2.37.10 を確認。指定版は再導入不要。Hermes の指定 Git tool は空配列で未導入。Homebrew 本体の所有引渡し、HM解除、設定配置、chsh、サービス切替、Nix撤去はまだ行っていない。
 - コミット済み fish の構文を再確認し、既存 Cua PATH 追加だけが unstaged に残ることを確認。Claude/Ghostty/flake.lock と `.DS_Store` はコミットに含めていない。
 
 - [x] **1. 構成宣言と標準ツールへの移管**: `brew/`、ルート `mise*.toml`、必要な `config/` を整備する。現行アプリ一覧・ホスト差分・取得元・選択スキルを移し、default の明示選択と自作優先を保つ。plugin の標準導入方式を決め、Nix 所有との初回引渡し対象を列挙する。
