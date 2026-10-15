@@ -163,13 +163,16 @@ Hermes 方式変更の再開時 review base は `0e16b067d0aa8d651288aba1edddeb0
 
 ### Hermes 方式変更の追加実装範囲
 
-Tasks 1–3・5 の focused validation は完了。独立レビュー・実 installer の実機導入は未完了。
+Tasks 1–3・5 の focused validation と独立レビューは完了。実 installer の実機導入は未完了。
 
 - `mise.hermes.toml` と `scripts/hermes-install.py` を追加。初回/更新の2回確認、指定 stage、標準 marker、dirty/未知/途中状態・symlink 保護を実装。runtime launcher は固定 checkout の venv を exec し、setup と管理関数の案内を task に接続した。
 - Red → Green: setup の専用 task 呼出し、launcher の固定 checkout、管理関数の更新案内を親で確認。担当 worker は公開 CLI 境界から初回/noop/更新/失敗状態の各 slice を Red → Green で実装し、親が差分と22件の結果を再確認した。
 - focused validation: setup 23件、起動契約24件、配置11件、外部 repos/plugin 4件、plist10件、TMPDIR 1件、Hermes task 22件、計95件成功・skipなし。新 task は実 mise 2026.10.10 と local Git fixture を使用し、通常 default repos 更新との分離も確認。ログは `/tmp/hermes-installer-verified-tests.log`、`/tmp/hermes-related-{links,sources,activation,tmpdir}.log`。旧 Git Python backend の専用テストは削除し、守るべき振る舞いを新 task のテストへ移した。
 - fish/sh 構文と `git diff --check` 成功。ローカルリンク133件・アンカー71件に欠落なし。README の入口は引き続き有効で変更不要。実機の設定・サービス・依存導入は検証目的で変更していない。
 - 変更していない macOS 設定、一時 HM 成果物、旧 Nix の検証結果は再利用する。Task 6–7 の実機ゲートは未完了のため、archive と push はまだ行わない。
+- local commit `b40fb92f6dbe2208fbbd7f470be46342c24d8909` を作成。base `0e16b067d0aa8d651288aba1edddeb0aee4c9de2` → head `b40fb92f6dbe2208fbbd7f470be46342c24d8909` の19ファイルを独立した read-only reviewer が確認し、blocking/high・decision required・medium/low とも指摘なし。外部 installer の実行結果・実機ゲートはレビュー保証の対象外。修正 cycle は不要。
+- doc-updater では今回の19ファイルを対象に現行手順・指示への反映を確認。README の変更は不要。`docs/apps.md` は317行で300行の規模目安を超えているため、全体整理は別作業として検討し、今回の差分を広げない。
+- **Task 6 の既存 checkout 引継ぎ確認待ち**: 読み取り確認で `~/.hermes/hermes-agent` が既に存在し、origin は同じ fork の `git@github.com:ryonakae/hermes-agent.git`、branch は `ryonakae`、HEAD は `fc0ce243cf515f7e65513eb068c44c33c7d41980`、作業差分は0件。`venv/bin/hermes` と managed uv、Node 用ディレクトリも存在するが、`.hermes-bootstrap-complete` はない。旧 launcher は Nix の HM 世代を参照している。新 task の既存状態保護を緩めず、この checkout を再利用するかユーザーへ確認する。推奨は origin 表記を宣言と揃え、既存 venv を再作成せず標準の依存段階と complete を通す一度きりの引継ぎ。実行前に既存 venv の Python 参照・版、利用中プロセス・必要なサービス操作を確認し、別承認を得る。origin変更、依存導入、marker作成、サービス操作、削除は未実行。
 
 実装対象: `mise.hermes.toml` と `scripts/hermes-install.py` を追加し、`scripts/dotfiles.py`、launcher、管理関数の更新案内、既存テスト、README/docs/AGENTS/dotfiles-setup を新契約へ揃える。失敗した pypi 導入方式の恒久コード・文書は同じ変更で除去する。失敗 cache の掃除は自動実行しない。dig log の歴史的な決定を新方式と誤認しないよう、実装時に置換の経緯を追記する。
 
