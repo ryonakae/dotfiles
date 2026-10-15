@@ -163,7 +163,7 @@ Hermes 方式変更の再開時 review base は `0e16b067d0aa8d651288aba1edddeb0
 
 ### Hermes 方式変更の追加実装範囲
 
-Tasks 1–3・5 の focused validation と独立レビューは完了。標準 installer による本体の実機導入も完了し、起動経路の引渡し・サービス切替・Nix 撤去は未完了。
+Tasks 1–3・5 の focused validation と独立レビューは完了。標準 installer による本体導入、設定リンク・起動経路の引渡し、CLI 起動確認まで完了。gateway の起動成功はユーザー報告で確認済み。dashboard の起動、Homebrew 本体移管、login shell の切替、Nix 撤去は未実施。
 
 - `mise.hermes.toml` と `scripts/hermes-install.py` を追加。初回/更新の2回確認、指定 stage、標準 marker、dirty/未知/途中状態・symlink 保護を実装。runtime launcher は固定 checkout の venv を exec し、setup と管理関数の案内を task に接続した。
 - Red → Green: setup の専用 task 呼出し、launcher の固定 checkout、管理関数の更新案内を親で確認。担当 worker は公開 CLI 境界から初回/noop/更新/失敗状態の各 slice を Red → Green で実装し、親が差分と22件の結果を再確認した。
@@ -180,7 +180,13 @@ Tasks 1–3・5 の focused validation と独立レビューは完了。標準 i
   - **専用 runtime の再導入**: ユーザーの「削除で良い」により、Intel 版 `~/.hermes/bin/uv`・`uvx` と `~/.hermes/node` の削除、標準 installer による再導入・再開を追加承認された。`/tmp/dotfiles-hermes-resume-install.py` は通常端末でサービス未登録・既存データのファイル情報・checkout HEAD/clean・venv未作成を再確認してから、承認された runtime だけを削除し、標準 `venv` → `python-deps` → `node-deps` → `complete` と mise task の完了済み判定を行う。新しい checkout は削除せず、全段階が成功し `HERMES_RESUME_INSTALL_EXIT=0` を確認した。ログは `/tmp/dotfiles-hermes-resume-install.log`、段階記録は `/tmp/dotfiles-hermes-resume-install-state.json`。
   - 導入結果: Hermes 0.21.5、uv 0.13.1 arm64（uvx も arm64）、Python 3.11.17 arm64。Python の base prefix は既存 mise 管理先、Node も既存 mise の 22.23.3 を利用し、専用 Node ディレクトリは再作成しなかった。Python 依存は `uv.lock` の hash-verified tier で成功し、fallback はなし。Node 依存も成功。browser/Chromium・Browser Use CLI・cua-driver は承認済み skip flags により追加導入していない。
   - 完了 marker 後の `hermes:install` は「already complete; no checkout or dependency changes」で成功。保護対象ファイル情報は初回削除前から一致（`protected_metadata_unchanged: true`）。終了後も gateway/dashboard ともに113で未登録。CLI の通常起動・サービス動作は未検証であり、導入済み判定や配布メタデータの確認を全機能の受入成功とは扱わない。
-  - 初回失敗のログは `/tmp/dotfiles-hermes-fresh-install.log`、段階記録は `/tmp/dotfiles-hermes-fresh-install-state.json`（終了1）として保持。現在の `.local/libexec/hermes` は Nix の HM 世代を参照したままで、設定リンク・plist の引渡しやサービスの再開は行っていない。
+  - 初回失敗のログは `/tmp/dotfiles-hermes-fresh-install.log`、段階記録は `/tmp/dotfiles-hermes-fresh-install-state.json`（終了1）として保持。本体導入時点では `.local/libexec/hermes` は Nix の HM 世代を参照し、設定リンク・plist の引渡しは未実施だった。
+- **Task 6 の設定リンク引渡し**: ユーザーが Hermes だけでなく設定リンク全体の HM → mise 引渡しを承認。配置元未取得で最初の dry-run が終了1になったため、所有解除せず宣言済み外部スキル・fish/Yazi plugin の17リポジトリを標準 `mise bootstrap repos update` で取得し終了0。実 HOME の配置 dry-run は60秒制限内に終了0となった。
+  - 旧世代 `/nix/store/xw9f2nbvcky2f9rq7p2n02v60sb226sm-home-manager-generation` の47リンクが既知 HM リンクであること、設定配置先の既存リンクが正本と一致すること、Hermes plist 2件が旧生成物と一致する通常ファイルであることを確認。通常端末で確認済み一時成果物 `/nix/store/9pj2p7ib2gzk94rihyxw9y5241bldmcd-home-manager-generation/activate --driver-version 1`、mise 配置、確認付き plist 配置を実行し、各段階とも終了0。旧 HM リンク残存0件、`mise dot status --missing --json` は終了0・80項目すべて applied・orphaned 0件。
+  - launcher・サービス wrapper・GUI adapter は Git 正本への直接リンクになり、launcher は `~/.hermes/hermes-agent/venv/bin/hermes` を exec する。plist の ProgramArguments/PATH に Nix store 参照なし。保護対象 `.env`・config・DB・auth・SOUL の存在するファイルの inode/mode/size/mtime は適用前後で一致。gateway/dashboard は GUI domain に未登録（照会113）のまま。サービス起動、chsh、Homebrew 本体移管、Nix 撤去は行っていない。
+  - **起動確認と PATH 修正**: 新しい Homebrew fish の login shell でも `bash` は `/bin/bash` 3.2 を解決し、通常の `hermes --version` は Safehouse 0.12.0 のポリシー生成で `Bad file descriptor`（5890/6324行）となり終了1。同一の対話 wrapper 引数によるポリシー生成は標準 Bash で失敗、Homebrew Bash で成功。PATH をプロセス内だけ Homebrew 優先にすると、通常の Hermes 関数と既存 Safehouse 保護を通して `hermes --version` が終了0となり、0.21.5・新 checkout・Python 3.11.17 を確認した。その後ユーザー承認下で共通 `run-with-agent-env.sh` の PATH を修正し、`.local/bin`・mise shims の優先を維持したまま Homebrew bin を継承 PATH より前に配置した。既存の子プロセス境界テストで標準／カスタム MISE_DATA_DIR の Red → Green を確認し、起動契約24件・TMPDIR 1件、shell 構文、差分検査が成功。通常端末の新しい Homebrew fish login shell から、PATH の一時変更なしで `hermes --version` が終了0となり、新 checkout の Hermes 0.21.5／Python 3.11.17 を確認した。gateway/dashboard は引き続き未登録（照会113）。fish 設定・plist・Safehouse 保護設定はこの修正で変更していない。対話セッション・API 通信・サービス稼働の検証はしていない。
+  - **gateway 起動のユーザー確認**: ユーザーが通常端末で `hermes-gateway start` を実行し `gateway started`、続く `hermes-gateway status` で running（PID 67553）を確認した。Program は `~/.config/agent-safehouse/safe-hermes-gateway.sh`、ログイン時自動起動・異常終了時再起動とも enabled。これはユーザー提示の出力による確認であり、エージェントによる実プロセスの再照合やメッセージ送受信の検証は行っていない。dashboard は起動していない。
+  - ログ: `/tmp/dotfiles-handoff-repos.log`、`/tmp/dotfiles-handoff-apply.log`、`/tmp/dotfiles-handoff-apply-state.json`、`/tmp/dotfiles-handoff-status.json`、`/tmp/dotfiles-handoff-hermes-check.log`。既存の Git 差分は保持。
 
 実装対象: `mise.hermes.toml` と `scripts/hermes-install.py` を追加し、`scripts/dotfiles.py`、launcher、管理関数の更新案内、既存テスト、README/docs/AGENTS/dotfiles-setup を新契約へ揃える。失敗した pypi 導入方式の恒久コード・文書は同じ変更で除去する。失敗 cache の掃除は自動実行しない。dig log の歴史的な決定を新方式と誤認しないよう、実装時に置換の経緯を追記する。
 

@@ -112,9 +112,8 @@ class AgentRuntimeTests(unittest.TestCase):
         result = self.run_helper(str(probe))
         self.assertEqual(result.returncode, 0, result.stderr)
         payload = json.loads(result.stdout)
-        self.assertEqual(payload['path'][:2], [str(self.bin), str(shims)])
-        self.assertEqual(payload['path'][2:5], inherited_path.split(':'))
-        self.assertIn('/opt/homebrew/bin', payload['path'])
+        self.assertEqual(payload['path'][:3], [str(self.bin), str(shims), '/opt/homebrew/bin'])
+        self.assertEqual(payload['path'][3:6], inherited_path.split(':'))
         self.assertEqual(payload['cwd'], str(self.project.resolve()))
         self.assertEqual(payload['node'], str(self.project.resolve()))
 
