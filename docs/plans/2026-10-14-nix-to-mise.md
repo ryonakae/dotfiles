@@ -172,7 +172,13 @@ Tasks 1–3・5 の focused validation と独立レビューは完了。実 inst
 - 変更していない macOS 設定、一時 HM 成果物、旧 Nix の検証結果は再利用する。Task 6–7 の実機ゲートは未完了のため、archive と push はまだ行わない。
 - local commit `b40fb92f6dbe2208fbbd7f470be46342c24d8909` を作成。base `0e16b067d0aa8d651288aba1edddeb0aee4c9de2` → head `b40fb92f6dbe2208fbbd7f470be46342c24d8909` の19ファイルを独立した read-only reviewer が確認し、blocking/high・decision required・medium/low とも指摘なし。外部 installer の実行結果・実機ゲートはレビュー保証の対象外。修正 cycle は不要。
 - doc-updater では今回の19ファイルを対象に現行手順・指示への反映を確認。README の変更は不要。`docs/apps.md` は317行で300行の規模目安を超えているため、全体整理は別作業として検討し、今回の差分を広げない。
-- **Task 6 の既存 checkout 引継ぎ確認待ち**: 読み取り確認で `~/.hermes/hermes-agent` が既に存在し、origin は同じ fork の `git@github.com:ryonakae/hermes-agent.git`、branch は `ryonakae`、HEAD は `fc0ce243cf515f7e65513eb068c44c33c7d41980`、作業差分は0件。`venv/bin/hermes` と managed uv、Node 用ディレクトリも存在するが、`.hermes-bootstrap-complete` はない。旧 launcher は Nix の HM 世代を参照している。新 task の既存状態保護を緩めず、この checkout を再利用するかユーザーへ確認する。推奨は origin 表記を宣言と揃え、既存 venv を再作成せず標準の依存段階と complete を通す一度きりの引継ぎ。実行前に既存 venv の Python 参照・版、利用中プロセス・必要なサービス操作を確認し、別承認を得る。origin変更、依存導入、marker作成、サービス操作、削除は未実行。
+- **Task 6 の新規導入**: 既存 `~/.hermes/hermes-agent` は同じ fork の SSH origin、`ryonakae`、HEAD `fc0ce243cf515f7e65513eb068c44c33c7d41980`、作業差分0件だったが、標準完了 marker はなかった。ユーザーは再利用・退避ではなく checkout の削除と mise task による新規導入を明示承認し、既存 `.env`・config・DB 等の保持を指定した。
+  - ユーザーが `hermes-gateway stop` を実行した後、通常端末で GUI ドメインの存在と gateway/dashboard の未登録（両方113）を確認。エージェントによる停止・起動はしていない。
+  - `/tmp/dotfiles-hermes-fresh-install.py` で対象・旧 HEAD・dirty 状態・対象内の実行時データ不在を確認し、承認された checkout だけを削除した。既存 `.env`・設定・DB は内容を読まずファイル情報を記録した。managed uv・Node とその他の兄弟ディレクトリは削除していない。
+  - ルート/Hermes 宣言を trust し、`mise -C ~/dotfiles -E hermes run hermes:install` で新規取得。HEAD は `fc0ce243…`、installer は事前確認したソースと一致した。2回の確認に承認範囲内で応答したが、標準 installer の `venv` 段階で終了1。既存 `~/.hermes/bin/uv` が `Bad CPU type in executable` で実行できず、Python の導入前に停止した。
+  - 追加の読み取り確認: この Mac は arm64、既存の `~/.hermes/bin/uv`・`uvx`・`~/.hermes/node/bin/node` はいずれも Mach-O x86_64。venv と完了 marker は未作成。保護対象の `.env`・設定・DB のファイル情報は実行前と一致（`protected_metadata_unchanged: true`）。依存 tier には未到達。
+  - **追加承認待ち**: Intel 版の Hermes 専用 runtime は今回の checkout 削除承認に含まれないため、追加削除・置換・自動再試行はしていない。uv/uvx と専用 Node の退避・標準 installer による再導入について確認し、承認後は既存の新 checkout を保持して失敗した標準段階から再開する。venv がないことを直前にも確認する。
+  - ログ: `/tmp/dotfiles-hermes-fresh-install.log`、段階記録: `/tmp/dotfiles-hermes-fresh-install-state.json`、終了表示: `HERMES_FRESH_INSTALL_EXIT=1`。現在の `.local/libexec/hermes` は Nix の HM 世代を参照したままで、設定リンク・plist の引渡しやサービスの再開は行っていない。
 
 実装対象: `mise.hermes.toml` と `scripts/hermes-install.py` を追加し、`scripts/dotfiles.py`、launcher、管理関数の更新案内、既存テスト、README/docs/AGENTS/dotfiles-setup を新契約へ揃える。失敗した pypi 導入方式の恒久コード・文書は同じ変更で除去する。失敗 cache の掃除は自動実行しない。dig log の歴史的な決定を新方式と誤認しないよう、実装時に置換の経緯を追記する。
 
