@@ -17,7 +17,6 @@
 - 構成はすべて明示し、private/work に default を自動追加しない。ルート `mise.toml` は構成非依存だけとし、共通リソースは `mise.default.toml` に置く。
 - Bash / fish / mise / usage は Homebrew。mise は更新可能だが、共通 runtime の指定版は移行を理由に変更しない。Intel 用 Homebrew は追加しない。
 - 標準 Bundle で導入・更新し、`--no-upgrade` や自動 cleanup は使わない。宣言削除をアンインストールとみなさず、対象を指定して削除する。PostgreSQL のデータ・サービスや未宣言アプリをついでに削除・停止しない。
-- 既存 Nix 管理 Homebrew は通常 setup で強制置換しない。Cellar / Caskroom / Taps を保持して[移行](../../../../docs/migration.md#4-homebrew-を引き継ぐ場合)する。
 
 ## setup と部分操作
 
@@ -44,7 +43,7 @@
 - 適用は非原子的。終了コード・失敗段階・完了済み段階と、失敗段階内の部分変更を確認する。後続へ進まず、自動再試行・rollback はしない。
 - 配置だけ失敗したら成功済みアプリ更新や repos 更新を繰り返さない。runtime 失敗時は配置も繰り返さず対象 install だけ再開する。
 - 旧 HM の所有解除前に、実 HOME dry-run の60秒以内の完了を確認する。既知の旧 HM 衝突以外・未知の実体・timeout では所有解除を始めない。後続の成功は保証せず、切替中にできた実体も保持する。
-- [移行・復旧](../../../../docs/migration.md)では所有引渡しと本文・アプリ・状態の復旧を分ける。旧 Nix 世代で全状態が戻るとは扱わない。
+- [移行・復旧](../../../../docs/migration.md)では所有引渡しと本文・アプリ・状態の復旧を分ける。構成の再適用で全状態が戻るとは扱わない。
 
 ### sudo 認証
 
@@ -93,7 +92,7 @@
 - `~/.local/libexec/hermes` は固定 checkout の `venv/bin/hermes` を exec する。起動時の自動導入・更新、PATH の別 Hermes への fallback、Hermes の cwd 変更を追加しない。
 - wrapper・GUI domain 操作補助は Git 正本。Safehouse の HOME 許可・環境継承・profile 順・サービス feature 差分、引数・終了コードを維持する。
 - plist は通常ファイル。配置 CLI は引数なし、初回生成・差分置換に `y` 確認、同一なら noop。symlink・未知の実体・所有の問題は停止し、手動差分を確認なしで上書きしない。比較失敗は停止し、mise の自動ロードする LaunchAgent 管理へ移さない。
-- 認証・DB・memory・session・hooks/cron・自己更新する skills を管理対象にしない。追加依存・全機能確認を移行ゲートにせず、Nix 固有の voice 除外を機械的に移植しない。
+- 認証・DB・memory・session・hooks/cron・自己更新する skills を管理対象にしない。追加依存・全機能確認を導入の前提にしない。
 - `hermes gateway install`、installer の全体 main、別 venv 管理を重ねない。管理関数から fork 標準処理を使い、直接 launchctl で迂回しない。setup に自動停止・再開・状態保存・バックアップを追加しない。
 - 管理関数は対象ユーザーの `gui/<UID>` を固定し、操作元の managername だけで判断しない。失敗時に別ドメインや直接起動へ fallback しない。未稼働サービスを検証目的で起動しない。
 - Hindsight の停止・データ移行、未知の plist 整理は別承認。Compose tag / digest 固定を volume 復元保証にしない。
@@ -112,13 +111,12 @@
 - ハードウェア非対応・失敗を成功扱いしない。Dock の手動導入対象を勝手に追加・削除しない。TCC・認証は手動許可のままにする。
 - 適用前に対象だけ旧値・型・未設定状態を記録する。宣言を戻すだけで preferences が戻ると扱わない。再起動・ログアウト・権限復元は別承認。
 
-## Nix 移行時の検証
+## 既存 Nix 環境の引渡し
 
-[実機移行手順](../../../../docs/migration.md)に従う。Nix ファイルは実機切替・撤去が終わるまで保持し、日常用の dual mode は追加しない。
+[移行の確認事項](../../../../docs/migration.md)を使い、対象 Mac の管理元と実状態に合わせて手順を決める。所有解除・サービス切替・撤去を通常 setup に組み込まない。
 
-- 一時 `release-home-manager` は現行 lock を更新せず標準 build する。新規 Nix ソースは対象を明示して追跡し、Git 外の設定や秘密を store に取り込まない。
-- 成果物の対象ユーザー・HOME、実機旧世代、空の home-files、サービス操作のない activation を照合する。適用は通常 setup に組み込まず、別承認後に対象ユーザーで標準 activate を行う。
-- Homebrew 本体・marker/fake repo の移管では公式 installer の revision と処理を確認する。全体 uninstall はせず、未知の通常ファイルを上書きしない。標準本体導入後に旧 homebrew-enabled activation を行わない。
-- nix-darwin uninstaller の `/etc` バックアップ復元・shell・system サービスへの作用を再確認する。HM 所有解除とは別工程で、Nix daemon が installer 版へ戻る場合もある。
-- Nix 本体撤去は installer 種別と実 APFS 識別子・daemon・build users・profile を照合して再承認する。破壊コマンドを推測しない。旧 store 利用プロセスが残る場合は削除を止める。
-- build 成功・統合テスト skip を実機引渡し成功としない。検証のための activation、サービス操作、bootstrap、GC は行わない。
+- 所有解除方法は対象ユーザー・HOME・実機の管理世代・解除リンク・サービスへの作用を照合する。Git 外の設定や秘密を store に取り込まない。適用は別承認後に対象ユーザーで行う。
+- Homebrew 本体・marker/fake repo の移管では公式 installer の revision と処理を確認する。全体 uninstall はせず、未知の通常ファイルを上書きしない。標準本体導入後に、それを置き換える Nix の activation を行わない。
+- nix-darwin uninstaller の `/etc` バックアップ復元・shell・system サービスへの作用を再確認する。HM 所有解除とは別工程で、Nix daemon が installer 版へ戻る場合もある。`/etc/shells` が Nix 管理リンクなら直接追記せず、通常ファイルへの復元後に fish を登録する。
+- Nix 本体撤去は installer 種別と実 APFS 識別子・daemon・build users・profile を照合して再承認する。破壊コマンドを推測しない。store 利用プロセスが残る場合は削除を止め、プロセス名だけでなく volume の実利用も確認する。
+- 構文・ビルド成功や統合テスト skip を実機引渡し成功としない。検証のための activation、サービス操作、bootstrap、GC は行わない。

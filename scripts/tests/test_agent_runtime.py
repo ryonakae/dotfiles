@@ -254,10 +254,10 @@ class AgentRuntimeTests(unittest.TestCase):
   def test_gateway_status_reports_running_process_and_configured_policy(self):
     result = self.gateway_status(
       'gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 10250\n'
-      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+      '\tprogram = /fixture/safe-hermes-gateway.sh\n}')
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertIn('Gateway: running (PID 10250)', result.stdout)
-    self.assertIn('Program: /nix/store/example-safe-hermes-gateway.sh', result.stdout)
+    self.assertIn('Program: /fixture/safe-hermes-gateway.sh', result.stdout)
     self.assertIn('Start at login: enabled', result.stdout)
     self.assertIn('Restart on crash (plist): disabled', result.stdout)
     self.assertEqual(result.stderr, '')
@@ -266,7 +266,7 @@ class AgentRuntimeTests(unittest.TestCase):
     for state, code, color in [('running', 0, '32'), ('not running', 1, '33')]:
       with self.subTest(state=state):
         output = (f'gui/501/ai.hermes.gateway = {{\n\tstate = {state}\n\tpid = 10250\n'
-                  '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+                  '\tprogram = /fixture/safe-hermes-gateway.sh\n}')
         result = self.gateway_status(output, terminal=True)
         self.assertEqual(result.returncode, code, result.stdout)
         self.assertIn(f'\x1b[{color}m{state}', result.stdout)
@@ -282,7 +282,7 @@ class AgentRuntimeTests(unittest.TestCase):
   def test_gateway_status_distinguishes_stopped_and_unavailable_services(self):
     stopped = self.gateway_status(
       'gui/501/ai.hermes.gateway = {\n\tstate = not running\n'
-      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+      '\tprogram = /fixture/safe-hermes-gateway.sh\n}')
     self.assertEqual(stopped.returncode, 1, stopped.stderr)
     self.assertIn('Gateway: not running', stopped.stdout)
     self.assertNotIn('PID', stopped.stdout)
@@ -303,9 +303,9 @@ class AgentRuntimeTests(unittest.TestCase):
     for output in [
       '', 'unexpected output',
       'gui/501/ai.hermes.gateway = {\n\tstate = running\n'
-      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}',
+      '\tprogram = /fixture/safe-hermes-gateway.sh\n}',
       'gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 0\n'
-      '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}',
+      '\tprogram = /fixture/safe-hermes-gateway.sh\n}',
     ]:
       with self.subTest(output=output):
         result = self.gateway_status(output)
@@ -314,7 +314,7 @@ class AgentRuntimeTests(unittest.TestCase):
 
   def test_gateway_status_reads_policy_and_launchd_overrides(self):
     output = ('gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 10250\n'
-              '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+              '\tprogram = /fixture/safe-hermes-gateway.sh\n}')
     for override, default, expected in [
       ('enabled', True, 'enabled'), ('false', True, 'enabled'),
       ('disabled', False, 'disabled'), ('true', False, 'disabled'),
@@ -336,7 +336,7 @@ class AgentRuntimeTests(unittest.TestCase):
 
   def test_gateway_status_fails_when_policy_cannot_be_read(self):
     output = ('gui/501/ai.hermes.gateway = {\n\tstate = running\n\tpid = 10250\n'
-              '\tprogram = /nix/store/example-safe-hermes-gateway.sh\n}')
+              '\tprogram = /fixture/safe-hermes-gateway.sh\n}')
     for kwargs in [
       {'disabled_output': 'unexpected output'},
       {'disabled_output': 'disabled services = {\n\t"ai.hermes.gateway" => unknown\n}'},
@@ -396,7 +396,7 @@ class AgentRuntimeTests(unittest.TestCase):
     (self.home / '.hermes').mkdir(exist_ok=True)
     plist = self.home / f'Library/LaunchAgents/ai.hermes.{service}.plist'
     plist.parent.mkdir(parents=True, exist_ok=True)
-    plist.write_text('Nix-owned definition')
+    plist.write_text('Managed service definition')
     launchctl = self.program('launchctl', '#!' + sys.executable + '\n'
       'import json, os, pathlib, sys\n'
       'a = sys.argv[1:]; e = os.environ; d = e["DOMAIN"]; label = "ai.hermes." + e["SERVICE"]\n'
@@ -409,7 +409,7 @@ class AgentRuntimeTests(unittest.TestCase):
       '  if int(e["QUERY_EXIT"]): sys.exit(int(e["QUERY_EXIT"]))\n'
       '  if state.read_text() == "0":\n'
       '    print("Could not find service", file=sys.stderr); sys.exit(113)\n'
-      '  print(d + "/" + label + " = {\\n\\tstate = running\\n\\tpid = 123\\n\\tprogram = /nix/store/wrapper\\n}")\n'
+      '  print(d + "/" + label + " = {\\n\\tstate = running\\n\\tpid = 123\\n\\tprogram = /fixture/wrapper\\n}")\n'
       'elif a == ["print", d.replace("gui/", "user/") + "/" + label]: print("user job exists")\n'
       'elif a == ["bootout", d + "/" + label]:\n'
       '  if int(e["BOOTOUT_EXIT"]): sys.exit(int(e["BOOTOUT_EXIT"]))\n'
@@ -442,7 +442,7 @@ class AgentRuntimeTests(unittest.TestCase):
                str(self.fish_dir), service, action]
     result = subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=15)
     operations = [json.loads(line) for line in log.read_text().splitlines()]
-    self.assertEqual(plist.read_text(), 'Nix-owned definition')
+    self.assertEqual(plist.read_text(), 'Managed service definition')
     return result, operations
 
   def test_background_service_start_targets_gui_without_global_environment_mutation(self):

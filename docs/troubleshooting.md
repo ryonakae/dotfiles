@@ -7,7 +7,6 @@
 | 症状 | 読む場所 |
 |---|---|
 | Xcode・App Store の認証で止まる | [Xcode・App Store](#xcodeapp-store) |
-| Nix 管理 Homebrew を検出して止まる | [既存 Nix 環境](#既存-nix-環境で止まる) |
 | 権限不足・Homebrew・macOS 設定の失敗 | [setup の失敗](#setup-が失敗する) |
 | 適用は成功したが、設定が配置されない | [設定配置だけ再開](#設定配置だけ再開する) |
 | 設定配置後の `mise install` が失敗する | [ランタイム導入だけ再開](#ランタイム導入だけ再開する) |
@@ -24,10 +23,6 @@
 - 購入パスワードが何度も出る：システム設定の「Apple Account → メディアと購入」で、要求頻度を任意で調整する。無料ダウンロードは別設定の場合がある。選択肢は macOS・アカウント・Touch ID の設定によって異なる。
 
 原因を解消し、現在の処理が終了してから再開する。アプリ導入の途中で別の setup を重ねない。
-
-## 既存 Nix 環境で止まる
-
-Nix 管理 Homebrew や旧 Home Manager 所有リンクがある場合は、[移行手順](migration.md)で対象を確認して引き渡す。通常 setup の再実行や force で押し通さない。Homebrew 全体を uninstall しない。
 
 ## setup が失敗する
 
@@ -198,6 +193,6 @@ gomi --config "$HOME/.config/gomi/config.yaml" --restore
 
 ## システムを以前の状態へ戻したい
 
-Nix の旧世代に戻しても、Git 正本の本文・mise のリンク・アプリ・DB・認証・Docker volume がすべて戻るわけではない。Home Manager と mise の所有先が重なる場合は、先にリンクの引渡しも必要になる。
+Git 正本の本文、mise のリンク、アプリ、macOS 設定、DB・認証・Docker volume は、それぞれ復旧方法が異なる。宣言を戻すだけで全状態が戻るわけではない。
 
-旧世代と現在の変更範囲を確認し、[既存環境の移行・復旧](migration.md)として個別に進める。自動 rollback や一括削除は行わない。
+変更範囲と利用可能なバックアップを確認し、[対象ごとの復旧](migration.md#以前の状態へ戻す場合)を個別に進める。自動 rollback や一括削除は行わない。

@@ -20,7 +20,6 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 - fish は `fish --no-execute`、shell は shebang に対応する shell の `-n`。
 - 起動 wrapper・setup 入口は `scripts/tests/` の関連 `test_*.py` を `uv run --no-project python` で実行する。必要な実ツールがないための統合テスト skip は成功と扱わない。
 - TOML と Brewfile は標準ツールの構文表示・dry-run で確認する。実 HOME の apply や installer 起動を検証の代わりにしない。
-- 一時 Nix 引渡し構成の検証は[運用条件](.agents/skills/dotfiles-setup/references/setup.md#nix-移行時の検証)に従う。Git 外の設定を store に取り込まない。実機撤去前の Nix ファイルは勝手に削除しない。
 - 文書・スキルはリンク・参照パス、掲載コマンドと現行コードの整合、`git diff --check`。
 
 ## 文書

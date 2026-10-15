@@ -24,7 +24,7 @@ dotenvx set NEW_API_KEY --no-armor --no-create -f "$HOME/dotfiles/config/.config
 
 新しい名前なら追加、既存の名前なら更新される。値は暗号化して保存される。`--plain` は付けない。`_PLAIN` で終わる名前も暗号化対象外なので、秘密には使わない。
 
-既存の公開鍵を使う通常の追加・更新では、Keychain への鍵登録はやり直さない。保存が成功したら、[使うプロセスを再起動](#変更を反映する)する。Nix の build / switch や mise apply は不要。
+既存の公開鍵を使う通常の追加・更新では、Keychain への鍵登録はやり直さない。保存が成功したら、[使うプロセスを再起動](#変更を反映する)する。mise apply は不要。
 
 ## 初回設定
 

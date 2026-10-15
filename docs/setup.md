@@ -74,7 +74,7 @@ macOS 設定は [mise.default.toml](../mise.default.toml)などの構成別宣�
 
 `work` の電源設定は Mac ノート向け。「バッテリー使用時のビデオストリーミングを最適化」は自動設定に含めていないため、システム設定の「バッテリー」でオンにする。
 
-新規 Mac では setup が確認のうえで Homebrew と必要な基盤を導入する。Nix は導入しない。既存の Nix 管理 Homebrew がある Mac では setup を進めず、先に[移行手順](migration.md)で本体と所有リンクを引き渡す。
+新規 Mac では setup が確認のうえで Homebrew と必要な基盤を導入する。
 
 ## 5. アプリと設定を導入する
 

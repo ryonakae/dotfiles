@@ -118,12 +118,6 @@ def executable(path):
 
 def check_homebrew():
   prefix = BREW.parents[1]
-  for path in (prefix / '.managed_by_nix_darwin', prefix / 'Library/.homebrew-is-managed-by-nix'):
-    if os.path.lexists(path):
-      raise ValueError('Nix-managed Homebrew detected; use the separately approved one-time migration, not setup')
-  for path in (BREW, prefix / 'Library/Homebrew'):
-    if path.resolve().is_relative_to(Path('/nix/store')):
-      raise ValueError('Nix-managed Homebrew detected; use the separately approved one-time migration, not setup')
   if not executable(BREW) and (os.path.lexists(BREW) or (prefix.exists() and any(prefix.iterdir()))):
     raise ValueError(f'unknown existing Homebrew prefix or executable: {prefix}; inspect before installing')
 

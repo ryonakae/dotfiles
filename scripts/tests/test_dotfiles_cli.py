@@ -210,32 +210,6 @@ class SetupCliTests(unittest.TestCase):
         self.run.assert_not_called()
         self.prompt.assert_not_called()
 
-  def test_nix_managed_homebrew_is_rejected_before_commands_or_confirmations(self):
-    prefix = self.module.BREW.parents[1]
-    for kind in ('brew link', 'library link', 'marker', 'fake repository'):
-      with self.subTest(kind=kind):
-        if kind == 'brew link':
-          path = self.module.BREW
-          original = path.read_bytes()
-          path.unlink()
-          path.symlink_to('/nix/store/fixture-brew/bin/brew')
-        elif kind == 'library link':
-          path = prefix / 'Library/Homebrew'
-          path.parent.mkdir(exist_ok=True)
-          path.symlink_to('/nix/store/fixture-homebrew/Library/Homebrew')
-        else:
-          path = prefix / ('.managed_by_nix_darwin' if kind == 'marker' else 'Library/.homebrew-is-managed-by-nix')
-          path.parent.mkdir(exist_ok=True)
-          path.touch()
-        with self.assertRaisesRegex(ValueError, 'Nix-managed Homebrew'):
-          self.invoke('private')
-        self.run.assert_not_called()
-        self.prompt.assert_not_called()
-        path.unlink()
-        if kind == 'brew link':
-          path.write_bytes(original)
-          path.chmod(0o755)
-
   def test_missing_setup_foundation_is_installed_without_default_profile(self):
     for name in ('mise', 'uv'):
       (self.module.BREW.parent / name).unlink()
@@ -471,16 +445,6 @@ class SetupCliTests(unittest.TestCase):
         self.assertEqual(environment['MISE_CEILING_PATHS'], str(self.root.parent))
         self.assertNotIn('MISE_CONFIG_FILE', environment)
         self.assertNotIn('MISE_NO_CONFIG', environment)
-
-  def test_homebrew_management_change_during_approval_stops_before_authentication(self):
-    marker = self.module.BREW.parents[1] / '.managed_by_nix_darwin'
-    def confirm(prompt):
-      marker.touch()
-      return self.confirm(prompt)
-    self.prompt.side_effect = confirm
-    with self.assertRaisesRegex(ValueError, 'Nix-managed Homebrew'):
-      self.invoke('private')
-    self.assertEqual(self.commands(), [['/usr/bin/xcode-select', '-p']])
 
   def start_fake_refresh(self, code=None):
     self.processes = []

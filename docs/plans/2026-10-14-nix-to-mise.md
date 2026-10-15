@@ -157,13 +157,13 @@ Hermes 方式変更の再開時 review base は `0e16b067d0aa8d651288aba1edddeb0
 - [x] **3. shell と Hermes の起動・配置**: fish 初期化、管理関数、`.local/libexec` の launcher、Safehouse wrapper、plist 配置を非 Nix 経路へ変更する。`scripts/tests/test_agent_runtime.py` 等の既存境界を更新し、サービスを動かさず契約を検証する。
 - [x] **4. macOS 設定**: mise の宣言と必要最小限の補完処理へ現行値を移す。型、Dock、スクリーンロック、電源別設定を保持し、選択した構成だけ適用することを検証する。
 - [x] **5. 文書・指示と実機移行準備**: `README.md`、`docs/setup.md` / `usage.md` / `migration.md` / `troubleshooting.md` / `apps.md`、`AGENTS.md`、dotfiles-setup スキルを新運用に合わせる。標準コマンドによる個別操作、Hermes の明示更新、新規 Mac の導入前提を記す。一時移行構成と対象限定の引渡し・復旧手順を準備する。
-- [ ] **6. 承認下でこの Mac を切り替える**: 上記の実機引渡し順序に従って Homebrew/HM/shell/Hermes を移管し、Nix 非依存を確認する。各段階の適用結果と未完了範囲をこの計画へ記録する。
-- [ ] **7. 撤去と最終整理**: 別承認で nix-darwin・Nix 本体を撤去する。`flake.nix` / `flake.lock` / `nix/`、`scripts/bootstrap-nix.sh`、廃止契約専用のテスト・現行文書を整理する。過去の dig/archived plan は履歴として保持し、現行手順として参照しない。
-  - `flake.lock` には開始前から他者の変更がある。削除前にその差分の保全・扱いをユーザーへ確認する。fish/config や Claude/settings の既存変更も上書き・混入させない。`.DS_Store` は作業範囲外。
+- [x] **6. 承認下でこの Mac を切り替える**: 上記の実機引渡し順序に従って Homebrew/HM/shell/Hermes を移管し、Nix 非依存を確認する。各段階の適用結果と未完了範囲をこの計画へ記録する。
+- [x] **7. 撤去と最終整理**: 別承認で nix-darwin・Nix 本体を撤去する。`flake.nix` / `flake.lock` / `nix/`、`scripts/bootstrap-nix.sh`、廃止契約専用のテスト・現行文書を整理する。過去の dig/archived plan は履歴として保持し、現行手順として参照しない。
+  - `flake.lock` の開始前からの変更は、ユーザーが追加バックアップなしでファイルごと削除することを承認。fish/config や Claude/settings の既存変更は保持し、`.DS_Store` は作業範囲外とする。
 
 ### Hermes 方式変更の追加実装範囲
 
-Tasks 1–3・5 の focused validation と独立レビューは完了。標準 installer による本体導入、設定リンク・起動経路の引渡し、CLI 起動確認まで完了。gateway の起動成功はユーザー報告で確認済み。dashboard の起動、Homebrew 本体移管、login shell の切替、Nix 撤去は未実施。
+Tasks 1–3・5 の focused validation と独立レビューは完了。標準 installer による本体導入、設定リンク・起動経路の引渡し、CLI 起動確認まで完了。gateway の起動成功はユーザー報告で確認済み。Homebrew 本体移管、nix-darwin 撤去、Homebrew fish への login shell 切替、Nix 本体撤去も完了。dashboard は未起動のまま保持。リポジトリ内の旧 Nix ファイル整理と撤去後の検証も完了。今回の整理差分の commit / push は未実施。
 
 - `mise.hermes.toml` と `scripts/hermes-install.py` を追加。初回/更新の2回確認、指定 stage、標準 marker、dirty/未知/途中状態・symlink 保護を実装。runtime launcher は固定 checkout の venv を exec し、setup と管理関数の案内を task に接続した。
 - Red → Green: setup の専用 task 呼出し、launcher の固定 checkout、管理関数の更新案内を親で確認。担当 worker は公開 CLI 境界から初回/noop/更新/失敗状態の各 slice を Red → Green で実装し、親が差分と22件の結果を再確認した。
@@ -185,8 +185,31 @@ Tasks 1–3・5 の focused validation と独立レビューは完了。標準 i
   - 旧世代 `/nix/store/xw9f2nbvcky2f9rq7p2n02v60sb226sm-home-manager-generation` の47リンクが既知 HM リンクであること、設定配置先の既存リンクが正本と一致すること、Hermes plist 2件が旧生成物と一致する通常ファイルであることを確認。通常端末で確認済み一時成果物 `/nix/store/9pj2p7ib2gzk94rihyxw9y5241bldmcd-home-manager-generation/activate --driver-version 1`、mise 配置、確認付き plist 配置を実行し、各段階とも終了0。旧 HM リンク残存0件、`mise dot status --missing --json` は終了0・80項目すべて applied・orphaned 0件。
   - launcher・サービス wrapper・GUI adapter は Git 正本への直接リンクになり、launcher は `~/.hermes/hermes-agent/venv/bin/hermes` を exec する。plist の ProgramArguments/PATH に Nix store 参照なし。保護対象 `.env`・config・DB・auth・SOUL の存在するファイルの inode/mode/size/mtime は適用前後で一致。gateway/dashboard は GUI domain に未登録（照会113）のまま。サービス起動、chsh、Homebrew 本体移管、Nix 撤去は行っていない。
   - **起動確認と PATH 修正**: 新しい Homebrew fish の login shell でも `bash` は `/bin/bash` 3.2 を解決し、通常の `hermes --version` は Safehouse 0.12.0 のポリシー生成で `Bad file descriptor`（5890/6324行）となり終了1。同一の対話 wrapper 引数によるポリシー生成は標準 Bash で失敗、Homebrew Bash で成功。PATH をプロセス内だけ Homebrew 優先にすると、通常の Hermes 関数と既存 Safehouse 保護を通して `hermes --version` が終了0となり、0.21.5・新 checkout・Python 3.11.17 を確認した。その後ユーザー承認下で共通 `run-with-agent-env.sh` の PATH を修正し、`.local/bin`・mise shims の優先を維持したまま Homebrew bin を継承 PATH より前に配置した。既存の子プロセス境界テストで標準／カスタム MISE_DATA_DIR の Red → Green を確認し、起動契約24件・TMPDIR 1件、shell 構文、差分検査が成功。通常端末の新しい Homebrew fish login shell から、PATH の一時変更なしで `hermes --version` が終了0となり、新 checkout の Hermes 0.21.5／Python 3.11.17 を確認した。gateway/dashboard は引き続き未登録（照会113）。fish 設定・plist・Safehouse 保護設定はこの修正で変更していない。対話セッション・API 通信・サービス稼働の検証はしていない。
+- **Task 6 の Homebrew 本体引渡し**: 対象4件と公式 installer の権限変更・副作用をユーザーが承認。ユーザーが通常端末で `/tmp/dotfiles-homebrew-handoff.py` を実行し、`HOMEBREW_HANDOFF_SUCCESS` を報告した。保存済み state でも全段階成功・installer 終了0・Homebrew 7.0.9 を確認。旧リンク2本・marker・fake repo は `~/.local/state/dotfiles-migration/homebrew-handoff/originals/` に保全し、Cellar/Caskroom/Taps/etc/var のディレクトリ inode・直下一覧は適用前後で一致した。公式 installer は prefix 全体の所有権変更、`/etc/paths.d/homebrew` 作成、portable Ruby 導入、2 tap 更新を実行した。
+  - `bin/brew` は通常ファイル、`Library/Homebrew` は通常ディレクトリとなり、Nix 参照が外れた。標準 PATH を起点に新しい Homebrew fish login shell で fish/brew/mise が Homebrew、Node/Python/Ruby/Bun が mise shims を解決することを確認。Hermes サービスは操作していない。
+  - **残る切替順序**: `/etc/shells` が `/etc/static/shells` 経由の Nix store リンクであるため、そのまま追記しない。別承認で nix-darwin の標準撤去により通常ファイルへ復元した直後、Homebrew fish の登録と login shell の選択を行う案に変更する。撤去時に旧 `/run/` shell が一時的に `/bin/zsh` へ変更されることを明示する。Nix 本体・APFS volume の削除はその後の別承認とする。
   - **gateway 起動のユーザー確認**: ユーザーが通常端末で `hermes-gateway start` を実行し `gateway started`、続く `hermes-gateway status` で running（PID 67553）を確認した。Program は `~/.config/agent-safehouse/safe-hermes-gateway.sh`、ログイン時自動起動・異常終了時再起動とも enabled。これはユーザー提示の出力による確認であり、エージェントによる実プロセスの再照合やメッセージ送受信の検証は行っていない。dashboard は起動していない。
   - ログ: `/tmp/dotfiles-handoff-repos.log`、`/tmp/dotfiles-handoff-apply.log`、`/tmp/dotfiles-handoff-apply-state.json`、`/tmp/dotfiles-handoff-status.json`、`/tmp/dotfiles-handoff-hermes-check.log`。既存の Git 差分は保持。
+
+- **nix-darwin 撤去・login shell 切替**: ユーザー承認後、通常端末で標準 uninstaller を実行し、復元された `/etc/shells` に `/opt/homebrew/bin/fish` を追加して同ユーザーの login shell に選択した。初回の sudo 認証待ちは検証用 plugin 関数名訂正のため操作開始前に中断。再開分は `DARWIN_SHELL_HANDOFF_SUCCESS`・終了0で完了し、`/tmp/dotfiles-darwin-shell-state-2.json` でも全段階成功を確認した。
+  - `/run/current-system` と `/etc/static` は消え、5件の `/etc` 復元内容は旧バックアップと一致。`/etc/shells` は通常ファイルで Homebrew fish 登録済み、Directory Services の UserShell も同パス。新しい対話 login shell で Homebrew の fish/brew/mise、mise 管理 runtime、fish plugin の読み込みを確認した。
+  - gateway は実行前後とも running・PID 77863・同じ Program、dashboard は未登録で変化なし。サービスの停止・再起動はしていない。Nix daemon は標準 installer 版へ復帰した。
+  - Nix 本体撤去前の通常端末でのプロセス照会では、`/nix/` の実行ファイルを使うものは PID 61515 の `nix-daemon` のみ。APFS 対象は `/nix`、`disk3s7`、UUID `874129FC-1894-4CA2-86E2-2B35349CDA16`、store 使用量約9.3 GiB。build users 32件と nixbld group、daemon/store plist、bashrc の Nix 初期化、fstab/synthetic 登録が残る。この時点では削除は別承認待ちだった。
+- **Nix 本体撤去の停止位置**: ユーザーの最終撤去承認後、`/tmp/dotfiles-nix-remove.py` を通常端末で実行。`org.nixos.nix-daemon` と `org.nixos.darwin-store` の unload は成功したが、直後の root `lsof +f -- /nix` が旧 fish/bash と共有ライブラリの使用を検出し終了1。plist・build users/group・設定・profile/cache・APFS volume の削除はまだ行っていない。状態と限定バックアップは `~/.local/state/dotfiles-migration/nix-removal/` にある。
+  - `ps` の comm に `/nix/` を含む行だけを見る事前確認では、`-fish` や `bash` 表示の実行ファイルを見落としていた。以後はボリュームの実利用を `lsof` で照合する。通常端末の親子関係照会結果は `/tmp/dotfiles-nix-shell-map.json`。
+  - 検出された12プロセス: Zed terminal の fish 1976、Herdr ペインの fish 10518/15048/26868/82662/92553、mosh 配下の fish 61554/64226/64424、Ghostty 配下の fish 81272、Claude の親 Bash 10857、この Pi セッションの親 Bash 63397。Herdr サーバー本体は Homebrew 版。シェル変更は既存プロセスへ反映されないため、作業を保存したうえで古いシェル・agent session を終了または通常の shell prompt から Homebrew fish に置換する必要がある。無断の kill・Herdr server 停止・再起動は行っていない。
+  - 元スクリプトは既存 backup/state があると拒否するため、そのまま再実行しない。旧シェルが解消した後、保存された成功段階と実状態を照合し、ボリューム利用確認から未実施工程だけを再開する。停止済みサービスの plist はまだ存在するため、Mac 再起動は再開手順の代わりにしない。
+
+- **Nix 本体撤去完了**: 旧 mosh 配下の fish 3本のうち1本は終了済み、残る PID 61554/64226 はユーザー承認後に通常端末から HUP で終了。ユーザー実行の root `lsof +f -- /nix` が出力なし・終了1となり、旧シェルの使用解消を確認した。
+  - 残工程の削除を再承認後、`/tmp/dotfiles-nix-resume.py` を準備。元スクリプトと helper の hash、前回の成功段階、保全済み設定、実 volume UUID/識別子、対象 inventory、サービス状態、volume 未使用を確認し、成功済み unload を繰り返さず再開した。初回 state は `~/.local/state/dotfiles-migration/nix-removal/state-before-resume.json` に保存。
+  - ユーザーが通常端末で実行し `NIX_REMOVAL_SUCCESS` を報告。エージェントも保存済み state の `success: true` と全削除工程・verification 完了を確認。plist 2件、Nix 初期化・mount 登録、build users 32件と group、確認済み profile/cache/HM 状態、Nix Store volume の削除が完了した。
+  - エージェントの読み取りでも `/nix/store`・`/run/current-system`・`/etc/static`・plist 2件の不存在、APFS 一覧から対象 UUID の消失、UserShell が `/opt/homebrew/bin/fish` のままであることを確認。再開スクリプトの完了条件には Homebrew/mise/runtime の解決と `hermes --version` 成功を含む。gateway は前後とも running・PID 77863、dashboard は未登録で不変。サービスの再起動は行っていない。
+  - 続いてユーザーが旧 Nix ファイルの削除と現行文書の整理を承認。`flake.lock` の既存差分は追加バックアップ不要との指定を受け、ファイルごと削除する扱いで進めた。他者の設定差分と `.DS_Store` は保持。
+- **リポジトリの旧 Nix ファイル整理**: `flake.nix` / `flake.lock`、`nix/` の追跡ファイル、`scripts/bootstrap-nix.sh` と専用テストの計33ファイルを削除。未追跡の `nix/.DS_Store` は削除せず、ディレクトリ一括削除は行っていない。現行起動テストは維持し、Nix 固有の fixture 表現と不要な Home Manager 初期化変数だけを整理した。Nix 管理 Homebrew 専用の拒否処理とテストは当初保持したが、後続のユーザー指示により撤去した（下記）。履歴の dig / archived plan と、一般的な他製品の Nix 対応説明は削除対象外。現行文書から削除済みファイルへの参照と一時移行コマンドを除去し、別 Mac に既存管理が残る場合の確認事項は維持した。
+  - 検証: `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_*.py'` が109件すべて成功、skip なし、終了0。ログは `/tmp/dotfiles-post-nix-removal-tests.log`。変更テスト2件の Python 構文と `git diff --check` も成功。削除確認は作業時の確認のみとし、削除の事実を検証する恒久テストは追加していない。
+  - 独立 read-only review: 削除ファイルと現行コード/config/mise の依存を確認し、具体的な指摘なし。文書は別担当と親が差分を確認し、担当範囲のローカルリンク138件と anchor の整合確認が成功。実機への再適用・サービス操作は行っていない。
+  - この整理差分の commit / push と計画の archive は未実施。他者の Claude/Ghostty/fish 差分と未追跡 `.DS_Store` は保持。
+- **Nix 専用拒否処理の撤去**: ユーザーが Nix 管理 Homebrew 向けの誤上書き防止処理は不要と指定。`scripts/dotfiles.py` の marker/store 参照検査と専用テスト2件、検出で setup が止まるという文書・スキルの案内を削除した。未知の Homebrew prefix、実行ユーザー、Safehouse、確認後の宣言変更などに対する一般的な検査は保持。変更前23件、変更後21件の setup テストが成功し、差分検査も成功。先の統合109件はこの追加変更前の結果であり、追加変更では影響範囲の setup テストを再実行した。
 
 実装対象: `mise.hermes.toml` と `scripts/hermes-install.py` を追加し、`scripts/dotfiles.py`、launcher、管理関数の更新案内、既存テスト、README/docs/AGENTS/dotfiles-setup を新契約へ揃える。失敗した pypi 導入方式の恒久コード・文書は同じ変更で除去する。失敗 cache の掃除は自動実行しない。dig log の歴史的な決定を新方式と誤認しないよう、実装時に置換の経緯を追記する。
 

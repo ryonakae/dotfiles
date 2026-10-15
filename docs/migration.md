@@ -2,103 +2,50 @@
 
 [README](../README.md) / 既存環境の移行
 
-Nix / Home Manager / nix-homebrew 管理から Brewfile と mise へ切り替える Mac 用。新規 Mac は[初回セットアップ](setup.md)、移行済み環境の更新は[日常操作](usage.md)を使う。
+Nix / Home Manager / nix-homebrew 管理が残る Mac を Brewfile と mise へ切り替える場合の確認事項。新規 Mac は[初回セットアップ](setup.md)、導入済み環境の更新は[日常操作](usage.md)を使う。
 
-既存の Nix 管理 Homebrew を検出すると通常 setup は止まる。通常 setup に所有解除・サービス切替・Nix 撤去は含まれない。移行は対象 Mac の実状態を照合し、各段階の適用・権限変更・削除の直前に対象を確認して承認する。別 Mac の操作や秘密の収集は含めない。
+通常 setup に所有解除・サービス切替・Nix 撤去は含まれない。対象 Mac の実状態と管理元を確認し、専用の移行手順を決めてから進める。適用・権限変更・削除は、各工程の直前に対象を確認して承認する。
 
-## 1. 現在の所有と復旧先を確認する
+## 所有リンクを引き渡す
 
-1. Git 差分と候補の宣言・関連検証結果を確認する。他者の変更を保持する。
-2. 対象の system / Home Manager 世代、管理リンク、Hermes plist、稼働サービス、Homebrew 本体リンク・marker・shell 登録、Nix の daemon / APFS volume を記録する。
-3. 既存バックアップの復元先に衝突がないか確認する。秘密・認証・DB・memory・session・管理外の兄弟は移動・削除しない。
-4. 旧構成・所有解除前世代は、撤去前まで参照できるよう保持する。GC は行わない。
+1. Git 差分、現在の管理リンク、Home Manager 世代、Hermes plist と稼働サービスを確認する。他者の変更を保持する。
+2. 必要な Homebrew パッケージ、mise runtime、選択済み外部リポジトリを準備する。Hermes は別承認で[初回導入 task](apps.md#初回設定と起動)を使い、準備中は既存のリンク・plist・サービスを変更しない。
+3. [設定配置の dry-run](troubleshooting.md#設定配置だけ再開する)を実 HOME で60秒の制限付きで行う。既知の Home Manager リンクの衝突以外の問題、未知の実体、timeout があれば所有解除を始めない。
+4. 対象 Mac の管理構成に合わせて所有解除方法を確認する。対象ユーザー・HOME・解除されるリンク・サービスへの作用を照合し、別承認で実行する。Home Manager の無効化だけでリンクが消えると仮定しない。
+5. 終了コードと解除済み範囲を確認してから、[mise の直接リンク](usage.md#設定ファイルを変更する)を配置する。切替中に新たな実体ができた場合も force で上書きしない。
 
-関係のないアプリの全件棚卸しや、HOME 全量の退避は不要。保全するのは変更・衝突する対象だけ。
+保全するのは変更・衝突する対象だけ。秘密・認証・DB・memory・session・管理外の兄弟を移動・削除せず、既存バックアップを上書きしない。所有解除前の構成と世代は、切替確認まで参照可能に保つ。
 
-## 2. Nix が動く間に代替と所有解除を準備する
+Hermes plist は管理元の生成結果と実配置を照合してから、ユーザー所有の通常ファイルへ引き渡す。[配置処理](apps.md#初回設定と起動)の衝突保護を迂回しない。必要なサービス操作は[管理関数](apps.md#hermes-を停止更新する)で行い、停止中だったサービスは起動しない。Herdr hook も二重登録せず、既存所有の解除後に[標準 integration](apps.md#claude-code)を使う。
 
-必要な Homebrew パッケージ、mise runtime、選択済み外部リポジトリを対象限定で準備する。取得元が存在してから、配置に使うルートと構成別 mise 宣言を確認して trust する。
+## Homebrew を引き継ぐ場合
 
-Hermes は別承認のもと、[初回導入 task](apps.md#初回設定と起動)でソースと専用環境を準備する。この時点では旧 Nix 版のリンク・plist・稼働サービスを変更しない。新しい checkout 内の `venv/bin/hermes` が使えることを確認してから、所有引渡しへ進む。
+Cellar / Caskroom / Taps とアプリ・データを保持し、Homebrew 全体の uninstaller は使わない。
 
-**旧所有を解除する前に、実 HOME の配置 dry-run を60秒の制限付きで完了確認する。** 家用の例：
+- 本体リンク・管理 marker・fake repository の由来と、使用する公式 installer の revision・処理内容を確認する。
+- 既知の管理対象だけを保全・解除し、別承認で既存 prefix に標準 Homebrew 本体を導入する。未知の通常ファイルは上書きしない。
+- `brew --version`、`brew --prefix`、本体の参照先を確認する。標準本体へ引き渡した後は、それを置き換える Nix の activation を実行しない。
 
-```fish
-/usr/bin/python3 -c 'import os, subprocess; subprocess.run(["/opt/homebrew/bin/mise", "-C", os.path.expanduser("~/dotfiles"), "-E", "default,private", "dot", "apply", "--dry-run"], timeout=60, check=True)'
-```
+## 起動確認と Nix 撤去
 
-この時点では apply しない。既知の旧 Home Manager リンクによる衝突以外の問題、未知の実体、timeout があれば所有解除を開始しない。dry-run 成功は後続の成功を保証しない。
+新しい login 端末で Homebrew / mise の解決先、runtime、plugin、選択スキルを確認する。Hermes は launcher・CLI と、稼働中サービスの登録済み Program / PATH・実プロセスを確認する。CLI の PATH だけで完了扱いにせず、未稼働サービスは検証のために起動しない。
 
-### 一時 Home Manager 成果物を準備する
+nix-darwin と Nix 本体の撤去は別工程にする。使用時点の[nix-darwin 標準撤去手順](https://github.com/nix-darwin/nix-darwin#uninstalling)と[Nix の macOS 撤去手順](https://nix.dev/manual/nix/latest/installation/uninstall.html)を確認し、対象 Mac に合った操作を別途承認する。
 
-所有解除用の一時構成は [nix/release-home-manager.nix](../nix/release-home-manager.nix)。現行 lock を更新せず、標準 Home Manager の空の管理集合をビルドする。
+- nix-darwin の `/etc` 復元候補・shell・system サービスへの作用を確認する。`/etc/shells` が Nix 管理リンクなら直接追記せず、通常ファイルへの復元後に[Homebrew fish の登録・選択](setup.md#6-fish-に切り替える)を行う。
+- Nix 本体は installer 種別、daemon、build users、profile、実 APFS volume を照合する。volume 識別子を推測せず、既存 shell 設定を古いバックアップで一括上書きしない。
+- store 利用プロセスが残る場合は削除を止める。プロセス名や PATH だけで判断せず、volume の実利用も確認する。古い shell の終了は作業を保存してから行う。
+- 各工程の後に shell・Homebrew・mise・設定・稼働サービスが保持されていることを確認する。未稼働サービスはそのまま保持する。
 
-```fish
-cd ~/dotfiles
-nix build .#release-home-manager --no-update-lock-file --no-link --json
-```
-
-JSON の `outputs.out` を控える。成果物の対象ユーザー・HOME と実機の旧世代を照合し、`home-files` に所有リンクがなく、activation がサービス操作やアプリのコピーを追加しないことを確認する。ビルド成功だけでは実機の所有は解除されない。
-
-一時構成は通常 setup に組み込まず、最終 Nix 撤去時に削除する。
-
-## 3. 所有リンクと Hermes 定義を引き渡す
-
-1. アプリを新規起動しない切替時間を確保する。必要な Hermes 操作は[管理関数](apps.md#hermes-を停止更新する)で別承認のもと実行する。停止中だったサービスを起動しない。
-2. 引渡し対象と保全先を確認し、承認後に対象ユーザーの通常端末で一時 Home Manager 成果物を activate する。
-
-```fish
-/nix/store/確認済みの-home-manager-generation/activate --driver-version 1
-```
-
-上のパスは手順2の `outputs.out` に置き換える。未知の store 成果物や、別 Mac の成果物をそのまま使わない。
-
-3. 終了コードと所有解除済み範囲を確認する。HM の無効化だけでリンクが消えると仮定せず、残ったリンクの由来を確認する。
-4. [mise の直接リンク](usage.md#設定ファイルを変更する)を配置する。切替中に新たな実体ができた場合も force で上書きしない。
-5. Hermes plist は旧管理結果と実配置の一致を確認して、別途ユーザー所有の通常ファイルへ引き渡す。symlink や手動変更を自動上書きしない。通常配置スクリプトの衝突保護を迂回しない。
-6. 旧 Herdr hook の解除後、必要なら[標準 integration](apps.md#claude-code)を入れる。settings の既存差分を保持する。
-
-失敗時は変更済み範囲を確認して止める。旧構成の無条件再適用や自動 rollback は行わない。
-
-## 4. Homebrew を引き継ぐ場合
-
-nix-homebrew は Homebrew 本体を Nix store のリンクへ置き換え、marker と fake repository も作る。Cellar / Caskroom / Taps とアプリ・データは保持し、Homebrew 全体の uninstaller は使わない。
-
-1. 使用する公式 installer の revision と処理内容を確認する。
-2. 既知の Nix 管理本体リンク・marker・fake repository だけを対象限定で保全・解除する。未知の通常ファイルは上書きしない。
-3. 別承認のうえで既存 prefix に標準 Homebrew 本体を導入する。Cellar / Caskroom / Taps を保持する。
-4. `brew --version` と `brew --prefix`、本体のリンク先を確認し、Nix store 参照が外れたことを確認する。
-
-この順序は HM 引渡し activation と調整する。標準本体導入後に旧 homebrew-enabled activation を実行しない。公式手順で保全した移行が成立しない場合は、実操作前に相談する。実機対象と installer を確認する前に、削除コマンドを組み立てない。
-
-## 5. 非 Nix の起動を確認する
-
-[Homebrew fish の登録・選択](setup.md#6-fish-に切り替える)を別承認で行い、新規 login 端末で PATH・runtime・plugin・選択スキルの読み込みを確認する。既存の Cua 用 PATH 追加など、関係のない設定は保持する。
-
-Hermes は launcher、CLI、配置済み plist の Program / PATH を確認する。稼働サービスがある場合だけ、承認下で管理関数から明示的に切り替え、登録済み実行先と実プロセスが旧 store を使っていないことを確認する。CLI の PATH 確認だけで完了扱いしない。未稼働のサービスは検証目的で起動しない。
-
-Hermes の追加依存の完全一致や全機能確認は移行の前提にしない。問題があれば個別に対応する。
-
-## 6. nix-darwin と Nix 本体を撤去する
-
-非 Nix の受入後、nix-darwin と Nix 本体を別工程で撤去する。対象の標準 uninstaller の内容と実機状態を再確認し、工程ごとに承認を得る。
-
-nix-darwin の標準 uninstaller は空構成 activation を行うが、HM の所有リンクや Hermes plist を解除するものではない。system サービス、`/etc/static`、shell に作用し、`/etc/**/*.before-nix-darwin` を元の名前へ戻す。Nix daemon が installer 版へ復帰する場合もある。
-
-- `/etc` の復元候補が新しい shell 設定などを上書きする場合は、実行前に解決する。古いバックアップを一括復元しない。
-- nix-darwin 撤去後は、終了コードだけでなく shell・サービス・Homebrew・設定が保持されていることを確認する。
-- Nix 本体は installer 種別、daemon、build users、profile、実 APFS volume を照合し、[上流 macOS 撤去手順](https://nix.dev/manual/nix/latest/installation/uninstall.html)で対象を示して再承認する。volume の識別子を推測しない。
-- 旧 Nix を使うプロセスが残る場合は削除を止める。空の `/nix` mountpoint が再起動まで残ること自体は失敗ではない。
-
-[nix-darwin の標準撤去手順](https://github.com/nix-darwin/nix-darwin#uninstalling)も使用時点で確認する。実機切替・撤去はまだ完了していないため、移行に必要な Nix ファイルは当面残す。撤去完了後に一時構成を含む旧宣言を整理し、恒久的な dual mode は残さない。
+失敗時は終了コード、変更済み範囲、成功済み工程を確認して止める。自動再試行・rollback や、成功済み工程の無条件再実行は行わない。
 
 ## 以前の状態へ戻す場合
 
-所有の引渡しと、本文・アプリ・状態の復旧を分ける。Nix 世代だけでは全状態は戻らない。
+構成の適用だけで、本文・アプリ・データまで元に戻るわけではない。対象ごとに復旧する。
 
 | 対象 | 確認すること |
 |---|---|
-| mise と Home Manager のリンク | 同じ宛先を旧世代へ渡す前に、対象を標準 unapply で解除する |
+| 管理リンク | 管理元を変える前に、現在の所有を標準 unapply などで解除する |
 | Git 正本の本文 | 後続の変更を失わないよう差分を確認する |
 | Homebrew アプリ・mise runtime | 対象ごとに必要な版・導入状態を確認する |
 | macOS preferences | 変更前の値・型・未設定状態に戻す。未設定なら対象キーの削除が必要 |
