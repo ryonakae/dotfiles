@@ -1,4 +1,5 @@
 *.code-workspace
+.DS_Store
 .env
 /config/.config/fish/fish_variables
 /.ruff_cache/
