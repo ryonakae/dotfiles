@@ -516,37 +516,29 @@ class AgentRuntimeTests(unittest.TestCase):
           if 'NATIVE_EXIT' in settings:
             self.assertEqual(result.returncode, 23)
 
-  def hermes_launcher(self, *, where_exit=0, where_output=None, executable=True):
-    install = Path(self.directory.name) / 'mise Hermes install'
-    (install / 'bin').mkdir(parents=True)
-    hermes = install / 'bin/hermes'
+  def hermes_launcher(self, *, executable=True):
+    install = self.home / '.hermes/hermes-agent'
+    (install / 'venv/bin').mkdir(parents=True, exist_ok=True)
+    hermes = install / 'venv/bin/hermes'
     hermes.write_text('#!' + sys.executable + '\n'
       'import json, os, sys\n'
       'print(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), '
       '"path": os.environ["PATH"], "unlisted": os.environ["UNLISTED_RUNTIME_VALUE"]}))\n'
       'sys.exit(23)\n')
     hermes.chmod(0o755 if executable else 0o644)
-    mise = self.external_bin / 'mise'
-    mise.write_text('#!' + sys.executable + '\n'
-      'import json, os, sys\n'
-      'with open(os.environ["MISE_LOG"], "w") as f:\n'
-      '  json.dump({"args": sys.argv[1:], "cwd": os.getcwd()}, f)\n'
-      f'print({str(install) if where_output is None else where_output!r})\n'
-      f'sys.exit({where_exit})\n')
-    mise.chmod(0o755)
     launcher = self.home / '.local/libexec/hermes'
     launcher.parent.mkdir(parents=True, exist_ok=True)
-    source = ROOT / 'config/.local/libexec/hermes'
-    if source.exists():
-      launcher.write_text(source.read_text().replace('/opt/homebrew/bin/mise', shlex.quote(str(mise))))
-      launcher.chmod(0o755)
-    self.env['MISE_LOG'] = str(Path(self.directory.name) / 'mise-query')
+    launcher.write_text((ROOT / 'config/.local/libexec/hermes').read_text())
+    launcher.chmod(0o755)
     return launcher
 
-  def test_hermes_launcher_resolves_explicit_fork_without_changing_runtime_contract(self):
+  def test_hermes_launcher_uses_checkout_without_changing_runtime_contract(self):
     launcher = self.hermes_launcher()
     adapter_dir = self.home / '.local/libexec/hermes-gui-launchctl'
     self.env['PATH'] = str(adapter_dir) + ':' + self.env['PATH']
+    self.env['HERMES_HOME'] = str(self.project / 'unrelated profile')
+    for name in ('mise', 'hermes'):
+      self.program(name, '#!/bin/sh\nprintf wrong-executable\nexit 99\n')
     result = subprocess.run(['/bin/sh', str(launcher), '--profile', 'default', 'gateway', 'stop', ''],
                             env=self.env, cwd=self.project, capture_output=True, text=True, timeout=15)
     self.assertEqual(result.returncode, 23, result.stderr)
@@ -554,31 +546,18 @@ class AgentRuntimeTests(unittest.TestCase):
       'args': ['--profile', 'default', 'gateway', 'stop', ''],
       'cwd': str(self.project.resolve()), 'path': self.env['PATH'], 'unlisted': 'value with spaces',
     })
-    self.assertEqual(json.loads(Path(self.env['MISE_LOG']).read_text()), {
-      'args': ['where', 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'],
-      'cwd': str(self.home.resolve()),
-    })
 
-  def test_hermes_launcher_stops_on_resolution_failure_or_missing_executable(self):
-    for settings, expected in [({'where_exit': 31}, 31), ({'executable': False}, 126)]:
-      with self.subTest(settings=settings):
-        launcher = self.hermes_launcher(**settings)
+  def test_hermes_launcher_missing_or_nonexecutable_install_does_not_fall_back(self):
+    for missing in (False, True):
+      with self.subTest(missing=missing):
+        launcher = self.hermes_launcher(executable=False)
+        if missing:
+          (self.home / '.hermes/hermes-agent/venv/bin/hermes').unlink()
+        self.program('hermes', '#!/bin/sh\nprintf wrong-hermes\n')
         result = subprocess.run(['/bin/sh', str(launcher)], env=self.env, cwd=self.project,
                                 capture_output=True, text=True, timeout=15)
-        self.assertEqual(result.returncode, expected, result.stderr)
+        self.assertNotEqual(result.returncode, 0)
         self.assertEqual(result.stdout, '')
-        shutil.rmtree(Path(self.directory.name) / 'mise Hermes install')
-
-  def test_hermes_launcher_rejects_nonabsolute_resolution_instead_of_using_project_binary(self):
-    malicious = self.project / 'relative/bin/hermes'
-    malicious.parent.mkdir(parents=True)
-    malicious.write_text('#!/bin/sh\nprintf wrong-hermes\n')
-    malicious.chmod(0o755)
-    launcher = self.hermes_launcher(where_output='relative')
-    result = subprocess.run(['/bin/sh', str(launcher)], env=self.env, cwd=self.project,
-                            capture_output=True, text=True, timeout=15)
-    self.assertNotEqual(result.returncode, 0)
-    self.assertEqual(result.stdout, '')
 
   def test_service_update_only_prints_explicit_mise_update_guidance(self):
     log = Path(self.directory.name) / 'updates'
@@ -593,8 +572,8 @@ class AgentRuntimeTests(unittest.TestCase):
           capture_output=True, text=True, timeout=15)
         self.assertEqual(result.returncode, 1)
         self.assertIn('Hermes is managed by mise', result.stderr)
-        self.assertIn('install --force', result.stderr)
-        self.assertIn('pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae', result.stderr)
+        self.assertIn('-C ~/dotfiles -E hermes run hermes:update', result.stderr)
+        self.assertIn('Stop active Hermes services before updating', result.stderr)
         self.assertFalse(log.exists())
 
   def test_missing_protection_profile_prevents_sandbox_start(self):

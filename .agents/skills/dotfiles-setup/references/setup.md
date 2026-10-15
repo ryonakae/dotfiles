@@ -11,7 +11,7 @@
 | 共通 runtime | `config/.config/mise/config.base.toml`。mise の exact 版 |
 | 外部スキル・fish / Yazi plugin | 構成別 mise の repos と選択配置宣言 |
 | macOS preferences | 構成別 mise の defaults と `scripts/macos-settings.sh` |
-| Hermes 本体 | mise Git Python backend、指定 fork の ryonakae ブランチ |
+| Hermes 本体 | `mise.hermes.toml` の repos・task、指定 fork の標準 shell installer |
 | Hermes launcher / wrapper / plist | Git 正本の直接リンクと `scripts/hermes_plists.py` の通常ファイル配置 |
 
 - 構成はすべて明示し、private/work に default を自動追加しない。ルート `mise.toml` は構成非依存だけとし、共通リソースは `mise.default.toml` に置く。
@@ -27,7 +27,7 @@
 - 未指定・未知・重複の構成は変更前に拒否する。ユーザー指定順を維持し、不明な構成から default へ切り替えない。
 - 対象 checkout と `-E` で構成を固定し、継承された `MISE_ENV` や別 cwd による追加構成・プロジェクト設定の混入を防ぐ。private 単独を共通設定・runtime の導入に読み替えない。
 - 選択した Brewfile、信頼確認、repos 取得・更新、60秒制限付きの配置 dry-run、確認付き apply、default の runtime と未導入 Hermes、plist、選択 macOS 設定の順に進める。外部 source の初回取得前に full dry-run 成功を必須にしない。
-- Hermes 導入済み判定は対象 mise tool の機械可読結果を使う。Nix 版を拾う `command -v hermes` を判定にしない。包括的な `mise upgrade` を setup に入れない。
+- default だけ Hermes 用宣言を確認して trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
 - サービスの自動停止・再開、Dock/端末の自動再起動、chsh、cleanup、Nix 撤去を setup に追加しない。setup の再実行を無変更の冪等操作と説明しない。
 
 ### 実機操作の承認
@@ -87,12 +87,14 @@
 
 ### Hermes
 
-- mise の Git Python backend で `ryonakae/hermes-agent` の `ryonakae` ブランチを使う。本家・別ブランチへ置換しない。通常 setup は初回のみ、本体更新は標準 mise の対象限定操作。
-- `~/.local/libexec/hermes` は対象 tool を read-only の `mise where` で解決する。起動時の自動導入・更新、PATH の別 Hermes への fallback、解決のための Hermes cwd 変更を追加しない。
+- 専用 mise task から `ryonakae/hermes-agent` の `ryonakae` ブランチの標準 installer を呼ぶ。独自 plugin・依存ビルド処理は追加しない。通常 setup は初回だけ、更新は別 task。dirty・未知・途中状態では停止し、復旧は[標準段階の手動実行](../../../../docs/troubleshooting.md#hermes-の導入更新が途中で止まった)で行う。
+- 初回だけ venv を作成し、更新では既存 venv を保持する。標準完了 marker は操作前に無効化し、全対象段階の成功後だけ作成する。自動 stash/reset・retry・rollback は行わず、同時 setup/install/update は避ける。
+- installer の Python/Node 依存と complete 段階を使い、PATH・設定・gateway・Desktop 段階は呼ばない。専用 uv/runtime は標準 installer に任せ、共通 runtime の exact pin を変えない。browser/cua-driver の追加導入を省き、依存 fallback の警告は隠さない。
+- `~/.local/libexec/hermes` は固定 checkout の `venv/bin/hermes` を exec する。起動時の自動導入・更新、PATH の別 Hermes への fallback、Hermes の cwd 変更を追加しない。
 - wrapper・GUI domain 操作補助は Git 正本。Safehouse の HOME 許可・環境継承・profile 順・サービス feature 差分、引数・終了コードを維持する。
 - plist は通常ファイル。配置 CLI は引数なし、初回生成・差分置換に `y` 確認、同一なら noop。symlink・未知の実体・所有の問題は停止し、手動差分を確認なしで上書きしない。比較失敗は停止し、mise の自動ロードする LaunchAgent 管理へ移さない。
 - 認証・DB・memory・session・hooks/cron・自己更新する skills を管理対象にしない。追加依存・全機能確認を移行ゲートにせず、Nix 固有の voice 除外を機械的に移植しない。
-- `hermes gateway install`、旧 installer、別 venv 管理を重ねない。管理関数から fork 標準処理を使い、直接 launchctl で迂回しない。setup に自動停止・再開・状態保存・バックアップを追加しない。
+- `hermes gateway install`、installer の全体 main、別 venv 管理を重ねない。管理関数から fork 標準処理を使い、直接 launchctl で迂回しない。setup に自動停止・再開・状態保存・バックアップを追加しない。
 - 管理関数は対象ユーザーの `gui/<UID>` を固定し、操作元の managername だけで判断しない。失敗時に別ドメインや直接起動へ fallback しない。未稼働サービスを検証目的で起動しない。
 - Hindsight の停止・データ移行、未知の plist 整理は別承認。Compose tag / digest 固定を volume 復元保証にしない。
 

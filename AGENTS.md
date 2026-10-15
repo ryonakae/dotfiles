@@ -7,7 +7,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 - ホーム側を経由せず、`config/` 内の正本を編集する。配置・外部 repos・macOS defaults は構成別 `mise.<name>.toml`、アプリ一覧は `brew/Brewfile.<name>`。ルート `mise.toml` は構成非依存のみとし、共通リソースは `mise.default.toml` に置く。コピー運用・独自配置ツールを追加しない。
 - 本文編集は即時反映。配置の追加・削除は mise を使い、個別リンクや管理ディレクトリの削除・改名は、宣言を消す前に標準 unapply する。HOME 一括の symlink-each は使わない。
 - 全体入口は setup のみ。全構成を明示し、private/work へ default を自動追加しない。部分操作・明示更新は標準 brew / mise。setup に cleanup・サービス再起動・chsh・Nix 撤去を追加しない。
-- 共通 runtime の exact 版を維持し、Hermes は指定 fork の ryonakae ブランチを未導入時だけ導入する。本体更新は別の明示操作。外部スキル・fish/Yazi plugin は取得元ブランチの最新版追従を許容する。
+- 共通 runtime の exact 版を維持し、Hermes は専用 mise task から指定 fork の標準 installer で初回導入する。本体更新は別 task。通常 repos 更新へ混ぜず、起動時に導入・更新しない。外部スキル・fish/Yazi plugin は取得元ブランチの最新版追従を許容する。
 - 未知の実体を force で置換しない。旧 HM からの所有移行は[運用条件](.agents/skills/dotfiles-setup/references/setup.md#失敗と復旧)に従い、所有解除前の実 HOME dry-run を時間制限付きで確認する。自動再試行・rollback は追加しない。
 - 非秘密の適用対象定義は Git 管理する。マシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。マシン非依存の定数は wrapper に置く。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。

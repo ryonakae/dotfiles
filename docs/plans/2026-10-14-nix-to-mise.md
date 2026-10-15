@@ -2,13 +2,13 @@
 
 ## Requirements
 
-合意の正本は [dig log](../dig/2026-10-14-nix-to-mise.md)。Nix の機能を独自基盤で再実装せず、Brewfile・mise・薄いセットアップ入口に置き換える。この Mac の実機切替と Nix 撤去までを対象とする。別 Mac の実機操作は含めない。
+合意の正本は [dig log](../dig/2026-10-14-nix-to-mise.md)。Hermes の導入方式は、その後のユーザーの「前者の方式で」により、mise task から標準 installer を呼ぶ方式へ変更する。この変更の具体的な計画は `/implement` により承認済み。Nix の機能を独自基盤で再実装せず、Brewfile・mise・薄いセットアップ入口に置き換える。この Mac の実機切替と Nix 撤去までを対象とする。別 Mac の実機操作は含めない。
 
 - `default private` のように適用構成をすべて明示する。共通分を自動追加しない。`private` 単独も許容する。
 - アプリは構成別 Brewfile を標準 `brew bundle` で導入・更新する。`--no-upgrade` や自動 cleanup は使わない。削除は宣言から外したうえで対象を指定して行う。
 - sudo は最初の昇格時に認証し、必要な実行中だけ標準キャッシュを維持する。パスワード保存、sudoers 変更、全体の root 実行はしない。Apple Account・ベンダー認証・TCC の確認は別で、入力1回を保証しない。
 - mise は最新版へ更新可能。共通 Node/Python/Ruby/Bun は現在の指定版を維持し、更新は別操作。既存 AWS CLI の管理方式・指定版も移行を理由に変えない。プロジェクト側の mise 設定は変更しない。
-- Hermes は mise で `ryonakae/hermes-agent` の `ryonakae` ブランチから導入する。通常 setup は未導入時のみ、本体更新は別の明示操作。追加依存の一致・全機能の動作確認は移行のゲートにしない。Nix 固有の voice 除外を機械的に移植しない。
+- Hermes は mise の repos・task を入口とし、`ryonakae/hermes-agent` の `ryonakae` ブランチに含まれる標準 shell installer で導入する。Git Python backend や独自 mise plugin は使わない。通常 setup は未導入時のみ、本体更新は別の明示操作。追加依存の一致・全機能の動作確認は移行のゲートにしない。Nix 固有の voice 除外を機械的に移植しない。
 - Hermes の wrapper・gateway/dashboard・GUI domain 操作補助から Nix 参照を外す。Safehouse の保護、fork 標準の起動・停止、cwd・環境注入・終了コードの契約を維持する。通常 setup にサービスの自動停止・再開・状態保存を追加しない。
 - 外部スキルは取得元ブランチを追跡し、setup 時の更新を許容する。必要なスキルだけ明示配置し、新規スキルを自動追加しない。自作は既存の glob・Git 追跡ファイルの直接リンクを継続する。共通／Claude 専用の優先と Antigravity CLI の共通参照を維持する。
 - fish の bobthefish/fzf、Yazi の git/smart-enter/full-border は setup 時の最新版への更新を許容する。
@@ -39,7 +39,7 @@
 3. 選択した Brewfile を順に実行し、アプリを導入・更新する。setup 基盤の mise が更新された場合は後続で新しい `/opt/homebrew/bin/mise` を使う。
 4. 対象の mise 設定だけを信頼する確認を行い、選択された repos を取得・更新する。外部 source が存在してから dotfiles の dry-run を行う。初回 clone 前の full bootstrap dry-run 成功を必須にしない。
 5. 時間制限付きの配置 dry-run と衝突確認後、mise でリンクを配置する。通常設定・自作スキルの既存挙動を保ち、HOME 一括走査に戻さない。
-6. default を選択した場合、HOME を基準に指定版 runtime と必要な plugin を導入する。Hermes は対象 tool のインストール状況を mise の機械可読出力で判定し、未導入時だけ入れる。Nix 版の `command -v hermes` を判定に使わない。包括的な `mise upgrade` は呼ばない。
+6. default を選択した場合、HOME を基準に指定版 runtime と必要な plugin を導入する。Hermes 用宣言も対象を示して trust し、§4 の `hermes:install` task を呼ぶ。完了済みなら checkout 更新・依存導入とも行わず、途中状態は停止して報告する。Nix 版の `command -v hermes` や mise tool の照会を導入判定に使わない。包括的な `mise upgrade` は呼ばない。
 7. Hermes 起動定義は必要な場合だけ安全に配置し、選択した macOS 設定・電源設定を適用する。サービス起動や Dock/端末の自動再起動は行わず、必要な後続操作を表示する。
 8. 終了状態と変更済み段階を報告する。途中失敗では後続へ進まず、自動再試行・rollback をしない。再開は成功済み全体を無条件に繰り返さず、標準の個別コマンドを案内する。
 
@@ -56,10 +56,35 @@ sudo キャッシュ維持は既存の最小処理を再利用し、終了・エ
 
 ### 4. Hermes の導入と起動経路
 
-mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae` を利用する。最新 mise の実際の tool ID・インストール状況出力を確認し、成功した導入を日常 setup が再インストール・更新しないようにする。branch の更新操作は標準 mise コマンドで文書化し、独自 updater を追加しない。
+#### 管理境界と公開入口
 
-- `.local/libexec/hermes` という既存の安定入口を維持し、Nix へのリンクを mise 管理実体へ接続する小さな launcher に置換する。`mise where` はインストール先照会用の標準 read-only 操作で、未導入なら失敗する。対象 tool を明示して解決し、単なる cwd の `hermes` や PATH の別ソフトを選ばない。具体的な branch 解決と `bin/hermes` は実導入時に確認する。
-- 起動時の自動インストール／更新は追加せず、未導入・解決失敗なら非0で止める。launcher の解決用 subprocess の cwd と Hermes 自体の cwd を混同しない。更新後も launcher を手動で毎回書き換える方式にしない。
+mise は取得・操作の入口、Hermes 標準 installer は専用 Python 環境と依存の導入を担当する。Git Python backend、wheel guard の解除、独自 mise plugin、独自の依存解決・ビルド処理は追加しない。
+
+- 新規 `mise.hermes.toml` に fork の repo 宣言と `hermes:install` / `hermes:update` task を置く。checkout は標準の `~/.hermes/hermes-agent`、ref は `ryonakae`。通常の default/private/work の repos 集合へ混ぜず、setup の外部スキル更新が Hermes ソースを進めないようにする。
+- 公開操作は `mise -C ~/dotfiles -E hermes run hermes:install` と `mise -C ~/dotfiles -E hermes run hermes:update`。`scripts/dotfiles.sh` に部分操作サブコマンドは追加しない。default の setup だけが install task を呼び、private/work 単独では Hermes 宣言を trust・実行しない。
+- task は小さな `scripts/hermes-install.py` に初回／更新の判定と標準コマンドの順序を委ねる。新しい依存を増やさず CLT Python を使う。root・Safehouse を拒否し、対象 checkout・取得元・branch と操作範囲を確認する。mise の構成混入を防ぎ、共通 runtime 用 `MISE_DATA_DIR` は保持する。
+
+#### 初回・更新・途中失敗
+
+- 初回判定は既知 checkout の origin/branch、標準 `.hermes-bootstrap-complete` の commit/branch と現在の HEAD、`venv/bin/hermes` の存在を照合する。すべて整った install task は fetch・installer とも呼ばず終了する。未知の実体・symlink・別 origin/branch・dirty・不明な完了記録は上書きしない。
+- checkout が未作成の場合だけ、mise の標準 repos 操作で取得する。既存 checkout に未完了環境が残る場合は自動やり直し・更新をせず、失敗した段階と標準の再開手順を示す。独自の状態台帳や rollback は作らない。
+- 明示 update task は確認後に対象 checkout だけを標準 repos update し、依存を再同期する。dirty・origin 不一致・分岐した履歴では止まり、installer の repository 段階や自動 stash/reset は使わない。依存同期失敗は更新成功と報告しない。
+- 操作着手時には、この方式が所有する既知の標準完了 marker を無効化し、全対象段階が成功してから標準 complete 段階で再作成する。同じ HEAD の依存更新が失敗しても、古い marker で完了扱いしない。未知の marker は削除せず確認する。別の install/update/setup を同時に実行しない。
+
+#### 標準 installer の呼出範囲
+
+確認した fork revision `fc0ce243…` の installer は `--stage`・`--dir`・`--branch`・`--hermes-home` を提供する。対象 checkout の installer を使い、実行前に使用 revision と段階を確認する。
+
+- 初回は `venv` → `python-deps` → `node-deps` → `complete`。更新は既存 venv を保持し、`python-deps` → `node-deps` → `complete`。各段階の非0で後続を止める。`venv` は既存環境を削除する実装なので、既存 venv のある場所には自動実行しない。
+- `prerequisites`・`repository`・`path`・`config`・`setup`・`gateway`・`desktop` と全体 main は呼ばない。shell ファイル、既存認証・設定、plist、サービス、Desktop 導入を installer に任せない。
+- `node-deps` は `--skip-browser --skip-computer-use` を付け、ブラウザ本体・cua-driver の追加導入をこの移行へ混ぜない。既存アプリの配置・設定は保持する。これらの追加機能は必要時の別操作とする。
+- installer 標準の managed uv (`~/.hermes/bin/uv`)、checkout 内 venv・Node依存、必要なら installer が用意する専用 runtime を許容する。共通 mise runtime の exact pin は変更しない。実操作前に追加される対象を示す。
+- Python 依存の locked sync → fallback tiers は installer の標準処理をそのまま使い、採用された tier と警告を報告する。独自の全体再試行は追加せず、終了0を全追加機能の保証と扱わない。node 段階による lockfile の生成・復元も確認し、管理外の変更を自動処理しない。
+
+#### 起動とサービス
+
+- `.local/libexec/hermes` は `~/.hermes/hermes-agent/venv/bin/hermes` を明示して exec する安定入口にする。任意 cwd の `hermes`、PATH の別実体、`mise where` には依存しない。引数・cwd・環境注入・終了コードを維持し、起動時の install/update や失敗時 fallback は追加しない。
+- 更新はソースと依存をその場で変更する非原子的な操作。必要なら利用中サービスを既存管理関数で事前に明示停止し、成功後だけ明示再開する。task 自身は停止・起動せず、停止中のサービスを勝手に起動しない。
 - `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` は Git 正本を直接配布し、Nix shebang/実体置換を廃止する。Homebrew Bash が必要な箇所だけ絶対パスを使い、OS 標準 Bash で足りる箇所は既存 shebang を維持する。
 - `hermes-gui-launchctl` は現行の GUI domain 固定・失敗時停止の処理を Git 管理スクリプトとして保持する。管理関数、環境注入、Safehouse profile/feature の差分を変えない。
 - plist は `ai.hermes.gateway` / `ai.hermes.dashboard` のラベル、cwd、Disabled/RunAtLoad/KeepAlive、ログ、dashboard の host/port を維持し、PATH から Nix を外す。mise の LaunchAgent 管理は自動ロードを伴うため使わない。
@@ -99,6 +124,10 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 
 ### 実装・検証の進捗
 
+Hermes 方式変更の再開時 review base は `0e16b067d0aa8d651288aba1edddeb0aee4c9de2`。`/implement` で変更計画は承認済み。preflight では staged 変更なし、`origin/master` に対して ahead 5 / behind 0。既存未 push の `8200bf6`・`48ffea3`・`2619af5`・`0d69ce9`・`0e16b06` を最終 push に含める方針はユーザーの「ok」で確認済み。未 commit の計画差分は本セッションのもの、Claude/Ghostty/fish/flake.lock と `.DS_Store` は既存変更として保持する。新方式の実装・テスト・独立レビューを再開し、実機操作は引き続き段階ごとの別承認とする。
+
+以下は実行順の記録。Git Python backend に関する過去のテスト成功・レビューは、新しい installer 方式の検証結果には流用しない。
+
 - Tasks 1–5 の候補を `8200bf604ff9de7a5923002aa901c84b4b8256ce` に local commit。構成宣言・setup・起動経路・文書が同じ新契約に依存するため、一つの成果物にまとめた。
 - 構成: `brew/Brewfile.{default,private,work}` と `mise.{default,private,work}.toml` を作成。外部14 checkout・16選択スキル、fish/Yazi plugin を repos とリンクへ移管。ルートは適用リソースなし。配置11件、repos/plugin 4件のテスト成功。親の検査で不存在 launcher 宣言を発見し、実在する2ファイルの配置へ修正済み。
 - setup: `scripts/dotfiles.py` を新契約へ変更。構成選択・環境隔離・確認後変更・sudo lifecycle・失敗時停止・Hermes 初回導入を含む23件成功。実 Git backend の導入後 `ls` 出力は未確認。
@@ -116,6 +145,11 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 - 実機準備の読み取り確認: `/run/current-system` と HM current-home は既存 Nix 世代を参照。Homebrew 本体リンクと両 marker が存在し、`/opt/homebrew/bin/{mise,fish,bash}` は未導入、uv は導入済み。Hermes plist 2件は既存の通常ファイル。導入・リンク解除・plist 置換・サービス操作はしていない。
 - Task 6 の代替基盤準備: ユーザー承認下で通常端末から `brew install bash fish mise usage` を実行し終了0。導入版は Bash 5.3.20、fish 4.9.3、mise 2026.10.10、usage 7.0.1。4実行ファイルが Homebrew Cellar を参照することを確認。Homebrew 標準 auto-update と旧 mise ダウンロードキャッシュの cleanup が実行された（アプリ一括削除ではない）。実際の Homebrew fish/mise を優先した隔離テストは97件すべて成功、skipなし。ログは `/tmp/dotfiles-brew-foundation-install.log` と `/tmp/dotfiles-foundation-installed-tests.log`。
 - 導入済み照会: 新 mise で Node 22.23.3 / Python 3.11.17 / Ruby 3.3.10 / Bun 1.4.2 / AWS CLI 2.37.10 を確認。指定版は再導入不要。Hermes の指定 Git tool は空配列で未導入。Homebrew 本体の所有引渡し、HM解除、設定配置、chsh、サービス切替、Nix撤去はまだ行っていない。
+- **実機準備停止／Hermes 方式変更の実装待ち**: 承認下で mise の Hermes 初回導入を実行したが、対象 fork `fc0ce243cf515f7e65513eb068c44c33c7d41980` の `setup.py` が wheel/sdist ビルドを明示禁止しており終了1。mise Git Python backend の `uv tool install` と両立しない。ソースの説明では wheel に locales・skills・optional-mcps・web/TUI assets・plugin manifests が含まれないためであり、Nix 専用環境変数によるガード解除は解決策にしない。計画時に配布制約を確認できていなかった。
+  - 実行後の対象 tool の導入済み照会は `[]`。公開ソース・依存ダウンロードの cache は残り得るが、成功した Hermes 導入とは扱わない。
+  - 後続の3宣言 trust と外部 repos 更新は未実行。自動再試行・rollback・リンク解除・OS設定・サービス操作・Nix撤去はしていない。既存 Nix 版は保持。
+  - ログ: `/tmp/dotfiles-hermes-repos-preparation.log`、段階記録: `/tmp/dotfiles-hermes-repos-preparation.json`。
+  - その後ユーザーは「mise task から標準 shell installer を呼ぶ」方式を選択した。Requirements / Implementation Decisions §4 をその方式へ更新し、`/implement` で承認された。Tasks 1–3・5 を再開対象とする。preflight の確認結果は本節冒頭に記載。実機への再インストールは別承認、push・archive は全ゲート通過後に行う。
 - コミット済み fish の構文を再確認し、既存 Cua PATH 追加だけが unstaged に残ることを確認。Claude/Ghostty/flake.lock と `.DS_Store` はコミットに含めていない。
 
 - [x] **1. 構成宣言と標準ツールへの移管**: `brew/`、ルート `mise*.toml`、必要な `config/` を整備する。現行アプリ一覧・ホスト差分・取得元・選択スキルを移し、default の明示選択と自作優先を保つ。plugin の標準導入方式を決め、Nix 所有との初回引渡し対象を列挙する。
@@ -127,13 +161,26 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 - [ ] **7. 撤去と最終整理**: 別承認で nix-darwin・Nix 本体を撤去する。`flake.nix` / `flake.lock` / `nix/`、`scripts/bootstrap-nix.sh`、廃止契約専用のテスト・現行文書を整理する。過去の dig/archived plan は履歴として保持し、現行手順として参照しない。
   - `flake.lock` には開始前から他者の変更がある。削除前にその差分の保全・扱いをユーザーへ確認する。fish/config や Claude/settings の既存変更も上書き・混入させない。`.DS_Store` は作業範囲外。
 
+### Hermes 方式変更の追加実装範囲
+
+Tasks 1–3・5 の focused validation は完了。独立レビュー・実 installer の実機導入は未完了。
+
+- `mise.hermes.toml` と `scripts/hermes-install.py` を追加。初回/更新の2回確認、指定 stage、標準 marker、dirty/未知/途中状態・symlink 保護を実装。runtime launcher は固定 checkout の venv を exec し、setup と管理関数の案内を task に接続した。
+- Red → Green: setup の専用 task 呼出し、launcher の固定 checkout、管理関数の更新案内を親で確認。担当 worker は公開 CLI 境界から初回/noop/更新/失敗状態の各 slice を Red → Green で実装し、親が差分と22件の結果を再確認した。
+- focused validation: setup 23件、起動契約24件、配置11件、外部 repos/plugin 4件、plist10件、TMPDIR 1件、Hermes task 22件、計95件成功・skipなし。新 task は実 mise 2026.10.10 と local Git fixture を使用し、通常 default repos 更新との分離も確認。ログは `/tmp/hermes-installer-verified-tests.log`、`/tmp/hermes-related-{links,sources,activation,tmpdir}.log`。旧 Git Python backend の専用テストは削除し、守るべき振る舞いを新 task のテストへ移した。
+- fish/sh 構文と `git diff --check` 成功。ローカルリンク133件・アンカー71件に欠落なし。README の入口は引き続き有効で変更不要。実機の設定・サービス・依存導入は検証目的で変更していない。
+- 変更していない macOS 設定、一時 HM 成果物、旧 Nix の検証結果は再利用する。Task 6–7 の実機ゲートは未完了のため、archive と push はまだ行わない。
+
+実装対象: `mise.hermes.toml` と `scripts/hermes-install.py` を追加し、`scripts/dotfiles.py`、launcher、管理関数の更新案内、既存テスト、README/docs/AGENTS/dotfiles-setup を新契約へ揃える。失敗した pypi 導入方式の恒久コード・文書は同じ変更で除去する。失敗 cache の掃除は自動実行しない。dig log の歴史的な決定を新方式と誤認しないよう、実装時に置換の経緯を追記する。
+
 ## Final Validation
 
 計画作成中はテスト・インストール・実機適用を実行しない。実装では既存の TDD スキルと検証規約に従う。以下は実装後の確認項目で、通過済み結果は後続変更が無効化しない限り再利用する。
 
-- [ ] **入口・失敗経路**: `uv run --no-project python scripts/tests/test_dotfiles_cli.py` → 明示構成順、private 単独で default 非適用、未知/重複/未指定の事前拒否、root/Safehouse 拒否、sudo refresh の終了・失敗、後続中止、Hermes 導入済みで更新しない、指定版 runtime 維持。コマンド境界を stub 化し、実 sudo・brew・サービス操作をしない。
-- [ ] **配置**: `uv run --no-project python scripts/tests/test_dotfiles_links.py` → 実 mise と隔離 HOME/Git fixture で直接リンク、追跡ファイル増減、衝突保持、unapply、共通/Claude 優先、外部の選択配置、管理外データ保持を確認。fixture repos で remote branch 更新と dirty 保護も必要な境界に追加する。HOME 一括走査への回帰を防ぐ。
-- [ ] **起動契約**: `uv run --no-project python scripts/tests/test_agent_runtime.py` と `uv run --no-project python scripts/tests/test_hermes_tmpdir.py` → 非対話 PATH/cwd、環境注入と失敗時停止、TMPDIR、指定 Hermes の解決、引数・終了コードが維持される。`test_hermes_activation.py` は恒久的に必要な plist 所有・同一時無変更・手動変更保護・サービス非操作のテストへ置換し、同じコマンドで実行する。
+- [x] **入口・失敗経路**: `uv run --no-project python scripts/tests/test_dotfiles_cli.py` → 明示構成順、private 単独で default 非適用、未知/重複/未指定の事前拒否、root/Safehouse 拒否、sudo refresh の終了・失敗、後続中止、default のみ Hermes install task を呼び、専用宣言の trust と構成隔離、指定版 runtime 維持。コマンド境界を stub 化し、実 sudo・brew・サービス操作をしない。
+- [x] **配置**: `uv run --no-project python scripts/tests/test_dotfiles_links.py` → 実 mise と隔離 HOME/Git fixture で直接リンク、追跡ファイル増減、衝突保持、unapply、共通/Claude 優先、外部の選択配置、管理外データ保持を確認。fixture repos で remote branch 更新と dirty 保護も必要な境界に追加する。HOME 一括走査への回帰を防ぐ。
+- [x] **Hermes task の境界**: 新規 `scripts/tests/test_hermes_install.py` を `uv run --no-project python` で実行。公開 task／スクリプト境界で、未導入の取得・標準段階順、完了済み install の完全 noop、明示更新だけが ref を進めること、未知/dirty/途中状態の保護、既存 venv の非再作成、失敗時の後続中止・古い marker の無効化、サービス/設定非操作を TDD で確認。コマンドは stub、repos の範囲は local Git fixture と実 mise で検証する。default の repos 更新では Hermes checkout が動かないことも確認する。
+- [x] **起動契約**: `uv run --no-project python scripts/tests/test_agent_runtime.py` と `uv run --no-project python scripts/tests/test_hermes_tmpdir.py` → 非対話 PATH/cwd、環境注入と失敗時停止、TMPDIR、指定 Hermes の解決、引数・終了コードが維持される。`test_hermes_activation.py` は恒久的に必要な plist 所有・同一時無変更・手動変更保護・サービス非操作のテストへ置換し、同じコマンドで実行する。
 - [ ] **macOS 宣言と補完**: TOML 解析と fake defaults/pmset 等の境界で型・構成別適用・エラー中止を確認する。構成別の設定移管漏れは旧宣言との一度きりの照合で確認し、旧 Nix 宣言を恒久 fixture として残さない。
 - [ ] **構文・標準解釈**: 変更した fish は `fish --no-execute`、shell は shebang の shell の `-n`。Brewfile は標準 `brew bundle list --file=...` で解釈できること、TOML は最新 mise の標準表示・dry-run で構成選択が正しいことを確認する。実 HOME の適用やサービス再起動を構文検査の代わりにしない。
 - [ ] **一時 Nix 移行構成**: 使用する場合は dotfiles-setup の build 手順で実 flake check/build を行う。秘密や Git 外の設定を store に取り込まない。必要な新規 Nix ファイルだけ明示的に追跡対象とする。失敗・skip を移行準備成功としない。
@@ -145,7 +192,8 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 
 - [mise environments](https://mise.jdx.dev/configuration/environments.html): base config の自動読込みと複数環境の優先順。
 - [mise repos](https://mise.jdx.dev/bootstrap/repos.html): ref、更新、dirty 保護、削除の挙動。
-- [mise Python backend](https://mise.jdx.dev/dev-tools/backends/pypi.html) / [where](https://mise.jdx.dev/cli/where.html): Git branch の導入、Git ソースの lock 制限、インストール先の read-only 照会。
+- [mise tasks](https://mise.jdx.dev/tasks/) / [repos](https://mise.jdx.dev/bootstrap/repos.html): Hermes の操作入口と取得元管理。
+- [対象 fork の標準 installer](https://github.com/ryonakae/hermes-agent/blob/fc0ce243cf515f7e65513eb068c44c33c7d41980/scripts/install.sh): stage 分離、managed uv、venv 再作成、依存 fallback、完了 marker。実 installer の選択段階による導入は未検証で、承認後の Task 6 で成功を確認する。
 - [mise macOS defaults](https://mise.jdx.dev/bootstrap/macos-defaults.html) / [LaunchAgents](https://mise.jdx.dev/bootstrap/launchd.html): defaults と自動ロードの境界。
 - [Homebrew Bundle](https://docs.brew.sh/Brew-Bundle-and-Brewfile) / [Installation](https://docs.brew.sh/Installation): 標準導入・更新と既存 prefix の保持。
 - [nix-homebrew](https://github.com/zhaofengli/nix-homebrew) / [module](https://github.com/zhaofengli/nix-homebrew/blob/main/modules/default.nix): store 本体、marker/fake repo と prefix の分離。

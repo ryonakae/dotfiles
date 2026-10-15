@@ -118,6 +118,8 @@ mise -C ~/dotfiles -E default,private dot apply --dry-run
 mise -C ~/dotfiles -E default,private dot apply
 ```
 
+この repos 更新に Hermes は含まれない。本体は[専用 task](apps.md#hermes-を停止更新する)で更新する。
+
 更新予定と配置予定を確認し、各操作が成功してから次へ進む。対象を絞る場合は `bootstrap repos update PATH` で宣言済み checkout を指定する。dirty checkout や origin 不一致で止まったら、変更を捨てず確認する。宣言の削除だけでは checkout は削除されない。
 
 fish の bobthefish / fzf、Yazi の git / smart-enter / full-border も setup 時の最新版更新を許容する。宣言済みの取得・配置方式と別の plugin manager を重ねず、更新後は読み込みを確認する。自作スキルの本文変更・配置は[設定ファイル](#設定ファイルを変更する)と同じ。`npx skills` による別管理を重ねない。

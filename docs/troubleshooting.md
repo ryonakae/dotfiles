@@ -80,24 +80,58 @@ env MISE_ENV= /opt/homebrew/bin/mise -C ~ install node python ruby bun aqua:aws/
 
 `Completed` を確認し、未完了の段階だけを順に実行する。各操作が成功してから次へ進む。以下の Hermes 操作は `default` を選択していた場合だけ行う。
 
-1. Hermes の導入状況を照会する。
+1. [Hermes の初回導入 task](apps.md#初回設定と起動)を実行する。ルートと Hermes 用宣言が未 trust なら、内容を確認して先に trust する。
 
 ```fish
-env MISE_ENV= /opt/homebrew/bin/mise -C ~ --no-config ls --installed --json 'pypi:git+https://github.com/ryonakae/hermes-agent.git'
+mise -C ~/dotfiles -E hermes run hermes:install
 ```
 
-照会が成功し、結果が空配列 `[]` の場合だけ初回導入する。
-
-```fish
-env MISE_ENV= /opt/homebrew/bin/mise -C ~ install 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'
-```
-
-結果に `installed: true` かつ `version` または `requested_version` が `ryonakae` の導入があれば、本体の install は省く。別 ref、不明な形式、照会エラーでは進めず確認する。`--force` や本体更新は復旧に使わない。
+完了済みなら何も変更しない。途中状態で止まったら、下の[導入・更新の復旧](#hermes-の導入更新が途中で止まった)へ進む。初回導入の復旧に update task を使わない。
 
 2. [Hermes の起動定義配置](apps.md#hermes)を行う。既に配置済みなら同一時は無変更になり、サービスは起動・停止しない。
 3. [macOS の部分操作](usage.md#macos-設定を適用する)で、当初選択した構成の defaults と電源設定を完了する。適用前に変更対象の旧値・型・未設定状態を控え、成功済みの段階は繰り返さない。`default` を選択していなければ Hermes 操作をせず、この段階から再開する。
 
 残りの段階が完了してから、[初回セットアップの fish 切替以降](setup.md#6-fish-に切り替える)へ戻る。既に済んだ項目は繰り返さない。
+
+## Hermes の導入・更新が途中で止まった
+
+成功した段階と失敗したコマンドをログで確認する。task は自動再試行せず、途中状態では次の install/update も止める。全体 setup の再実行、checkout の強制更新、venv の削除、完了 marker の手動作成は行わない。
+
+取得元・branch・HEAD・作業差分を確認する。想定外の origin、別 branch、dirty checkout、symlink があれば、その変更の扱いを決めるまで進めない。
+
+```fish
+git -C ~/.hermes/hermes-agent remote get-url origin
+git -C ~/.hermes/hermes-agent branch --show-current
+git -C ~/.hermes/hermes-agent rev-parse HEAD
+git -C ~/.hermes/hermes-agent status --short
+```
+
+想定する取得元は `https://github.com/ryonakae/hermes-agent.git`、branch は `ryonakae`。取得途中の失敗や venv 作成失敗では、既存実体を削除・再作成せず個別に確認する。標準 installer の `venv` 段階は既存 venv を削除するため、再実行しない。
+
+checkout と venv が正常で、Python 依存の導入だけ失敗した例では、原因を解消してから同じ HEAD の installer を次のように呼ぶ。通常端末で実行し、利用中の CLI・サービスは先に停止する。
+
+```fish
+bash ~/.hermes/hermes-agent/scripts/install.sh --stage python-deps \
+  --dir ~/.hermes/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+```
+
+成功したら未完了の `node-deps` を実行する。そこだけが失敗していた場合は、Python 段階を繰り返さずここから再開する。
+
+```fish
+bash ~/.hermes/hermes-agent/scripts/install.sh --stage node-deps \
+  --dir ~/.hermes/hermes-agent --hermes-home ~/.hermes --branch ryonakae \
+  --skip-browser --skip-computer-use
+```
+
+対象の依存導入がすべて成功してから完了記録を更新し、初回導入 task が完了済みと判定することを確認する。
+
+```fish
+bash ~/.hermes/hermes-agent/scripts/install.sh --stage complete \
+  --dir ~/.hermes/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+mise -C ~/dotfiles -E hermes run hermes:install
+```
+
+途中で HEAD が変わった場合や、成功した段階が不明な場合は、この手順で完了扱いにせず状態を確認する。初回 setup の続きなら[残りの段階](#runtime-復旧後の残りを完了する)へ戻る。更新だった場合は CLI の起動を確認してから、更新のために止めたサービスだけ再開する。
 
 ## fish に切り替わらない
 
@@ -123,7 +157,7 @@ env MISE_ENV= /opt/homebrew/bin/mise -C ~ install 'pypi:git+https://github.com/r
 
 - Homebrew：formula / cask の提供版と実際の解決先を確認する。Brewfile は全依存の版固定ではない。
 - mise：共通設定の exact pin と `mise which` を確認する。個別プロジェクトの設定が優先される場合がある。
-- Hermes：指定 Git tool のインストール先を `mise where` で確認する。別の `hermes` が PATH で先に選ばれていないか確認する。
+- Hermes：`git -C ~/.hermes/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認する。指定 checkout の `venv/bin/hermes` を使い、別の `hermes` が PATH で先に選ばれていないか確認する。
 - 移行中：旧 Nix の PATH・リンク・稼働プロセスが残っていないか、対象限定で確認する。
 
 上流最新版、管理元の提供版、導入済み版を区別する。復元のためだけに包括的な更新を実行しない。

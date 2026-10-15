@@ -77,8 +77,9 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             return $status
         case update
             echo "Hermes is managed by mise; no service was stopped or updated." >&2
-            echo "Update explicitly: /opt/homebrew/bin/mise -C ~ install --force 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'" >&2
-            echo "Restart explicitly with hermes-dashboard restart to use the updated Hermes." >&2
+            echo "Stop active Hermes services before updating; the checkout is updated in place." >&2
+            echo "Update explicitly: /opt/homebrew/bin/mise -C ~/dotfiles -E hermes run hermes:update" >&2
+            echo "After success, start only the services you stopped with hermes-gateway start / hermes-dashboard start." >&2
             return 1
         case '*'
             echo "Usage: hermes-dashboard {start|stop|restart|status|open|update}" >&2

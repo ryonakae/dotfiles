@@ -19,6 +19,8 @@ Nix / Home Manager / nix-homebrew 管理から Brewfile と mise へ切り替え
 
 必要な Homebrew パッケージ、mise runtime、選択済み外部リポジトリを対象限定で準備する。取得元が存在してから、配置に使うルートと構成別 mise 宣言を確認して trust する。
 
+Hermes は別承認のもと、[初回導入 task](apps.md#初回設定と起動)でソースと専用環境を準備する。この時点では旧 Nix 版のリンク・plist・稼働サービスを変更しない。新しい checkout 内の `venv/bin/hermes` が使えることを確認してから、所有引渡しへ進む。
+
 **旧所有を解除する前に、実 HOME の配置 dry-run を60秒の制限付きで完了確認する。** 家用の例：
 
 ```fish

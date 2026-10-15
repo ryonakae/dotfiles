@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import argparse
-import json
 import os
 from pathlib import Path
 import pwd
@@ -17,8 +16,6 @@ TARGET_USER = 'ryo.nakae'
 TARGET_HOME = Path('/Users/ryo.nakae')
 BREW = Path('/opt/homebrew/bin/brew')
 MISE = Path('/opt/homebrew/bin/mise')
-HERMES_TOOL = 'pypi:git+https://github.com/ryonakae/hermes-agent.git'
-HERMES_VERSION = 'ryonakae'
 SUDO_REFRESH_INTERVAL = 30
 SUDO_REFRESH_TIMEOUT = 10
 
@@ -142,7 +139,8 @@ def setup(configurations):
   brewfiles = [ROOT / 'brew' / f'Brewfile.{name}' for name in configurations]
   protected = [*declarations, *brewfiles, ROOT / 'scripts/macos-settings.sh']
   if 'default' in configurations:
-    protected += [ROOT / 'config/.config/mise/config.base.toml', ROOT / 'scripts/hermes_plists.py']
+    protected += [ROOT / 'config/.config/mise/config.base.toml', ROOT / 'scripts/hermes_plists.py',
+                  ROOT / 'mise.hermes.toml', ROOT / 'scripts/hermes-install.py']
   snapshot = {}
   environment = {key: value for key, value in os.environ.items()
                  if not key.startswith('MISE_') or key == 'MISE_DATA_DIR'}
@@ -238,21 +236,14 @@ def setup(configurations):
                       MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'config/.config/mise/config.base.toml'))
       home_mise = [str(MISE), '-C', str(home)]
       run('mise runtimes', [*home_mise, 'install', 'node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'], cwd=home, env=home_env)
-      result = run('Hermes installed check', [*home_mise, '--no-config', 'ls', '--installed', '--json', HERMES_TOOL],
-                   cwd=home, env=home_env, stdout=subprocess.PIPE, text=True)
-      try:
-        records = json.loads(result.stdout)
-      except (TypeError, ValueError) as error:
-        raise ValueError('invalid Hermes installation query JSON') from error
-      if not isinstance(records, list) or any(
-          not isinstance(record, dict) or record.get('installed') is not True
-          or not isinstance(record.get('version'), str) or not record['version']
-          for record in records):
-        raise ValueError('invalid Hermes installation query records; installation status is unknown')
-      if records and not any(record['version'] == HERMES_VERSION or record.get('requested_version') == HERMES_VERSION for record in records):
-        raise ValueError('Hermes installation query found another or unknown ref; inspect it before installing; no update attempted')
-      if not records:
-        run('Hermes initial install', [*home_mise, 'install', HERMES_TOOL + '@' + HERMES_VERSION], cwd=home, env=home_env)
+      hermes_declaration = ROOT / 'mise.hermes.toml'
+      hermes_mise = [str(MISE), '-C', str(ROOT), '-E', 'hermes']
+      hermes_env = dict(environment, MISE_ENV='hermes')
+      stage = 'Hermes declaration trust'
+      print(f'Trust only this declaration: {hermes_declaration}\n{snapshot[hermes_declaration].decode("utf-8")}')
+      confirm('trust', 'trust the Hermes lifecycle declaration')
+      run('Hermes declaration trust', [*hermes_mise, 'trust', str(hermes_declaration)], env=hermes_env)
+      run('Hermes initial install task', [*hermes_mise, 'run', 'hermes:install'], env=hermes_env)
       run('Hermes plist placement', ['/usr/bin/python3', str(ROOT / 'scripts/hermes_plists.py')])
     stage = 'macOS settings'
     with sudo_authentication() as refresh:

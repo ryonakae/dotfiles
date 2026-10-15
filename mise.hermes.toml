@@ -1,0 +1,12 @@
+[bootstrap.repos]
+"~/.hermes/hermes-agent" = { url = "https://github.com/ryonakae/hermes-agent.git", ref = "ryonakae" }
+
+[tasks."hermes:install"]
+description = "Install Hermes using its standard installer stages, only when absent"
+run = '/usr/bin/python3 "{{config_root}}/scripts/hermes-install.py" install'
+raw = true
+
+[tasks."hermes:update"]
+description = "Explicitly update the Hermes checkout and synchronize dependencies"
+run = '/usr/bin/python3 "{{config_root}}/scripts/hermes-install.py" update'
+raw = true

@@ -10,6 +10,7 @@
 - 開始時の既存変更: config/.claude/settings.json、config/.config/fish/config.fish、config/.config/ghostty/config、flake.lock。未追跡の .DS_Store（root/config/docs/nix）も保持する。
 
 ## 決定事項
+- 実装後の方式変更: mise の Git Python backend は対象 fork の wheel ビルド禁止と両立しなかった。ユーザーは「前者の方式で」として、mise task から fork の標準 shell installer を呼ぶ方式を選択し、更新計画を `/implement` で承認した。初回だけ導入・別 task で明示更新という Q6 は維持する。以下の Git Python backend に関する調査記録は採用方式ではない。具体的な契約は[移行計画](../plans/2026-10-14-nix-to-mise.md) §4 を参照する。
 - Q11: セットアップスクリプトは全体実行だけを用意する。アプリ・配置・macOS 設定などを選ぶ独自の部分実行機能は追加せず、部分操作は brew bundle や mise dot apply 等の標準コマンドを直接使う。よく使う操作はユーザー向け文書に記載する。
   - 出典: Q11 の A に対するユーザーの「a」。
 - Q10: 今回の計画・実装の完了範囲に、この Mac での新方式への切替、Nix に依存しない動作確認、Nix 撤去までを含める。新旧の管理を長期間併存させることを目標にしない。

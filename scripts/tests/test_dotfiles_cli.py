@@ -1,6 +1,5 @@
 import importlib.util
 import io
-import json
 import os
 from pathlib import Path
 import signal
@@ -14,7 +13,6 @@ from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
-HERMES = 'pypi:git+https://github.com/ryonakae/hermes-agent.git'
 
 
 class SetupCliTests(unittest.TestCase):
@@ -40,7 +38,8 @@ class SetupCliTests(unittest.TestCase):
       path = self.root / 'config' / name
       path.parent.mkdir(parents=True, exist_ok=True)
       path.write_text('fixture\n')
-    for name in ('hermes_plists.py', 'macos-settings.sh'):
+    (self.root / 'mise.hermes.toml').write_text('# Hermes lifecycle\n')
+    for name in ('hermes_plists.py', 'hermes-install.py', 'macos-settings.sh'):
       (self.root / 'scripts' / name).write_text('fixture\n')
     prefix = base / 'homebrew'
     (prefix / 'bin').mkdir(parents=True)
@@ -67,7 +66,6 @@ class SetupCliTests(unittest.TestCase):
     environment = patch.dict(os.environ, {'HOME': str(self.home), 'APP_SANDBOX_CONTAINER_ID': '', 'MISE_ENV': 'work'})
     environment.start()
     self.addCleanup(environment.stop)
-    self.hermes_records = []
 
   def patch(self, name, **kwargs):
     owner = self.module
@@ -94,8 +92,7 @@ class SetupCliTests(unittest.TestCase):
           link.parent.mkdir(parents=True, exist_ok=True)
           if not link.is_symlink():
             link.symlink_to(self.root / 'config' / source)
-    output = json.dumps(self.hermes_records) if 'ls' in command else '/fixture/clt\n'
-    return subprocess.CompletedProcess(command, 0, stdout=output)
+    return subprocess.CompletedProcess(command, 0, stdout='/fixture/clt\n')
 
   def invoke(self, *profiles):
     with patch('sys.argv', ['dotfiles.py', 'setup', *profiles]):
@@ -146,18 +143,23 @@ class SetupCliTests(unittest.TestCase):
       '--file=' + str(self.root / 'brew/Brewfile.private'),
       '--file=' + str(self.root / 'brew/Brewfile.default'),
     ])
+    hermes_mise = [str(self.module.MISE), '-C', str(self.root), '-E', 'hermes']
+    hermes_task = [*hermes_mise, 'run', 'hermes:install']
+    hermes_trust = [*hermes_mise, 'trust', str(self.root / 'mise.hermes.toml')]
     for command in commands:
       if '-E' in command:
-        self.assertEqual(command[command.index('-E') + 1], 'private,default')
+        expected = 'hermes' if command in (hermes_task, hermes_trust) else 'private,default'
+        self.assertEqual(command[command.index('-E') + 1], expected)
     installs = [c for c in commands if 'install' in c]
     self.assertEqual(installs, [
       [str(self.module.MISE), '-C', str(self.home), 'install', 'node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'],
-      [str(self.module.MISE), '-C', str(self.home), 'install', HERMES + '@ryonakae'],
     ])
-    self.assertIn([str(self.module.MISE), '-C', str(self.home), '--no-config', 'ls', '--installed', '--json', HERMES], commands)
-    self.assertLess(commands.index(installs[0]), commands.index(installs[1]))
+    self.assertIn(hermes_task, commands)
+    self.assertIn(hermes_trust, commands)
+    self.assertLess(commands.index(installs[0]), commands.index(hermes_trust))
+    self.assertLess(commands.index(hermes_trust), commands.index(hermes_task))
     plists = ['/usr/bin/python3', str(self.root / 'scripts/hermes_plists.py')]
-    self.assertLess(commands.index(installs[1]), commands.index(plists))
+    self.assertLess(commands.index(hermes_task), commands.index(plists))
     self.assertLess(commands.index(plists), next(i for i, c in enumerate(commands) if 'defaults' in c))
     self.assertEqual([c[-1] for c in commands if c[0] == '/bin/bash'], ['private', 'default'])
     for call in self.run.call_args_list:
@@ -166,27 +168,24 @@ class SetupCliTests(unittest.TestCase):
         self.assertEqual(call.kwargs['env']['MISE_ENV'], '')
         self.assertEqual(call.kwargs['env']['MISE_GLOBAL_CONFIG_FILE'], str(self.root / 'config/.config/mise/config.base.toml'))
         self.assertEqual(call.kwargs['env']['MISE_CEILING_PATHS'], str(self.home))
+      elif call.args[0] in (hermes_task, hermes_trust):
+        self.assertEqual(call.kwargs['cwd'], self.root)
+        self.assertEqual(call.kwargs['env']['MISE_ENV'], 'hermes')
+        self.assertEqual(call.kwargs['env']['MISE_GLOBAL_CONFIG_FILE'], str(self.root / 'mise.toml'))
     self.assertEqual((self.home / '.config/mise/config.toml').readlink(), self.root / 'config/.config/mise/config.base.toml')
 
   def test_custom_mise_data_directory_is_shared_by_runtime_and_hermes_operations(self):
     data = str(self.home / 'custom mise data')
-    for installed in (False, True):
-      with self.subTest(installed=installed):
-        self.run.reset_mock()
-        self.hermes_records = [{'installed': True, 'version': 'ryonakae'}] if installed else []
-        with patch.dict(os.environ, {'MISE_DATA_DIR': data, 'MISE_CONFIG_FILE': '/unselected/mise.toml'}):
-          self.invoke('default')
-        calls = [call for call in self.run.call_args_list
-                 if call.args[0][0] == str(self.module.MISE)]
-        self.assertTrue(calls)
-        for call in calls:
-          self.assertEqual(call.kwargs['env'].get('MISE_DATA_DIR'), data)
-          self.assertNotIn('MISE_CONFIG_FILE', call.kwargs['env'])
-        self.assertTrue(any('ls' in call.args[0] for call in calls))
-        self.assertTrue(any('node' in call.args[0] for call in calls))
-        hermes_installs = [call for call in calls
-                          if 'install' in call.args[0] and HERMES + '@ryonakae' in call.args[0]]
-        self.assertEqual(len(hermes_installs), 0 if installed else 1)
+    with patch.dict(os.environ, {'MISE_DATA_DIR': data, 'MISE_CONFIG_FILE': '/unselected/mise.toml'}):
+      self.invoke('default')
+    calls = [call for call in self.run.call_args_list
+             if call.args[0][0] == str(self.module.MISE)]
+    self.assertTrue(calls)
+    for call in calls:
+      self.assertEqual(call.kwargs['env'].get('MISE_DATA_DIR'), data)
+      self.assertNotIn('MISE_CONFIG_FILE', call.kwargs['env'])
+    self.assertTrue(any('node' in call.args[0] for call in calls))
+    self.assertEqual(sum('hermes:install' in call.args[0] for call in calls), 1)
 
   def test_declared_host_user_and_home_must_match_account_and_environment(self):
     for mismatch in ('username', 'declared home', 'environment home'):
@@ -287,34 +286,8 @@ class SetupCliTests(unittest.TestCase):
     self.assertTrue(any("'install'" in c.args[0] for c in self.prompt.call_args_list))
     self.assertLess(commands.index(['/bin/bash', '-c', installer]), commands.index([str(self.module.BREW), 'install', 'mise', 'uv']))
 
-  def test_installed_hermes_branch_is_not_reinstalled_or_updated(self):
-    self.hermes_records = [{
-      'version': 'ryonakae',
-      'installed': True,
-      'active': False,
-      'install_path': str(self.home / '.local/share/mise/installs/pypi-git/fixture'),
-    }]
-    self.invoke('default')
-    installs = [c for c in self.commands() if 'install' in c]
-    self.assertEqual(len(installs), 1)
-    self.assertEqual(installs[0][-5:], ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'])
-    self.assertFalse(any('upgrade' in c for c in self.commands()))
-
-  def test_invalid_hermes_query_is_an_error_not_missing_installation(self):
-    for records in ({}, ['unexpected'], [{'version': 'hash', 'installed': True}],
-                    [{'requested_version': 'ryonakae', 'installed': False}],
-                    [{'version': 'main', 'installed': True}]):
-      with self.subTest(records=records):
-        self.run.reset_mock()
-        self.hermes_records = records
-        with self.assertRaisesRegex(ValueError, 'Hermes installation query'):
-          self.invoke('default')
-        self.assertFalse(any(HERMES + '@ryonakae' in c for c in self.commands()))
-        self.assertFalse(any('defaults' in c for c in self.commands()))
-        self.assertNotIn('Setup complete:', self.module.sys.stdout.getvalue())
-
   def test_all_selected_declarations_exist_before_any_command_and_report_preflight_failure(self):
-    for missing in ('brew/Brewfile.private', 'mise.private.toml'):
+    for missing in ('brew/Brewfile.private', 'mise.private.toml', 'mise.hermes.toml', 'scripts/hermes-install.py'):
       with self.subTest(missing=missing):
         path = self.root / missing
         before = path.read_bytes()
@@ -366,7 +339,7 @@ class SetupCliTests(unittest.TestCase):
 
   def test_each_command_failure_stops_later_stages_and_reports_partial_completion(self):
     for failing in ('clt', 'sudo', 'bundle', 'trust', 'repos', 'dry-run', 'apply',
-                    'runtimes', 'hermes-query', 'hermes-install', 'plist', 'defaults', 'supplement'):
+                    'runtimes', 'hermes-trust', 'hermes-install', 'plist', 'defaults', 'supplement'):
       with self.subTest(failing=failing):
         self.run.reset_mock()
         self.module.sys.stdout.truncate(0)
@@ -381,8 +354,8 @@ class SetupCliTests(unittest.TestCase):
             'dry-run': '--dry-run' in command,
             'apply': 'dot' in command and '--yes' in command,
             'runtimes': command[-5:] == ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'],
-            'hermes-query': 'ls' in command,
-            'hermes-install': HERMES + '@ryonakae' in command,
+            'hermes-trust': 'trust' in command and command[-1] == str(self.root / 'mise.hermes.toml'),
+            'hermes-install': 'hermes:install' in command,
             'plist': command[0] == '/usr/bin/python3',
             'defaults': 'defaults' in command,
             'supplement': command[0] == '/bin/bash',
@@ -399,6 +372,27 @@ class SetupCliTests(unittest.TestCase):
         self.assertIn('Completed:', self.module.sys.stderr.getvalue())
         self.assertNotIn('Setup complete:', self.module.sys.stdout.getvalue())
         self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
+
+  def test_hermes_trust_cancellation_and_changed_files_stop_before_task(self):
+    for changed in (None, 'mise.hermes.toml', 'scripts/hermes-install.py'):
+      with self.subTest(changed=changed):
+        self.run.reset_mock()
+        path = self.root / changed if changed else None
+        before = path.read_bytes() if path else None
+        def confirm(prompt):
+          if 'Hermes lifecycle' in prompt:
+            if path:
+              path.write_text('changed after setup confirmation\n')
+            else:
+              return 'no'
+          return self.confirm(prompt)
+        self.prompt.side_effect = confirm
+        with self.assertRaisesRegex(ValueError, 'changed after confirmation|cancelled'):
+          self.invoke('default')
+        self.assertFalse(any('hermes:install' in c or 'defaults' in c for c in self.commands()))
+        self.assertFalse(any('trust' in c and c[-1] == str(self.root / 'mise.hermes.toml') for c in self.commands()))
+        if path:
+          path.write_bytes(before)
 
   def test_dry_run_timeout_preserves_existing_home_and_does_not_apply(self):
     marker = self.home / 'unmanaged-file'
@@ -448,6 +442,8 @@ class SetupCliTests(unittest.TestCase):
   def test_work_only_ignores_unselected_declarations_and_default_runtimes(self):
     (self.root / 'mise.default.toml').unlink()
     (self.root / 'brew/Brewfile.default').unlink()
+    (self.root / 'mise.hermes.toml').unlink()
+    (self.root / 'scripts/hermes-install.py').unlink()
     self.invoke('work')
     self.assertFalse(any('install' in c or 'ls' in c for c in self.commands()))
     self.assertEqual([c[-1] for c in self.commands() if c[0] == '/bin/bash'], ['work'])

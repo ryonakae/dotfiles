@@ -33,7 +33,7 @@ description: >-
 
 - 本文は直接リンクで即時反映。配置・外部 repos・macOS defaults は構成別 mise 宣言、アプリ一覧は構成別 Brewfile、共通 runtime は既存 mise 設定を使う。別管理方式を重ねない。
 - 構成は全件明示し、default を自動追加しない。ルート `mise.toml` に共通リソースを置かない。全体 setup と標準ツールの部分操作を分け、旧 Nix build/switch/update の恒久互換層は追加しない。
-- runtime の exact 版を維持する。Hermes は指定 fork の ryonakae ブランチを未導入時だけ入れ、更新は別の明示操作。追加依存・全機能確認は移行ゲートにしない。
+- runtime の exact 版を維持する。Hermes は専用 mise task から指定 fork の標準 installer で未導入時だけ入れ、更新は別 task。通常の repos 更新に含めない。追加依存・全機能確認は移行ゲートにしない。
 - 外部スキル・fish/Yazi plugin はブランチ追従を許容し、スキルは選択済みだけ配置する。自作の2 glob・共通優先関係は[運用条件](references/setup.md#外部自作スキル)を確認する。
 - 最新版の相談では解決先・使用版・管理元の提供版を分ける。更新済みと希望版の取得・動作成功を区別する。
 - 構文・差分・関連テストを確認する。検証のために実 HOME apply、サービス再起動、installer、GC を実行しない。
