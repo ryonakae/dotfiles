@@ -95,11 +95,11 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 
 ## Tasks
 
-実装開始時の review base は `d89bcdc2ee1582128d851223fec7722c45f1ca1e`。`master` と `origin/master` は一致し、既存 staged 変更はない。既存 unstaged 変更の扱いはユーザー承認済み: `config/.config/fish/config.fish` の cua installer による `.local/bin` PATH 追加は保持して周囲を移行し、`flake.lock` の Hermes fork revision 更新（`fc0ce243cf515f7e65513eb068c44c33c7d41980`）は移行中に利用して Nix 撤去時にファイルごと削除する。Claude/Ghostty 設定と `.DS_Store` は対象外として保持する。実装・隔離テストは下記まで進行。実機適用、独立レビュー、push は未実施。
+実装開始時の review base は `d89bcdc2ee1582128d851223fec7722c45f1ca1e`。`master` と `origin/master` は一致し、既存 staged 変更はない。既存 unstaged 変更の扱いはユーザー承認済み: `config/.config/fish/config.fish` の cua installer による `.local/bin` PATH 追加は保持して周囲を移行し、`flake.lock` の Hermes fork revision 更新（`fc0ce243cf515f7e65513eb068c44c33c7d41980`）は移行中に利用して Nix 撤去時にファイルごと削除する。Claude/Ghostty 設定と `.DS_Store` は対象外として保持する。実装・隔離テストは下記まで進行。実機適用と push は未実施。Tasks 1–5 の候補は local commit と独立レビューを実施済み。
 
 ### 実装・検証の進捗
 
-- Tasks 1–5 の候補を実装済み。構成宣言・setup・起動経路・文書が同じ新契約に依存するため、検証後に一つの成果物として local commit し、独立レビューへ渡す予定。
+- Tasks 1–5 の候補を `8200bf604ff9de7a5923002aa901c84b4b8256ce` に local commit。構成宣言・setup・起動経路・文書が同じ新契約に依存するため、一つの成果物にまとめた。
 - 構成: `brew/Brewfile.{default,private,work}` と `mise.{default,private,work}.toml` を作成。外部14 checkout・16選択スキル、fish/Yazi plugin を repos とリンクへ移管。ルートは適用リソースなし。配置11件、repos/plugin 4件のテスト成功。親の検査で不存在 launcher 宣言を発見し、実在する2ファイルの配置へ修正済み。
 - setup: `scripts/dotfiles.py` を新契約へ変更。構成選択・環境隔離・確認後変更・sudo lifecycle・失敗時停止・Hermes 初回導入を含む23件成功。実 Git backend の導入後 `ls` 出力は未確認。
 - shell/Hermes: Nix 初期化を外し、Homebrew vendor snippet との二重 activation を防止。launcher・GUI adapter・確認付き通常 plist 配置を追加。起動契約25件、plist10件、TMPDIR 1件成功。実サービスは操作していない。
@@ -108,7 +108,11 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 - 一時 HM 引渡し: `nix/release-home-manager.nix` と flake package を追加。build と `nix flake check --no-update-lock-file` が成功。成果物 `/nix/store/9pj2p7ib2gzk94rihyxw9y5241bldmcd-home-manager-generation` の home-files は空、activation に launchctl・copyApps はない。適用はしていない。移行中の旧構成評価のため `nix/home/skills.nix` は新しい default 宣言を読む。
 - mise 提供版: Safehouse 内の検証用 `brew fetch` は Homebrew lock への書込み拒否で停止。その後、ユーザー承認下の通常端末で Homebrew 提供最新2026.10.8の取得に成功。一時領域のバイナリで配置11件・repos/plugin 4件と default,private / private / work の defaults dry-run が成功。ホストへの install/link、実 HOME apply、OS設定変更はしていない。上流2026.10.9の通知があり、提供版とは区別する（上流版自体は未検証）。ログは `/tmp/dotfiles-latest-mise-verification.log`。
 - 統合テスト: Safehouse 内では96件中94件成功、skip 0、失敗2。未変更の `test_bootstrap_nix.py` の download-failure と daemon-mode が失敗し、後者は `/bin/rm: Operation not permitted`。ユーザー承認下で同じコマンド `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_*.py'` を通常端末で再実行し、96件すべて成功（終了0、skipなし）。ログは `/tmp/dotfiles-migration-tests-outside.log`。テストや受入条件の緩和はしていない。
-- commit 対象: fish の既存 Cua PATH 追加を未コミットのまま保持し、今回の移行差分だけを分離して stage する扱いをユーザー承認済み。他者の Claude/Ghostty/flake.lock 差分と `.DS_Store` は引き続き対象外。独立レビュー、実機引渡し・撤去と最終ゲートは未完了。
+- commit 対象: fish の既存 Cua PATH 追加を未コミットのまま保持し、今回の移行差分だけを分離して stage する扱いをユーザー承認済み。他者の Claude/Ghostty/flake.lock 差分と `.DS_Store` は引き続き対象外。実機引渡し・撤去と最終ゲートは未完了。
+- 独立レビュー: base `d89bcdc2ee1582128d851223fec7722c45f1ca1e` → head `8200bf604ff9de7a5923002aa901c84b4b8256ce` の36ファイルを read-only の別コンテキストで確認。blocking/high と decision required はなし。以下の medium 2件は親でも確認し、未修正で残す。修正 cycle は未実施。
+  1. `scripts/dotfiles.py:147` が `MISE_DATA_DIR` も除去するため、カスタムデータディレクトリ使用時、setup と普段の shell/Hermes の導入・参照先が分離する。構成選択の隔離とデータディレクトリの継承を分ける修正が推奨される。
+  2. `docs/troubleshooting.md:77` は runtime 復旧後に fish 切替・版確認だけを案内しており、その後に残る Hermes 導入・plist・選択 macOS 設定への復旧導線が不足する。全体 setup の再実行ではなく、未実施段階の個別操作へ接続する修正が推奨される。
+- コミット済み fish の構文を再確認し、既存 Cua PATH 追加だけが unstaged に残ることを確認。Claude/Ghostty/flake.lock と `.DS_Store` はコミットに含めていない。
 
 - [ ] **1. 構成宣言と標準ツールへの移管**: `brew/`、ルート `mise*.toml`、必要な `config/` を整備する。現行アプリ一覧・ホスト差分・取得元・選択スキルを移し、default の明示選択と自作優先を保つ。plugin の標準導入方式を決め、Nix 所有との初回引渡し対象を列挙する。
 - [ ] **2. セットアップ入口**: `scripts/dotfiles.sh` / `scripts/dotfiles.py` を新契約へ置換する。既存テストの境界で TDD を行い、構成選択・実行順・sudo lifecycle・失敗時中止・Hermes の初回限定導入を保証する。runtime の版指定は維持する。
