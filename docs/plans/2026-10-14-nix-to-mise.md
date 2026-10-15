@@ -109,9 +109,10 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 - mise 提供版: Safehouse 内の検証用 `brew fetch` は Homebrew lock への書込み拒否で停止。その後、ユーザー承認下の通常端末で Homebrew 提供最新2026.10.8の取得に成功。一時領域のバイナリで配置11件・repos/plugin 4件と default,private / private / work の defaults dry-run が成功。ホストへの install/link、実 HOME apply、OS設定変更はしていない。上流2026.10.9の通知があり、提供版とは区別する（上流版自体は未検証）。ログは `/tmp/dotfiles-latest-mise-verification.log`。
 - 統合テスト: Safehouse 内では96件中94件成功、skip 0、失敗2。未変更の `test_bootstrap_nix.py` の download-failure と daemon-mode が失敗し、後者は `/bin/rm: Operation not permitted`。ユーザー承認下で同じコマンド `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_*.py'` を通常端末で再実行し、96件すべて成功（終了0、skipなし）。ログは `/tmp/dotfiles-migration-tests-outside.log`。テストや受入条件の緩和はしていない。
 - commit 対象: fish の既存 Cua PATH 追加を未コミットのまま保持し、今回の移行差分だけを分離して stage する扱いをユーザー承認済み。他者の Claude/Ghostty/flake.lock 差分と `.DS_Store` は引き続き対象外。実機引渡し・撤去と最終ゲートは未完了。
-- 独立レビュー: base `d89bcdc2ee1582128d851223fec7722c45f1ca1e` → head `8200bf604ff9de7a5923002aa901c84b4b8256ce` の36ファイルを read-only の別コンテキストで確認。blocking/high と decision required はなし。以下の medium 2件は親でも確認し、未修正で残す。修正 cycle は未実施。
+- 独立レビュー: base `d89bcdc2ee1582128d851223fec7722c45f1ca1e` → head `8200bf604ff9de7a5923002aa901c84b4b8256ce` の36ファイルを read-only の別コンテキストで確認。blocking/high と decision required はなし。以下の medium 2件は親でも確認し、ユーザー承認後に修正した。修正差分の再レビューは下記の進捗に記録する。
   1. `scripts/dotfiles.py:147` が `MISE_DATA_DIR` も除去するため、カスタムデータディレクトリ使用時、setup と普段の shell/Hermes の導入・参照先が分離する。構成選択の隔離とデータディレクトリの継承を分ける修正が推奨される。
   2. `docs/troubleshooting.md:77` は runtime 復旧後に fish 切替・版確認だけを案内しており、その後に残る Hermes 導入・plist・選択 macOS 設定への復旧導線が不足する。全体 setup の再実行ではなく、未実施段階の個別操作へ接続する修正が推奨される。
+- 修正 cycle 1: `MISE_DATA_DIR` を継承しつつ構成選択変数の隔離を維持。カスタムデータディレクトリで Hermes 未導入／導入済みの両方を対象に Red → Green を確認し、setup テスト24件が成功。runtime 復旧後の Hermes 照会・初回限定 install・plist・選択 macOS 設定への導線を追加。Python 構文・参照先・`git diff --check` は成功。変更が及ばない統合テスト・mise・Nix の既存成功結果は再利用し、修正差分の独立再レビュー待ち。
 - コミット済み fish の構文を再確認し、既存 Cua PATH 追加だけが unstaged に残ることを確認。Claude/Ghostty/flake.lock と `.DS_Store` はコミットに含めていない。
 
 - [ ] **1. 構成宣言と標準ツールへの移管**: `brew/`、ルート `mise*.toml`、必要な `config/` を整備する。現行アプリ一覧・ホスト差分・取得元・選択スキルを移し、default の明示選択と自作優先を保つ。plugin の標準導入方式を決め、Nix 所有との初回引渡し対象を列挙する。

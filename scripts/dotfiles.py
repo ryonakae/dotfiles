@@ -144,7 +144,8 @@ def setup(configurations):
   if 'default' in configurations:
     protected += [ROOT / 'config/.config/mise/config.base.toml', ROOT / 'scripts/hermes_plists.py']
   snapshot = {}
-  environment = {key: value for key, value in os.environ.items() if not key.startswith('MISE_')}
+  environment = {key: value for key, value in os.environ.items()
+                 if not key.startswith('MISE_') or key == 'MISE_DATA_DIR'}
   environment.update(
     MISE_ENV=','.join(configurations),
     MISE_CEILING_PATHS=str(ROOT.parent),

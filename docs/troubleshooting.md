@@ -74,7 +74,30 @@ setup の `Completed` に `link verification` があり、共通 runtime 導入�
 env MISE_ENV= /opt/homebrew/bin/mise -C ~ install node python ruby bun aqua:aws/aws-cli
 ```
 
-設定済みの版を導入する。既に導入済みの runtime を強制再インストールする必要はない。成功したら[初回セットアップの fish 切替](setup.md#6-fish-に切り替える)から続ける。切替済みなら[版の確認](setup.md#7-ランタイムを確認する)だけでよい。setup や設定配置はやり直さない。
+設定済みの版を導入する。既に導入済みの runtime を強制再インストールする必要はない。setup 時と同じ `MISE_DATA_DIR` を使い、カスタム指定がある場合は保持する。成功しても後続の Hermes・plist・macOS 設定は未実施なので、次の手順へ進む。setup や設定配置はやり直さない。
+
+### runtime 復旧後の残りを完了する
+
+`Completed` を確認し、未完了の段階だけを順に実行する。各操作が成功してから次へ進む。以下の Hermes 操作は `default` を選択していた場合だけ行う。
+
+1. Hermes の導入状況を照会する。
+
+```fish
+env MISE_ENV= /opt/homebrew/bin/mise -C ~ --no-config ls --installed --json 'pypi:git+https://github.com/ryonakae/hermes-agent.git'
+```
+
+照会が成功し、結果が空配列 `[]` の場合だけ初回導入する。
+
+```fish
+env MISE_ENV= /opt/homebrew/bin/mise -C ~ install 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'
+```
+
+結果に `installed: true` かつ `version` または `requested_version` が `ryonakae` の導入があれば、本体の install は省く。別 ref、不明な形式、照会エラーでは進めず確認する。`--force` や本体更新は復旧に使わない。
+
+2. [Hermes の起動定義配置](apps.md#hermes)を行う。既に配置済みなら同一時は無変更になり、サービスは起動・停止しない。
+3. [macOS の部分操作](usage.md#macos-設定を適用する)で、当初選択した構成の defaults と電源設定を完了する。適用前に変更対象の旧値・型・未設定状態を控え、成功済みの段階は繰り返さない。`default` を選択していなければ Hermes 操作をせず、この段階から再開する。
+
+残りの段階が完了してから、[初回セットアップの fish 切替以降](setup.md#6-fish-に切り替える)へ戻る。既に済んだ項目は繰り返さない。
 
 ## fish に切り替わらない
 

@@ -168,6 +168,26 @@ class SetupCliTests(unittest.TestCase):
         self.assertEqual(call.kwargs['env']['MISE_CEILING_PATHS'], str(self.home))
     self.assertEqual((self.home / '.config/mise/config.toml').readlink(), self.root / 'config/.config/mise/config.base.toml')
 
+  def test_custom_mise_data_directory_is_shared_by_runtime_and_hermes_operations(self):
+    data = str(self.home / 'custom mise data')
+    for installed in (False, True):
+      with self.subTest(installed=installed):
+        self.run.reset_mock()
+        self.hermes_records = [{'installed': True, 'version': 'ryonakae'}] if installed else []
+        with patch.dict(os.environ, {'MISE_DATA_DIR': data, 'MISE_CONFIG_FILE': '/unselected/mise.toml'}):
+          self.invoke('default')
+        calls = [call for call in self.run.call_args_list
+                 if call.args[0][0] == str(self.module.MISE)]
+        self.assertTrue(calls)
+        for call in calls:
+          self.assertEqual(call.kwargs['env'].get('MISE_DATA_DIR'), data)
+          self.assertNotIn('MISE_CONFIG_FILE', call.kwargs['env'])
+        self.assertTrue(any('ls' in call.args[0] for call in calls))
+        self.assertTrue(any('node' in call.args[0] for call in calls))
+        hermes_installs = [call for call in calls
+                          if 'install' in call.args[0] and HERMES + '@ryonakae' in call.args[0]]
+        self.assertEqual(len(hermes_installs), 0 if installed else 1)
+
   def test_declared_host_user_and_home_must_match_account_and_environment(self):
     for mismatch in ('username', 'declared home', 'environment home'):
       with self.subTest(mismatch=mismatch):
