@@ -112,14 +112,15 @@ mise の Git Python backend で `pypi:git+https://github.com/ryonakae/hermes-age
 - 独立レビュー: base `d89bcdc2ee1582128d851223fec7722c45f1ca1e` → head `8200bf604ff9de7a5923002aa901c84b4b8256ce` の36ファイルを read-only の別コンテキストで確認。blocking/high と decision required はなし。以下の medium 2件は親でも確認し、ユーザー承認後に修正した。修正差分の再レビューは下記の進捗に記録する。
   1. `scripts/dotfiles.py:147` が `MISE_DATA_DIR` も除去するため、カスタムデータディレクトリ使用時、setup と普段の shell/Hermes の導入・参照先が分離する。構成選択の隔離とデータディレクトリの継承を分ける修正が推奨される。
   2. `docs/troubleshooting.md:77` は runtime 復旧後に fish 切替・版確認だけを案内しており、その後に残る Hermes 導入・plist・選択 macOS 設定への復旧導線が不足する。全体 setup の再実行ではなく、未実施段階の個別操作へ接続する修正が推奨される。
-- 修正 cycle 1: `MISE_DATA_DIR` を継承しつつ構成選択変数の隔離を維持。カスタムデータディレクトリで Hermes 未導入／導入済みの両方を対象に Red → Green を確認し、setup テスト24件が成功。runtime 復旧後の Hermes 照会・初回限定 install・plist・選択 macOS 設定への導線を追加。Python 構文・参照先・`git diff --check` は成功。変更が及ばない統合テスト・mise・Nix の既存成功結果は再利用し、修正差分の独立再レビュー待ち。
+- 修正 cycle 1: `MISE_DATA_DIR` を継承しつつ構成選択変数の隔離を維持。カスタムデータディレクトリで Hermes 未導入／導入済みの両方を対象に Red → Green を確認し、setup テスト24件が成功。runtime 復旧後の Hermes 照会・初回限定 install・plist・選択 macOS 設定への導線を追加。Python 構文・参照先・`git diff --check` は成功。変更が及ばない統合テスト・mise・Nix の既存成功結果は再利用。correction commit `2619af5ece4afe91e78744eb2b57b3cd2a7b1b9b` を独立再レビューし、2件の解消と新たな blocking/high・decision required がないことを確認した。元 reviewer の再開が不可だったため、指摘履歴と限定差分を新しい read-only コンテキストへ引き継いだ。
+- 実機準備の読み取り確認: `/run/current-system` と HM current-home は既存 Nix 世代を参照。Homebrew 本体リンクと両 marker が存在し、`/opt/homebrew/bin/{mise,fish,bash}` は未導入、uv は導入済み。Hermes plist 2件は既存の通常ファイル。導入・リンク解除・plist 置換・サービス操作はしていない。
 - コミット済み fish の構文を再確認し、既存 Cua PATH 追加だけが unstaged に残ることを確認。Claude/Ghostty/flake.lock と `.DS_Store` はコミットに含めていない。
 
-- [ ] **1. 構成宣言と標準ツールへの移管**: `brew/`、ルート `mise*.toml`、必要な `config/` を整備する。現行アプリ一覧・ホスト差分・取得元・選択スキルを移し、default の明示選択と自作優先を保つ。plugin の標準導入方式を決め、Nix 所有との初回引渡し対象を列挙する。
-- [ ] **2. セットアップ入口**: `scripts/dotfiles.sh` / `scripts/dotfiles.py` を新契約へ置換する。既存テストの境界で TDD を行い、構成選択・実行順・sudo lifecycle・失敗時中止・Hermes の初回限定導入を保証する。runtime の版指定は維持する。
-- [ ] **3. shell と Hermes の起動・配置**: fish 初期化、管理関数、`.local/libexec` の launcher、Safehouse wrapper、plist 配置を非 Nix 経路へ変更する。`scripts/tests/test_agent_runtime.py` 等の既存境界を更新し、サービスを動かさず契約を検証する。
-- [ ] **4. macOS 設定**: mise の宣言と必要最小限の補完処理へ現行値を移す。型、Dock、スクリーンロック、電源別設定を保持し、選択した構成だけ適用することを検証する。
-- [ ] **5. 文書・指示と実機移行準備**: `README.md`、`docs/setup.md` / `usage.md` / `migration.md` / `troubleshooting.md` / `apps.md`、`AGENTS.md`、dotfiles-setup スキルを新運用に合わせる。標準コマンドによる個別操作、Hermes の明示更新、新規 Mac の導入前提を記す。一時移行構成と対象限定の引渡し・復旧手順を準備する。
+- [x] **1. 構成宣言と標準ツールへの移管**: `brew/`、ルート `mise*.toml`、必要な `config/` を整備する。現行アプリ一覧・ホスト差分・取得元・選択スキルを移し、default の明示選択と自作優先を保つ。plugin の標準導入方式を決め、Nix 所有との初回引渡し対象を列挙する。
+- [x] **2. セットアップ入口**: `scripts/dotfiles.sh` / `scripts/dotfiles.py` を新契約へ置換する。既存テストの境界で TDD を行い、構成選択・実行順・sudo lifecycle・失敗時中止・Hermes の初回限定導入を保証する。runtime の版指定は維持する。
+- [x] **3. shell と Hermes の起動・配置**: fish 初期化、管理関数、`.local/libexec` の launcher、Safehouse wrapper、plist 配置を非 Nix 経路へ変更する。`scripts/tests/test_agent_runtime.py` 等の既存境界を更新し、サービスを動かさず契約を検証する。
+- [x] **4. macOS 設定**: mise の宣言と必要最小限の補完処理へ現行値を移す。型、Dock、スクリーンロック、電源別設定を保持し、選択した構成だけ適用することを検証する。
+- [x] **5. 文書・指示と実機移行準備**: `README.md`、`docs/setup.md` / `usage.md` / `migration.md` / `troubleshooting.md` / `apps.md`、`AGENTS.md`、dotfiles-setup スキルを新運用に合わせる。標準コマンドによる個別操作、Hermes の明示更新、新規 Mac の導入前提を記す。一時移行構成と対象限定の引渡し・復旧手順を準備する。
 - [ ] **6. 承認下でこの Mac を切り替える**: 上記の実機引渡し順序に従って Homebrew/HM/shell/Hermes を移管し、Nix 非依存を確認する。各段階の適用結果と未完了範囲をこの計画へ記録する。
 - [ ] **7. 撤去と最終整理**: 別承認で nix-darwin・Nix 本体を撤去する。`flake.nix` / `flake.lock` / `nix/`、`scripts/bootstrap-nix.sh`、廃止契約専用のテスト・現行文書を整理する。過去の dig/archived plan は履歴として保持し、現行手順として参照しない。
   - `flake.lock` には開始前から他者の変更がある。削除前にその差分の保全・扱いをユーザーへ確認する。fish/config や Claude/settings の既存変更も上書き・混入させない。`.DS_Store` は作業範囲外。
