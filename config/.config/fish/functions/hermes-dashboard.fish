@@ -76,9 +76,9 @@ function hermes-dashboard --description "Manage hermes dashboard (launchd + safe
             command open "$local_url"
             return $status
         case update
-            echo "Hermes is managed by Nix; no service was stopped or updated." >&2
-            echo "In the dotfiles repository: scripts/dotfiles.sh update hermes-agent; then scripts/dotfiles.sh build." >&2
-            echo "Apply the reviewed generation while Hermes remains running if needed; restart explicitly to use the updated definitions." >&2
+            echo "Hermes is managed by mise; no service was stopped or updated." >&2
+            echo "Update explicitly: /opt/homebrew/bin/mise -C ~ install --force 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'" >&2
+            echo "Restart explicitly with hermes-dashboard restart to use the updated Hermes." >&2
             return 1
         case '*'
             echo "Usage: hermes-dashboard {start|stop|restart|status|open|update}" >&2

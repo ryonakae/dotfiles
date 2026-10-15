@@ -5,7 +5,7 @@
   ...
 }:
 let
-  dotfiles = (builtins.fromTOML (builtins.readFile ../../mise.toml)).dotfiles;
+  dotfiles = (builtins.fromTOML (builtins.readFile ../../mise.default.toml)).dotfiles;
   localSkills =
     agent:
     let

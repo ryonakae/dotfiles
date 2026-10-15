@@ -51,6 +51,10 @@
     in
     {
       formatter.aarch64-darwin = pkgs.nixfmt;
+      packages.aarch64-darwin.release-home-manager = import ./nix/release-home-manager.nix {
+        inherit pkgs;
+        inherit (inputs) home-manager;
+      };
       apps.aarch64-darwin.skills-sources-lock = {
         type = "app";
         program = "${sourceLockProgram}/bin/skills-sources-lock";

@@ -2,13 +2,13 @@
 
 [README](../README.md) / トラブル対応
 
-失敗した段階とエラーを確認してから再開する。setup / switch は途中まで変更して止まる場合があり、自動では元に戻らない。別の適用を同時に起動しない。
+失敗した段階とエラーを確認してから再開する。setup は途中まで変更して止まる場合があり、自動では元に戻らない。別の適用を同時に起動しない。
 
 | 症状 | 読む場所 |
 |---|---|
 | Xcode・App Store の認証で止まる | [Xcode・App Store](#xcodeapp-store) |
-| Nix の導入で止まる | [Nix](#nix-の導入で止まる) |
-| `/etc` の衝突・権限不足・Homebrew の失敗 | [システム適用](#システム適用が失敗する) |
+| Nix 管理 Homebrew を検出して止まる | [既存 Nix 環境](#既存-nix-環境で止まる) |
+| 権限不足・Homebrew・macOS 設定の失敗 | [setup の失敗](#setup-が失敗する) |
 | 適用は成功したが、設定が配置されない | [設定配置だけ再開](#設定配置だけ再開する) |
 | 設定配置後の `mise install` が失敗する | [ランタイム導入だけ再開](#ランタイム導入だけ再開する) |
 | fish が起動しない | [fish](#fish-に切り替わらない) |
@@ -23,67 +23,62 @@
 - mas が進まない：App Store を開き、サインイン・利用規約・購入確認の画面を確認する。
 - 購入パスワードが何度も出る：システム設定の「Apple Account → メディアと購入」で、要求頻度を任意で調整する。無料ダウンロードは別設定の場合がある。選択肢は macOS・アカウント・Touch ID の設定によって異なる。
 
-原因を解消し、現在の処理が終了してから再開する。アプリ導入の途中で別の switch を重ねない。
+原因を解消し、現在の処理が終了してから再開する。アプリ導入の途中で別の setup を重ねない。
 
-## Nix の導入で止まる
+## 既存 Nix 環境で止まる
 
-`nix` が見つからない場合は、新しいターミナルを開き、インストーラの shell 初期化案内を確認する。
+Nix 管理 Homebrew や旧 Home Manager 所有リンクがある場合は、[移行手順](migration.md)で対象を確認して引き渡す。通常 setup の再実行や force で押し通さない。Homebrew 全体を uninstall しない。
 
-既存 Nix や残存パスが検出された場合は、その状態を確認する。bootstrap の再実行や、既存パスの削除・再インストールで押し通さない。
+## setup が失敗する
 
-## システム適用が失敗する
+ログの `Setup stopped at` と `Completed`、終了コードを確認する。失敗段階にも一部変更が残る場合がある。原因と途中状態を確認してから、標準コマンドで必要な部分だけ再開する。
 
 | エラー | 対処 |
 |---|---|
-| `Backup already exists` / `Shell backup stopped` | `/etc/bashrc`・`/etc/zshrc` と対応する `.before-nix-darwin` を確認する。一部だけ退避済みの場合もある。既存退避を上書き・削除しない |
-| `Unexpected files in /etc` | エラーの対象と残したい内容を確認する。自動退避は bashrc / zshrc の確認付き処理だけ。他のファイルは個別に扱う |
 | `Could not write domain com.apple.universalaccess` | 実行元アプリの[フルディスクアクセス](setup.md#2-ターミナルにフルディスクアクセスを許可する)を確認し、端末を開き直す |
-| `brew bundle` の失敗 | 失敗した formula / cask と理由を確認する。無効化された cask は同じ成果物を再適用しても直らない。宣言を直した場合は再ビルドする |
+| `brew bundle` の失敗 | 失敗した formula / cask と理由を確認する。無効化された cask は Brewfile を直し、失敗した構成だけ `brew bundle` を再開する |
+| repos の dirty / origin 不一致 | 対象 checkout の変更と取得元を確認する。変更を捨てず、独自 updater や別 checkout を重ねない |
+| plist の衝突・手動変更 | 実配置と生成結果・所有元を確認する。旧 HM 由来なら移行として引き渡す。自動上書きしない |
+| macOS / 電源設定の失敗 | 変更済みの対象キー・構成を確認し、[macOS の部分操作](usage.md#macos-設定を適用する)を使う。ハードウェア非対応を成功扱いしない |
 | その他の衝突 | 該当ファイル・リンク・変更済み範囲を確認する。force や一括退避を使わない |
 
-ログの `Completed` と `System profile` / `current-system` を確認する。profile 登録だけでは適用成功ではない。原因と途中状態を確認できたら、[確認済み成果物の switch](usage.md#ビルドと適用を分ける)から再開する。宣言を変更した場合は新しく build する。
-
-sudo の認証更新で止まった場合も、適用結果を確認してから再認証する。パスワードをスクリプトへ保存しない。
+sudo の認証更新で止まった場合も、進行中の操作結果を確認してから再認証する。パスワードをスクリプトへ保存しない。成功済みの全体 setup を無条件に繰り返さない。
 
 ## 設定配置だけ再開する
 
-システム適用が成功し、mise の設定配置だけが未完了の場合に使う。適用自体の失敗をこの手順で飛ばさない。
+選択したアプリ・repos の準備が済み、mise の配置が未完了の場合に使う。外部の配置元がまだなければ、先に[repos の取得・更新](usage.md#外部スキルと-plugin-を更新する)を行う。
 
-衝突やタイムアウトの原因を解消してから、通常端末で進める。以下は zsh・fish 共通。
+衝突や timeout の原因を解消してから通常端末で進める。以下は家用の例。ルートと選択構成の宣言を確認して、それらだけを trust する。同じ内容を trust 済みなら不要。
 
-```sh
-"/etc/profiles/per-user/$USER/bin/mise" --version
+```fish
+/opt/homebrew/bin/mise trust ~/dotfiles/mise.toml
+/opt/homebrew/bin/mise trust ~/dotfiles/mise.default.toml
+/opt/homebrew/bin/mise trust ~/dotfiles/mise.private.toml
+/usr/bin/python3 -c 'import os, subprocess; subprocess.run(["/opt/homebrew/bin/mise", "-C", os.path.expanduser("~/dotfiles"), "-E", "default,private", "dot", "apply", "--dry-run"], timeout=60, check=True)'
 ```
 
-`~/dotfiles/mise.toml` の内容を確認して、そのファイルだけを trust する。同じ内容を trust 済みなら最初のコマンドは不要。
+60秒以内に成功し、配置予定に不明な実体・別リンクがなければ適用する。未知のリンクが自動拒否されるとは限らないため表示を確認する。失敗・時間超過では先へ進まない。
 
-```sh
-"/etc/profiles/per-user/$USER/bin/mise" trust ~/dotfiles/mise.toml
-/usr/bin/python3 -c 'import os, pwd, subprocess; mise = "/etc/profiles/per-user/" + pwd.getpwuid(os.getuid()).pw_name + "/bin/mise"; subprocess.run([mise, "-C", os.path.expanduser("~/dotfiles"), "dot", "apply", "--dry-run"], timeout=60, check=True)'
-```
-
-60秒以内に成功し、配置予定に不明な実体・別リンクがなければ適用する。未知のリンクが自動で拒否されるとは限らないため、表示を確認する。失敗・時間超過では先へ進まない。
-
-```sh
-"/etc/profiles/per-user/$USER/bin/mise" -C ~/dotfiles dot apply
+```fish
+/opt/homebrew/bin/mise -C ~/dotfiles -E default,private dot apply
 ls -l ~/.config/fish/config.fish ~/.config/mise/config.toml
 ```
 
-リンク先が `~/dotfiles/config/` の正本なら配置完了。setup の残りを進める場合は、次の[ランタイム導入](#ランタイム導入だけ再開する)へ進む。成功済みの build / switch や shell 退避は繰り返さない。
+リンク先が `~/dotfiles/config/` の正本なら配置完了。必要なら[ランタイム導入](#ランタイム導入だけ再開する)へ進む。成功済みのアプリ更新・repos 更新を繰り返す必要はない。
 
 ## ランタイム導入だけ再開する
 
-setup の `Completed` に `link verification` があり、`mise install` で失敗した場合に使う。ダウンロードやコンパイルのエラーを解消してから、通常端末で実行する。zsh・fish 共通。
+setup の `Completed` に `link verification` があり、共通 runtime 導入で失敗した場合に使う。ダウンロードやコンパイルのエラーを解消してから、通常端末で必要な runtime を指定する。
 
-```sh
-"/etc/profiles/per-user/$USER/bin/mise" -C "$HOME" install
+```fish
+env MISE_ENV= /opt/homebrew/bin/mise -C ~ install node python ruby bun aqua:aws/aws-cli
 ```
 
 設定済みの版を導入する。既に導入済みの runtime を強制再インストールする必要はない。成功したら[初回セットアップの fish 切替](setup.md#6-fish-に切り替える)から続ける。切替済みなら[版の確認](setup.md#7-ランタイムを確認する)だけでよい。setup や設定配置はやり直さない。
 
 ## fish に切り替わらない
 
-`chsh` が失敗した場合は `/etc/shells` に `/run/current-system/sw/bin/fish` があるか、switch が成功しているかを確認する。`/etc/shells` を手で上書きしない。
+`chsh` が失敗した場合は `/opt/homebrew/bin/fish` の導入と `/etc/shells` の登録を確認する。[初回の登録手順](setup.md#6-fish-に切り替える)を使い、`/etc/shells` を一括上書きしない。
 
 変更後も zsh が開く場合は、端末アプリの起動設定を「デフォルトのログインシェル」にする。独自の起動コマンドが設定されていると `chsh` だけでは変わらない。
 
@@ -103,11 +98,12 @@ setup の `Completed` に `link verification` があり、`mise install` で失�
 
 `type -a` と対象の version 表示で、実行先を確認する。
 
-- Homebrew：formula / cask の提供版を確認する。アプリの版は `flake.lock` では固定されない。
-- mise：共通設定の pin と `mise which` を確認する。個別プロジェクトの設定が優先される場合がある。
-- Nix：`flake.lock` の固定コミットを確認する。`unstable` でも build のたびに最新版へ更新されるわけではない。
+- Homebrew：formula / cask の提供版と実際の解決先を確認する。Brewfile は全依存の版固定ではない。
+- mise：共通設定の exact pin と `mise which` を確認する。個別プロジェクトの設定が優先される場合がある。
+- Hermes：指定 Git tool のインストール先を `mise where` で確認する。別の `hermes` が PATH で先に選ばれていないか確認する。
+- 移行中：旧 Nix の PATH・リンク・稼働プロセスが残っていないか、対象限定で確認する。
 
-[Nix の依存更新](usage.md#依存を更新する)は同じ input の他の依存も変える。更新先に希望版が含まれるか確認してからビルドする。復元のためだけに更新しない。
+上流最新版、管理元の提供版、導入済み版を区別する。復元のためだけに包括的な更新を実行しない。
 
 ## 会社が管理するアプリをスキップする
 
@@ -119,7 +115,7 @@ HOMEBREW_BUNDLE_CASK_SKIP=zoom
 
 既存ファイルと除外名を保持し、複数名は空白区切りにする。ユーザー別 `brew.env` の同名設定が優先される場合があるため、適用時の skip 表示を確認する。
 
-これは Bundle の導入対象から外す設定で、アプリの削除や組織管理の解除は行わない。マシン固有のファイルを Git / Nix store に入れない。
+これは Bundle の導入対象から外す設定で、アプリの削除や組織管理の解除は行わない。マシン固有のファイルを Git に入れない。
 
 ## 削除したファイルを復元する
 

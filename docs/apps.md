@@ -79,7 +79,15 @@ gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` �
 
 共通 API キー、Hermes の認証・設定を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
 
-起動定義は Nix が配置する。`hermes gateway install` や旧 installer で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
+Hermes 本体は mise の Git Python tool として `ryonakae/hermes-agent` の `ryonakae` ブランチから導入する。通常 setup は未導入時だけ入れ、導入済み本体は更新しない。起動 wrapper は mise の直接リンク、plist は setup の配置処理がユーザー所有の通常ファイルとして配置する。`hermes gateway install` や旧 installer で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
+
+起動定義だけを再配置する場合は、通常端末から引数なしで実行する。
+
+```fish
+/usr/bin/python3 ~/dotfiles/scripts/hermes_plists.py
+```
+
+同一なら無変更。初回作成・差分置換は表示を確認して `y` を入力する。未知の symlink や所有・親ディレクトリの問題では止まり、サービスは起動・停止しない。
 
 起動・停止・再起動は、対象ユーザーの `gui/<UID>` ドメインで行う。macOS にそのユーザーがログイン済みで、操作する端末から対象ドメインへアクセスできる必要がある。Herdr・tmux・SSH などで操作元が `Background` でも、それだけでは拒否しない。
 
@@ -98,7 +106,7 @@ start したサービスは以後のログイン時も起動対象になる。st
 
 常駐サービスの Keychain 利用は、実機のロック状態・アクセス許可を確認する。CLI で使えることだけでは、ログイン時の自動起動成功を保証しない。
 
-ローカル音声認識・マイク入力用の `voice` グループは同梱しない。利用したい場合は依存構成の変更が必要。
+追加依存や各機能の利用条件は必要になった時点で確認する。依存の完全一致や全機能の確認を移行の前提にはしない。Nix 固有の `voice` 除外はそのまま引き継がない。
 
 ### status の表示を確認する
 
@@ -106,7 +114,7 @@ start したサービスは以後のログイン時も起動対象になる。st
 
 ```text
 Gateway: running (PID 10250)
-Program: /nix/store/…-safe-hermes-gateway.sh
+Program: /Users/ryo.nakae/.config/agent-safehouse/safe-hermes-gateway.sh
 Start at login: enabled
 Restart on crash (plist): enabled
 ```
@@ -117,9 +125,16 @@ Restart on crash (plist): enabled
 
 ### Hermes を停止・更新する
 
-Hermes が稼働中でも、[Nix の更新・適用](usage.md#nix-を更新適用する)を実行できる。更新対象は `hermes-agent`。`hermes update` / `hermes-gateway update` は使わない。Nix の適用は Safehouse 外の通常端末から行い、`Aqua` セッションは必須ではない。
+本体更新は全体 setup と分け、Safehouse 外の通常端末で対象 Git tool と `ryonakae` ブランチだけを明示して再インストールする。`hermes update` / `hermes-gateway update` や包括的な `mise upgrade` は使わない。
 
-適用は起動定義の配置のみで、稼働中のサービスは自動再起動しない。本体・wrapper・起動定義の変更を反映するには、適用成功後に対象ユーザーの GUI ドメインを操作できる端末から、使っているサービスだけ再起動する。
+```fish
+env MISE_ENV= mise -C ~ install --force 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'
+env MISE_ENV= mise -C ~ where 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae'
+```
+
+実行先の確認後、CLI の起動を確認する。更新後も `~/.local/libexec/hermes` が指定 tool を解決し、起動時に自動導入・更新は行わない。本家や fork の別ブランチに置き換えない。
+
+本体更新や設定配置は稼働中のサービスを自動再起動しない。必要な停止は先に管理関数で行い、更新成功後に対象ユーザーの GUI ドメインを操作できる端末から、使っているサービスだけ明示的に再起動する。停止中だったサービスは起動しない。
 
 ```fish
 hermes-gateway restart
@@ -242,7 +257,7 @@ herdr plugin log list --plugin ryonakae.agent-context --limit 20
 
 `cua` は Cua Spaces アプリ同梱の CLI を使う。`command -v cua` と `cua --version` で利用可能か確認する。アプリ本体の導入・認証は別途行い、`cua agents setup` によるスキル・MCP の自動配置は使わない。
 
-Pi・Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[Nix のビルド・適用](usage.md#ビルドと適用を分ける)で反映する。既存の `cua-driver` スキルはこの Mac の GUI 操作用として残す。
+Pi・Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。既存の `cua-driver` スキルはこの Mac の GUI 操作用として残す。
 
 Claude Code は fish の `claude` 関数が `~/.claude/mcp.json` を追加指定する。関数を経由せず起動するときは `claude --mcp-config ~/.claude/mcp.json` を使う。`--strict-mcp-config` は付けず、プロジェクトの MCP 設定も読み込む。他のクライアントは標準のユーザー設定を使う。プロジェクトの信頼・承認は各クライアントで行い、グローバル設定の追加を自動承認とみなさない。同名の MCP・スキルの優先順位はクライアントごとに異なるため、プロジェクト専用のものは `cua` / `cua-spaces` と別名にする。
 
@@ -280,14 +295,14 @@ MCP は Spaces の作成・削除・コマンド実行を含む `spaces:all` を
 
 ## macOS とその他のアプリ
 
-Nix 管理の設定を GUI で変えても、次の switch で宣言値へ戻る。継続して変える設定は `nix/darwin/preferences.nix` を編集する。適用時には Dock が再起動する。
+mise 管理の設定を GUI で変えても、次の defaults apply で宣言値へ戻る。継続して変える設定は構成別 `mise.<name>.toml` と `scripts/macos-settings.sh` を編集し、[macOS の部分操作](usage.md#macos-設定を適用する)で反映する。Dock の自動再起動は行わない。
 
 次の項目は自動復元されないため、必要なものだけ手動で準備する。
 
 - Apple Account・iCloud・Touch ID、アクセシビリティ・画面収録・自動化などの許可
 - Xcode の SDK / Simulator、署名証明書・provisioning profile、VPN 認証
 - Docker の初期設定、volume
-- 入力ソース、標準・アプリ別ショートカット、Karabiner 管理外のデバイス設定、電源設定
+- 入力ソース、標準・アプリ別ショートカット、Karabiner 管理外のデバイス設定、宣言外の電源設定
 - Dock に登録した Chrome 製アプリなどの実体
 - `Dropbox/App` に保存した、Git 管理外のアプリ設定
 

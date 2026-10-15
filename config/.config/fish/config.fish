@@ -1,7 +1,3 @@
-if not set -q __fish_home_manager_config_sourced
-    source "$__fish_config_dir/nix-init.fish"
-end
-
 set -gx HOMEBREW_CASK_OPTS --appdir=/Applications
 set -gx ANDROID_HOME "$HOME/Library/Android/sdk"
 set -gx JAVA_HOME "/Applications/Android Studio.app/Contents/jbr/Contents/Home"
@@ -16,6 +12,16 @@ end
 fish_add_path --path --move --prepend "$HOME/.local/bin" "$mise_data_dir/shims"
 fish_add_path --path --append /opt/homebrew/bin /opt/homebrew/sbin /usr/local/bin /usr/local/sbin
 fish_add_path --path --append "$JAVA_HOME/bin" "$ANDROID_HOME/platform-tools"
+
+for plugin in bobthefish fzf
+    set -l plugin_dir "$__fish_config_dir/plugins/$plugin"
+    if test -d "$plugin_dir/functions"
+        set fish_function_path $fish_function_path[1] "$plugin_dir/functions" $fish_function_path[2..-1]
+    end
+    if test -d "$plugin_dir/completions"
+        set fish_complete_path $fish_complete_path[1] "$plugin_dir/completions" $fish_complete_path[2..-1]
+    end
+end
 
 if status is-interactive
     function fish_greeting
@@ -64,6 +70,12 @@ if status is-interactive
     set -g theme_title_display_path yes
     set -g FZF_LEGACY_KEYBINDINGS 0
 
-    mise activate fish | source
+    for plugin in bobthefish fzf
+        for init in "$__fish_config_dir/plugins/$plugin"/conf.d/*.fish
+            source "$init"
+        end
+    end
+
+    command mise activate fish | source
     zoxide init fish --cmd cd | source
 end

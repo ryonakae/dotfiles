@@ -1,7 +1,7 @@
 # dotfiles
 
 macOS の開発環境と AI エージェントの個人設定。
-Nix で macOS と基盤、Homebrew でアプリ、mise でランタイムと設定リンクを管理する。
+Homebrew の Brewfile でアプリ、mise でランタイム・設定リンク・macOS の設定を管理する。
 
 ## 使い方
 
@@ -11,11 +11,11 @@ Nix で macOS と基盤、Homebrew でアプリ、mise でランタイムと設�
 
 | やりたいこと | 手順 |
 |---|---|
-| 設定・アプリ・ランタイム・Nix を更新する | [日常操作](docs/usage.md) |
+| 設定・アプリ・ランタイムを更新する | [日常操作](docs/usage.md) |
 | `.env` に API キーを追加・更新する | [共通 API キー](docs/secrets.md#値を追加更新する) |
 | インストールや配置のエラーを解決する | [トラブル対応](docs/troubleshooting.md) |
 | Hermes・Herdr などを設定する | [アプリ別設定](docs/apps.md) |
-| 古い Home Manager 構成から切り替える | [既存環境の移行](docs/migration.md) |
+| Nix / Home Manager 管理から切り替える | [既存環境の移行](docs/migration.md) |
 | 削除したファイルを戻す | [ごみ箱から復元](docs/troubleshooting.md#削除したファイルを復元する) |
 | iOS Simulator で検証する | [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) |
 

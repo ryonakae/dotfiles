@@ -1,15 +1,10 @@
-import importlib.util
-import io
-import json
 import os
 from pathlib import Path
-import pwd
 import shutil
 import subprocess
 import tempfile
+import tomllib
 import unittest
-from types import SimpleNamespace
-from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -40,7 +35,8 @@ class DotfilesLinksTests(unittest.TestCase):
       'MISE_OFFLINE': '1',
       'MISE_ENV_CACHE': '0',
     }
-    (self.repo / 'mise.toml').write_text((ROOT / 'mise.toml').read_text())
+    for name in ('mise.toml', 'mise.default.toml', 'mise.private.toml', 'mise.work.toml'):
+      (self.repo / name).write_text((ROOT / name).read_text())
     subprocess.run(['git', 'init', '--quiet', str(self.repo)], env=self.env, check=True)
     tracked = subprocess.run(['git', '-C', str(ROOT), 'ls-files', '-z', '--', 'config'],
                              capture_output=True, text=True, check=True).stdout
@@ -49,6 +45,18 @@ class DotfilesLinksTests(unittest.TestCase):
         path = self.repo / name
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text('')
+    declaration = tomllib.loads((self.repo / 'mise.default.toml').read_text())
+    for entry in declaration['dotfiles'].values():
+      source = entry['source']
+      if source.startswith('~/.local/share/'):
+        path = self.home / source.removeprefix('~/')
+        path.mkdir(parents=True, exist_ok=True)
+        (path / 'SKILL.md').write_text('external fixture\n')
+    self.source('.config/fish/conf.d/mise-activate.fish',
+                (ROOT / 'config/.config/fish/conf.d/mise-activate.fish').read_text())
+    for name in ('hermes', 'hermes-gui-launchctl/launchctl'):
+      self.source(f'.local/libexec/{name}',
+                  (ROOT / 'config/.local/libexec' / name).read_text())
     subprocess.run(['git', '-C', str(self.repo), 'add', '--', 'config'],
                    env=self.env, check=True)
 
@@ -61,91 +69,89 @@ class DotfilesLinksTests(unittest.TestCase):
                      env=self.env, check=True)
     return path
 
-  def mise(self, *args):
-    return subprocess.run([MISE, '-C', str(self.repo), 'dot', *args],
+  def mise(self, *args, profile='default'):
+    return subprocess.run([MISE, '-C', str(self.repo), '-E', profile, 'dot', *args],
                           cwd=self.base, env=self.env, capture_output=True,
                           text=True, timeout=30)
 
-  def test_setup_trusts_only_the_reviewed_declaration_in_isolated_home(self):
-    self.env.pop('MISE_TRUSTED_CONFIG_PATHS')
-    self.assertNotIn('CI', self.env)
-    self.assertNotIn('MISE_YES', self.env)
-    for name in ('.config/fish/config.fish', '.config/mise/config.base.toml'):
-      self.source(name)
-    spec = importlib.util.spec_from_file_location('dotfiles', ROOT / 'scripts/dotfiles.py')
-    module = importlib.util.module_from_spec(spec)
-    with patch('sys.dont_write_bytecode', True):
-      spec.loader.exec_module(module)
-    module.ROOT = self.repo
-    module.STORE = self.base / 'store'
-    module.PROFILE = self.base / 'profile'
-    module.CURRENT = self.base / 'current'
-    system = module.STORE / 'system'
-    (system / 'etc/dotfiles').mkdir(parents=True)
-    (system / 'sw/bin').mkdir(parents=True)
-    (system / 'systemConfig').write_text(str(system))
-    snapshot = module.STORE / 'snapshot'
-    snapshot.mkdir()
-    (snapshot / 'mise.toml').write_bytes((self.repo / 'mise.toml').read_bytes())
-    mise = module.STORE / 'mise/bin/mise'
-    mise.parent.mkdir(parents=True)
-    mise.write_text(f'#!/bin/sh\nexec "{Path(MISE).resolve()}" "$@"\n')
-    check = module.STORE / 'check-hermes'
-    check.write_text('#!/bin/sh\nexit 0\n')
-    for path in (system / 'activate', system / 'sw/bin/nix-env', system / 'sw/bin/darwin-rebuild'):
-      path.write_text('#!/bin/sh\nexit 0\n')
-      path.chmod(0o755)
-    mise.chmod(0o755)
-    check.chmod(0o755)
-    module.BREW = self.base / 'brew'
-    module.BREW.write_text('#!/bin/sh\nexit 0\n')
-    module.BREW.chmod(0o755)
-    username = pwd.getpwuid(os.getuid()).pw_name
-    target = dict(configuration='default', source=str(snapshot), username=username,
-                  homeDirectory=str(self.home), hermesCheck=str(check), mise=str(mise))
-    (system / 'etc/dotfiles/build.json').write_text(json.dumps(target))
-    real_run = subprocess.run
-    commands = []
-    def run(command, **kwargs):
-      commands.append(command)
-      if command[0] == str(mise):
-        result = real_run(command, env=self.env, input='y\n', capture_output=True,
-                          text=True, **kwargs)
-        print(result.stdout)
-        return result
-      if command[0] == str(check) or command[:2] == ['/usr/bin/sudo', '-v']:
-        return subprocess.CompletedProcess(command, 0)
-      if command[1] == str(system / 'sw/bin/nix-env'):
-        module.PROFILE.symlink_to(system)
-      elif command[1] == str(system / 'sw/bin/darwin-rebuild'):
-        module.CURRENT.symlink_to(system)
-      else:
-        self.fail(f'Unexpected subprocess: {command}')
-      return subprocess.CompletedProcess(command, 0)
-    def nix(*args, **kwargs):
-      if args[:2] == ('flake', 'metadata'):
-        return {'path': str(snapshot)}
-      if args[0] == 'eval':
-        return target
-      if args[:2] == ('flake', 'check'):
-        return ''
-      if args[0] == 'build':
-        return [{'outputs': {'out': str(system)}}]
-      self.fail(f'Unexpected Nix command: {args}')
-    with patch.dict(os.environ, dict(self.env, APP_SANDBOX_CONTAINER_ID=''), clear=True), \
-         patch.object(module, 'nix', side_effect=nix), \
-         patch.object(module.subprocess, 'run', side_effect=run), \
-         patch.object(module.pwd, 'getpwuid', return_value=SimpleNamespace(pw_name=username, pw_dir=str(self.home))), \
-         patch.object(module.sys.stdin, 'isatty', return_value=True), \
-         patch('builtins.input', side_effect=['switch', 'trust', 'apply']), \
-         patch('sys.argv', ['dotfiles.py', 'setup']), \
-         patch('sys.stdout', new_callable=io.StringIO):
-      module.main()
-    trust = [command for command in commands if 'trust' in command]
-    self.assertEqual(trust, [[str(mise), '-C', str(self.repo), 'trust', str(self.repo / 'mise.toml')]])
-    self.assertEqual(commands[-1], [str(mise), '-C', str(self.home), 'install'])
-    self.assertEqual((self.home / '.config/fish/config.fish').readlink(), self.repo / 'config/.config/fish/config.fish')
-    self.assertEqual((self.home / '.config/mise/config.toml').readlink(), self.repo / 'config/.config/mise/config.base.toml')
+  def test_hermes_launchers_link_files_without_owning_the_helper_directory(self):
+    helper = self.home / '.local/libexec/hermes-gui-launchctl'
+    helper.mkdir(parents=True)
+    local = helper / 'unmanaged.txt'
+    local.write_text('local state\n')
+    result = self.mise('apply', '--yes')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    for name in ('hermes', 'hermes-gui-launchctl/launchctl'):
+      target = self.home / '.local/libexec' / name
+      self.assertEqual(target.readlink(), self.repo / 'config/.local/libexec' / name)
+    self.assertFalse(helper.is_symlink())
+    self.assertEqual(local.read_text(), 'local state\n')
+
+  def test_private_only_does_not_apply_default_links(self):
+    self.source('.vimrc')
+    self.source('.config/mise/config.base.toml')
+    result = self.mise('apply', '--yes', profile='private')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertFalse(os.path.lexists(self.home / '.vimrc'))
+    self.assertFalse(os.path.lexists(self.home / '.config/mise/config.toml'))
+    self.assertFalse(os.path.lexists(self.home / '.agents/AGENTS.md'))
+
+  def test_selected_external_skills_link_to_shared_checkouts(self):
+    checkout = self.home / '.local/share/agent-skill-sources/agent-browser'
+    selected = checkout / 'skills/agent-browser/SKILL.md'
+    selected.parent.mkdir(parents=True, exist_ok=True)
+    selected.write_text('selected external skill\n')
+    extra = checkout / 'skills/not-selected/SKILL.md'
+    extra.parent.mkdir(parents=True)
+    extra.write_text('not selected\n')
+    result = self.mise('apply', '--yes')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    for agent in ('agents', 'claude'):
+      target = self.home / f'.{agent}/skills/agent-browser'
+      self.assertEqual(target.readlink(), selected.parent)
+      self.assertEqual((target / 'SKILL.md').read_text(), 'selected external skill\n')
+      self.assertFalse(os.path.lexists(self.home / f'.{agent}/skills/not-selected'))
+    selected.write_text('updated external skill\n')
+    self.assertEqual((self.home / '.agents/skills/agent-browser/SKILL.md').read_text(),
+                     'updated external skill\n')
+    expected = {
+      'agent-browser', 'agent-device', 'cognitive-rhythm-writing', 'cua-driver',
+      'cua-spaces', 'find-docs', 'ghostwriter', 'herdr', 'japanese-tech-writing',
+      'ketch', 'readme-i18n', 'skill-creator', 'stop-slop', 'stop-slop-ja',
+      'tdd', 'worktrunk',
+    }
+    for agent in ('agents', 'claude'):
+      targets = self.home / f'.{agent}/skills'
+      self.assertEqual({path.name for path in targets.iterdir()}, expected)
+      for name in expected:
+        self.assertTrue((targets / name).is_symlink(), name)
+    result = self.mise('unapply', str(self.home / '.agents/skills/agent-browser'), '--yes')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertFalse(os.path.lexists(self.home / '.agents/skills/agent-browser'))
+    self.assertTrue((self.home / '.claude/skills/agent-browser').is_symlink())
+    self.assertEqual(selected.read_text(), 'updated external skill\n')
+    self.assertEqual(extra.read_text(), 'not selected\n')
+
+  def test_plugins_link_only_selected_directories_and_keep_local_plugins(self):
+    local = self.source('.config/yazi/plugins/local.yazi/main.lua', 'return {}\n')
+    for name in ('git', 'smart-enter', 'full-border'):
+      source = self.home / f'.local/share/yazi-plugins/{name}.yazi'
+      source.mkdir(parents=True, exist_ok=True)
+      (source / 'main.lua').write_text('return {}\n')
+    for name in ('bobthefish', 'fzf'):
+      (self.home / f'.local/share/fish-plugins/{name}').mkdir(parents=True, exist_ok=True)
+    result = self.mise('apply', '--yes')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    for name in ('git', 'smart-enter', 'full-border'):
+      target = self.home / f'.config/yazi/plugins/{name}.yazi'
+      self.assertEqual(target.readlink(), self.home / f'.local/share/yazi-plugins/{name}.yazi')
+      self.assertTrue((target / 'main.lua').is_file())
+    for name in ('bobthefish', 'fzf'):
+      self.assertEqual((self.home / f'.config/fish/plugins/{name}').readlink(),
+                       self.home / f'.local/share/fish-plugins/{name}')
+    self.assertEqual((self.home / '.config/yazi/plugins/local.yazi/main.lua').readlink(), local)
+    self.assertEqual((self.home / '.config/fish/conf.d/mise-activate.fish').readlink(),
+                     self.repo / 'config/.config/fish/conf.d/mise-activate.fish')
 
   def test_initial_operations_do_not_walk_unmanaged_home_directories(self):
     blocked = ['Library', 'Documents']
@@ -261,11 +267,8 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertFalse((shared / 'local-only/SKILL.md').exists())
     self.assertEqual((targets[2] / 'external/SKILL.md').read_text(), 'external skill\n')
 
-  def test_apply_excludes_nix_generated_files_examples_tests_and_state(self):
+  def test_apply_excludes_examples_tests_and_state(self):
     excluded = [
-      'nix/home/packages.nix',
-      '.config/agent-safehouse/safe-hermes-gateway.sh',
-      '.config/agent-safehouse/safe-hermes-dashboard.sh',
       '.config/herdr/scripts/tests/test_helper.py',
       '.config/tool/config.toml.example',
     ]
@@ -287,7 +290,7 @@ class DotfilesLinksTests(unittest.TestCase):
     shared = self.source('.agents/skills/ask-codex/SKILL.md')
     self.source('.agents/skills/ask-codex/references/shared.md')
     claude = self.source('.claude/skills/ask-codex/SKILL.md')
-    with (self.repo / 'mise.toml').open('a') as config:
+    with (self.repo / 'mise.default.toml').open('a') as config:
       config.write('\n[dotfiles."~/.claude/skills/ask-codex"]\n'
                    'source = "config/.claude/skills/ask-codex"\n'
                    'mode = "symlink-each"\nmanifest = "git"\n')

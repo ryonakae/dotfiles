@@ -1,0 +1,216 @@
+[dotfiles."~/.agents"]
+source = "config/.agents"
+mode = "symlink-each"
+manifest = "git"
+exclude = ["skills"]
+
+[dotfiles."~/.claude"]
+source = "config/.claude"
+mode = "symlink-each"
+manifest = "git"
+exclude = ["skills"]
+
+[dotfiles."~/.codex"]
+source = "config/.codex"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.config"]
+source = "config/.config"
+mode = "symlink-each"
+manifest = "git"
+exclude = ["tests", "*.example", "mise", "karabiner"]
+
+[dotfiles."~/.gemini"]
+source = "config/.gemini"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.hermes"]
+source = "config/.hermes"
+mode = "symlink-each"
+manifest = "git"
+exclude = ["*.example"]
+
+[dotfiles."~/.pi"]
+source = "config/.pi"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.agents/skills/[!.]*"]
+source = "config/.agents/skills/[!.]*"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles."~/.claude/skills/[!.]*"]
+source = "config/.agents/skills/[!.]*"
+mode = "symlink-each"
+manifest = "git"
+
+[dotfiles]
+"~/.local/bin/rm" = { source = "config/.local/bin/rm", mode = "symlink" }
+"~/.local/libexec/hermes" = { source = "config/.local/libexec/hermes", mode = "symlink" }
+"~/.local/libexec/hermes-gui-launchctl/launchctl" = { source = "config/.local/libexec/hermes-gui-launchctl/launchctl", mode = "symlink" }
+"~/.vimrc" = { source = "config/.vimrc", mode = "symlink" }
+"~/.claude/CLAUDE.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.codex/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.config/opencode/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.gemini/GEMINI.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.pi/agent/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
+"~/.config/mise/config.toml" = { source = "config/.config/mise/config.base.toml", mode = "symlink" }
+"~/.config/karabiner" = { source = "config/.config/karabiner", mode = "symlink" }
+"~/.gemini/antigravity-cli/skills" = { source = "~/.agents/skills", mode = "symlink" }
+"~/.agents/skills/agent-browser" = { source = "~/.local/share/agent-skill-sources/agent-browser/skills/agent-browser", mode = "symlink" }
+"~/.claude/skills/agent-browser" = { source = "~/.local/share/agent-skill-sources/agent-browser/skills/agent-browser", mode = "symlink" }
+"~/.agents/skills/agent-device" = { source = "~/.local/share/agent-skill-sources/agent-device/skills/agent-device", mode = "symlink" }
+"~/.claude/skills/agent-device" = { source = "~/.local/share/agent-skill-sources/agent-device/skills/agent-device", mode = "symlink" }
+"~/.agents/skills/cognitive-rhythm-writing" = { source = "~/.local/share/agent-skill-sources/tech-writing/skills/cognitive-rhythm-writing", mode = "symlink" }
+"~/.claude/skills/cognitive-rhythm-writing" = { source = "~/.local/share/agent-skill-sources/tech-writing/skills/cognitive-rhythm-writing", mode = "symlink" }
+"~/.agents/skills/cua-driver" = { source = "~/.local/share/agent-skill-sources/cua-driver/libs/cua-driver/rust/Skills/cua-driver", mode = "symlink" }
+"~/.claude/skills/cua-driver" = { source = "~/.local/share/agent-skill-sources/cua-driver/libs/cua-driver/rust/Skills/cua-driver", mode = "symlink" }
+"~/.agents/skills/cua-spaces" = { source = "~/.local/share/agent-skill-sources/cua-driver/libs/cua/skills/cua-spaces", mode = "symlink" }
+"~/.claude/skills/cua-spaces" = { source = "~/.local/share/agent-skill-sources/cua-driver/libs/cua/skills/cua-spaces", mode = "symlink" }
+"~/.agents/skills/find-docs" = { source = "~/.local/share/agent-skill-sources/find-docs/skills/find-docs", mode = "symlink" }
+"~/.claude/skills/find-docs" = { source = "~/.local/share/agent-skill-sources/find-docs/skills/find-docs", mode = "symlink" }
+"~/.agents/skills/ghostwriter" = { source = "~/.local/share/agent-skill-sources/ghostwriter/skills/ghostwriter", mode = "symlink" }
+"~/.claude/skills/ghostwriter" = { source = "~/.local/share/agent-skill-sources/ghostwriter/skills/ghostwriter", mode = "symlink" }
+"~/.agents/skills/herdr" = { source = "~/.local/share/agent-skill-sources/herdr/skills/herdr", mode = "symlink" }
+"~/.claude/skills/herdr" = { source = "~/.local/share/agent-skill-sources/herdr/skills/herdr", mode = "symlink" }
+"~/.agents/skills/japanese-tech-writing" = { source = "~/.local/share/agent-skill-sources/tech-writing/skills/japanese-tech-writing", mode = "symlink" }
+"~/.claude/skills/japanese-tech-writing" = { source = "~/.local/share/agent-skill-sources/tech-writing/skills/japanese-tech-writing", mode = "symlink" }
+"~/.agents/skills/ketch" = { source = "~/.local/share/agent-skill-sources/ketch/skills/ketch", mode = "symlink" }
+"~/.claude/skills/ketch" = { source = "~/.local/share/agent-skill-sources/ketch/skills/ketch", mode = "symlink" }
+"~/.agents/skills/readme-i18n" = { source = "~/.local/share/agent-skill-sources/readme-i18n/skills/readme-i18n", mode = "symlink" }
+"~/.claude/skills/readme-i18n" = { source = "~/.local/share/agent-skill-sources/readme-i18n/skills/readme-i18n", mode = "symlink" }
+"~/.agents/skills/skill-creator" = { source = "~/.local/share/agent-skill-sources/skill-creator/skills/skill-creator", mode = "symlink" }
+"~/.claude/skills/skill-creator" = { source = "~/.local/share/agent-skill-sources/skill-creator/skills/skill-creator", mode = "symlink" }
+"~/.agents/skills/stop-slop" = { source = "~/.local/share/agent-skill-sources/stop-slop", mode = "symlink" }
+"~/.claude/skills/stop-slop" = { source = "~/.local/share/agent-skill-sources/stop-slop", mode = "symlink" }
+"~/.agents/skills/stop-slop-ja" = { source = "~/.local/share/agent-skill-sources/stop-slop-ja", mode = "symlink" }
+"~/.claude/skills/stop-slop-ja" = { source = "~/.local/share/agent-skill-sources/stop-slop-ja", mode = "symlink" }
+"~/.agents/skills/tdd" = { source = "~/.local/share/agent-skill-sources/tdd/skills/engineering/tdd", mode = "symlink" }
+"~/.claude/skills/tdd" = { source = "~/.local/share/agent-skill-sources/tdd/skills/engineering/tdd", mode = "symlink" }
+"~/.agents/skills/worktrunk" = { source = "~/.local/share/agent-skill-sources/worktrunk/skills/worktrunk", mode = "symlink" }
+"~/.claude/skills/worktrunk" = { source = "~/.local/share/agent-skill-sources/worktrunk/skills/worktrunk", mode = "symlink" }
+
+"~/.config/fish/plugins/bobthefish" = { source = "~/.local/share/fish-plugins/bobthefish", mode = "symlink" }
+"~/.config/fish/plugins/fzf" = { source = "~/.local/share/fish-plugins/fzf", mode = "symlink" }
+"~/.config/yazi/plugins/git.yazi" = { source = "~/.local/share/yazi-plugins/git.yazi", mode = "symlink" }
+"~/.config/yazi/plugins/smart-enter.yazi" = { source = "~/.local/share/yazi-plugins/smart-enter.yazi", mode = "symlink" }
+"~/.config/yazi/plugins/full-border.yazi" = { source = "~/.local/share/yazi-plugins/full-border.yazi", mode = "symlink" }
+
+[bootstrap.repos]
+"~/.local/share/fish-plugins/bobthefish" = { url = "https://github.com/oh-my-fish/theme-bobthefish.git", ref = "master" }
+"~/.local/share/fish-plugins/fzf" = { url = "https://github.com/jethrokuan/fzf.git", ref = "master" }
+"~/.local/share/yazi-plugins" = { url = "https://github.com/yazi-rs/plugins.git", ref = "main" }
+"~/.local/share/agent-skill-sources/agent-browser" = { url = "https://github.com/vercel-labs/agent-browser.git", ref = "main" }
+"~/.local/share/agent-skill-sources/agent-device" = { url = "https://github.com/callstack/agent-device.git", ref = "main" }
+"~/.local/share/agent-skill-sources/cua-driver" = { url = "https://github.com/trycua/cua.git", ref = "main" }
+"~/.local/share/agent-skill-sources/find-docs" = { url = "https://github.com/upstash/context7.git", ref = "master" }
+"~/.local/share/agent-skill-sources/ghostwriter" = { url = "https://github.com/mblode/agent-skills.git", ref = "main" }
+"~/.local/share/agent-skill-sources/herdr" = { url = "https://github.com/herdrdev/herdr.git", ref = "master" }
+"~/.local/share/agent-skill-sources/ketch" = { url = "https://github.com/1broseidon/ketch.git", ref = "main" }
+"~/.local/share/agent-skill-sources/readme-i18n" = { url = "https://github.com/xixu-me/skills.git", ref = "main" }
+"~/.local/share/agent-skill-sources/skill-creator" = { url = "https://github.com/anthropics/skills.git", ref = "main" }
+"~/.local/share/agent-skill-sources/stop-slop" = { url = "https://github.com/hardikpandya/stop-slop.git", ref = "main" }
+"~/.local/share/agent-skill-sources/stop-slop-ja" = { url = "https://github.com/kyaukyuai/stop-slop-ja.git", ref = "main" }
+"~/.local/share/agent-skill-sources/tdd" = { url = "https://github.com/mattpocock/skills.git", ref = "main" }
+"~/.local/share/agent-skill-sources/tech-writing" = { url = "https://github.com/f4ah6o/tech-write-ja.git", ref = "main" }
+"~/.local/share/agent-skill-sources/worktrunk" = { url = "https://github.com/max-sixty/worktrunk.git", ref = "main" }
+
+[bootstrap.macos.defaults."NSGlobalDomain"]
+"AppleInterfaceStyleSwitchesAutomatically" = true
+"AppleKeyboardUIMode" = 2
+"ApplePressAndHoldEnabled" = false
+"AppleShowAllExtensions" = true
+"AppleShowScrollBars" = "WhenScrolling"
+"InitialKeyRepeat" = 15
+"KeyRepeat" = 2
+"NSAutomaticCapitalizationEnabled" = false
+"NSAutomaticDashSubstitutionEnabled" = false
+"NSAutomaticPeriodSubstitutionEnabled" = false
+"NSAutomaticQuoteSubstitutionEnabled" = false
+"NSAutomaticSpellingCorrectionEnabled" = false
+"NSTableViewDefaultSizeMode" = 2
+"com.apple.keyboard.fnState" = true
+"AppleLanguages" = ["ja-JP", "en-JP"]
+"AppleLocale" = "ja_JP"
+"WebAutomaticSpellingCorrectionEnabled" = false
+
+[bootstrap.macos.defaults."com.apple.menuextra.clock"]
+"ShowDate" = 0
+"ShowDayOfWeek" = true
+
+[bootstrap.macos.defaults."com.apple.dock"]
+"autohide" = true
+"autohide-delay" = 0.0
+"autohide-time-modifier" = 0.0
+"expose-group-apps" = true
+"mru-spaces" = false
+"persistent-apps" = [
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Spark Desktop.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/1Password.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/CleanArchiver.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Google Chrome.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Slack.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Notion Calendar.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Bear.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/CotEditor.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Figma.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Figma Beta.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Ghostty.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Zed.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Users/ryo.nakae/Applications/Chrome Apps.localized/X.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Users/ryo.nakae/Applications/Chrome Apps.localized/Bluesky.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/Spotify.app", "_CFURLStringType" = 0 } } },
+  { "tile-data" = { "file-data" = { "_CFURLString" = "/Applications/LINE.app", "_CFURLStringType" = 0 } } },
+]
+"persistent-others" = [
+  { "tile-data" = { "arrangement" = 1, "displayas" = 1, "file-data" = { "_CFURLString" = "file:///Applications", "_CFURLStringType" = 15 }, "showas" = 0 }, "tile-type" = "directory-tile" },
+  { "tile-data" = { "arrangement" = 2, "displayas" = 1, "file-data" = { "_CFURLString" = "file:///Users/ryo.nakae/Downloads", "_CFURLStringType" = 15 }, "showas" = 1 }, "tile-type" = "directory-tile" },
+]
+"show-recents" = false
+"wvous-bl-corner" = 3
+"wvous-br-corner" = 4
+"wvous-tl-corner" = 2
+"wvous-tr-corner" = 12
+"wvous-bl-modifier" = 0
+"wvous-br-modifier" = 0
+"wvous-tl-modifier" = 0
+"wvous-tr-modifier" = 0
+
+[bootstrap.macos.defaults."com.apple.finder"]
+"FXDefaultSearchScope" = "SCcf"
+"FXPreferredViewStyle" = "Nlsv"
+"NewWindowTarget" = "PfHm"
+"ShowPathbar" = true
+"ShowStatusBar" = true
+"_FXSortFoldersFirst" = true
+"_FXSortFoldersFirstOnDesktop" = true
+
+[bootstrap.macos.defaults."com.apple.screensaver"]
+"askForPassword" = true
+"askForPasswordDelay" = 0
+"idleTime" = 600
+
+[bootstrap.macos.defaults."com.apple.universalaccess"]
+"closeViewScrollWheelToggle" = true
+
+[bootstrap.macos.defaults."com.apple.desktopservices"]
+"DSDontWriteNetworkStores" = true
+
+[bootstrap.macos.defaults."com.apple.WindowManager"]
+"EnableTilingByEdgeDrag" = false
+"EnableTopTilingByEdgeDrag" = false
+
+[[bootstrap.macos.defaults_entries]]
+domain = "com.apple.controlcenter"
+key = "BatteryShowPercentage"
+host = "current"
+value = true
+
+[[bootstrap.macos.defaults_entries]]
+domain = "com.apple.controlcenter"
+key = "Sound"
+host = "current"
+value = 18

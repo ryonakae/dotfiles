@@ -1,14 +1,10 @@
 #!/usr/bin/env python3
 import argparse
-import hashlib
 import json
 import os
 from pathlib import Path
 import pwd
-import re
-import shutil
 import signal
-import stat
 import subprocess
 import sys
 import threading
@@ -17,105 +13,14 @@ from contextlib import contextmanager
 
 
 ROOT = Path(__file__).resolve().parents[1]
-ETC = Path('/etc')
-STORE = Path('/nix/store')
-PROFILE = Path('/nix/var/nix/profiles/system')
-CURRENT = Path('/run/current-system')
+TARGET_USER = 'ryo.nakae'
+TARGET_HOME = Path('/Users/ryo.nakae')
 BREW = Path('/opt/homebrew/bin/brew')
+MISE = Path('/opt/homebrew/bin/mise')
+HERMES_TOOL = 'pypi:git+https://github.com/ryonakae/hermes-agent.git'
+HERMES_VERSION = 'ryonakae'
 SUDO_REFRESH_INTERVAL = 30
 SUDO_REFRESH_TIMEOUT = 10
-
-
-SHELL_BACKUP_PROGRAM = '''
-import ctypes
-import hashlib
-import json
-import os
-import stat
-import sys
-
-
-def verify(path, expected):
-  fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
-  with os.fdopen(fd, 'rb') as file:
-    info = os.fstat(file.fileno())
-    if not stat.S_ISREG(info.st_mode):
-      raise ValueError(f"Not a regular file: {path}")
-    metadata = {key: getattr(info, key) for key in expected['metadata']}
-    if metadata != expected['metadata'] or hashlib.sha256(file.read()).hexdigest() != expected['sha256']:
-      raise ValueError(f"File changed after confirmation: {path}")
-
-
-try:
-  libc = ctypes.CDLL(None, use_errno=True)
-  rename_exclusive = libc.renamex_np
-  rename_exclusive.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
-  rename_exclusive.restype = ctypes.c_int
-  RENAME_EXCL = 0x00000004
-  files = json.loads(sys.argv[1])
-  for path, expected in files:
-    verify(path, expected)
-    if os.path.lexists(path + '.before-nix-darwin'):
-      raise FileExistsError(f"Backup already exists: {path}.before-nix-darwin")
-  for path, expected in files:
-    backup = path + '.before-nix-darwin'
-    verify(path, expected)
-    # Rename preserves even a concurrently replaced source without clobbering a backup.
-    if rename_exclusive(os.fsencode(path), os.fsencode(backup), RENAME_EXCL) != 0:
-      error = ctypes.get_errno()
-      raise OSError(error, os.strerror(error), backup)
-    verify(backup, expected)
-    print(f"Preserved {path} as {backup}", flush=True)
-  for path, expected in files:
-    if os.path.lexists(path):
-      raise ValueError(f"Shell file reappeared during backup: {path}")
-except (OSError, ValueError, AttributeError) as error:
-  print(f"Shell backup stopped: {error}. Inspect both paths before retrying; no automatic restore was attempted.", file=sys.stderr)
-  sys.exit(1)
-'''
-
-
-def prepare_shell_files(system):
-  files = []
-  for name in ('bashrc', 'zshrc'):
-    if not (Path(system) / 'etc' / name).is_symlink():
-      continue
-    path = ETC / name
-    try:
-      info = path.lstat()
-    except FileNotFoundError:
-      continue
-    if stat.S_ISLNK(info.st_mode):
-      if os.readlink(path) == str(ETC / 'static' / name):
-        continue
-      raise ValueError(f"Unexpected shell link; inspect before switching: {path}")
-    if not stat.S_ISREG(info.st_mode):
-      raise ValueError(f"Not a regular shell file: {path}")
-    backup = Path(str(path) + '.before-nix-darwin')
-    if os.path.lexists(backup):
-      raise ValueError(f"Backup already exists; inspect both paths: {path}, {backup}")
-    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
-    with os.fdopen(fd, 'rb') as file:
-      info = os.fstat(file.fileno())
-      if not stat.S_ISREG(info.st_mode):
-        raise ValueError(f"Not a regular shell file: {path}")
-      content = file.read()
-    expected = {
-      'metadata': {key: getattr(info, key) for key in (
-        'st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_size', 'st_mtime_ns')},
-      'sha256': hashlib.sha256(content).hexdigest(),
-    }
-    files.append((str(path), expected))
-    print(f"\nShell file: {path}\nPreserve as: {backup}\nContents (escaped):")
-    for line in content.decode('utf-8', errors='backslashreplace').splitlines():
-      print(repr(line))
-  if not files:
-    return []
-  print("These files will stop being active shell configuration. Keep this terminal open.")
-  print("If custom settings still need migration, cancel now. Backups will not be overwritten.")
-  if input("Type 'backup' to preserve these shell files and continue: ").strip() != 'backup':
-    raise ValueError('shell backup cancelled; no activation performed')
-  return files
 
 
 class SudoRefresh:
@@ -192,245 +97,191 @@ def sudo_authentication():
         signal.signal(signum, handler)
 
 
-def nix(*args, json_output=False):
-  executable = shutil.which("nix") or "/nix/var/nix/profiles/default/bin/nix"
-
-  result = subprocess.run(
-    [executable, "--extra-experimental-features", "nix-command flakes", *args],
-    cwd=ROOT, stdout=subprocess.PIPE, text=True,
-  )
-  if result.returncode:
-    print(result.stdout, end="", file=sys.stderr)
-    result.check_returncode()
-  return json.loads(result.stdout) if json_output else result.stdout.strip()
+def interactive_user(parser):
+  if os.geteuid() == 0:
+    parser.error('run setup as the target user, not with sudo')
+  if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
+    parser.error('setup must be run by the user outside Safehouse after migration approval')
+  if not sys.stdin.isatty():
+    parser.error('setup requires an interactive terminal for confirmation')
 
 
-def locked_source():
-  metadata = nix("flake", "metadata", f"git+{ROOT.as_uri()}",
-                 "--no-update-lock-file", "--json", json_output=True)
-  return "path:" + metadata["path"]
-
-
-def configured_target(source, configuration):
-  target = nix(
-    "eval", f"{source}#darwinConfigurations.{configuration}.config", "--no-update-lock-file",
-    "--apply", '''c: let h = c.home-manager.users.${c.system.primaryUser}; in {
-      username = h.home.username;
-      homeDirectory = h.home.homeDirectory;
-      hermesCheck = toString h.xdg.configFile."hermes/check-activation.sh".source;
-    }''', "--json", json_output=True,
-  )
-  validate_user(target)
-  return target
-
-
-def validate_user(target):
+def user_home():
   user = pwd.getpwuid(os.getuid())
-  home = Path(target['homeDirectory']).resolve()
-  if (target['username'] != user.pw_name or home != Path(user.pw_dir).resolve()
+  home = Path(user.pw_dir).resolve()
+  if (user.pw_name != TARGET_USER or home != TARGET_HOME.resolve()
       or not os.environ.get('HOME') or home != Path(os.environ['HOME']).resolve()):
     raise ValueError('run as the configured user with their configured user home and HOME')
+  return user, home
 
 
-def artifact(path):
-  system = Path(path).resolve(strict=True)
-  if system.parent != STORE or not system.is_dir():
-    raise ValueError('specify an existing system directly inside the Nix store')
-  if (system / 'systemConfig').read_text().strip() != str(system):
-    raise ValueError('invalid systemConfig self-reference')
-  metadata = system / 'etc/dotfiles/build.json'
-  if not metadata.is_file():
-    raise ValueError('artifact has no dotfiles metadata; run build to create a new artifact')
-  target = json.loads(metadata.read_text())
-  if not isinstance(target, dict):
-    raise ValueError('invalid artifact metadata: expected an object')
-  for key in ('configuration', 'source', 'username', 'homeDirectory', 'hermesCheck', 'mise'):
-    if not isinstance(target.get(key), str) or not target[key]:
-      raise ValueError(f'invalid artifact metadata: {key}')
-  if not Path(target['homeDirectory']).is_absolute():
-    raise ValueError('invalid artifact home directory')
-  if not re.fullmatch(r'[A-Za-z_][A-Za-z0-9_-]*', target['configuration']):
-    raise ValueError('invalid artifact configuration')
-  source = Path(target['source'])
-  if not source.is_absolute() or source.parent != STORE or not source.is_dir():
-    raise ValueError('invalid artifact source snapshot')
-  for path in (system / 'activate', system / 'sw/bin/nix-env', system / 'sw/bin/darwin-rebuild',
-               Path(target['hermesCheck']), Path(target['mise'])):
-    if not path.is_absolute() or not path.resolve().is_relative_to(STORE) or not path.is_file() or not os.access(path, os.X_OK):
-      raise ValueError(f'missing or non-executable artifact file: {path}')
-  validate_user(target)
-  return system, target
+def executable(path):
+  return path.is_file() and os.access(path, os.X_OK)
 
 
-def profile_state(path):
-  return str(path.resolve()) if os.path.lexists(path) else 'none (first activation)'
+def check_homebrew():
+  prefix = BREW.parents[1]
+  for path in (prefix / '.managed_by_nix_darwin', prefix / 'Library/.homebrew-is-managed-by-nix'):
+    if os.path.lexists(path):
+      raise ValueError('Nix-managed Homebrew detected; use the separately approved one-time migration, not setup')
+  for path in (BREW, prefix / 'Library/Homebrew'):
+    if path.resolve().is_relative_to(Path('/nix/store')):
+      raise ValueError('Nix-managed Homebrew detected; use the separately approved one-time migration, not setup')
+  if not executable(BREW) and (os.path.lexists(BREW) or (prefix.exists() and any(prefix.iterdir()))):
+    raise ValueError(f'unknown existing Homebrew prefix or executable: {prefix}; inspect before installing')
 
 
-def switch(system, target):
-  print(f"Source: {target['source']}")
-  print(f"Configuration: {target['configuration']}")
-  print(f"Candidate system: {system}")
-  print(f"Previous system profile: {profile_state(PROFILE)}")
-  print(f"Target user: {target['username']} ({target['homeDirectory']})")
-  print("This applies system settings, Homebrew and Home Manager configuration.")
-  print("Review the changes; stop apps or preserve files only where conflicts require it.")
-  print("Native file checks run during activation. Failure may leave a new profile and partial changes.")
-  print("Shell files may require a separately confirmed backup; no general backup, Hermes management, or automatic rollback is performed.")
-  print("Hermes may remain running; activation installs plist files without stopping, reloading, or restarting services.")
-  print("To use updated Hermes definitions, restart explicitly with hermes-gateway / hermes-dashboard.")
-  if input("Type 'switch' to confirm application: ").strip() != "switch":
-    raise ValueError("switch cancelled; no activation performed")
-  subprocess.run([target["hermesCheck"]], check=True)
-  files = prepare_shell_files(system)
+def confirm(word, purpose):
+  if input(f"Type '{word}' to {purpose}: ").strip() != word:
+    raise ValueError(f'{purpose} cancelled')
+
+
+def setup(configurations):
+  declarations = [ROOT / 'mise.toml']
+  declarations += [ROOT / f'mise.{name}.toml' for name in configurations]
+  brewfiles = [ROOT / 'brew' / f'Brewfile.{name}' for name in configurations]
+  protected = [*declarations, *brewfiles, ROOT / 'scripts/macos-settings.sh']
+  if 'default' in configurations:
+    protected += [ROOT / 'config/.config/mise/config.base.toml', ROOT / 'scripts/hermes_plists.py']
+  snapshot = {}
+  environment = {key: value for key, value in os.environ.items() if not key.startswith('MISE_')}
+  environment.update(
+    MISE_ENV=','.join(configurations),
+    MISE_CEILING_PATHS=str(ROOT.parent),
+    MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'mise.toml'),
+    MISE_SYSTEM_CONFIG_FILE=str(ROOT / 'mise.toml'),
+  )
+  mise = [str(MISE), '-C', str(ROOT), '-E', ','.join(configurations)]
   completed = []
+  stage = 'preflight'
+
+  def check_declarations():
+    user_home()
+    check_homebrew()
+    for path, expected in snapshot.items():
+      if path.read_bytes() != expected:
+        raise ValueError(f'declaration changed after confirmation: {path}; stop and review')
+
+  def run(label, command, *, cwd=ROOT, refresh=None, env=None, **kwargs):
+    nonlocal stage
+    stage = label
+    check_declarations()
+    if refresh:
+      refresh.check()
+    result = subprocess.run(command, cwd=cwd, env=environment if env is None else env, check=True, **kwargs)
+    completed.append(label)
+    if refresh:
+      refresh.check()
+    check_declarations()
+    return result
+
   try:
+    user, home = user_home()
+    check_homebrew()
+    snapshot = {path: path.read_bytes() for path in protected}
+    environment.update(HOME=str(home), USER=user.pw_name, LOGNAME=user.pw_name,
+                       PATH=f'{BREW.parent}:{BREW.parents[1] / "sbin"}:' + environment.get('PATH', '/usr/bin:/bin'))
+    subprocess.run(['/usr/bin/xcode-select', '-p'], check=True, stdout=subprocess.PIPE, text=True)
+    print(f'Checkout: {ROOT}\nTarget user: {user.pw_name} ({home})')
+    print('Configurations (in order): ' + ', '.join(configurations))
+    print('Setup installs/updates selected Brewfiles, obtains repositories, places links and applies selected macOS settings.')
+    print('No cleanup, service restart, shell change, automatic retry or rollback is performed.')
+    confirm('setup', 'approve this complete setup scope')
+    check_declarations()
+    if not executable(BREW):
+      stage = 'Homebrew initial install'
+      installer_url = 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh'
+      print(f'Homebrew is missing. Official installer: {installer_url}\nPrefix: {BREW.parents[1]}')
+      confirm('install', 'install Homebrew with the official installer')
+      installer = run('Homebrew installer download', ['/usr/bin/curl', '-fsSL', installer_url], stdout=subprocess.PIPE, text=True)
+      with sudo_authentication() as refresh:
+        run('Homebrew initial install', ['/bin/bash', '-c', installer.stdout], refresh=refresh)
+      refresh.check()
+      check_homebrew()
+      if not executable(BREW):
+        raise ValueError(f'Homebrew installer did not provide {BREW}')
+    stage = 'Homebrew setup authentication'
     with sudo_authentication() as refresh:
-      refresh.check()
-      if files:
-        subprocess.run([
-          '/usr/bin/sudo', '/usr/bin/python3', '-c', SHELL_BACKUP_PROGRAM, json.dumps(files),
-        ], check=True)
-        completed.append('shell preservation')
-      refresh.check()
-      subprocess.run([
-        '/usr/bin/sudo', str(system / 'sw/bin/nix-env'), '-p', str(PROFILE), '--set', str(system),
-      ], check=True)
-      completed.append('profile registration')
-      refresh.check()
-      subprocess.run([
-        '/usr/bin/sudo', str(system / 'sw/bin/darwin-rebuild'), 'activate',
-      ], check=True)
-      completed.append('activation')
-      refresh.check()
-      if PROFILE.resolve() != system or CURRENT.resolve() != system:
-        raise ValueError('applied profile/current-system does not match candidate')
+      missing = [name for name in ('mise', 'uv') if not executable(BREW.parent / name)]
+      if missing:
+        run('setup foundation', [str(BREW), 'install', *missing], refresh=refresh)
+      for name, brewfile in zip(configurations, brewfiles):
+        run(f'brew bundle {name}', [str(BREW), 'bundle', '--file=' + str(brewfile)], refresh=refresh)
     refresh.check()
-  except BaseException:
-    print(f"Completed: {', '.join(completed) or 'none'}", file=sys.stderr)
-    print(f'System profile: {profile_state(PROFILE)}; current-system: {profile_state(CURRENT)}', file=sys.stderr)
-    print('Application is non-atomic; inspect partial changes before retrying. No rollback attempted.', file=sys.stderr)
-    raise
-
-
-def build(source, configuration):
-  nix('flake', 'check', source, '--no-update-lock-file')
-  result = nix('build', f'{source}#darwinConfigurations.{configuration}.system',
-               '--no-update-lock-file', '--no-link', '--json', json_output=True)
-  return result[0]['outputs']['out']
-
-
-def setup(source, configuration):
-  completed = []
-  try:
-    configured_target(source, configuration)
-    system_path = build(source, configuration)
-    completed.append('build')
-    system, target = artifact(system_path)
-    if target['source'] != source.removeprefix('path:') or target['configuration'] != configuration:
-      raise ValueError('built artifact metadata does not match selected source/configuration')
-    declaration = ROOT / 'mise.toml'
-    expected = (Path(target['source']) / 'mise.toml').read_bytes()
-
-    def check_declaration():
-      if declaration.read_bytes() != expected:
-        raise ValueError('checkout mise.toml changed since the build snapshot; stop and review before rebuilding')
-
-    check_declaration()
-    switch(system, target)
-    completed.append('switch')
-    mise = target['mise']
-    for executable in (BREW, Path(mise)):
-      if not executable.is_file() or not os.access(executable, os.X_OK):
-        raise ValueError(f'required tool missing after activation: {executable}')
-    check_declaration()
-    print(f'Configuration placement source (live Git checkout): {ROOT / "config"}')
-    print('Nix uses the immutable artifact; configuration bodies remain live checkout files, not store copies.')
-    print(f'Trust only this declaration: {declaration}\n{expected.decode("utf-8")}')
-    if input("Type 'trust' to trust this file only: ").strip() != 'trust':
-      raise ValueError('mise trust cancelled')
-    check_declaration()
-    subprocess.run([mise, '-C', str(ROOT), 'trust', str(declaration)], cwd=ROOT, check=True)
-    completed.append('mise trust')
-    check_declaration()
-    subprocess.run([mise, '-C', str(ROOT), 'dot', 'apply', '--dry-run'], cwd=ROOT, timeout=60, check=True)
-    completed.append('mise dry-run')
+    for path in (BREW, MISE, BREW.parent / 'uv'):
+      if not executable(path):
+        raise ValueError(f'required setup tool missing after Homebrew: {path}')
+    stage = 'mise trust'
+    for path in declarations:
+      print(f'Trust only this declaration: {path}\n{snapshot[path].decode("utf-8")}')
+    confirm('trust', 'trust only these declarations')
+    for path in declarations:
+      run(f'mise trust {path.name}', [*mise, 'trust', str(path)])
+    run('mise repos update', [*mise, 'bootstrap', 'repos', 'update', '--yes'])
+    run('mise dry-run', [*mise, 'dot', 'apply', '--dry-run'], timeout=60)
     print('Inspect destinations and unknown files/links before approving. Dry-run success does not guarantee apply success.')
-    if input("Type 'apply' to apply the displayed placement plan: ").strip() != 'apply':
-      raise ValueError('mise apply cancelled')
-    check_declaration()
-    subprocess.run([mise, '-C', str(ROOT), 'dot', 'apply'], cwd=ROOT, check=True)
-    completed.append('mise apply')
-    home = Path(target['homeDirectory'])
-    for destination, source_file in (('.config/fish/config.fish', '.config/fish/config.fish'),
-                                     ('.config/mise/config.toml', '.config/mise/config.base.toml')):
-      link = home / destination
-      source_file = ROOT / 'config' / source_file
-      if (not link.is_symlink() or not source_file.is_file()
-          or Path(os.path.abspath(link.parent / link.readlink())) != source_file):
-        raise ValueError(f'configuration link does not point to live checkout: {link}')
-    completed.append('link verification')
-    print(f'Installing configured runtimes from {home}', flush=True)
-    subprocess.run([mise, '-C', str(home), 'install'], cwd=home, check=True)
-    completed.append('mise install')
+    stage = 'mise apply'
+    confirm('apply', 'apply the displayed placement plan')
+    run('mise apply', [*mise, 'dot', 'apply', '--yes'])
+    if 'default' in configurations:
+      stage = 'link verification'
+      for destination, source in (('.config/fish/config.fish', '.config/fish/config.fish'),
+                                  ('.config/mise/config.toml', '.config/mise/config.base.toml')):
+        link = home / destination
+        source_file = ROOT / 'config' / source
+        if (not link.is_symlink() or not source_file.is_file()
+            or Path(os.path.abspath(link.parent / link.readlink())) != source_file):
+          raise ValueError(f'configuration link does not point to live checkout: {link}')
+      completed.append('link verification')
+      home_env = dict(environment, MISE_ENV='', MISE_CEILING_PATHS=str(home),
+                      MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'config/.config/mise/config.base.toml'))
+      home_mise = [str(MISE), '-C', str(home)]
+      run('mise runtimes', [*home_mise, 'install', 'node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'], cwd=home, env=home_env)
+      result = run('Hermes installed check', [*home_mise, '--no-config', 'ls', '--installed', '--json', HERMES_TOOL],
+                   cwd=home, env=home_env, stdout=subprocess.PIPE, text=True)
+      try:
+        records = json.loads(result.stdout)
+      except (TypeError, ValueError) as error:
+        raise ValueError('invalid Hermes installation query JSON') from error
+      if not isinstance(records, list) or any(
+          not isinstance(record, dict) or record.get('installed') is not True
+          or not isinstance(record.get('version'), str) or not record['version']
+          for record in records):
+        raise ValueError('invalid Hermes installation query records; installation status is unknown')
+      if records and not any(record['version'] == HERMES_VERSION or record.get('requested_version') == HERMES_VERSION for record in records):
+        raise ValueError('Hermes installation query found another or unknown ref; inspect it before installing; no update attempted')
+      if not records:
+        run('Hermes initial install', [*home_mise, 'install', HERMES_TOOL + '@' + HERMES_VERSION], cwd=home, env=home_env)
+      run('Hermes plist placement', ['/usr/bin/python3', str(ROOT / 'scripts/hermes_plists.py')])
+    stage = 'macOS settings'
+    with sudo_authentication() as refresh:
+      run('mise macOS defaults', [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'], refresh=refresh)
+      for name in configurations:
+        run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name], refresh=refresh)
+    refresh.check()
     print('Setup complete: ' + ', '.join(completed))
+    print('No services were restarted. Apply updated Hermes definitions explicitly with hermes-gateway / hermes-dashboard when needed.')
   except BaseException:
-    print(f"Setup stopped. Completed: {', '.join(completed) or 'none'}", file=sys.stderr)
-    if 'link verification' in completed:
-      print(f'Nix application and configuration placement succeeded; do not repeat switch or dot apply. Resume runtime installation only with {target["mise"]} -C {target["homeDirectory"]} install after reviewing the failure.', file=sys.stderr)
-    elif 'switch' in completed:
-      print(f'Nix application succeeded; do not automatically switch again. Resume with standard mise trust / dot apply --dry-run / dot apply using {target["mise"]} -C {ROOT} after reviewing the failed stage.', file=sys.stderr)
+    print(f"Setup stopped at {stage}. Completed: {', '.join(completed) or 'none'}", file=sys.stderr)
+    print('Setup is non-atomic. Inspect partial changes; no automatic retry or rollback was attempted.', file=sys.stderr)
+    print('Do not repeat the whole setup automatically: resume the failed stage with standard brew bundle / mise trust / repos update / dot apply / install / macOS commands after review.', file=sys.stderr)
     raise
-
-
-def interactive_user(parser, action):
-  if os.geteuid() == 0:
-    parser.error(f'run {action} as the target user, not with sudo')
-  if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
-    parser.error(f'{action} must be run by the user outside Safehouse after migration approval')
-  if not sys.stdin.isatty():
-    parser.error(f'{action} requires an interactive terminal for confirmation')
 
 
 def main():
-  parser = argparse.ArgumentParser(description="Build, apply, or update the locked macOS configuration")
-  parser.add_argument("action", choices=["build", "switch", "setup", "update"])
-  parser.add_argument("target", nargs="?")
-  parser.add_argument("--configuration", help="darwinConfigurations name (default: default)")
+  parser = argparse.ArgumentParser(description='Set up explicitly selected macOS configurations')
+  parser.add_argument('action', choices=['setup'])
+  parser.add_argument('configurations', nargs='+', choices=['default', 'private', 'work'])
   args = parser.parse_args()
-  if args.action == "update":
-    if args.configuration is not None:
-      parser.error("update does not accept --configuration")
-    target = args.target or "all"
-    graph = json.loads((ROOT / "flake.lock").read_text())
-    public = set(graph["nodes"][graph["root"]]["inputs"])
-    if target != "all" and target not in public:
-      parser.error("unknown update target; available: all, " + ", ".join(sorted(public)))
-    targets = [] if target == "all" else [target]
-    print("Updating inputs: " + ", ".join(sorted(public) if target == "all" else targets), flush=True)
-    nix("flake", "update", *targets, "--flake", str(ROOT))
-    return
-  if args.action == 'switch':
-    if args.configuration is not None or not args.target:
-      parser.error('switch requires SYSTEM_PATH and does not accept --configuration; run build [--configuration NAME] first')
-    interactive_user(parser, 'switch')
-    system, target = artifact(args.target)
-    switch(system, target)
-    return
-  if args.target:
-    parser.error(f"{args.action} does not accept a target")
-  configuration = args.configuration if args.configuration is not None else "default"
-  if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_-]*", configuration):
-    parser.error("configuration must be a Nix identifier (letters, digits, underscores or hyphens)")
-  if args.action == 'setup':
-    interactive_user(parser, 'setup')
-    setup(locked_source(), configuration)
-  else:
-    print(build(locked_source(), configuration))
+  if len(set(args.configurations)) != len(args.configurations):
+    parser.error('duplicate configurations are not allowed')
+  interactive_user(parser)
+  setup(args.configurations)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   try:
     main()
   except (OSError, ValueError, KeyError, EOFError, subprocess.SubprocessError) as error:
-    print(f"dotfiles: {error}", file=sys.stderr)
+    print(f'dotfiles: {error}', file=sys.stderr)
     sys.exit(1)

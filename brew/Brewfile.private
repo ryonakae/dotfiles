@@ -1,0 +1,8 @@
+brew "rtk"
+
+cask_args appdir: "/Applications"
+cask "air-video-server-hd"
+cask "private-internet-access"
+cask "timemachineeditor"
+
+mas "EdgeView 2", id: 1206246482

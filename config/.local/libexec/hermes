@@ -1,0 +1,9 @@
+#!/bin/sh
+
+# Resolve outside the caller's project without changing Hermes' working directory.
+install_dir=$(cd "$HOME" && /opt/homebrew/bin/mise where 'pypi:git+https://github.com/ryonakae/hermes-agent.git@ryonakae') || exit "$?"
+case "$install_dir" in
+  /*) ;;
+  *) printf 'Hermes: mise did not return an absolute installation path.\n' >&2; exit 1 ;;
+esac
+exec "$install_dir/bin/hermes" "$@"
