@@ -1,6 +1,6 @@
 # エージェント向け運用条件
 
-ユーザー向け手順は [README](../../../../README.md) から参照する。この資料は変更・適用・移行の判断基準。ユーザーへ通読を求めない。
+ユーザー向け手順は [README](../../../../README.md) から参照する。この資料は変更・適用・復旧の判断基準。ユーザーへ通読を求めない。
 
 ## 管理元と変更範囲
 
@@ -15,7 +15,7 @@
 | Hermes launcher / wrapper / plist | Git 正本の直接リンクと `scripts/hermes_plists.py` の通常ファイル配置 |
 
 - 構成はすべて明示し、private/work に default を自動追加しない。ルート `mise.toml` は構成非依存だけとし、共通リソースは `mise.default.toml` に置く。
-- Bash / fish / mise / usage は Homebrew。mise は更新可能だが、共通 runtime の指定版は移行を理由に変更しない。Intel 用 Homebrew は追加しない。
+- Bash / fish / mise / usage は Homebrew。mise は更新可能だが、共通 runtime の指定版は setup で変更しない。Intel 用 Homebrew は追加しない。
 - 標準 Bundle で導入・更新し、`--no-upgrade` や自動 cleanup は使わない。宣言削除をアンインストールとみなさず、対象を指定して削除する。PostgreSQL のデータ・サービスや未宣言アプリをついでに削除・停止しない。
 
 ## setup と部分操作
@@ -27,7 +27,7 @@
 - 対象 checkout と `-E` で構成を固定し、継承された `MISE_ENV` や別 cwd による追加構成・プロジェクト設定の混入を防ぐ。private 単独を共通設定・runtime の導入に読み替えない。
 - 選択した Brewfile、信頼確認、repos 取得・更新、60秒制限付きの配置 dry-run、確認付き apply、default の runtime と未導入 Hermes、plist、選択 macOS 設定の順に進める。外部 source の初回取得前に full dry-run 成功を必須にしない。
 - default だけ Hermes 用宣言を確認して trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
-- サービスの自動停止・再開、Dock/端末の自動再起動、chsh、cleanup、Nix 撤去を setup に追加しない。setup の再実行を無変更の冪等操作と説明しない。
+- サービスの自動停止・再開、Dock/端末の自動再起動、chsh、cleanup を setup に追加しない。setup の再実行を無変更の冪等操作と説明しない。
 
 ### 実機操作の承認
 
@@ -42,8 +42,7 @@
 
 - 適用は非原子的。終了コード・失敗段階・完了済み段階と、失敗段階内の部分変更を確認する。後続へ進まず、自動再試行・rollback はしない。
 - 配置だけ失敗したら成功済みアプリ更新や repos 更新を繰り返さない。runtime 失敗時は配置も繰り返さず対象 install だけ再開する。
-- 旧 HM の所有解除前に、実 HOME dry-run の60秒以内の完了を確認する。既知の旧 HM 衝突以外・未知の実体・timeout では所有解除を始めない。後続の成功は保証せず、切替中にできた実体も保持する。
-- [移行・復旧](../../../../docs/migration.md)では所有引渡しと本文・アプリ・状態の復旧を分ける。構成の再適用で全状態が戻るとは扱わない。
+- [以前の状態への復旧](../../../../docs/troubleshooting.md#システムを以前の状態へ戻したい)では、リンクの所有解除と本文・アプリ・状態の復旧を分ける。構成の再適用で全状態が戻るとは扱わない。
 
 ### sudo 認証
 
@@ -58,7 +57,7 @@
 - 所有記録の欠落・不正時には配置先全体の走査が残る。`exclude` で初回走査が止まると仮定せず、内部状態を手動生成しない。
 - 本文編集は即時反映。manifest 内の追跡ファイル増減は apply、新規宛先は宣言も更新する。削除・改名は宣言を消す前に標準 unapply。
 - 未知の実体・リンクの自動拒否を仮定しない。dry-run と人による確認を通し、force や一括退避を使わない。アプリがリンクを通常ファイルへ置換した場合も保持して確認する。
-- Karabiner は[公式仕様](https://karabiner-elements.pqrs.org/docs/manual/misc/configuration-file-path/)に合わせてディレクトリ全体を symlink。旧所有の解除・保全・サーバー再起動は別承認とし、apply に再起動を組み込まない。
+- Karabiner は[公式仕様](https://karabiner-elements.pqrs.org/docs/manual/misc/configuration-file-path/)に合わせてディレクトリ全体を symlink。既存設定の保全・サーバー再起動は別承認とし、apply に再起動を組み込まない。
 
 ## 外部・自作スキル
 
@@ -99,7 +98,7 @@
 
 ### Claude・Pi・Herdr
 
-- Herdr hook は Homebrew 本体の標準 integration。旧 HM hook と併用せず、settings の Git 正本への差分を保持する。実適用は別承認。
+- Herdr hook は Homebrew 本体の標準 integration。二重登録せず、settings の Git 正本への差分を保持する。実適用は別承認。
 - Claude statusline は設定の npm version 固定と通常 npx。Pi は live link と標準パッケージ管理を使い、認証・session を配布しない。拡張の版固定を推移依存・全機能の復元保証にしない。
 - Herdr plugins の一覧・ref は[アプリ別設定](../../../../docs/apps.md#herdr)が正本。checkout / state / session / log は可変データとして保持する。
 - Zerdr は Homebrew 本体がローカル plugin と Zed tasks を生成する。通常設定配布と二重所有させない。
@@ -110,13 +109,3 @@
 - defaults を root の preferences に書かない。補完は小さな標準 CLI スクリプトに限り、default は noop、private は systemsetup、work は電源別 pmset。補完は `apply` 確認を維持する。
 - ハードウェア非対応・失敗を成功扱いしない。Dock の手動導入対象を勝手に追加・削除しない。TCC・認証は手動許可のままにする。
 - 適用前に対象だけ旧値・型・未設定状態を記録する。宣言を戻すだけで preferences が戻ると扱わない。再起動・ログアウト・権限復元は別承認。
-
-## 既存 Nix 環境の引渡し
-
-[移行の確認事項](../../../../docs/migration.md)を使い、対象 Mac の管理元と実状態に合わせて手順を決める。所有解除・サービス切替・撤去を通常 setup に組み込まない。
-
-- 所有解除方法は対象ユーザー・HOME・実機の管理世代・解除リンク・サービスへの作用を照合する。Git 外の設定や秘密を store に取り込まない。適用は別承認後に対象ユーザーで行う。
-- Homebrew 本体・marker/fake repo の移管では公式 installer の revision と処理を確認する。全体 uninstall はせず、未知の通常ファイルを上書きしない。標準本体導入後に、それを置き換える Nix の activation を行わない。
-- nix-darwin uninstaller の `/etc` バックアップ復元・shell・system サービスへの作用を再確認する。HM 所有解除とは別工程で、Nix daemon が installer 版へ戻る場合もある。`/etc/shells` が Nix 管理リンクなら直接追記せず、通常ファイルへの復元後に fish を登録する。
-- Nix 本体撤去は installer 種別と実 APFS 識別子・daemon・build users・profile を照合して再承認する。破壊コマンドを推測しない。store 利用プロセスが残る場合は削除を止め、プロセス名だけでなく volume の実利用も確認する。
-- 構文・ビルド成功や統合テスト skip を実機引渡し成功としない。検証のための activation、サービス操作、bootstrap、GC は行わない。

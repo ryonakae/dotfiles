@@ -3,8 +3,8 @@ name: dotfiles-setup
 description: >-
   ryonakae/dotfiles の macOS 環境を導入・更新・復元するための運用スキル。
   この dotfiles の Homebrew / Brewfile / mise 設定変更、パッケージ追加、外部スキル・plugin の取得と配置、
-  setup、直接リンク、ツールのバージョン差・更新相談、別 Mac への復元、適用失敗、Nix からの引渡し・撤去で使う。
-  一般的な Nix の質問や、別プロジェクトの環境構築には使わない。
+  setup、直接リンク、ツールのバージョン差・更新相談、別 Mac への復元、適用失敗で使う。
+  別プロジェクトの環境構築には使わない。
 ---
 
 # dotfiles-setup
@@ -15,7 +15,7 @@ description: >-
 
 1. `~/dotfiles` の `AGENTS.md` と Git 差分を確認する。他者の変更を保持し、ホーム側ではなく `config/` の正本を編集する。
 2. `APP_SANDBOX_CONTAINER_ID` と `HERDR_ENV` を個別に確認する。環境変数・設定・秘密を全量出力しない。
-3. 初回導入・日常更新・移行・復旧のどれかを判断し、下表と[運用条件](references/setup.md)の該当節を読む。
+3. 初回導入・日常更新・復旧のどれかを判断し、下表と[運用条件](references/setup.md)の該当節を読む。
 4. 編集、検証、実機適用、認証・権限変更の承認を分ける。スキル起動・計画承認を実操作の承認とみなさない。
 
 ## ユーザーへ案内する手順
@@ -26,7 +26,6 @@ description: >-
 | 設定・アプリ・runtime・macOS の更新 | [日常操作](../../../docs/usage.md) |
 | 共通 API キーの準備・追加・更新 | [秘密の管理](../../../docs/secrets.md) |
 | 失敗の対処・配置の再開 | [トラブル対応](../../../docs/troubleshooting.md) |
-| 既存管理の引渡し・復旧の確認事項 | [既存環境の移行](../../../docs/migration.md) |
 | Hermes・Herdr・個別アプリ | [アプリ別設定](../../../docs/apps.md) |
 
 ## 変更と検証
@@ -42,7 +41,6 @@ description: >-
 
 - setup は対象ユーザーの通常対話端末から Safehouse 外で行う。全体を sudo で起動せず、秘密・Keychain 登録はユーザーへ引き継ぐ。
 - Hermes は既存管理関数で操作する。適用入口へ自動停止・再開・状態保存・rollback を追加しない。
-- 旧 HM の所有解除前に実 HOME の配置 dry-run を60秒の制限付きで完了確認する。既知の旧 HM 衝突以外の問題・未知の実体・timeout では停止する。
 - 未知の実体を force や一括退避で置換しない。対象だけ保全し、既存 backup、認証・session・DB・管理外の兄弟を保持する。
 - 失敗時は終了コードと変更済み段階を確認する。自動再試行せず、成功済み段階を繰り返さず標準コマンドで再開する。
 

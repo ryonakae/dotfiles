@@ -17,7 +17,7 @@
 
 ## Claude Code
 
-Herdr の Claude hook を使う場合は、Homebrew 版 Herdr の標準 installer で登録する。旧 Home Manager の hook がある場合は、先に[移行](migration.md)する。
+Herdr の Claude hook を使う場合は、Homebrew 版 Herdr の標準 installer で登録する。
 
 ```fish
 herdr integration install claude

@@ -33,7 +33,7 @@
 | `Could not write domain com.apple.universalaccess` | 実行元アプリの[フルディスクアクセス](setup.md#2-ターミナルにフルディスクアクセスを許可する)を確認し、端末を開き直す |
 | `brew bundle` の失敗 | 失敗した formula / cask と理由を確認する。無効化された cask は Brewfile を直し、失敗した構成だけ `brew bundle` を再開する |
 | repos の dirty / origin 不一致 | 対象 checkout の変更と取得元を確認する。変更を捨てず、独自 updater や別 checkout を重ねない |
-| plist の衝突・手動変更 | 実配置と生成結果・所有元を確認する。旧 HM 由来なら移行として引き渡す。自動上書きしない |
+| plist の衝突・手動変更 | 実配置と生成結果・所有元を確認する。自動上書きしない |
 | macOS / 電源設定の失敗 | 変更済みの対象キー・構成を確認し、[macOS の部分操作](usage.md#macos-設定を適用する)を使う。ハードウェア非対応を成功扱いしない |
 | その他の衝突 | 該当ファイル・リンク・変更済み範囲を確認する。force や一括退避を使わない |
 
@@ -153,7 +153,6 @@ mise -C ~/dotfiles -E hermes run hermes:install
 - Homebrew：formula / cask の提供版と実際の解決先を確認する。Brewfile は全依存の版固定ではない。
 - mise：共通設定の exact pin と `mise which` を確認する。個別プロジェクトの設定が優先される場合がある。
 - Hermes：`git -C ~/.hermes/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認する。指定 checkout の `venv/bin/hermes` を使い、別の `hermes` が PATH で先に選ばれていないか確認する。
-- 移行中：旧 Nix の PATH・リンク・稼働プロセスが残っていないか、対象限定で確認する。
 
 上流最新版、管理元の提供版、導入済み版を区別する。復元のためだけに包括的な更新を実行しない。
 
@@ -189,4 +188,14 @@ TUI の `?` で操作方法を確認する。復元先にデータがある場�
 
 Git 正本の本文、mise のリンク、アプリ、macOS 設定、DB・認証・Docker volume は、それぞれ復旧方法が異なる。宣言を戻すだけで全状態が戻るわけではない。
 
-変更範囲と利用可能なバックアップを確認し、[対象ごとの復旧](migration.md#以前の状態へ戻す場合)を個別に進める。自動 rollback や一括削除は行わない。
+変更範囲と利用可能なバックアップを確認し、対象ごとに個別に復旧する。
+
+| 対象 | 確認すること |
+|---|---|
+| 管理リンク | 管理元を変える前に、現在の所有を標準 unapply などで解除する |
+| Git 正本の本文 | 後続の変更を失わないよう差分を確認する |
+| Homebrew アプリ・mise runtime | 対象ごとに必要な版・導入状態を確認する |
+| macOS preferences | 変更前の値・型・未設定状態に戻す。未設定なら対象キーの削除が必要 |
+| DB・Docker volume・認証 | 個別の整合したバックアップから復元する |
+
+再起動・ログアウトは作業を保存してから行う。未知のリンクの一括退避、バックアップへの上書き、自動 rollback は行わない。

@@ -4,7 +4,7 @@
 
 Apple Silicon Mac の標準「ターミナル」と zsh で始める。エージェントは不要。各コマンドが成功してから次へ進む。
 
-導入済みの Mac は[日常操作](usage.md)、Nix / Home Manager 管理からの切替は[既存環境の移行](migration.md)を使う。
+導入済みの Mac は[日常操作](usage.md)を使う。
 
 ## 1. App Store と Xcode を準備する
 
