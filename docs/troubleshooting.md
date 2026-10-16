@@ -183,12 +183,6 @@ TUI の `?` で操作方法を確認する。復元先にデータがある場�
 
 保存先は Finder のごみ箱とは別。HOME volume では既定で `~/.local/share/Trash`、`XDG_DATA_HOME` 指定時はその配下。別 volume ではその volume のごみ箱を使い、利用できなければ失敗する。
 
-以前の gomi データは次で復元する。
-
-```sh
-gomi --config "$HOME/.config/gomi/config.yaml" --restore
-```
-
 永久削除は復元・バックアップを確認してから行う。
 
 ## システムを以前の状態へ戻したい
