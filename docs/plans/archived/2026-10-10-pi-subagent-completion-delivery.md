@@ -2,7 +2,7 @@
 
 ## 承認・範囲
 
-[設計記録](../dig/2026-10-10-pi-subagent-completion-delivery.md) と会話で説明した、上流同期、境界での通知、親・子向け指示の修正を実施する。ユーザーの「ok 修正してみて」を実行承認とする。実装時点ではコミット・push・実機更新を対象外とした。後続のユーザー承認により、両リポジトリのコミット・push、HomebrewでのPi更新、リモートコミット指定での拡張更新を追加した。
+[設計記録](../../dig/2026-10-10-pi-subagent-completion-delivery.md) と会話で説明した、上流同期、境界での通知、親・子向け指示の修正を実施する。ユーザーの「ok 修正してみて」を実行承認とする。実装時点ではコミット・push・実機更新を対象外とした。後続のユーザー承認により、両リポジトリのコミット・push、HomebrewでのPi更新、リモートコミット指定での拡張更新を追加した。
 
 - 拡張の修正元: `/Users/ryo.nakae/Dev/private/pi-subagents`
 - 開始HEAD: `be898c753e9eb32cf1315f63b1c1f5ef0cf6f782`
@@ -53,3 +53,9 @@
 - Safehouse内のbrew updateはCellar書き込み不可で停止した。追加承認を受けたHerdr通常ペインで `brew update && brew upgrade --yes pi-coding-agent` が成功し、Pi 1.1.0へ更新した。依存のNode 26.11.1とsimdjson 5.0.3も更新された。
 - 設定を `git:github.com/ryonakae/pi-subagents@5f4be85487118ad1e4b992544acde3571cd32f6a` に固定し、`pi update <source> --no-approve` でGitHubから取得した。導入先HEADとremote masterの一致、導入先のclean状態、Pi 1.1.0、offline helpでの拡張フラグ登録を確認した。ローカル開発checkoutは参照しない。実行中セッションではなく、Piを再起動して使用する。
 - 親向け指示を2項目追加した。子向けは共通blockを追加し、各モードで完了条件と追加指示の扱いを検査する4ケースを追加。各sliceで期待する不足により2ケース失敗（exit 1）を確認後、全33ケース成功（exit 0）、局所lint成功。ログ: `/tmp/pi-subagents-prompts-red.log`、`/tmp/pi-subagents-prompts-steering-red.log`、`/tmp/pi-subagents-prompts-steering-green.log`。
+
+## Gate Summary
+
+- 拡張側: 上流同期 `e93fd1a`、通知・指示修正 `5f4be85` を `ryonakae/pi-subagents` の master へ push 済み。
+- dotfiles 側: 拡張参照の固定と親向け指示の更新を `44b6a72` として commit・push 済み。
+- 独立レビューの指摘は再現・修正し、修正後の検証が成功した。未解決の blocking はない。実 LLM の完遂率と対話 TUI の実画面は未検証。

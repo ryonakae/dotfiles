@@ -37,7 +37,7 @@
   - 上流には `@handle` の会話・system prompt引継ぎ、子outputログの重複/system message混入、Workflowのisolated指定、FleetViewの修正がある。
   - 上流 `src/index.ts:443–522` は200msのhold後に `followUp` へ配信する既存方式。forkのbusy保留・グループ消費/再開世代の修正は上流にない。今回の境界配信案は未実装で、`src/prompts.ts` と `src/agent-runner.ts` に共通祖先からの上流差分はない。
   - 承認済み方針: 上流masterへ同期し、Pi 1.1.0以上の契約で再確認したうえで、必要なfork独自通知修正と指示修正だけを加える。Pi本体更新・導入版切替は別途計画・承認する。
-  - 実装・検証の進捗は[計画](../plans/2026-10-10-pi-subagent-completion-delivery.md)に記録する。
+  - 実装・検証の進捗は[計画](../plans/archived/2026-10-10-pi-subagent-completion-delivery.md)に記録する。
 - 承認済み配信設計: Pi 1.0.4の `turn_end` と補完用の `agent_before_settle` で、完了・未消費・未通知の結果を選び、既存 `event.entries` を保ったまま `custom_message` draftを追加する。通常終了で継続可能な場合だけ `continue: true` を返す。idle中の完了には既存の起動経路を残す。abort/errorでは通知による自動再起動を行わない。通知済みと結果取得済みは区別する。
   - 一次情報: インストール済みPiの `dist/core/extensions/types.d.ts:722–801`、`dist/core/agent-session.js:486–518` を確認。draftはモデルcontextとUI履歴の双方へ入る。Piへ投入したsteer/follow-upの個別取消APIはないため、投入前に拡張内で未消費を選別する。
   - 旧開発依存の `TurnEndEvent` は通知draftや継続制御を返す契約ではない。
