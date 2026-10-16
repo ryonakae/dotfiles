@@ -74,15 +74,11 @@ function __hdr_list
     __hdr_require_outer_shell; or return
 
     if not command -q fd
-        echo "error: fd command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
+        echo "error: fd command not found. Install it with Homebrew (brew/Brewfile.default)."
         return 127
     end
     if not command -q fzf
-        echo "error: fzf command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
-        return 127
-    end
-    if not command -q jq
-        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
+        echo "error: fzf command not found. Install it with Homebrew (brew/Brewfile.default)."
         return 127
     end
 
@@ -203,10 +199,6 @@ function __hdr_open --argument-names path session
         echo "error: directory not found: $path"
         return 1
     end
-    if not command -q jq
-        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
-        return 127
-    end
 
     set -l project_dir (realpath "$path")
     test -n "$session" || set session (__hdr_project_session_name "$project_dir")
@@ -233,11 +225,6 @@ end
 
 function __hdr_stop
     __hdr_require_outer_shell; or return
-
-    if not command -q jq
-        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
-        return 127
-    end
 
     set -l sessions $argv
     test (count $sessions) -gt 0; or set sessions (__hdr_project_session_name (pwd))
@@ -270,11 +257,6 @@ end
 
 function __hdr_delete
     __hdr_require_outer_shell; or return
-
-    if not command -q jq
-        echo "error: jq command not found. Check the Nix-managed environment and PATH; see dotfiles-setup."
-        return 127
-    end
 
     set -l sessions $argv
     test (count $sessions) -gt 0; or set sessions (__hdr_project_session_name (pwd))
@@ -329,6 +311,10 @@ function hdr --description "Manage project sessions in Herdr"
         echo "error: herdr command not found."
         return 127
     end
+    if not command -q jq
+        echo "error: jq command not found. Install it with Homebrew (brew/Brewfile.default)."
+        return 127
+    end
 
     if test (count $argv) -eq 0
         __hdr_open (pwd)
@@ -357,8 +343,6 @@ function hdr --description "Manage project sessions in Herdr"
             __hdr_stop $argv
         case delete rm
             __hdr_delete $argv
-        case help -h --help
-            __hdr_help
         case '*'
             if test -d "$subcommand"
                 if test (count $argv) -gt 0
