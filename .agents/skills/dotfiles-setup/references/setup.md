@@ -25,8 +25,8 @@
 - `scripts/dotfiles.sh` は CLT の `/usr/bin/python3` を使う。初回に fish / mise / Homebrew の導入済みを要求しない。
 - 未指定・未知・重複の構成は変更前に拒否する。ユーザー指定順を維持し、不明な構成から default へ切り替えない。
 - 対象 checkout と `-E` で構成を固定し、継承された `MISE_ENV` や別 cwd による追加構成・プロジェクト設定の混入を防ぐ。private 単独を共通設定・runtime の導入に読み替えない。
-- 選択した Brewfile、信頼確認、repos 取得・更新、60秒制限付きの配置 dry-run、確認付き apply、default の runtime と未導入 Hermes、plist、選択 macOS 設定の順に進める。外部 source の初回取得前に full dry-run 成功を必須にしない。
-- default だけ Hermes 用宣言を確認して trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
+- 選択した Brewfile、信頼確認、repos 取得・更新、60秒制限付きの配置 dry-run、確認付き apply、default の runtime、private の未導入 Hermes と plist、選択 macOS 設定の順に進める。外部 source の初回取得前に full dry-run 成功を必須にしない。
+- private だけ Hermes 用宣言を確認して trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
 - サービスの自動停止・再開、Dock/端末の自動再起動、chsh、cleanup を setup に追加しない。setup の再実行を無変更の冪等操作と説明しない。
 
 ### 実機操作の承認

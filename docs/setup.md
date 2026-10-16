@@ -84,7 +84,7 @@ macOS 設定は [mise.default.toml](../mise.default.toml)などの構成別宣�
 bash scripts/dotfiles.sh setup default private
 ```
 
-選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime と未導入の Hermes、macOS 設定を順に適用する。共通 runtime と Hermes の導入は `default` を選択した場合だけ。導入済み Hermes 本体は更新しない。
+選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime と未導入の Hermes、macOS 設定を順に適用する。共通 runtime の導入は `default`、Hermes の導入は `private` を選択した場合だけ。導入済み Hermes 本体は更新しない。
 
 全体を sudo で起動せず、表示された対象と確認に応答する。
 
@@ -94,7 +94,7 @@ bash scripts/dotfiles.sh setup default private
 | Homebrew 初回導入（未導入時） | 公式 installer と既存 prefix の状態を確認した | `install` |
 | mise 設定の信頼 | 表示されたルートと選択構成の宣言を確認した | `trust` |
 | リンクの配置 | 配置予定に不明なファイルや衝突がない | `apply` |
-| Hermes 用 mise 設定の信頼（default 選択時） | 表示された Hermes 用宣言を確認した | `trust` |
+| Hermes 用 mise 設定の信頼（private 選択時） | 表示された Hermes 用宣言を確認した | `trust` |
 | Hermes 初回導入（未導入時） | 取得元・配置先・表示された installer の段階を確認した | 表示された確認語 |
 | Hermes plist の配置（差分がある場合） | 表示された作成・置換対象を確認した | `y` |
 | 電源設定の補完 | 表示された構成の電源設定を変更してよい | `apply` |

@@ -79,7 +79,7 @@ gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` �
 
 共通 API キー、Hermes の認証・設定を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
 
-Hermes 本体は mise task から指定 fork の標準 shell installer を呼んで導入する。取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/.hermes/hermes-agent`。通常 setup は未導入時だけ導入し、導入済み本体は更新しない。
+Hermes 本体は mise task から指定 fork の標準 shell installer を呼んで導入する。取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/.hermes/hermes-agent`。`private` を選択した通常 setup は未導入時だけ導入し、導入済み本体は更新しない。
 
 本体だけを初回導入する場合は、通常端末でルートと Hermes 用の宣言を確認してから実行する。
 

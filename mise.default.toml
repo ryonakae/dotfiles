@@ -26,11 +26,6 @@ source = "config/.gemini"
 mode = "symlink-each"
 manifest = "git"
 
-[dotfiles."~/.hermes"]
-source = "config/.hermes"
-mode = "symlink-each"
-manifest = "git"
-
 [dotfiles."~/.pi"]
 source = "config/.pi"
 mode = "symlink-each"
@@ -48,8 +43,6 @@ manifest = "git"
 
 [dotfiles]
 "~/.local/bin/rm" = { source = "config/.local/bin/rm", mode = "symlink" }
-"~/.local/libexec/hermes" = { source = "config/.local/libexec/hermes", mode = "symlink" }
-"~/.local/libexec/hermes-gui-launchctl/launchctl" = { source = "config/.local/libexec/hermes-gui-launchctl/launchctl", mode = "symlink" }
 "~/.vimrc" = { source = "config/.vimrc", mode = "symlink" }
 "~/.claude/CLAUDE.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }
 "~/.codex/AGENTS.md" = { source = "config/.agents/AGENTS.md", mode = "symlink" }

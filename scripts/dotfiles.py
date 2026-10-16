@@ -133,8 +133,9 @@ def setup(configurations):
   brewfiles = [ROOT / 'brew' / f'Brewfile.{name}' for name in configurations]
   protected = [*declarations, *brewfiles, ROOT / 'scripts/macos-settings.sh']
   if 'default' in configurations:
-    protected += [ROOT / 'config/.config/mise/config.base.toml', ROOT / 'scripts/hermes_plists.py',
-                  ROOT / 'mise.hermes.toml', ROOT / 'scripts/hermes-install.py']
+    protected.append(ROOT / 'config/.config/mise/config.base.toml')
+  if 'private' in configurations:
+    protected += [ROOT / 'mise.hermes.toml', ROOT / 'scripts/hermes-install.py', ROOT / 'scripts/hermes_plists.py']
   snapshot = {}
   environment = {key: value for key, value in os.environ.items()
                  if not key.startswith('MISE_') or key == 'MISE_DATA_DIR'}
@@ -230,6 +231,7 @@ def setup(configurations):
                       MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'config/.config/mise/config.base.toml'))
       home_mise = [str(MISE), '-C', str(home)]
       run('mise runtimes', [*home_mise, 'install', 'node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'], cwd=home, env=home_env)
+    if 'private' in configurations:
       hermes_declaration = ROOT / 'mise.hermes.toml'
       hermes_mise = [str(MISE), '-C', str(ROOT), '-E', 'hermes']
       hermes_env = dict(environment, MISE_ENV='hermes')

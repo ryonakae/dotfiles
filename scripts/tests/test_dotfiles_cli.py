@@ -110,9 +110,10 @@ class SetupCliTests(unittest.TestCase):
         self.run.assert_not_called()
         self.prompt.assert_not_called()
 
-  def test_private_only_applies_that_configuration_without_default_tools_or_services(self):
+  def test_private_only_installs_hermes_without_default_tools_or_runtimes(self):
     self.invoke('private')
     mise = [str(self.module.MISE), '-C', str(self.root), '-E', 'private']
+    hermes_mise = [str(self.module.MISE), '-C', str(self.root), '-E', 'hermes']
     self.assertEqual(self.commands(), [
       ['/usr/bin/xcode-select', '-p'],
       ['/usr/bin/sudo', '-v'],
@@ -122,6 +123,9 @@ class SetupCliTests(unittest.TestCase):
       [*mise, 'bootstrap', 'repos', 'update', '--yes'],
       [*mise, 'dot', 'apply', '--dry-run'],
       [*mise, 'dot', 'apply', '--yes'],
+      [*hermes_mise, 'trust', str(self.root / 'mise.hermes.toml')],
+      [*hermes_mise, 'run', 'hermes:install'],
+      ['/usr/bin/python3', str(self.root / 'scripts/hermes_plists.py')],
       ['/usr/bin/sudo', '-v'],
       [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'],
       ['/bin/bash', str(self.root / 'scripts/macos-settings.sh'), 'private'],
@@ -131,9 +135,19 @@ class SetupCliTests(unittest.TestCase):
     for call in self.run.call_args_list:
       if call.args[0][0] == str(self.module.MISE):
         self.assertEqual(call.kwargs['cwd'], self.root)
-        self.assertEqual(call.kwargs['env']['MISE_ENV'], 'private')
+        self.assertEqual(call.kwargs['env']['MISE_ENV'], 'hermes' if call.args[0][:5] == hermes_mise else 'private')
     self.assertIn('Setup complete:', self.module.sys.stdout.getvalue())
     self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
+
+  def test_default_only_installs_runtimes_without_hermes(self):
+    for name in ('mise.hermes.toml', 'scripts/hermes-install.py', 'scripts/hermes_plists.py'):
+      (self.root / name).unlink()
+    self.invoke('default')
+    commands = self.commands()
+    self.assertTrue(any(c[-5:] == ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'] for c in commands))
+    self.assertFalse(any('hermes:install' in c or c[0] == '/usr/bin/python3' for c in commands))
+    self.assertEqual([c[-1] for c in commands if 'trust' in c],
+                     [str(self.root / 'mise.toml'), str(self.root / 'mise.default.toml')])
 
   def test_default_is_explicit_and_installs_home_runtimes_before_first_hermes(self):
     self.invoke('private', 'default')
@@ -177,7 +191,7 @@ class SetupCliTests(unittest.TestCase):
   def test_custom_mise_data_directory_is_shared_by_runtime_and_hermes_operations(self):
     data = str(self.home / 'custom mise data')
     with patch.dict(os.environ, {'MISE_DATA_DIR': data, 'MISE_CONFIG_FILE': '/unselected/mise.toml'}):
-      self.invoke('default')
+      self.invoke('default', 'private')
     calls = [call for call in self.run.call_args_list
              if call.args[0][0] == str(self.module.MISE)]
     self.assertTrue(calls)
@@ -362,7 +376,7 @@ class SetupCliTests(unittest.TestCase):
           return self.confirm(prompt)
         self.prompt.side_effect = confirm
         with self.assertRaisesRegex(ValueError, 'changed after confirmation|cancelled'):
-          self.invoke('default')
+          self.invoke('private')
         self.assertFalse(any('hermes:install' in c or 'defaults' in c for c in self.commands()))
         self.assertFalse(any('trust' in c and c[-1] == str(self.root / 'mise.hermes.toml') for c in self.commands()))
         if path:
@@ -418,6 +432,7 @@ class SetupCliTests(unittest.TestCase):
     (self.root / 'brew/Brewfile.default').unlink()
     (self.root / 'mise.hermes.toml').unlink()
     (self.root / 'scripts/hermes-install.py').unlink()
+    (self.root / 'scripts/hermes_plists.py').unlink()
     self.invoke('work')
     self.assertFalse(any('install' in c for c in self.commands()))
     self.assertEqual([c[-1] for c in self.commands() if c[0] == '/bin/bash'], ['work'])
@@ -439,7 +454,8 @@ class SetupCliTests(unittest.TestCase):
       if call.args[0][0] == str(self.module.MISE):
         self.assertEqual(call.kwargs['cwd'], self.root)
         environment = call.kwargs['env']
-        self.assertEqual(environment['MISE_ENV'], 'private')
+        self.assertEqual(environment['MISE_ENV'], call.args[0][call.args[0].index('-E') + 1])
+        self.assertIn(environment['MISE_ENV'], ('private', 'hermes'))
         self.assertEqual(environment['MISE_GLOBAL_CONFIG_FILE'], str(self.root / 'mise.toml'))
         self.assertEqual(environment['MISE_SYSTEM_CONFIG_FILE'], str(self.root / 'mise.toml'))
         self.assertEqual(environment['MISE_CEILING_PATHS'], str(self.root.parent))
