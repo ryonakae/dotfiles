@@ -99,7 +99,7 @@ bash scripts/dotfiles.sh setup default private
 | Hermes plist の配置（差分がある場合） | 表示された作成・置換対象を確認した | `y` |
 | 電源設定の補完 | 表示された構成の電源設定を変更してよい | `apply` |
 
-Homebrew の初回導入など追加の確認にも、対象を確認して応答する。分からない内容があれば承認せず止める。既存ファイルを `--force` で上書きしない。Karabiner に既存設定がある場合は、配置前に[Karabiner の移行](apps.md#karabiner)を確認する。
+Homebrew の初回導入など追加の確認にも、対象を確認して応答する。分からない内容があれば承認せず止める。既存ファイルを `--force` で上書きしない。Karabiner に既存設定がある場合は、配置前に[Karabiner の手順](apps.md#karabiner)を確認する。
 
 sudo のパスワードは端末のプロンプトへ入力する。必要な処理中だけ認証キャッシュを維持するが、会社のポリシーによっては再入力が必要。App Store やベンダーの認証は別操作で、入力1回を保証しない。
 

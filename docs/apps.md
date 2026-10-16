@@ -259,8 +259,6 @@ herdr plugin log list --plugin ryonakae.agent-context --limit 20
 
 本体は Homebrew 管理。公式 installer を重ねず、初回のアクセシビリティ・画面収録の許可と daemon 起動は[公式 Quickstart](https://cua.ai/docs/cua-driver/quickstart)に従う。
 
-以前の `~/.local/bin/cua-driver` がある場合は、`type -a cua-driver` と `cua-driver --version` で Homebrew 版が選ばれるか確認する。古いリンクは確認せず削除しない。
-
 ## Cua Spaces
 
 `cua` は Cua Spaces アプリ同梱の CLI を使う。`command -v cua` と `cua --version` で利用可能か確認する。アプリ本体の導入・認証は別途行い、`cua agents setup` によるスキル・MCP の自動配置は使わない。
@@ -289,15 +287,13 @@ MCP は Spaces の作成・削除・コマンド実行を含む `spaces:all` を
 
 本体は `brew upgrade --cask unity-cli` で更新する。公式 installer や `unity self-update` は併用しない。Editor と追加モジュールはプロジェクトに必要な版を CLI / Hub で管理する。
 
-旧 installer からの移行では `~/.unity/bin/unity` と `~/.config/fish/conf.d/unity-cli.fish` の PATH 設定を確認・保全し、新しい shell の `type -a unity` で Homebrew 版が選ばれることを確認する。既存の Editor・Hub データは削除しない。
-
 `brew uninstall --zap unity-cli` は使わない。Hub のデータも削除対象になる。[公式の導入方法](https://docs.unity.com/en-us/unity-cli/use-unity-cli#install-with-a-package-manager)と[cask の削除対象](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/u/unity-cli.rb)を参照する。
 
 ## Karabiner
 
 設定は `config/.config/karabiner/karabiner.json` を編集する。アプリ側の変更も Git 差分になる。
 
-既存設定がある Mac は、配置前に必要な JSON を保全する。既存の実ディレクトリや旧ファイル単位リンクを上書きせず、[移行手順](migration.md)で解除・退避してから配置する。
+既存設定がある Mac は、配置前に必要な JSON を保全する。既存の実ディレクトリを上書きせず、退避してから配置する。
 
 ディレクトリの配置場所が変わった後は、[公式手順](https://karabiner-elements.pqrs.org/docs/manual/misc/configuration-file-path/)に従って `Karabiner-Console-User-Server` を一度再起動する。再起動までは新しい場所の変更が自動検知されない。アプリの初期設定と macOS の権限許可も別途行う。
 
@@ -313,5 +309,3 @@ mise 管理の設定を GUI で変えても、次の defaults apply で宣言値
 - 入力ソース、標準・アプリ別ショートカット、Karabiner 管理外のデバイス設定、宣言外の電源設定
 - Dock に登録した Chrome 製アプリなどの実体
 - `Dropbox/App` に保存した、Git 管理外のアプリ設定
-
-Vim は外部プラグインなしの最小構成。旧 `~/.vim/bundle` は設定変更だけでは消えないため、不要なら中身を確認して別途整理する。
