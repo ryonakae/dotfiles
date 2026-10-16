@@ -230,7 +230,6 @@ def active_pane_width() -> int | None:
         TypeError,
         ValueError,
         StopIteration,
-        json.JSONDecodeError,
     ):
         return None
 
