@@ -41,12 +41,15 @@
 | sysctl deny | `(allow sysctl-read (sysctl-name "<name>"))` |
 | mach-lookup deny | `(allow mach-lookup (global-name "<name>"))` |
 
-### 既存policyからの診断
+### 一次診断手順
 
-1. 失敗commandとログに現れたpath・操作を確認する。deny対象の実秘密をprobeしない。
-2. 実際の起動引数で `--stdout` を使い、標準feature、grant、追加profile、terminal denyの順を確認する。`--stdout` はcommandを実行しない。`--explain` はサマリ表示後、指定commandを実行するので、拒否操作の再試行に使わない。
-3. 標準機能や既存grantで対応できるかを先に確認する。互換性を優先し、承認された最小修正だけを行う。denyログからallowを機械的に追加しない。
-4. policy変更は次回起動で反映する。`--allow-profile-writes` はappendしたファイルの標準書き込み保護を省く設定であり、現在のsandboxを更新しない。
+問題発生時はこの順序で進める。
+
+1. 失敗command、エラーに現れたpath・操作、実際の起動引数を確認する。単独の `safehouse` 呼び出しと、この環境のwrapperが生成するpolicyは異なる。deny対象の実秘密をprobeしない。
+2. 同じ起動引数で `safehouse --stdout <command>` を使い、標準feature、grant、追加profile、terminal denyの順を確認する。`--stdout` はcommandを実行しない。`--explain` はstderrへサマリを出し、commandを指定すると実行もするので、拒否操作の再試行に使わない。
+3. 必要なら上記の `/usr/bin/log stream` で既存の拒否ログを確認する。
+4. 標準の `--enable` や既存grantで対応できるかを先に確認する。残るdenyとの衝突なら、理由と承認が必要な最小変更を提示する。denyログからallowを機械的に追加しない。
+5. policy変更は次回起動で反映する。実行中のsandboxのpolicyは更新できない。
 
 拒否された操作を無断で sandbox 外へ移さない。検証は変更に近い差分・構文・必要な smoke に絞る。
 

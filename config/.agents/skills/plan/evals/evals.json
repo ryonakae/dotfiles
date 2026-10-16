@@ -14,7 +14,7 @@
       "expectations": [
         "The plan preserves all four material constraints: expiresAt equal to now is expired, the public validateSession signature and injected Clock remain unchanged, invalid-signature retains precedence, and no date library is added.",
         "Refresh-token work is explicitly listed as out of scope.",
-        "Progress is tracked at reviewable task/deliverable granularity and completion is gated on validation, without checkbox steps for writing tests, implementation, or commits.",
+        "Tasks are deliverable-level and completion is gated on validation, without separate tasks for writing tests, implementation, or commits.",
         "The plan defines concrete before/equal/after boundary test cases plus the invalid-signature precedence regression case with expected behavior.",
         "The plan selects existing validation commands with expected results that cover the change and required project checks; it does not mechanically require focused and full runs plus every available check.",
         "Each requirement is addressed by the task and validation without requiring IDs or a coverage table; this local fix stays one deliverable rather than separate test, implementation, and verification tasks.",
@@ -40,7 +40,7 @@
         "The plan does not invent a test runner, typechecker, linter, or CI workflow.",
         "Validation includes exact shell-syntax commands for both scripts and a concrete command or procedure that verifies all three allowlists are identical, with expected results.",
         "Inapplicable standard checks are omitted instead of filling a checklist with N/A; actual blockers to required validation remain explicit.",
-        "Progress uses reviewable deliverable-level tasks, with completion only after validation and no 2–5-minute coding-step checklist.",
+        "Tasks are deliverable-level, with completion only after validation and no fine-grained coding-step checklist.",
         "Synchronization and scope limits are verifiable from the tasks and checks without a mandatory coverage table or separate tasks for each file; validation checks that no unrelated directory is added.",
         "The plan contains no complete replacement script bodies or other copy-pasteable implementation patches."
       ]
@@ -61,19 +61,19 @@
         "The plan preserves the exact Idempotency-Key syntax and length contract, 24-hour replay semantics, 409 conflict behavior, and 400 missing/invalid behavior.",
         "The existing PaymentService.create contract is explicitly preserved, while persistent storage and multi-process support are explicitly out of scope.",
         "Testing decisions use the HTTP handler as the test seam and cover first request, same-key same-payload replay, same-key different-payload conflict, missing key, invalid charset, and length boundaries.",
-        "The file map assigns clear responsibilities to the handler, API specification, tests, and any newly proposed in-memory idempotency component.",
-        "Progress is task-level and validation-gated, and the plan includes implementation-time change-control instructions.",
+        "The tasks make clear the responsibilities of the handler, API specification, tests, and any newly proposed in-memory idempotency component, without requiring a separate file map.",
+        "Tasks are deliverable-level and validation-gated, and the plan includes implementation-time change-control instructions.",
         "The plan includes real validation commands and expected results for material contracts, including concurrent same/different payloads, failures not being cached, JSON object-key-order equivalence, and before/at-24-hour expiry. It does not require a separate test for every implementation decision or duplicate unchanged validation runs.",
         "The plan's current-context claims, file paths, and validation commands match the fixture's actual files and package scripts.",
         "The plan contains no complete handler, idempotency-store implementation, or full test bodies.",
-        "The plan does not place externally observable contract choices in Assumptions or invent material behavior beyond the prompt."
+        "The plan does not settle externally observable contract choices as assumptions or invent material behavior beyond the prompt."
       ]
     },
     {
       "id": 4,
       "name": "material-ambiguity-gate",
       "prompt": "`{{FIXTURE_REPO}}` の `POST /payments` に idempotency key を追加する実装計画を作ってください。同じkeyの再送で重複作成を防ぎたいですが、保持期間、同一payloadの定義、異なるpayloadや同時リクエストの応答はまだ決めていません。計画は `{{OUTPUT_PLAN}}` に保存してください。実装はしないでください。",
-      "expected_output": "外部挙動を左右する未確定事項をAssumptionsで補わず、計画ファイルを作成する前に、依存関係上もっとも上流の論点を推奨案付きで一つだけ確認する。",
+      "expected_output": "外部挙動を左右する未確定事項を仮定で補わず、計画ファイルを作成する前に、依存関係上もっとも上流の論点を推奨案付きで一つだけ確認する。",
       "files": [
         "evals/files/idempotency/package.json",
         "evals/files/idempotency/src/payments.ts",

@@ -13,22 +13,13 @@ Agent Safehouse は macOS ネイティブの `sandbox-exec` を利用した、LL
 
 | 症状 | まず試すこと | 詳細の参照先 |
 |------|-------------|-------------|
-| `Operation not permitted` エラー | 起動引数と最終profileの順序を確認し、標準機能・残るdeny・不足grantを切り分ける | 本ファイルの「一次診断手順」 |
+| `Operation not permitted` エラー | 起動引数と最終profileの順序を確認し、標準機能・残るdeny・不足grantを切り分ける | `references/debugging-and-testing.md` の「一次診断手順」 |
 | どのパスが拒否されたか不明 | `/usr/bin/log stream` で deny ログをストリーム | `references/debugging-and-testing.md` |
-| `--enable` で何を有効化すべきか不明 | 本ファイルの「--enable で有効化できる機能」一覧を確認 | — |
+| `--enable` で何を有効化すべきか不明 | `safehouse --help` で導入版のfeature名を確認 | [公式options](https://agent-safehouse.dev/docs/options.html) |
 | カスタム `.sb` ポリシーの書き方 | パスマッチャー（literal/subpath/prefix/regex）を確認 | `references/policy-and-customization.md` |
 | 特定エージェント固有の問題 | 本ファイルの「対応エージェント」表で内蔵サンドボックスの有無を確認 | `references/agent-investigations.md` |
 | LLM でプロファイルを自動生成したい | 検出コマンドを実行し、プロファイル生成プロンプトに従う | `references/llm-profile-generator.md` |
 | ポリシーの順序・優先度の問題 | ポリシーレイヤーの「後のルールが優先」原則を確認 | `references/policy-and-customization.md` |
-
-### 一次診断手順
-
-問題発生時はこの順序で進める：
-
-1. 失敗command、エラーに現れたpath・操作、実際の起動引数を確認する。単独の `safehouse` 呼び出しと、この環境のwrapperが生成するpolicyは異なる。
-2. 同じ起動引数で **`safehouse --stdout <command>`** を使い、生成policyと最終profileの順序を確認する。これはcommandを実行しない。**`--explain`** はstderrへサマリを出すだけで、commandを指定すると実行もする。拒否操作の再試行には使わない。
-3. 必要なら **`/usr/bin/log stream`** で既存の拒否ログを確認する。実秘密へのprobeや無断の迂回は行わない。
-4. 標準の `--enable` とgrantで対応できるかを確認し、残るdenyとの衝突なら理由と承認が必要な最小変更を提示する。実行中のsandboxのpolicyは更新できず、変更は次回起動から反映される。
 
 ## 設計哲学
 
@@ -120,13 +111,7 @@ safehouse --env-pass=ANTHROPIC_API_KEY,OPENAI_API_KEY claude
 | `--explain` | workdir・grant・profile選択のサマリをstderrに表示。command指定時は実行もする |
 | `--enable=FEATURE` | オプション機能を有効化 |
 
-### --enable で有効化できる機能
-
-公式のfeature名は `shell-init`、`agent-browser`、`wide-read` を使う。主な機能は次のとおり：
-
-`docker`, `kubectl`, `shell-init`, `agent-browser`, `clipboard`, `herdr`, `launch-services`, `macos-gui`, `electron`, `chromium-headless`, `chromium-full`, `playwright-chrome`, `ssh`, `gpg`, `gpu`, `process-control`, `lldb`, `vscode`, `xcode`, `wide-read`, `keychain`, `1password`, `cloud-credentials`, `cloud-storage`, `all-agents`, `all-apps`
-
-全一覧と依存featureは [公式options](https://agent-safehouse.dev/docs/options.html) で確認する。
+`--enable` のfeature名と依存featureは、`safehouse --help` と [公式options](https://agent-safehouse.dev/docs/options.html) で確認する。
 
 ## デフォルトのアクセス制御
 
@@ -155,21 +140,6 @@ safehouse --env-pass=ANTHROPIC_API_KEY,OPENAI_API_KEY claude
 
 ブラウザ自動化、クリップボード統合、クラウド認証情報、Docker ソケット、Xcode ルート、LLDB、Keychain アクセス、広範な HOME 読み取り
 
-## ワーキングディレクトリの設定ファイル
-
-プロジェクトルートに `.safehouse` ファイルを配置：
-
-```
-add-dirs-ro=/path/to/shared/libs
-add-dirs=/path/to/output
-```
-
-`--trust-workdir-config` フラグで読み込む。
-
-## ローカルオーバーライド
-
-マシン固有の例外を `~/.config/agent-safehouse/local-overrides.sb` に記述。
-
 ## Git Worktree サポート
 
 workdir が Git worktree の場合、Safehouse は自動的に：
@@ -188,54 +158,15 @@ safehouse -- /Applications/Claude.app/Contents/MacOS/Claude
 
 Electron アプリには `--no-sandbox` フラグを維持してネストされたサンドボックスの初期化を防止。
 
-## ポリシーアーキテクチャ
+## ポリシーとカスタマイズ
 
-ポリシーは以下のレイヤーで組み立てられる（後のルールが優先）：
-
-1. `00-base.sb` — デフォルト deny、ヘルパー関数、HOME 置換トークン
-2. `10-system-runtime.sb` — macOS ランタイムバイナリ、一時ディレクトリ、IPC
-3. `20-network.sb` — ネットワークポリシー
-4. `30-toolchains/*.sb` — Apple, Node, Python, Go, Rust, Bun, Java, PHP, Perl, Ruby
-5. `40-shared/*.sb` — クロスエージェント共有モジュール
-6. `50-integrations-core/*.sb` — Git, SSH agent, worktree 等
-7. `55-integrations-optional/*.sb` — `--enable` でオプトイン
-8. `60-agents/*.sb` — コマンド名でエージェント別プロファイルを選択
-9. `65-apps/*.sb` — アプリバンドル別プロファイル
-10. 設定/環境変数/CLI グラント
-11. 追加プロファイル（この環境では `compatibility.sb` → `local-overrides.sb`）
-12. appendしたprofileの標準書き込み保護と、最後のterminal deny（`.safehouse` の保護）。それぞれ対応するopt-outで省略可能
-
-**順序が重要**: 後のルールが優先。予期しない動作はまず順序を確認。
-
-詳細は `references/policy-and-customization.md` を参照。
-
-## デバッグ（サンドボックス拒否の調査）
-
-詳細は `references/debugging-and-testing.md` を参照。
-
-## カスタマイズ
-
-6つの拡張ポイント：
-
-1. `--append-profile` でカスタム `.sb` オーバーレイを追加
-2. `profiles/20-network.sb` でネットワーク動作を調整
-3. `profiles/40-shared/` で共有クロスエージェントルールを変更
-4. `profiles/60-agents/` にエージェントプロファイルを追加
-5. `profiles/65-apps/` にデスクトップアプリプロファイルを追加
-6. `profiles/30-toolchains/` にツールチェーンプロファイルを追加
+ポリシーは複数のレイヤーを順に組み立て、後のルールが優先する。予期しない動作はまず最終profileの順序を確認する。レイヤー一覧、パスマッチャー、拡張ポイント、`.safehouse`、ローカルオーバーライド、配布は `references/policy-and-customization.md` を参照する。
 
 **この環境の原則**: 開発の互換性を優先し、OS重要領域への書き込み範囲を維持する。標準機能と最終profile順から原因を診断し、承認された最小変更を行う。広いgrantを一律に避けたり、拒否ログをそのままallowへ変換したりしない。
 
-対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。Safehouse標準のappend profile書き込み保護を省く設定であり、`.safehouse` の保護は解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
+追加profileは `compatibility.sb` → `local-overrides.sb` の順。IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめる。すでに許可されたMach/network/signalの個別allowを重複追加しない。
 
-IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめる。すでに許可されたMach/network/signalの個別allowを重複追加しない。
-
-## 配布
-
-```bash
-# dist/safehouse.sh — ランタイム＋ポリシーモジュールを埋め込んだ自己完結スクリプト
-./scripts/generate-dist.sh
-```
+対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。Safehouse標準のappend profile書き込み保護を省く設定であり、書き込みgrantは追加せず、`.safehouse` の保護も解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
 
 ## 対応エージェント
 
@@ -261,8 +192,8 @@ IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にま�
 
 詳細が必要な場合は以下を参照：
 
-- `references/policy-and-customization.md` — ポリシーアーキテクチャ詳細、パスマッチャー、カスタマイズ、配布
-- `references/debugging-and-testing.md` — デバッグ手法、テストフレームワーク、E2E テスト
+- `references/policy-and-customization.md` — ポリシーレイヤー、パスマッチャー、拡張ポイント、`.safehouse`・ローカルオーバーライド、配布
+- `references/debugging-and-testing.md` — 一次診断手順、拒否ログの調査、テストフレームワーク、E2E テスト
 - `references/agent-investigations.md` — 全13エージェントの詳細セキュリティ分析
 - `references/llm-profile-generator.md` — LLM を使ったカスタムプロファイル生成ガイド
 

@@ -19,9 +19,7 @@ OpenAI Codex CLI の非対話モードで外部視点を得る。
 
 1. 利用可能なファイル閲覧・検索ツールで、質問に必要なコンテキストを集める。
 2. 現在の会話は Codex に引き継がれないため、前提、論点、制約、期待する回答をプロンプトに含める。
-3. 実行環境を判定し、次のサンドボックス指定を使う。
-   - 通常環境: `-a never -s read-only`
-   - `APP_SANDBOX_CONTAINER_ID=agent-safehouse`: `--dangerously-bypass-approvals-and-sandbox`
+3. 実行環境を判定する。`APP_SANDBOX_CONTAINER_ID=agent-safehouse` なら「Agent Safehouse 内での実行」に従う。
 4. 依頼に合う `exec` または `exec review` を実行する。
 5. Codex の回答を現在の分析やプロジェクト固有の事情と照合して報告する。
 
