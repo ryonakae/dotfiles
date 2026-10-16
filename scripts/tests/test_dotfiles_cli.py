@@ -163,7 +163,7 @@ class SetupCliTests(unittest.TestCase):
     self.assertLess(commands.index(plists), next(i for i, c in enumerate(commands) if 'defaults' in c))
     self.assertEqual([c[-1] for c in commands if c[0] == '/bin/bash'], ['private', 'default'])
     for call in self.run.call_args_list:
-      if 'install' in call.args[0] or 'ls' in call.args[0]:
+      if 'install' in call.args[0]:
         self.assertEqual(call.kwargs['cwd'], self.home)
         self.assertEqual(call.kwargs['env']['MISE_ENV'], '')
         self.assertEqual(call.kwargs['env']['MISE_GLOBAL_CONFIG_FILE'], str(self.root / 'config/.config/mise/config.base.toml'))
@@ -419,7 +419,7 @@ class SetupCliTests(unittest.TestCase):
     (self.root / 'mise.hermes.toml').unlink()
     (self.root / 'scripts/hermes-install.py').unlink()
     self.invoke('work')
-    self.assertFalse(any('install' in c or 'ls' in c for c in self.commands()))
+    self.assertFalse(any('install' in c for c in self.commands()))
     self.assertEqual([c[-1] for c in self.commands() if c[0] == '/bin/bash'], ['work'])
     self.assertEqual([c[-1] for c in self.commands() if 'trust' in c], [str(self.root / 'mise.toml'), str(self.root / 'mise.work.toml')])
 

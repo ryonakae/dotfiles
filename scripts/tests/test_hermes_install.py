@@ -92,8 +92,7 @@ class HermesInstallTests(unittest.TestCase):
     for profile in ('default', 'private', 'work'):
       (self.root / f'mise.{profile}.toml').write_text('')
     declaration = ROOT / 'mise.hermes.toml'
-    if declaration.exists():
-      shutil.copyfile(declaration, self.root / declaration.name)
+    shutil.copyfile(declaration, self.root / declaration.name)
     spec = importlib.util.spec_from_file_location('hermes_install', ROOT / 'scripts/hermes-install.py')
     self.module = importlib.util.module_from_spec(spec)
     with patch('sys.dont_write_bytecode', True):

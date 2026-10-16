@@ -52,11 +52,6 @@ class DotfilesLinksTests(unittest.TestCase):
         path = self.home / source.removeprefix('~/')
         path.mkdir(parents=True, exist_ok=True)
         (path / 'SKILL.md').write_text('external fixture\n')
-    self.source('.config/fish/conf.d/mise-activate.fish',
-                (ROOT / 'config/.config/fish/conf.d/mise-activate.fish').read_text())
-    for name in ('hermes', 'hermes-gui-launchctl/launchctl'):
-      self.source(f'.local/libexec/{name}',
-                  (ROOT / 'config/.local/libexec' / name).read_text())
     subprocess.run(['git', '-C', str(self.repo), 'add', '--', 'config'],
                    env=self.env, check=True)
 

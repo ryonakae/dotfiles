@@ -105,8 +105,7 @@ class DotfilesSourcesTests(unittest.TestCase):
     (config / 'conf.d').mkdir(parents=True)
     (config / 'config.fish').write_text((ROOT / 'config/.config/fish/config.fish').read_text())
     snippet = ROOT / 'config/.config/fish/conf.d/mise-activate.fish'
-    if snippet.exists():
-      (config / 'conf.d/mise-activate.fish').write_text(snippet.read_text())
+    (config / 'conf.d/mise-activate.fish').write_text(snippet.read_text())
     bin_dir = self.home / '.local/bin'
     bin_dir.mkdir(parents=True)
     log = self.base / 'activation.log'

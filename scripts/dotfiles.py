@@ -98,7 +98,7 @@ def interactive_user(parser):
   if os.geteuid() == 0:
     parser.error('run setup as the target user, not with sudo')
   if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
-    parser.error('setup must be run by the user outside Safehouse after migration approval')
+    parser.error('setup must be run by the user outside Safehouse')
   if not sys.stdin.isatty():
     parser.error('setup requires an interactive terminal for confirmation')
 
