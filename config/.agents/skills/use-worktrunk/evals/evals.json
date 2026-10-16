@@ -118,11 +118,11 @@
     {
       "id": 11,
       "prompt": "Worktrunkによる通常のworktree作成は成功済みです。ユーザーから明示されたcurrent clientはOpenCode、current session IDは`{{SESSION_ID}}`、検証済みworktree pathは`{{WORKTREE_PATH}}`です。現在のSkillが定める通常のpost-creation reportを返してください。reportで案内するcommandは実行しないでください。",
-      "expected_output": "shell-safeな`opencode <worktree-path> --session <session-id> --fork`を案内し、作成元sessionを残した独立forkだと説明する。plain `--session` resumeやsession moveへ置き換えず、commandを実行しない。",
+      "expected_output": "OpenCodeは対話起動で独立forkできないため、fork commandを組み立てず、検証済みpathで新しいsessionを開始するよう案内する。plain `--session` resumeやsession moveをforkの代わりにせず、commandを実行しない。",
       "files": ["evals/fixtures.md"],
       "expectations": [
-        "The result provides a shell-safe `opencode <worktree-path> --session <session-id> --fork` command using the validated path and supplied session ID.",
-        "The result preserves the creator as coordinator and describes the launched worker as an independent fork.",
+        "The result does not invent an OpenCode fork command and instead directs the user to start a new session in the validated worktree path.",
+        "The result preserves the creator as coordinator.",
         "The result does not recommend plain `--session` resume or session move as the parallel-worker default.",
         "No OpenCode process or other handoff command was executed."
       ]
@@ -142,12 +142,12 @@
     {
       "id": 13,
       "prompt": "Worktrunkによる通常のworktree作成は成功済みです。current clientはsystem contextでもruntime metadataでも判別できません。ユーザーから明示されたcurrent session IDは`{{QUOTING_SESSION_ID}}`、検証済みworktree pathは`{{QUOTING_PATH}}`です。現在のSkillが定める通常のpost-creation reportを返してください。clientを推測せず、reportで案内するcommandは実行しないでください。",
-      "expected_output": "Pi、Claude Code、Codex、OpenCodeの4つをlabel付きで提示し、空白を含む検証済みpathを各commandでshell-safeにquoteする。いずれも独立forkを使い、clientを推測せず、自動実行しない。",
+      "expected_output": "Pi、Claude Code、Codexの3つをlabel付きで提示し、空白を含む検証済みpathを各commandでshell-safeにquoteする。いずれも独立forkを使い、clientを推測せず、自動実行しない。",
       "files": ["evals/fixtures.md"],
       "expectations": [
-        "The result does not guess the client and provides four clearly labeled commands for Pi, Claude Code, Codex, and OpenCode.",
+        "The result does not guess the client and provides three clearly labeled commands for Pi, Claude Code, and Codex.",
         "Every command shell-quotes the supplied worktree path containing spaces so it is parsed as one argument.",
-        "The four commands respectively use `pi --fork`, Claude `--resume` plus `--fork-session`, `codex fork -C`, and OpenCode `--session` plus `--fork`; every command quotes the supplied session ID containing spaces as one argument.",
+        "The three commands respectively use `pi --fork`, Claude `--resume` plus `--fork-session`, and `codex fork -C`; every command quotes the supplied session ID containing spaces as one argument.",
         "The creator remains the coordinator and no Agent process or other handoff command was executed."
       ]
     },

@@ -165,7 +165,7 @@ Analysis-only.
 - `{{QUOTING_PATH}}`: `/Users/ryo.nakae/Dev/use-worktrunk evals/feature auth`
 - Current client: intentionally unknown
 
-All four labeled commands preserve the full path and session ID as one argument. No Agent process runs.
+All three labeled commands preserve the full path and session ID as one argument. No Agent process runs.
 
 ## Eval 14: direct copy hook timing
 

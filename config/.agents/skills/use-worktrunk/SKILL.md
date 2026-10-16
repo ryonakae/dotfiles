@@ -24,7 +24,7 @@ compatibility: Requires Worktrunk, the official worktrunk Skill, and this dotfil
 ~/.agents/skills/worktrunk/SKILL.md
 ```
 
-存在しなければ操作を停止し、`~/dotfiles/docs/usage.md`「外部スキルを更新する」の復元の案内に従って、固定済みの Nix 構成を build / switch して復元するよう案内する。最新版の再取得や公式Skillの内容を推測して続けることはしない。
+存在しなければ操作を停止し、`~/dotfiles/docs/usage.md`「外部スキルと plugin を更新する」に従って導入するよう案内する。公式Skillの内容を推測して続けることはしない。
 
 Agent内で実行するcommand、およびflagの意味に新たに依存して委譲commandを組み立てる場合は、実行前に`wt <command> --help`を現在のCLIから確認する。古い知識でflagを組み立てる事故を防ぐためで、ユーザー指定のflagを原文のまま保持して委譲するだけなら不要。作成、hook、approval、copy、merge、remove、pruneなどの意味と既定値は公式SkillとCLIに従い、このSkillで再定義しない。一般的なWorktrunkの仕様質問だけなら公式Skillへ委譲し、この環境制約を持ち込まない。
 
@@ -50,7 +50,7 @@ test "$HERDR_ENV" = 1
 
 一致し、かつ最初のherdr CLI呼び出し（例: `herdr pane current --current`）が成功すればherdr有効。herdr CLIが利用できなければ無効として扱う。実行拒否の場合は§8に従い停止する。組み合わせで変わるのは委譲先とforkの完遂可否だけで、§3の境界分類、§4の操作分類、§1の承認ルールは変わらない。
 
-- Safehouse内 × herdr有効: §3・§4が委譲とした操作を`references/herdr-delegation.md`の手順でherdrペインで実行する。委譲対象のうち破壊的操作（`wt remove`、cleanupを伴う`wt merge`、live `wt step prune`、`wt step promote`）は実行前にユーザー承認を得る。それ以外の委譲操作（作成・switch、copy-ignored）は非秘密の操作なら承認なしで実行してよい。機密情報へのアクセス・コピーは実行先に関わらず事前承認を得る。§4がAgent内で実行可能とする操作（`wt merge --no-remove`、`wt step prune --dry-run`など）は従来どおりAgent内で実行し、herdrへ回さない
+- Safehouse内 × herdr有効: §3・§4が委譲とした操作を`references/herdr-delegation.md`の手順でherdrペインで実行する。委譲対象のうち破壊的操作（`wt remove`、cleanupを伴う`wt merge`、live `wt step prune`、`wt step promote`）は実行前にユーザー承認を得る。それ以外の委譲操作（作成・switch、copy-ignored）は非秘密の操作なら承認なしで実行してよい。機密情報へのアクセス・コピーは実行先に関わらず事前承認を得る。§4がAgent内で実行可能とする操作（`wt merge --no-remove`、`wt step prune --dry-run`など）はAgent内で実行し、herdrへ回さない
 - Safehouse内 × herdr無効: 委譲操作は§6の通常shell案内に従う
 - Safehouse外 × herdr有効: `wt`はAgent内で実行し、herdrは§5のfork完遂にだけ使う
 - Safehouse外 × herdr無効: すべてAgent内で実行し、forkは§5の報告に留める
@@ -121,12 +121,11 @@ raw JSONを確認し、返されたworktree pathが絶対pathであることを�
 Pi:          cd <worktree-path> && pi --fork <session-id>
 Claude Code: cd <worktree-path> && claude --resume <session-id> --fork-session
 Codex:       codex fork -C <worktree-path> <session-id>
-OpenCode:    opencode <worktree-path> --session <session-id> --fork
 ```
 
-clientとsession IDは、ユーザーが明示した値、system context、または信頼できるruntime metadataから特定する。clientが不明なら推測せず4 commandをlabel付きで示す。session IDを取得できなければ`<session-id>`を残して置換が必要だと説明し、session store、transcript、credentialを探らない。pathと引数はshell-safeにquoteする。
+clientとsession IDは、ユーザーが明示した値、system context、または信頼できるruntime metadataから特定する。clientが不明なら推測せず3 commandをlabel付きで示す。OpenCodeなど上記以外のclientは対話起動で独立forkできないため、fork commandを組み立てず、検証済みpathで新しいsessionを開始するよう案内する。session IDを取得できなければ`<session-id>`を残して置換が必要だと説明し、session store、transcript、credentialを探らない。pathと引数はshell-safeにquoteする。
 
-Claude Codeのin-session `/fork`や`--worktree`は使わない。Codexの`resume -C`、OpenCodeのplain `--session` resumeやsession moveではなく、独立forkを使う。
+Claude Codeのin-session `/fork`や`--worktree`は使わない。Codexの`resume -C`ではなく、独立forkを使う。
 
 ### herdr fork flow
 

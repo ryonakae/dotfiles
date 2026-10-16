@@ -47,7 +47,7 @@ blocking copy（`wt step copy-ignored`）を伴う依頼では、作成の成功
 
 ## (b) fork あり
 
-(a) の成功後、開いた workspace の root pane（worktree に cd 済み）で fork エージェントを起動し、初動の指示まで送る。エージェントのペインは新しい workspace 側に開く。開始前に session ID と client 種別を SKILL.md §5 の規則で特定する。特定できなければこのフローへ入らない。
+(a) の成功後、開いた workspace の root pane（worktree に cd 済み）で fork エージェントを起動し、初動の指示まで送る。エージェントのペインは新しい workspace 側に開く。開始前に session ID と client 種別を SKILL.md §5 の規則で特定する。特定できない場合や、下表にない client の場合はこのフローへ入らない。
 
 1. `herdr agent`（kind 一覧）と対象 client の現行 help を確認し、fork 引数を古い知識で組み立てない
 2. `herdr agent start <正規化名> --kind <kind> --pane <workspaceのroot-pane-id> -- <fork 引数>` を実行する。(a) が `already_open` の workspace を再利用し、その root pane が対話プロンプトにない場合は、`herdr pane split --pane <root-pane-id> --direction right --cwd <worktree絶対path> --no-focus` で同じ workspace 内にペインを作り、そちらで起動する。対応は次のとおり
@@ -57,7 +57,6 @@ blocking copy（`wt step copy-ignored`）を伴う依頼では、作成の成功
    | Pi | `pi` | `--fork <session-id>` |
    | Claude Code | `claude` | `--resume <session-id> --fork-session` |
    | Codex | `codex` | `fork <session-id>` |
-   | OpenCode | `opencode` | `--session <session-id> --fork` |
 
    ペインは対話 fish なので、client は safehouse wrapper の fish 関数として解決され、fork されたエージェントは通常どおり sandbox 内で起動する
 3. 起動成功後、`herdr agent prompt <名前> "<引き継ぎタスクの要約>"` を送る。fork は会話の文脈を持つので要約は短くする。`--wait` を付けず、初動を見届けない
