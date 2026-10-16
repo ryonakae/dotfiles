@@ -95,7 +95,7 @@
 - 認証・DB・memory・session・hooks/cron・自己更新する skills を管理対象にしない。追加依存・全機能確認を導入の前提にしない。
 - `hermes gateway install`、installer の全体 main、別 venv 管理を重ねない。管理関数から fork 標準処理を使い、直接 launchctl で迂回しない。setup に自動停止・再開・状態保存・バックアップを追加しない。
 - 管理関数は対象ユーザーの `gui/<UID>` を固定し、操作元の managername だけで判断しない。失敗時に別ドメインや直接起動へ fallback しない。未稼働サービスを検証目的で起動しない。
-- Hindsight の停止・データ移行、未知の plist 整理は別承認。Compose tag / digest 固定を volume 復元保証にしない。
+- 未知の plist 整理は別承認。
 
 ### Claude・Pi・Herdr
 
