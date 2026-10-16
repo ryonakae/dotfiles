@@ -3,7 +3,6 @@
 # Claude Code / Codex / Pi 共通通知フック
 # - Claude Code: stdin で JSON を受け取る
 # - Codex: argv[1] で JSON を受け取り、agent-turn-complete のみ通知する
-# - Gemini CLI: stdin で JSON を受け取る（Notification フック）
 # - Pi Coding Agent: notification 拡張の agent_settled から呼ばれ、応答完了を通知する
 
 notifications_disabled() {
@@ -135,17 +134,6 @@ case "$source" in
     if [ -n "$thread_id" ]; then
       group="codex-$thread_id"
     fi
-    ;;
-  gemini)
-    input=$(cat)
-    notification_type=$(echo "$input" | jq -r '.notification_type // ""' 2>/dev/null)
-    if [ -n "$notification_type" ]; then
-      title="Gemini CLI: $notification_type"
-    else
-      title="Gemini CLI"
-    fi
-
-    message=$(echo "$input" | jq -r '.message // "Gemini CLI notification"' 2>/dev/null)
     ;;
   pi)
     title="Pi"

@@ -32,13 +32,6 @@ profile は選択順で 1 つ選ぶ。そのうえで、現在適用されてい
 - subject/body 追加ルール: なし
 - 適用例: Claude Code のセッション中に `/commit-push` を実行したとき
 
-## `gemini-cli`
-
-- 適用条件: 環境変数 `GEMINI_CLI=1` が設定されている
-- fallback commit trailer: `Co-Authored-By: Gemini CLI <218195315+gemini-cli@users.noreply.github.com>`
-- subject/body 追加ルール: なし
-- 適用例: Gemini CLI から共通 skill 相当の workflow を実行したとき
-
 ## `codex`
 
 - 適用条件: env marker では確定できないが、実行中エージェントが自分を Codex と確信できる

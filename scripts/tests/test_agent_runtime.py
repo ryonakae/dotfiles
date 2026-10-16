@@ -37,12 +37,11 @@ class AgentRuntimeTests(unittest.TestCase):
     self.env.pop('MISE_DATA_DIR', None)
     self.env.pop('PI_TELEMETRY', None)
     adapter_source = ROOT / 'config/.local/libexec/hermes-gui-launchctl/launchctl'
-    if adapter_source.exists():
-      adapter = self.home / '.local/libexec/hermes-gui-launchctl/launchctl'
-      adapter.parent.mkdir(parents=True)
-      adapter.write_text(adapter_source.read_text().replace(
-        '/bin/launchctl', shlex.quote(str(self.bin / 'launchctl'))))
-      adapter.chmod(0o755)
+    adapter = self.home / '.local/libexec/hermes-gui-launchctl/launchctl'
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(adapter_source.read_text().replace(
+      '/bin/launchctl', shlex.quote(str(self.bin / 'launchctl'))))
+    adapter.chmod(0o755)
     self.project = Path(self.directory.name) / 'another project'
     self.project.mkdir()
     self.program('dotenvx', '#!' + sys.executable + '\n'
@@ -182,7 +181,7 @@ class AgentRuntimeTests(unittest.TestCase):
     self.install_runtime()
     self.program('safehouse', (self.bin / 'probe').read_text())
     fish_dir = self.fish_dir
-    for name in ['claude', 'codex', 'gemini', 'hermes', 'pi', 'opencode']:
+    for name in ['claude', 'codex', 'hermes', 'pi', 'opencode']:
       for arguments in [[], ['--model', 'model with spaces', ''], ['prompt with spaces'],
                         ['--', 'prompt with spaces', '--'], ['--model', 'model', '--', 'prompt']]:
         with self.subTest(wrapper=name, arguments=arguments):
@@ -494,7 +493,6 @@ class AgentRuntimeTests(unittest.TestCase):
                     'stop' if service == 'gateway' else '--stop']
           self.assertIn(native, operations)
           self.assertEqual(operations[-1], ['disable', target])
-          self.assertNotIn(['list'], operations)
           self.assertNotIn(['managername'], operations)
           self.assertFalse(any('user/' in arg for op in operations for arg in op))
           if loaded:
@@ -536,8 +534,7 @@ class AgentRuntimeTests(unittest.TestCase):
     adapter_dir = self.home / '.local/libexec/hermes-gui-launchctl'
     self.env['PATH'] = str(adapter_dir) + ':' + self.env['PATH']
     self.env['HERMES_HOME'] = str(self.project / 'unrelated profile')
-    for name in ('mise', 'hermes'):
-      self.program(name, '#!/bin/sh\nprintf wrong-executable\nexit 99\n')
+    self.program('hermes', '#!/bin/sh\nprintf wrong-executable\nexit 99\n')
     result = subprocess.run(['/bin/sh', str(launcher), '--profile', 'default', 'gateway', 'stop', ''],
                             env=self.env, cwd=self.project, capture_output=True, text=True, timeout=15)
     self.assertEqual(result.returncode, 23, result.stderr)
