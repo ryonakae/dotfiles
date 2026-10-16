@@ -2,7 +2,7 @@
 
 ## Requirements
 
-合意の正本は [dig log](../dig/2026-10-14-nix-to-mise.md)。Hermes の導入方式は、その後のユーザーの「前者の方式で」により、mise task から標準 installer を呼ぶ方式へ変更する。この変更の具体的な計画は `/implement` により承認済み。Nix の機能を独自基盤で再実装せず、Brewfile・mise・薄いセットアップ入口に置き換える。この Mac の実機切替と Nix 撤去までを対象とする。別 Mac の実機操作は含めない。
+合意の正本は [dig log](../../dig/2026-10-14-nix-to-mise.md)。Hermes の導入方式は、その後のユーザーの「前者の方式で」により、mise task から標準 installer を呼ぶ方式へ変更する。この変更の具体的な計画は `/implement` により承認済み。Nix の機能を独自基盤で再実装せず、Brewfile・mise・薄いセットアップ入口に置き換える。この Mac の実機切替と Nix 撤去までを対象とする。別 Mac の実機操作は含めない。
 
 - `default private` のように適用構成をすべて明示する。共通分を自動追加しない。`private` 単独も許容する。
 - アプリは構成別 Brewfile を標準 `brew bundle` で導入・更新する。`--no-upgrade` や自動 cleanup は使わない。削除は宣言から外したうえで対象を指定して行う。
@@ -163,7 +163,7 @@ Hermes 方式変更の再開時 review base は `0e16b067d0aa8d651288aba1edddeb0
 
 ### Hermes 方式変更の追加実装範囲
 
-Tasks 1–3・5 の focused validation と独立レビューは完了。標準 installer による本体導入、設定リンク・起動経路の引渡し、CLI 起動確認まで完了。gateway の起動成功はユーザー報告で確認済み。Homebrew 本体移管、nix-darwin 撤去、Homebrew fish への login shell 切替、Nix 本体撤去も完了。dashboard は未起動のまま保持。リポジトリ内の旧 Nix ファイル整理と撤去後の検証も完了。今回の整理差分の commit / push は未実施。
+Tasks 1–3・5 の focused validation と独立レビューは完了。標準 installer による本体導入、設定リンク・起動経路の引渡し、CLI 起動確認まで完了。gateway の起動成功はユーザー報告で確認済み。Homebrew 本体移管、nix-darwin 撤去、Homebrew fish への login shell 切替、Nix 本体撤去も完了。dashboard は未起動のまま保持。リポジトリ内の旧 Nix ファイル整理と撤去後の検証も完了し、`746997c` として commit・push した。
 
 - `mise.hermes.toml` と `scripts/hermes-install.py` を追加。初回/更新の2回確認、指定 stage、標準 marker、dirty/未知/途中状態・symlink 保護を実装。runtime launcher は固定 checkout の venv を exec し、setup と管理関数の案内を task に接続した。
 - Red → Green: setup の専用 task 呼出し、launcher の固定 checkout、管理関数の更新案内を親で確認。担当 worker は公開 CLI 境界から初回/noop/更新/失敗状態の各 slice を Red → Green で実装し、親が差分と22件の結果を再確認した。
@@ -208,7 +208,7 @@ Tasks 1–3・5 の focused validation と独立レビューは完了。標準 i
 - **リポジトリの旧 Nix ファイル整理**: `flake.nix` / `flake.lock`、`nix/` の追跡ファイル、`scripts/bootstrap-nix.sh` と専用テストの計33ファイルを削除。未追跡の `nix/.DS_Store` は削除せず、ディレクトリ一括削除は行っていない。現行起動テストは維持し、Nix 固有の fixture 表現と不要な Home Manager 初期化変数だけを整理した。Nix 管理 Homebrew 専用の拒否処理とテストは当初保持したが、後続のユーザー指示により撤去した（下記）。履歴の dig / archived plan と、一般的な他製品の Nix 対応説明は削除対象外。現行文書から削除済みファイルへの参照と一時移行コマンドを除去し、別 Mac に既存管理が残る場合の確認事項は維持した。
   - 検証: `uv run --no-project python -m unittest discover -s scripts/tests -p 'test_*.py'` が109件すべて成功、skip なし、終了0。ログは `/tmp/dotfiles-post-nix-removal-tests.log`。変更テスト2件の Python 構文と `git diff --check` も成功。削除確認は作業時の確認のみとし、削除の事実を検証する恒久テストは追加していない。
   - 独立 read-only review: 削除ファイルと現行コード/config/mise の依存を確認し、具体的な指摘なし。文書は別担当と親が差分を確認し、担当範囲のローカルリンク138件と anchor の整合確認が成功。実機への再適用・サービス操作は行っていない。
-  - この整理差分の commit / push と計画の archive は未実施。他者の Claude/Ghostty/fish 差分と未追跡 `.DS_Store` は保持。
+  - 他者の Claude/Ghostty/fish 差分と未追跡 `.DS_Store` は保持。
 - **Nix 専用拒否処理の撤去**: ユーザーが Nix 管理 Homebrew 向けの誤上書き防止処理は不要と指定。`scripts/dotfiles.py` の marker/store 参照検査と専用テスト2件、検出で setup が止まるという文書・スキルの案内を削除した。未知の Homebrew prefix、実行ユーザー、Safehouse、確認後の宣言変更などに対する一般的な検査は保持。変更前23件、変更後21件の setup テストが成功し、差分検査も成功。先の統合109件はこの追加変更前の結果であり、追加変更では影響範囲の setup テストを再実行した。
 
 実装対象: `mise.hermes.toml` と `scripts/hermes-install.py` を追加し、`scripts/dotfiles.py`、launcher、管理関数の更新案内、既存テスト、README/docs/AGENTS/dotfiles-setup を新契約へ揃える。失敗した pypi 導入方式の恒久コード・文書は同じ変更で除去する。失敗 cache の掃除は自動実行しない。dig log の歴史的な決定を新方式と誤認しないよう、実装時に置換の経緯を追記する。
@@ -221,12 +221,12 @@ Tasks 1–3・5 の focused validation と独立レビューは完了。標準 i
 - [x] **配置**: `uv run --no-project python scripts/tests/test_dotfiles_links.py` → 実 mise と隔離 HOME/Git fixture で直接リンク、追跡ファイル増減、衝突保持、unapply、共通/Claude 優先、外部の選択配置、管理外データ保持を確認。fixture repos で remote branch 更新と dirty 保護も必要な境界に追加する。HOME 一括走査への回帰を防ぐ。
 - [x] **Hermes task の境界**: 新規 `scripts/tests/test_hermes_install.py` を `uv run --no-project python` で実行。公開 task／スクリプト境界で、未導入の取得・標準段階順、完了済み install の完全 noop、明示更新だけが ref を進めること、未知/dirty/途中状態の保護、既存 venv の非再作成、失敗時の後続中止・古い marker の無効化、サービス/設定非操作を TDD で確認。コマンドは stub、repos の範囲は local Git fixture と実 mise で検証する。default の repos 更新では Hermes checkout が動かないことも確認する。
 - [x] **起動契約**: `uv run --no-project python scripts/tests/test_agent_runtime.py` と `uv run --no-project python scripts/tests/test_hermes_tmpdir.py` → 非対話 PATH/cwd、環境注入と失敗時停止、TMPDIR、指定 Hermes の解決、引数・終了コードが維持される。`test_hermes_activation.py` は恒久的に必要な plist 所有・同一時無変更・手動変更保護・サービス非操作のテストへ置換し、同じコマンドで実行する。
-- [ ] **macOS 宣言と補完**: TOML 解析と fake defaults/pmset 等の境界で型・構成別適用・エラー中止を確認する。構成別の設定移管漏れは旧宣言との一度きりの照合で確認し、旧 Nix 宣言を恒久 fixture として残さない。
-- [ ] **構文・標準解釈**: 変更した fish は `fish --no-execute`、shell は shebang の shell の `-n`。Brewfile は標準 `brew bundle list --file=...` で解釈できること、TOML は最新 mise の標準表示・dry-run で構成選択が正しいことを確認する。実 HOME の適用やサービス再起動を構文検査の代わりにしない。
-- [ ] **一時 Nix 移行構成**: 使用する場合は dotfiles-setup の build 手順で実 flake check/build を行う。秘密や Git 外の設定を store に取り込まない。必要な新規 Nix ファイルだけ明示的に追跡対象とする。失敗・skip を移行準備成功としない。
-- [ ] **実機適用前後**: 承認下で実 HOME dry-run、新配置、Homebrew 本体の非 store 化、標準 brew 動作、fish 新規 login、指定 runtime、選択 plugin/スキルの読み込みを確認する。Hermes は launcher/CLI とサービスの実行経路だけを受入対象とし、追加依存・全機能をゲートにしない。サービスを起動していない Mac では勝手に起動せず、plist と実行先確認の範囲を明記する。
-- [ ] **撤去後**: Nix daemon・build users・profile・実 volume の撤去結果と、必要な shell登録・Homebrew・mise・Hermes 起動経路の存続を確認する。対象の有効設定・管理リンク・プロセスに Nix 依存が残らないことを確認する。無関係な HOME 全量や秘密を走査しない。
-- [ ] **文書・範囲**: 掲載コマンド、リンク・参照パス、現行の Nix 参照と廃止入口を対象限定で確認する。`git diff --check`、差分レビュー、既存変更の保持を確認する。削除済みコードの不在だけを証明する恒久テストは追加しない。
+- [x] **macOS 宣言と補完**: TOML 解析と fake defaults/pmset 等の境界で型・構成別適用・エラー中止を確認する。構成別の設定移管漏れは旧宣言との一度きりの照合で確認し、旧 Nix 宣言を恒久 fixture として残さない。
+- [x] **構文・標準解釈**: 変更した fish は `fish --no-execute`、shell は shebang の shell の `-n`。Brewfile は標準 `brew bundle list --file=...` で解釈できること、TOML は最新 mise の標準表示・dry-run で構成選択が正しいことを確認する。実 HOME の適用やサービス再起動を構文検査の代わりにしない。
+- [x] **一時 Nix 移行構成**: 使用する場合は dotfiles-setup の build 手順で実 flake check/build を行う。秘密や Git 外の設定を store に取り込まない。必要な新規 Nix ファイルだけ明示的に追跡対象とする。失敗・skip を移行準備成功としない。
+- [x] **実機適用前後**: 承認下で実 HOME dry-run、新配置、Homebrew 本体の非 store 化、標準 brew 動作、fish 新規 login、指定 runtime、選択 plugin/スキルの読み込みを確認する。Hermes は launcher/CLI とサービスの実行経路だけを受入対象とし、追加依存・全機能をゲートにしない。サービスを起動していない Mac では勝手に起動せず、plist と実行先確認の範囲を明記する。
+- [x] **撤去後**: Nix daemon・build users・profile・実 volume の撤去結果と、必要な shell登録・Homebrew・mise・Hermes 起動経路の存続を確認する。対象の有効設定・管理リンク・プロセスに Nix 依存が残らないことを確認する。無関係な HOME 全量や秘密を走査しない。
+- [x] **文書・範囲**: 掲載コマンド、リンク・参照パス、現行の Nix 参照と廃止入口を対象限定で確認する。`git diff --check`、差分レビュー、既存変更の保持を確認する。削除済みコードの不在だけを証明する恒久テストは追加しない。
 
 ## 参照資料と調査限界
 
@@ -241,3 +241,10 @@ Tasks 1–3・5 の focused validation と独立レビューは完了。標準 i
 - ローカルは mise 2026.9.18 と現行生成 uninstaller を読み取り確認。最新資料の全機能が同版で動くとは扱わない。最新 mise の実導入、Homebrew 逆移行、実 HOME の衝突、各種 installer の動作は未実施。実装時の具体化と承認付き実機工程で確認する。
 
 > 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
+
+## Gate Summary
+
+- 実装・整理 commit: `8200bf6`、`b40fb92`（独立レビューで指摘なし）、`7875101`、`746997c`。いずれも origin/master へ push 済み。
+- Final Validation の各項目は、上記の実行記録（macOS 設定・構文・一時 HM 構成の build・実機切替・撤去後確認・文書照合・統合109件）で確認した。
+- 最後の Nix 専用拒否処理の撤去は、setup テスト21件と差分検査で確認した。この撤去後の独立レビューは行っていない。
+- 未解決の blocking はない。別 Mac の実機移行は本計画の対象外。
