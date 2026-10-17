@@ -36,6 +36,7 @@
 - 空文字は、rm と同じく存在しない対象として扱う。rm でも `lstat` が ENOENT になり、`-f` では黙って飛ばされるため。
 - macos-trash は 1 回の呼び出しで全対象を受け取る。複数対象の「戻す」記録の補完が、1 回の呼び出しの中で行われるため。
 - policy は、既存の deny の後に `(home-literal "/.Trash/.DS_Store")` への `file-read-data` と `file-write-data` の allow を追加する。後に書いた規則が優先される。`.DS_Store` の作成は現行 policy でも拒否されていない。
+- `rm -r link/` のように末尾スラッシュ付きでディレクトリを指す symlink は、rm と同じくリンク先のディレクトリとして扱う。独立レビューの decision required に対するユーザー回答「a」。
 - テストは、ラッパー本文の絶対パスを偽の実行ファイルへ置き換える既存の方式を引き継ぐ。偽の macos-trash は引数を記録するだけで、本物のゴミ箱に触れない。
 
 ## Tasks
