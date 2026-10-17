@@ -94,6 +94,8 @@ mise -C ~/dotfiles -E default,private bootstrap macos defaults apply --dry-run
 mise -C ~/dotfiles -E default,private bootstrap macos defaults apply
 ```
 
+キーボードショートカットの変更は、ログアウトして再ログインするまで反映されない。
+
 defaults は対象ユーザーとして書き込む。mise 全体を sudo で起動しない。電源設定の補完は別操作で、対象を確認して sudo 認証後に実行する。
 
 ```fish

@@ -206,3 +206,17 @@ domain = "com.apple.controlcenter"
 key = "Sound"
 host = "current"
 value = 18
+
+# Mission Control: ctrl+q
+[[bootstrap.macos.defaults_entries]]
+domain = "com.apple.symbolichotkeys"
+key = "AppleSymbolicHotKeys"
+path = ["32"]
+value = { enabled = true, value = { type = "standard", parameters = [113, 12, 262144] } }
+
+# Application windows: ctrl+w
+[[bootstrap.macos.defaults_entries]]
+domain = "com.apple.symbolichotkeys"
+key = "AppleSymbolicHotKeys"
+path = ["33"]
+value = { enabled = true, value = { type = "standard", parameters = [119, 13, 262144] } }

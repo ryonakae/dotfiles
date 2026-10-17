@@ -306,6 +306,6 @@ mise 管理の設定を GUI で変えても、次の defaults apply で宣言値
 - Apple Account・iCloud・Touch ID、アクセシビリティ・画面収録・自動化などの許可
 - Xcode の SDK / Simulator、署名証明書・provisioning profile、VPN 認証
 - Docker の初期設定、volume
-- 入力ソース、標準・アプリ別ショートカット、Karabiner 管理外のデバイス設定、宣言外の電源設定
+- 入力ソース、宣言外の標準ショートカット、アプリ別ショートカット、Karabiner 管理外のデバイス設定、宣言外の電源設定
 - Dock に登録した Chrome 製アプリなどの実体
 - `Dropbox/App` に保存した、Git 管理外のアプリ設定
