@@ -1,5 +1,7 @@
 # dig log: Safehouseの互換性優先設定と削除事故対策
 
+> rm の転送先とごみ箱の保護は、[2026-10-17 の dig log](2026-10-17-macos-trash.md) で gtrash から macos-trash へ置き換えた。以下の gtrash に関する記述は当時の記録。
+
 ## 後続変更: rm転送をSafehouse内に限定
 
 - ユーザーの「ユーザーが通常操作する場合は通常のrm、safehouse環境下でエージェントがrmを実行する場合はgtrash」により、普段のターミナルにもごみ箱化を適用する初回方針を変更。

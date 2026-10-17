@@ -50,9 +50,10 @@ review 用の base commit: `23a232a`。
   - 結果: `check_safehouse_runtime.py` の `py_compile` が成功。実行は Safehouse 外が必要なため、適用手順 3 でユーザーが行う。
 - [x] Brewfile: `brew/Brewfile.default` から gtrash を削除し、macos-trash をアルファベット順の位置に追加する。
   - 結果: `brew bundle list` に macos-trash が含まれ、gtrash は含まれない。
-- [ ] 文書: `docs/troubleshooting.md` の「削除したファイルを復元する」を、Finder の「戻す」の手順に書き換える。
+- [x] 文書: `docs/troubleshooting.md` の「削除したファイルを復元する」を、Finder の「戻す」の手順に書き換える。
   - 含める内容は 5 点。Safehouse 内の rm は Finder のゴミ箱へ移す。通常端末の rm は直接削除で戻せない。通常端末でゴミ箱を使う場合は macOS 標準の `trash` を使い、複数を一度に渡すと一部の「戻す」が欠けることがある。「戻す」が出ない項目は元の場所へ手で移す。外部ボリューム上のファイルは移動に失敗して元が残る。
   - `docs/dig/2026-10-02-safehouse-compatibility.md` の gtrash に触れる節の冒頭に、[2026-10-17 の dig log](../dig/2026-10-17-macos-trash.md) で macos-trash へ置き換えたことを追記する。
+  - 結果: `git diff --check` 成功。gtrash の参照は dig log と計画以外に残っていない。
 
 ## 適用手順
 
