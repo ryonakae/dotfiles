@@ -18,7 +18,7 @@
     "npm:@sting8k/pi-vcc@0.10.0"
   ],
   "theme": "dark",
-  "tuiMode": "regular",
+  "tuiMode": "fullscreen",
   "quietStartup": true,
   "enabledModels": [
     "openai/gpt-6-luna",
