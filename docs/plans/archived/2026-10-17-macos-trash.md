@@ -108,4 +108,11 @@ review 用の base commit: `23a232a`。
 - [ ] policy: 適用手順 3 の `check_safehouse_runtime.py` → `SAFEHOUSE_RUNTIME_PASS`。Safehouse 内では実行できないため、ユーザーが取り込み後に行う。
 - [ ] 「戻す」: 適用手順 5 → `.DS_Store` が 0 バイトより大きく、Finder で「戻す」が出る。ユーザーが行う。
 
+## Gate Summary
+
+- review 対象: `23a232a..e3ee00b`（7014fc5、9c16245、eebd06f、e3ee00b）。独立レビューで blocking/high はなし。
+- decision required は 1 件。末尾スラッシュ付き symlink の扱いを、ユーザー回答「a」で確定した（f6c6345）。`.DS_Store` が読めるようになる点は、合意済みの Q5 のとおり。
+- medium/low として残した点: 末尾スラッシュ付き symlink を確かめるテストはない。`.DS_Store` を symlink や rename で差し替えられた場合の sandbox の判定は未検証。
+- macos-trash の導入を確認してから取り込んだ。policy の検証と「戻す」の確認は、適用手順 3 と 5 でユーザーが行う。
+
 > 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
