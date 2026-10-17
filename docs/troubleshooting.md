@@ -75,7 +75,8 @@ env MISE_ENV= /opt/homebrew/bin/mise -C ~ install node python ruby bun aqua:aws/
 
 `Completed` を確認し、未完了の段階だけを順に実行する。各操作が成功してから次へ進む。以下の Hermes 操作は `private` を選択していた場合だけ行う。
 
-1. [Hermes の初回導入 task](apps.md#初回設定と起動)を実行する。ルートと Hermes 用宣言が未 trust なら、内容を確認して先に trust する。
+1. `default` を選択していた場合は、[Herdr のプラグイン導入](apps.md#プラグインの導入登録)を行う。導入済みのプラグインは変更しない。
+2. [Hermes の初回導入 task](apps.md#初回設定と起動)を実行する。ルートと Hermes 用宣言が未 trust なら、内容を確認して先に trust する。
 
 ```fish
 mise -C ~/dotfiles -E hermes run hermes:install
@@ -83,10 +84,10 @@ mise -C ~/dotfiles -E hermes run hermes:install
 
 完了済みなら何も変更しない。途中状態で止まったら、下の[導入・更新の復旧](#hermes-の導入更新が途中で止まった)へ進む。初回導入の復旧に update task を使わない。
 
-2. [Hermes の起動定義配置](apps.md#hermes)を行う。既に配置済みなら同一時は無変更になり、サービスは起動・停止しない。
-3. [macOS の部分操作](usage.md#macos-設定を適用する)で、当初選択した構成の defaults と電源設定を完了する。適用前に変更対象の旧値・型・未設定状態を控え、成功済みの段階は繰り返さない。`private` を選択していなければ Hermes 操作をせず、この段階から再開する。
+3. [Hermes の起動定義配置](apps.md#hermes)を行う。既に配置済みなら同一時は無変更になり、サービスは起動・停止しない。
+4. [macOS の部分操作](usage.md#macos-設定を適用する)で、当初選択した構成の defaults と電源設定を完了する。`default` を選択していた場合は、ログインシェルも `mise -C ~/dotfiles -E default bootstrap user apply` で変更する。適用前に変更対象の旧値・型・未設定状態を控え、成功済みの段階は繰り返さない。`private` を選択していなければ Hermes 操作をせず、この段階から再開する。
 
-残りの段階が完了してから、[初回セットアップの fish 切替以降](setup.md#6-fish-に切り替える)へ戻る。既に済んだ項目は繰り返さない。
+残りの段階が完了してから、[初回セットアップの再起動以降](setup.md#6-mac-を再起動する)へ戻る。既に済んだ項目は繰り返さない。
 
 ## Hermes の導入・更新が途中で止まった
 
@@ -130,7 +131,7 @@ mise -C ~/dotfiles -E hermes run hermes:install
 
 ## fish に切り替わらない
 
-`chsh` が失敗した場合は `/opt/homebrew/bin/fish` の導入と `/etc/shells` の登録を確認する。[初回の登録手順](setup.md#6-fish-に切り替える)を使い、`/etc/shells` を一括上書きしない。
+setup のログインシェル変更が失敗した場合は、`/opt/homebrew/bin/fish` の導入と `/etc/shells` の登録を確認し、`mise -C ~/dotfiles -E default bootstrap user apply` を再実行する。`/etc/shells` を一括上書きしない。
 
 変更後も zsh が開く場合は、端末アプリの起動設定を「デフォルトのログインシェル」にする。独自の起動コマンドが設定されていると `chsh` だけでは変わらない。
 

@@ -178,27 +178,19 @@ env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
 
 ## Herdr
 
-dotfiles の setup は Herdr の設定・キーバインド・プラグイン設定を配置するが、プラグイン本体のインストールと登録は行わない。初回導入や別 Mac への復元では、以下も実施する。設定だけでは、Worktrunk・Zerdr のキーバインドや Agent Context の表示は動かない。
+`default` を選択した setup は、Herdr の設定・キーバインド・プラグイン設定を配置し、未導入のプラグインを導入して Zerdr を登録する。初回導入や別 Mac への復元で追加の操作は不要。
 
 ### プラグインの導入・登録
 
-Safehouse 外の通常の fish 端末で、各コマンドが成功してから次へ進む。再インストールは既存 checkout の交換と有効化を伴うので、導入済みの場合は稼働中の利用状態を確認する。
+導入するプラグインと固定 commit は [mise.default.toml](../mise.default.toml) の `herdr:plugins` task が正本。setup を使わずに導入する場合は、Safehouse 外の通常の fish 端末で実行する。
 
 ```fish
-herdr plugin install ryonakae/herdr-agent-context --ref 10b8ead9d86b2cbb7b13d87ef50dec4b87ee21cd --yes
-herdr plugin install devashish2203/herdr-worktrunk --ref a3107ca566bafcd463bc138007a0c01051970784 --yes
+mise -C ~/dotfiles -E default run herdr:plugins
 ```
 
-`--ref` は省略しない。更新時はこの一覧の commit も変更する。Agent Context の導入には release binary と checksum を取得するネットワーク接続が必要。Worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
+導入済みのプラグインは再インストールしない。プラグインを更新する場合は task の commit を変更し、`herdr plugin install <repo> --ref <commit> --yes` で入れ直す。再インストールは既存 checkout の交換と有効化を伴う。Agent Context の導入には release binary と checksum を取得するネットワーク接続が必要。Worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
 
-Zerdr は Homebrew 版を使う。初回導入・復元時や登録先を切り替える場合は、次を実行する。`brew --prefix` が未インストールのエラーになった場合は止めて、本体の導入状態を確認する。
-
-```fish
-set -l zerdr_bin (brew --prefix ryonakae/tap/zerdr)/bin/zerdr
-$zerdr_bin setup install
-```
-
-Herdr の登録と Zed tasks が変更される。両方の実行先が Homebrew 版を指すことを確認する。古い絶対パス入りの manifest はコピーしない。
+task は最後に Homebrew 版の `zerdr setup install` を実行し、Herdr の登録と Zed tasks を Homebrew 版へ向ける。古い絶対パス入りの manifest はコピーしない。
 
 worktree の作成・削除は Worktrunk を使う。Herdr の `worktree open` は既存 checkout の登録だけに使う。
 

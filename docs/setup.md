@@ -84,93 +84,35 @@ macOS 設定は [mise.default.toml](../mise.default.toml)などの構成別宣�
 bash scripts/dotfiles.sh setup default private
 ```
 
-選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime と未導入の Hermes、macOS 設定を順に適用する。共通 runtime の導入は `default`、Hermes の導入は `private` を選択した場合だけ。導入済み Hermes 本体は更新しない。
+選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime、Herdr のプラグイン、未導入の Hermes、macOS 設定、ログインシェルを順に適用する。共通 runtime・Herdr のプラグイン・fish へのログインシェル変更は `default`、Hermes の導入は `private` を選択した場合だけ。導入済みの Hermes 本体と Herdr のプラグインは更新しない。
 
-全体を sudo で起動せず、表示された対象と確認に応答する。
+全体を sudo で起動せず、表示された対象と確認に応答する。確認語の入力は2回。
 
 | 表示された確認 | 進めてよい条件 | 入力 |
 |---|---|---|
-| 全体 setup | 対象ユーザー・checkout・構成・更新範囲が正しい | `setup` |
-| Homebrew 初回導入（未導入時） | 公式 installer と既存 prefix の状態を確認した | `install` |
-| mise 設定の信頼 | 表示されたルートと選択構成の宣言を確認した | `trust` |
-| リンクの配置 | 配置予定に不明なファイルや衝突がない | `apply` |
-| Hermes 用 mise 設定の信頼（private 選択時） | 表示された Hermes 用宣言を確認した | `trust` |
-| Hermes 初回導入（未導入時） | 取得元・配置先・表示された installer の段階を確認した | 表示された確認語 |
-| Hermes plist の配置（差分がある場合） | 表示された作成・置換対象を確認した | `y` |
-| 電源設定の補完 | 表示された構成の電源設定を変更してよい | `apply` |
+| 全体 setup | 対象ユーザー・checkout・構成・更新範囲、Homebrew の導入（未導入時）、信頼する mise 宣言の全文、電源設定・ログインシェル・Herdr・Hermes の対象が正しい | `setup` |
+| リンクの配置 | dry-run の配置予定に不明なファイルや衝突がない | `apply` |
 
-Homebrew の初回導入など追加の確認にも、対象を確認して応答する。分からない内容があれば承認せず止める。既存ファイルを `--force` で上書きしない。Karabiner に既存設定がある場合は、配置前に[Karabiner の手順](apps.md#karabiner)を確認する。
+ほかに止まるのは、パスワードの入力と、導入済みの Hermes で起動定義（plist）に差分がある場合の `y` だけ。分からない内容があれば承認せず止める。既存ファイルを `--force` で上書きしない。Karabiner に既存設定がある場合は、配置前に[Karabiner の手順](apps.md#karabiner)を確認する。
 
-sudo のパスワードは端末のプロンプトへ入力する。必要な処理中だけ認証キャッシュを維持するが、アプリの導入中にキャッシュが失効したり、会社のポリシーによっては再入力が必要。`sudo cache refresh failed` と表示されても setup は続くので、求められたらパスワードを入力する。App Store やベンダーの認証は別操作で、入力1回を保証しない。
+sudo のパスワードは端末のプロンプトへ入力する。必要な処理中だけ認証キャッシュを維持するが、アプリの導入中にキャッシュが失効したり、会社のポリシーによっては再入力が必要。`sudo cache refresh failed` と表示されても setup は続くので、求められたらパスワードを入力する。ログインシェルの変更（`chsh`）も別にパスワードを求める場合がある。App Store やベンダーの認証は別操作で、入力1回を保証しない。
 
 終了まで別の setup を起動せず、設定配置が終わるまで今の zsh を閉じない。終了直後に確認する。
 
 ```zsh
 echo $?
-/opt/homebrew/bin/brew --version
-/opt/homebrew/bin/mise --version
 ls -l ~/.config/fish/config.fish ~/.config/mise/config.toml
 ```
 
-終了コードが `0` で、ログに失敗がなく、設定リンクが `~/dotfiles/config/` を指していれば次へ進む。setup はサービスや Dock、端末を自動再起動しない。途中で止まった場合は[トラブル対応](troubleshooting.md)で成功済み段階を確認し、必要な部分だけ再開する。
+終了コードが `0` で、`Setup complete:` が表示され、設定リンクが `~/dotfiles/config/` を指していれば次へ進む。setup はサービスや Dock、端末を自動再起動しない。途中で止まった場合は[トラブル対応](troubleshooting.md)で成功済み段階を確認し、必要な部分だけ再開する。
 
-## 6. fish に切り替える
+## 6. Mac を再起動する
 
-現在の zsh から fish を起動する。
+作業を保存して Mac を再起動する。Dock の並びなどの macOS 設定と、新しいログインシェルは再起動後に反映される。
 
-```sh
-/opt/homebrew/bin/fish
-```
+再起動後にターミナルを開き、fish が起動して Dock が[宣言](../mise.default.toml)どおりに並んでいれば完了。fish にならない場合は[fish の切替](troubleshooting.md#fish-に切り替わらない)を確認する。
 
-設定の読み込みにエラーがなければ、ログインシェルとして登録されていることを確認する。
-
-```fish
-grep -Fx /opt/homebrew/bin/fish /etc/shells
-```
-
-未登録の場合だけ、内容を確認して通常端末で追加する。既存登録を一括上書きしない。
-
-```sh
-printf '%s\n' /opt/homebrew/bin/fish | sudo tee -a /etc/shells
-```
-
-登録を確認したら切り替える。この登録と `chsh` は setup に含まれない。
-
-```fish
-chsh -s /opt/homebrew/bin/fish
-```
-
-今の端末を残して新しいターミナルを開き、fish が起動することを確認する。
-
-```fish
-status is-login
-echo $status
-```
-
-`0` なら完了。失敗した場合は[fish の切替](troubleshooting.md#fish-に切り替わらない)を確認する。
-
-## 7. ランタイムを確認する
-
-`default` を選択した場合、ランタイムは setup で導入済み。新しい fish の端末で版を確認する。
-
-```fish
-cd ~
-node --version
-python --version
-ruby --version
-bun --version
-aws --version
-```
-
-[共通ランタイム設定](../config/.config/mise/config.base.toml)の指定版が使えれば完了。
-
-## 8. Herdr のプラグインを導入する
-
-Herdr を使う場合は、[プラグイン導入・登録と稼働確認](apps.md#herdr)を行う。setup が配置するのは設定・キーバインドで、Agent Context・Worktrunk の本体導入と Zerdr の登録は別途必要。別 Mac への復元でも省略しない。
-
-Agent Context は、登録済みでも常駐プロセスが起動していない場合がある。リンク先の手順で確認し、必要なら作業を保存して Herdr セッションを再起動する。表示の更新はエージェント起動後にも確認する。
-
-## 9. 共通 API キーを準備してエージェントを起動する
+## 7. 共通 API キーを準備してエージェントを起動する
 
 [共通 API キーの初回設定](secrets.md#初回設定)を済ませる。別の Mac から引き継ぐ場合は、同ページの[バックアップと復元](secrets.md#バックアップと復元)を使う。
 

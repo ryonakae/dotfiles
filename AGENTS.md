@@ -6,7 +6,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 
 - ホーム側を経由せず、`config/` 内の正本を編集する。配置・外部 repos・macOS defaults は構成別 `mise.<name>.toml`、アプリ一覧は `brew/Brewfile.<name>`。ルート `mise.toml` は構成非依存のみとし、共通リソースは `mise.default.toml` に置く。コピー運用・独自配置ツールを追加しない。
 - 本文編集は即時反映。配置の追加・削除は mise を使い、個別リンクや管理ディレクトリの削除・改名は、宣言を消す前に標準 unapply する。HOME 一括の symlink-each は使わない。
-- 全体入口は setup のみ。全構成を明示し、private/work へ default を自動追加しない。部分操作・明示更新は標準 brew / mise。setup に cleanup・サービス再起動・chsh を追加しない。
+- 全体入口は setup のみ。全構成を明示し、private/work へ default を自動追加しない。部分操作・明示更新は標準 brew / mise。setup に cleanup・サービス再起動を追加しない。
 - 共通 runtime の exact 版を維持し、Hermes は専用 mise task から指定 fork の標準 installer で初回導入する。本体更新は別 task。通常 repos 更新へ混ぜず、起動時に導入・更新しない。外部スキル・fish/Yazi plugin は取得元ブランチの最新版追従を許容する。
 - 未知の実体を force で置換しない。自動再試行・rollback は追加しない。
 - 非秘密の適用対象定義は Git 管理する。マシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。マシン非依存の定数は wrapper に置く。
@@ -41,5 +41,5 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。実秘密の移行、Keychain 登録・バックアップはユーザーが通常端末で行う。
 - Hermes は `hermes-gateway` / `hermes-dashboard` から fork 標準処理で操作する。自動停止・再開・状態保存を適用処理に追加せず、直接の launchctl や installer の plist 再生成で管理を迂回しない。
 - Herdr の Claude hook は Homebrew 本体の標準 integration installer。実設定への適用は別承認し、既存 settings 差分を保持する。
-- Herdr plugin の追加・削除時は [導入一覧](docs/apps.md#herdr)を更新する。worktree の作成・削除は Herdr 本体ではなく Worktrunk を使う。
+- Herdr plugin の追加・削除時は `mise.default.toml` の `herdr:plugins` task と[導入手順](docs/apps.md#herdr)を更新する。worktree の作成・削除は Herdr 本体ではなく Worktrunk を使う。
 - Pi の `extensions/` に `hooks/` という名前のディレクトリを作らない。通知処理も extension として自動読込されるため。

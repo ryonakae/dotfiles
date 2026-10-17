@@ -25,9 +25,10 @@
 - `scripts/dotfiles.sh` は CLT の `/usr/bin/python3` を使う。初回に fish / mise / Homebrew の導入済みを要求しない。
 - 未指定・未知・重複の構成は変更前に拒否する。ユーザー指定順を維持し、不明な構成から default へ切り替えない。
 - 対象 checkout と `-E` で構成を固定し、継承された `MISE_ENV` や別 cwd による追加構成・プロジェクト設定の混入を防ぐ。private 単独を共通設定・runtime の導入に読み替えない。
-- 選択した Brewfile、信頼確認、repos 取得・更新、60秒制限付きの配置 dry-run、確認付き apply、default の runtime、private の未導入 Hermes と plist、選択 macOS 設定の順に進める。外部 source の初回取得前に full dry-run 成功を必須にしない。
-- private だけ Hermes 用宣言を確認して trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
-- サービスの自動停止・再開、Dock/端末の自動再起動、chsh、cleanup を setup に追加しない。setup の再実行を無変更の冪等操作と説明しない。
+- 確認語は、最初の全体承認と dry-run 後の配置承認の2回。最初の承認で Homebrew 初回導入（`NONINTERACTIVE=1`）、信頼する宣言の全文、電源設定、default のログインシェル・Herdr、private の Hermes 宣言と初回導入を表示し、各スクリプトへは `--yes` で渡す。単独実行時の確認は残す。Hermes plist は差分がある場合だけ確認する。
+- 選択した Brewfile、宣言の trust、repos 取得・更新、60秒制限付きの配置 dry-run、確認付き apply、default の runtime と未導入の Herdr プラグイン、private の未導入 Hermes と plist、選択 macOS 設定と default のログインシェルの順に進める。外部 source の初回取得前に full dry-run 成功を必須にしない。
+- private だけ Hermes 用宣言を trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
+- サービスの自動停止・再開、Dock/端末の自動再起動、cleanup を setup に追加しない。macOS 設定の画面反映は完了時に Mac の再起動を案内する。setup の再実行を無変更の冪等操作と説明しない。
 
 ### 実機操作の承認
 
@@ -76,7 +77,7 @@
 - Homebrew fish と plugin の初期化を使い、対話 mise / zoxide の二重 activation を避ける。非対話・launchd は明示 PATH と mise shims。プロジェクト版選択と起動 cwd を維持する。
 - fish の bobthefish / fzf、Yazi の git / smart-enter / full-border は setup 時の最新版更新を許容する。宣言済み方式と別の manager を重ねず、読み込みまで確認する。
 - runtime の exact pin、Ruby `compile = true` とビルド依存を維持する。AWS CLI は `aqua:aws/aws-cli` と `symlink_bins = true`、同梱 Python を使い、Homebrew へ重複宣言しない。`~/.aws` は保持する。
-- `/etc/shells` と chsh は setup から分離する。`fish_variables`・履歴を管理しない。Cua installer の既存 PATH 追加、`~/.local/bin` や universal PATH を一括削除・変更しない。
+- ログインシェルは `mise.default.toml` の `[bootstrap.user]` で宣言し、`/etc/shells` の追記と chsh は mise に任せる。`fish_variables`・履歴を管理しない。Cua installer の既存 PATH 追加、`~/.local/bin` や universal PATH を一括削除・変更しない。
 - 最新版・解決先・使用版・管理元提供版を分ける。同名の別ソフトに注意し、更新して希望版に届かない場合は対応を相談する。
 
 ## エージェントと常駐サービス
