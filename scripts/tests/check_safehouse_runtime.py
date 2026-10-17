@@ -15,16 +15,13 @@ def main():
     raise SystemExit('Run this check outside Safehouse; nested policies cannot validate new grants.')
   with tempfile.TemporaryDirectory(prefix='dotfiles-policy-') as temporary:
     home = Path(temporary).resolve()
-    trash_roots = ['.local/share/Trash', 'custom data/Trash', '.hermes/Trash',
-                   'volume/.Trash-' + str(os.getuid()), 'volume/.Trash/' + str(os.getuid())]
     ordinary = ['Downloads/normal.txt', '.env', '.aws/credentials', '.gnupg/private.txt',
                 '.ssh/id_ed25519', '.ssh/config', '.ssh/known_hosts',
                 'Library/Messages/chat.db', 'Library/Application Support/Google/Chrome/Cookies',
                 'project/.secrets/token.txt', '.android/release.keystore',
                 'vendor/fixture/.env', '.hermes/.env', '.config/fish/config.fish']
-    payloads = [root + '/files/private.txt' for root in trash_roots] + ['.Trash/private.txt']
-    metadata = [root + '/info/item.trashinfo' for root in trash_roots]
-    for relative in ordinary + payloads + metadata:
+    payloads = ['.Trash/private.txt']
+    for relative in ordinary + payloads:
       target = home / relative
       target.parent.mkdir(parents=True, exist_ok=True)
       target.write_text('dummy data')
@@ -47,7 +44,7 @@ a.send(b'ok')
 assert b.recv(2) == b'ok'
 subprocess.run(['/usr/bin/true'], check=True)
 ''')
-    for relative in ordinary + metadata:
+    for relative in ordinary:
       check('allow read/write ' + relative,
             f'from pathlib import Path; p=Path({str(home / relative)!r}); '
             'assert p.read_text() == "dummy data"; p.write_text("changed"); '
@@ -65,12 +62,6 @@ except PermissionError:
 else:
   raise AssertionError('payload operation was allowed')
 ''')
-    for index, root in enumerate(trash_roots):
-      source = home / f'Downloads/put-{index}'
-      source.write_text('dummy Put data')
-      destination = home / root / 'files/new.txt'
-      check('allow Put ' + root, f'import os; os.rename({str(source)!r}, {str(destination)!r})')
-      assert destination.read_text() == 'dummy Put data'
     target = home / 'Downloads/rm-target'
     target.write_text('keep')
     check('deny /bin/rm execution', f'''

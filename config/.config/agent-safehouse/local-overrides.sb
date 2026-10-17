@@ -7,15 +7,19 @@
     (home-subpath "/.android/cache")
 )
 
-;; 通常rmはgtrashへ転送し、絶対パス指定による直接削除を防ぐ。
+;; 通常rmはmacos-trashへ転送し、絶対パス指定による直接削除を防ぐ。
 (deny process-exec (literal "/bin/rm"))
 
 ;; 復旧先の内容を保護し、復元・掃除はユーザーがsandbox外で行う。
 ;; renameによる投入とmetadata処理は維持する。
 (deny file-read-data file-write-data file-write-unlink
-    (regex #".*/(Trash|\.Trash-[0-9]+|\.Trash/[0-9]+)/files(/.*)?$")
     (require-all
         (home-subpath "/.Trash")
         (require-not (home-literal "/.Trash"))
     )
+)
+
+;; Finderの「戻す」記録だけは書けるようにし、エージェントが消したファイルも元の場所へ戻せるようにする。
+(allow file-read-data file-write-data
+    (home-literal "/.Trash/.DS_Store")
 )

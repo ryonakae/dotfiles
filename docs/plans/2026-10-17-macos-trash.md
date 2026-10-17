@@ -46,7 +46,8 @@ review 用の base commit: `23a232a`。
   - 既存のテストは、ディスク上に存在しない対象を `-f` 付きで渡し、偽の実行ファイルの終了コード 23 がそのまま返ることを確かめている。新しい契約では、`-f` の存在しない対象は macos-trash を呼ぶ前に飛ばされ、失敗時の終了コードは 1 になる。macos-trash へ届く引数を確かめるテストは、対象を先に作ってから実行し、終了コードは 1 を期待する。`test_agent_runtime.py` も同様に直す。
   - `test_rm_trash.py` で押さえる境界: `--` の付与、ハイフンで始まる対象と `--` という名前の対象、拒否する対象と残りの処理継続、`-f` の有無での空文字と存在しない対象、対象なし、拒否するオプション、ディレクトリと `-r`・`-R`・`-d`、ディレクトリを指す symlink、macos-trash の失敗、macos-trash 欠落時に元が残り PATH 上の偽物を使わないこと、Safehouse 外での `/bin/rm` への引数保持、fish と子シェルからの解決。
   - 結果: `test_rm_trash.py` 11 件、`test_agent_runtime.py` 24 件が成功。`sh -n` も成功。
-- [ ] Safehouse の設定と検証スクリプト: `config/.config/agent-safehouse/local-overrides.sb` から XDG 形式の正規表現の行を削除し、`.DS_Store` の allow を追加し、gtrash に触れたコメントを macos-trash に直す。`scripts/tests/check_safehouse_runtime.py` からは XDG 形式のごみ箱の項目だけを除く。`.Trash/private.txt` の拒否、`/bin/rm` の実行拒否、そのほかの項目は残し、新しい確認項目は足さない。`scripts/tests/check_gtrash_runtime.py` は削除する。
+- [x] Safehouse の設定と検証スクリプト: `config/.config/agent-safehouse/local-overrides.sb` から XDG 形式の正規表現の行を削除し、`.DS_Store` の allow を追加し、gtrash に触れたコメントを macos-trash に直す。`scripts/tests/check_safehouse_runtime.py` からは XDG 形式のごみ箱の項目だけを除く。`.Trash/private.txt` の拒否、`/bin/rm` の実行拒否、そのほかの項目は残し、新しい確認項目は足さない。`scripts/tests/check_gtrash_runtime.py` は削除する。
+  - 結果: `check_safehouse_runtime.py` の `py_compile` が成功。実行は Safehouse 外が必要なため、適用手順 3 でユーザーが行う。
 - [ ] Brewfile: `brew/Brewfile.default` から gtrash を削除し、macos-trash をアルファベット順の位置に追加する。
 - [ ] 文書: `docs/troubleshooting.md` の「削除したファイルを復元する」を、Finder の「戻す」の手順に書き換える。
   - 含める内容は 5 点。Safehouse 内の rm は Finder のゴミ箱へ移す。通常端末の rm は直接削除で戻せない。通常端末でゴミ箱を使う場合は macOS 標準の `trash` を使い、複数を一度に渡すと一部の「戻す」が欠けることがある。「戻す」が出ない項目は元の場所へ手で移す。外部ボリューム上のファイルは移動に失敗して元が残る。
