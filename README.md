@@ -1,25 +1,25 @@
 # dotfiles
 
 macOS の開発環境と AI エージェントの個人設定。
-Homebrew の Brewfile でアプリ、mise でランタイム・設定リンク・macOS の設定を管理する。
 
-## 使い方
+- アプリは Homebrew の Brewfile、設定ファイルのリンク・ランタイム・macOS 設定は mise で管理する。
+- 導入対象は構成で選ぶ。共通の `default` に、家用の `private` か仕事用の `work` を組み合わせる。
+- Claude Code・Codex・Pi などのエージェントは、fish の起動関数から Agent Safehouse のサンドボックス内で起動する。HOME への広いアクセスを許可する構成で、完全隔離ではない。
 
-**新しい Mac では、[初回セットアップ](docs/setup.md)を上から進める。** 標準のターミナルと zsh から始められる。
+## リポジトリの中身
 
-導入済みなら、必要な手順だけ読む。
-
-| やりたいこと | 手順 |
+| 場所 | 内容 |
 |---|---|
-| 設定・アプリ・ランタイムを更新する | [日常操作](docs/usage.md) |
-| `.env` に API キーを追加・更新する | [共通 API キー](docs/secrets.md#値を追加更新する) |
-| インストールや配置のエラーを解決する | [トラブル対応](docs/troubleshooting.md) |
-| Hermes・Herdr などを設定する | [アプリ別設定](docs/apps.md) |
-| 削除したファイルを戻す | [ごみ箱から復元](docs/troubleshooting.md#削除したファイルを復元する) |
-| iOS Simulator で検証する | [use-agent-device](config/.agents/skills/use-agent-device/SKILL.md) |
+| `config/` | HOME へリンクする設定ファイルの正本。fish・Ghostty・Karabiner・各エージェントの設定と、共通ランタイムの版 |
+| `brew/` | 構成別の Brewfile |
+| `mise.<構成>.toml` | 構成別の設定リンク・外部リポジトリ・macOS 設定の宣言 |
+| `scripts/` | setup の入口と補助スクリプト |
+| `docs/` | ユーザー向け手順 |
 
-エージェントは fish の起動関数から Safehouse 内で使う。HOME への広いアクセスを許可する構成で、完全隔離ではない。
+## ドキュメント
 
-## エージェントに変更を任せる
-
-編集・検証のルールは [AGENTS.md](AGENTS.md)、導入・更新・復旧の判断基準は [dotfiles-setup](.agents/skills/dotfiles-setup/SKILL.md) を参照する。
+- [初回セットアップ](docs/setup.md)
+- [日常操作](docs/usage.md)
+- [共通 API キー](docs/secrets.md)
+- [アプリ別設定](docs/apps.md)
+- [トラブル対応](docs/troubleshooting.md)
