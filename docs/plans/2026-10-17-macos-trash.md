@@ -40,9 +40,12 @@
 
 ## Tasks
 
-- [ ] ラッパーと単体テスト: `config/.local/bin/rm` を上記の契約で書き換え、`scripts/tests/test_rm_trash.py` を偽の macos-trash 前提に書き換える。`scripts/tests/test_agent_runtime.py` の rm 解決テストは、偽の実行ファイルの差し替え先と期待する引数だけを直す。
+review 用の base commit: `23a232a`。
+
+- [x] ラッパーと単体テスト: `config/.local/bin/rm` を上記の契約で書き換え、`scripts/tests/test_rm_trash.py` を偽の macos-trash 前提に書き換える。`scripts/tests/test_agent_runtime.py` の rm 解決テストは、偽の実行ファイルの差し替え先と期待する引数だけを直す。
   - 既存のテストは、ディスク上に存在しない対象を `-f` 付きで渡し、偽の実行ファイルの終了コード 23 がそのまま返ることを確かめている。新しい契約では、`-f` の存在しない対象は macos-trash を呼ぶ前に飛ばされ、失敗時の終了コードは 1 になる。macos-trash へ届く引数を確かめるテストは、対象を先に作ってから実行し、終了コードは 1 を期待する。`test_agent_runtime.py` も同様に直す。
   - `test_rm_trash.py` で押さえる境界: `--` の付与、ハイフンで始まる対象と `--` という名前の対象、拒否する対象と残りの処理継続、`-f` の有無での空文字と存在しない対象、対象なし、拒否するオプション、ディレクトリと `-r`・`-R`・`-d`、ディレクトリを指す symlink、macos-trash の失敗、macos-trash 欠落時に元が残り PATH 上の偽物を使わないこと、Safehouse 外での `/bin/rm` への引数保持、fish と子シェルからの解決。
+  - 結果: `test_rm_trash.py` 11 件、`test_agent_runtime.py` 24 件が成功。`sh -n` も成功。
 - [ ] Safehouse の設定と検証スクリプト: `config/.config/agent-safehouse/local-overrides.sb` から XDG 形式の正規表現の行を削除し、`.DS_Store` の allow を追加し、gtrash に触れたコメントを macos-trash に直す。`scripts/tests/check_safehouse_runtime.py` からは XDG 形式のごみ箱の項目だけを除く。`.Trash/private.txt` の拒否、`/bin/rm` の実行拒否、そのほかの項目は残し、新しい確認項目は足さない。`scripts/tests/check_gtrash_runtime.py` は削除する。
 - [ ] Brewfile: `brew/Brewfile.default` から gtrash を削除し、macos-trash をアルファベット順の位置に追加する。
 - [ ] 文書: `docs/troubleshooting.md` の「削除したファイルを復元する」を、Finder の「戻す」の手順に書き換える。

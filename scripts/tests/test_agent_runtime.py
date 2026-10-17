@@ -118,15 +118,16 @@ class AgentRuntimeTests(unittest.TestCase):
 
   def test_noninteractive_runtime_resolves_rm_to_trash_wrapper(self):
     self.env['APP_SANDBOX_CONTAINER_ID'] = 'agent-safehouse'
-    gtrash = self.program('gtrash', (self.bin / 'probe').read_text())
+    trash = self.program('trash', (self.bin / 'probe').read_text())
     wrapper = self.bin / 'rm'
     wrapper.write_text((ROOT / 'config/.local/bin/rm').read_text().replace(
-      '/opt/homebrew/bin/gtrash', str(gtrash)))
+      '/opt/homebrew/opt/macos-trash/bin/trash', str(trash)))
     wrapper.chmod(0o755)
+    (self.project / 'argument with spaces').write_text('data')
     self.env['PATH'] = '/usr/bin:/bin'
     result = self.run_helper('/bin/sh', '-c', 'rm -rf -- "argument with spaces"')
-    self.assertEqual(result.returncode, 23, result.stderr)
-    self.assertEqual(json.loads(result.stdout)['args'], ['put', '-rf', '--', 'argument with spaces'])
+    self.assertEqual(result.returncode, 1, result.stderr)
+    self.assertEqual(json.loads(result.stdout)['args'], ['--', 'argument with spaces'])
 
   def test_all_wrappers_inject_before_sandbox_and_preserve_service_arguments(self):
     runtime = self.install_runtime()

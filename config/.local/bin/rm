@@ -4,8 +4,100 @@ if [ "${APP_SANDBOX_CONTAINER_ID:-}" != "agent-safehouse" ]; then
     exec "/bin/rm" "$@"
 fi
 
-# Keep failed cross-volume moves recoverable instead of copying and deleting.
-export GTRASH_ONLY_HOME_TRASH=false
-export GTRASH_HOME_TRASH_FALLBACK_COPY=false
+trash="/opt/homebrew/opt/macos-trash/bin/trash"
+force=false
+recursive=false
+empty_dir=false
+status=0
 
-exec "/opt/homebrew/bin/gtrash" put "$@"
+usage() {
+    echo "usage: rm [-dfPRrvx] file ..." >&2
+    exit 1
+}
+
+reject() {
+    echo "rm: $1" >&2
+    status=1
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --) shift; break ;;
+        -?*) ;;
+        *) break ;;
+    esac
+    flags=${1#-}
+    while [ -n "$flags" ]; do
+        rest=${flags#?}
+        flag=${flags%"$rest"}
+        case $flag in
+            f) force=true ;;
+            r | R) recursive=true ;;
+            d) empty_dir=true ;;
+            P | v | x) ;;
+            # 確認や復元を求める指定は、確認なしでゴミ箱へ移すと意図と逆になる。
+            *) echo "rm: illegal option -- $flag" >&2; usage ;;
+        esac
+        flags=$rest
+    done
+    shift
+done
+
+if [ $# -eq 0 ]; then
+    if $force; then
+        exit 0
+    fi
+    usage
+fi
+
+count=$#
+while [ "$count" -gt 0 ]; do
+    target=$1
+    shift
+    count=$((count - 1))
+
+    trimmed=$target
+    while [ "${trimmed%/}" != "$trimmed" ]; do
+        trimmed=${trimmed%/}
+    done
+    # macos-trash は空文字や . を現在のディレクトリとして移すため、rm と同じく拒否する。
+    if [ -n "$target" ] && [ -z "$trimmed" ]; then
+        reject "\"/\" may not be removed"
+        continue
+    fi
+    case ${trimmed##*/} in
+        . | ..)
+            reject "\".\" and \"..\" may not be removed"
+            continue
+            ;;
+    esac
+
+    if [ ! -e "$target" ] && [ ! -L "$target" ]; then
+        if ! $force; then
+            reject "$target: No such file or directory"
+        fi
+        continue
+    fi
+
+    if [ -d "$target" ] && [ ! -L "$target" ] && ! $recursive; then
+        if ! $empty_dir; then
+            reject "$target: is a directory"
+            continue
+        fi
+        if ! entries=$(ls -A -- "$target" 2>/dev/null) || [ -n "$entries" ]; then
+            reject "$target: Directory not empty"
+            continue
+        fi
+    fi
+
+    # macos-trash は -- の後でもハイフンで始まるパスを捨てる。
+    case $target in
+        -*) target=./$target ;;
+    esac
+    set -- "$@" "$target"
+done
+
+if [ $# -gt 0 ]; then
+    "$trash" -- "$@" || status=1
+fi
+exit "$status"
