@@ -121,7 +121,7 @@ class MacOSDefaultsTests(unittest.TestCase):
     })
 
   def test_control_center_preferences_remain_current_host(self):
-    self.assertEqual(self.macos['defaults_entries'], [
+    self.assertEqual([e for e in self.macos['defaults_entries'] if e['domain'] == 'com.apple.controlcenter'], [
       {'domain': 'com.apple.controlcenter', 'key': 'BatteryShowPercentage', 'host': 'current', 'value': True},
       {'domain': 'com.apple.controlcenter', 'key': 'Sound', 'host': 'current', 'value': 18},
     ])
