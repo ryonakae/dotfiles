@@ -273,6 +273,7 @@ class SetupCliTests(unittest.TestCase):
     self.assertLess(commands.index(download), commands.index(['/bin/bash', '-c', installer]))
     self.assertTrue(any("'install'" in c.args[0] for c in self.prompt.call_args_list))
     self.assertLess(commands.index(['/bin/bash', '-c', installer]), commands.index([str(self.module.BREW), 'install', 'mise', 'uv']))
+    self.assertIn(f'eval "$({self.module.BREW} shellenv)"', self.module.sys.stdout.getvalue())
 
   def test_all_selected_declarations_exist_before_any_command_and_report_preflight_failure(self):
     for missing in ('brew/Brewfile.private', 'mise.private.toml', 'mise.hermes.toml', 'scripts/hermes-install.py'):
@@ -483,7 +484,7 @@ class SetupCliTests(unittest.TestCase):
       time.sleep(0.01)
     self.fail('fake refresh did not reach expected state')
 
-  def test_refresh_failure_or_timeout_collects_active_bundle_result_and_stops(self):
+  def test_refresh_failure_or_timeout_warns_and_reauthenticates_at_next_sudo_stage(self):
     for ending in ('failure', 'timeout'):
       with self.subTest(ending=ending):
         self.run.reset_mock()
@@ -492,18 +493,18 @@ class SetupCliTests(unittest.TestCase):
         self.start_fake_refresh(code=4 if ending == 'failure' else None)
         if ending == 'timeout':
           self.module.SUDO_REFRESH_TIMEOUT = 0.05
-        completed = []
         def run(command, **kwargs):
           if 'bundle' in command:
             self.wait_for_refresh(failed=True)
-            completed.append('bundle finished')
           return self.run_command(command, **kwargs)
         self.run.side_effect = run
-        with self.assertRaisesRegex(ValueError, 'reauthentication required'):
-          self.invoke('private')
-        self.assertEqual(completed, ['bundle finished'])
-        self.assertEqual(self.commands()[-1][1], 'bundle')
-        self.assertIn('Completed: brew bundle private', self.module.sys.stderr.getvalue())
+        self.invoke('private')
+        commands = self.commands()
+        bundle = next(i for i, c in enumerate(commands) if 'bundle' in c)
+        defaults = next(i for i, c in enumerate(commands) if 'defaults' in c)
+        self.assertIn(['/usr/bin/sudo', '-v'], commands[bundle + 1:defaults])
+        self.assertIn('Setup complete:', self.module.sys.stdout.getvalue())
+        self.assertIn('sudo may ask for the password again', self.module.sys.stderr.getvalue())
         self.assertTrue(all(p.poll() is not None for p in self.processes))
         self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
 

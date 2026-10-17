@@ -23,11 +23,6 @@ SUDO_REFRESH_TIMEOUT = 10
 class SudoRefresh:
   def __init__(self):
     self.stop = threading.Event()
-    self.failure = None
-
-  def check(self):
-    if self.failure:
-      raise ValueError(f'sudo cache refresh failed ({self.failure}); reauthentication required; no automatic retry')
 
   def refresh(self):
     while not self.stop.wait(SUDO_REFRESH_INTERVAL):
@@ -50,8 +45,8 @@ class SudoRefresh:
             if time.monotonic() >= deadline:
               raise
       except (OSError, subprocess.SubprocessError) as error:
-        self.failure = str(error)
-        print(f'sudo cache refresh failed: {error}; waiting for any active operation before stopping.', file=sys.stderr)
+        # Casks can invalidate the cache mid-bundle; the next sudo stage re-authenticates via sudo -v instead of aborting.
+        print(f'sudo cache refresh failed: {error}; continuing without refresh, sudo may ask for the password again.', file=sys.stderr)
         return
       finally:
         if process is not None:
@@ -80,7 +75,7 @@ def sudo_authentication():
     for signum in (signal.SIGTERM, signal.SIGHUP, signal.SIGQUIT):
       handlers[signum] = signal.signal(signum, interrupted)
     thread.start()
-    yield refresh
+    yield
   finally:
     handlers[signal.SIGINT] = signal.getsignal(signal.SIGINT)
     for signum in handlers:
@@ -156,16 +151,12 @@ def setup(configurations):
       if path.read_bytes() != expected:
         raise ValueError(f'declaration changed after confirmation: {path}; stop and review')
 
-  def run(label, command, *, cwd=ROOT, refresh=None, env=None, **kwargs):
+  def run(label, command, *, cwd=ROOT, env=None, **kwargs):
     nonlocal stage
     stage = label
     check_declarations()
-    if refresh:
-      refresh.check()
     result = subprocess.run(command, cwd=cwd, env=environment if env is None else env, check=True, **kwargs)
     completed.append(label)
-    if refresh:
-      refresh.check()
     check_declarations()
     return result
 
@@ -188,20 +179,19 @@ def setup(configurations):
       print(f'Homebrew is missing. Official installer: {installer_url}\nPrefix: {BREW.parents[1]}')
       confirm('install', 'install Homebrew with the official installer')
       installer = run('Homebrew installer download', ['/usr/bin/curl', '-fsSL', installer_url], stdout=subprocess.PIPE, text=True)
-      with sudo_authentication() as refresh:
-        run('Homebrew initial install', ['/bin/bash', '-c', installer.stdout], refresh=refresh)
-      refresh.check()
+      with sudo_authentication():
+        run('Homebrew initial install', ['/bin/bash', '-c', installer.stdout])
       check_homebrew()
       if not executable(BREW):
         raise ValueError(f'Homebrew installer did not provide {BREW}')
+      print(f'Terminals opened before this install cannot find brew. Open a new window or run: eval "$({BREW} shellenv)"')
     stage = 'Homebrew setup authentication'
-    with sudo_authentication() as refresh:
+    with sudo_authentication():
       missing = [name for name in ('mise', 'uv') if not executable(BREW.parent / name)]
       if missing:
-        run('setup foundation', [str(BREW), 'install', *missing], refresh=refresh)
+        run('setup foundation', [str(BREW), 'install', *missing])
       for name, brewfile in zip(configurations, brewfiles):
-        run(f'brew bundle {name}', [str(BREW), 'bundle', '--file=' + str(brewfile)], refresh=refresh)
-    refresh.check()
+        run(f'brew bundle {name}', [str(BREW), 'bundle', '--file=' + str(brewfile)])
     for path in (BREW, MISE, BREW.parent / 'uv'):
       if not executable(path):
         raise ValueError(f'required setup tool missing after Homebrew: {path}')
@@ -242,11 +232,10 @@ def setup(configurations):
       run('Hermes initial install task', [*hermes_mise, 'run', 'hermes:install'], env=hermes_env)
       run('Hermes plist placement', ['/usr/bin/python3', str(ROOT / 'scripts/hermes_plists.py')])
     stage = 'macOS settings'
-    with sudo_authentication() as refresh:
-      run('mise macOS defaults', [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'], refresh=refresh)
+    with sudo_authentication():
+      run('mise macOS defaults', [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'])
       for name in configurations:
-        run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name], refresh=refresh)
-    refresh.check()
+        run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name])
     print('Setup complete: ' + ', '.join(completed))
     print('No services were restarted. Apply updated Hermes definitions explicitly with hermes-gateway / hermes-dashboard when needed.')
   except BaseException:
