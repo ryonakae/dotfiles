@@ -1,6 +1,6 @@
 # rm 転送先の macos-trash への切り替え Implementation Plan
 
-要件と判断理由の正本は [dig log](../dig/2026-10-17-macos-trash.md)。この計画では、実装に必要な契約・手順・検証だけをまとめる。
+要件と判断理由の正本は [dig log](../../dig/2026-10-17-macos-trash.md)。この計画では、実装に必要な契約・手順・検証だけをまとめる。
 
 ## Requirements
 
@@ -53,7 +53,7 @@ review 用の base commit: `23a232a`。
   - 結果: `brew bundle list` に macos-trash が含まれ、gtrash は含まれない。
 - [x] 文書: `docs/troubleshooting.md` の「削除したファイルを復元する」を、Finder の「戻す」の手順に書き換える。
   - 含める内容は 5 点。Safehouse 内の rm は Finder のゴミ箱へ移す。通常端末の rm は直接削除で戻せない。通常端末でゴミ箱を使う場合は macOS 標準の `trash` を使い、複数を一度に渡すと一部の「戻す」が欠けることがある。「戻す」が出ない項目は元の場所へ手で移す。外部ボリューム上のファイルは移動に失敗して元が残る。
-  - `docs/dig/2026-10-02-safehouse-compatibility.md` の gtrash に触れる節の冒頭に、[2026-10-17 の dig log](../dig/2026-10-17-macos-trash.md) で macos-trash へ置き換えたことを追記する。
+  - `docs/dig/2026-10-02-safehouse-compatibility.md` の gtrash に触れる節の冒頭に、[2026-10-17 の dig log](../../dig/2026-10-17-macos-trash.md) で macos-trash へ置き換えたことを追記する。
   - 結果: `git diff --check` 成功。gtrash の参照は dig log と計画以外に残っていない。
 
 ## 適用手順
