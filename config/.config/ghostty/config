@@ -33,7 +33,7 @@ keybind = shift+enter=text:\n
 desktop-notifications = true
 
 # macOS固有
-macos-titlebar-style = tabs
+macos-titlebar-style = transparent
 # 左 Option は端末操作用の Alt、右 Option は macOS の文字入力用に残す
 macos-option-as-alt = left
 macos-icon = retro
