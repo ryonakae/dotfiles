@@ -118,7 +118,7 @@ class HermesInstallTests(unittest.TestCase):
     kwargs.setdefault('capture_output', True)
     return self.real_run(command, **kwargs)
 
-  def invoke(self, mode='install', answer=None, answers=None, uid=501, interactive=True, **environment):
+  def invoke(self, mode='install', answer=None, answers=None, uid=501, interactive=True, options=(), **environment):
     self.commands.clear()
     self.prompts = []
     self.output = io.StringIO()
@@ -134,7 +134,7 @@ class HermesInstallTests(unittest.TestCase):
          patch('pwd.getpwuid', return_value=SimpleNamespace(pw_dir=str(self.home))), \
          patch('sys.stdin.isatty', return_value=interactive), \
          patch('builtins.input', side_effect=confirm), \
-         patch('sys.argv', ['hermes-install.py', mode]), \
+         patch('sys.argv', ['hermes-install.py', mode, *options]), \
          patch('sys.stdout', self.output), patch('sys.stderr', self.output):
       try:
         self.module.main()
@@ -326,6 +326,12 @@ class HermesInstallTests(unittest.TestCase):
     self.assertFalse(self.marker.exists())
     self.assertNotEqual(self.invoke(), 0)
     self.assertEqual(self.prompts, [])
+
+  def test_preapproved_install_runs_stages_without_prompts(self):
+    self.assert_ok(self.invoke(options=['--yes']))
+    self.assertEqual(self.prompts, [])
+    self.assertEqual(self.stages()[-1], 'complete')
+    self.assertTrue(self.marker.exists())
 
   def test_root_safehouse_and_noninteractive_mutation_are_rejected(self):
     for options in ({'uid': 0}, {'APP_SANDBOX_CONTAINER_ID': 'agent-safehouse'}, {'interactive': False}):

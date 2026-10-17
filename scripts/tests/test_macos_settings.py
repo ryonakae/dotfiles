@@ -79,6 +79,12 @@ class MacOSSettingsTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertEqual(self.commands(), [])
 
+  def test_preapproved_profile_applies_without_prompt(self):
+    result = self.run_profile('work', '--yes', answer='')
+    self.assertEqual(result.returncode, 0, result.stderr)
+    self.assertNotIn("Type 'apply'", result.stdout + result.stderr)
+    self.assertTrue(self.commands())
+
   def test_default_does_not_apply_power_overrides(self):
     result = self.run_profile('default', answer='')
     self.assertEqual(result.returncode, 0, result.stderr)

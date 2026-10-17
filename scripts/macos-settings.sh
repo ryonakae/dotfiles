@@ -1,8 +1,12 @@
 #!/bin/bash
 set -euo pipefail
 
-if [[ $# != 1 ]]; then
-  echo 'Usage: macos-settings.sh default|private|work' >&2
+if [[ $# == 2 && $2 == --yes ]]; then
+  preapproved=1
+elif [[ $# == 1 ]]; then
+  preapproved=0
+else
+  echo 'Usage: macos-settings.sh default|private|work [--yes]' >&2
   exit 2
 fi
 case $1 in
@@ -16,9 +20,11 @@ if [[ ${APP_SANDBOX_CONTAINER_ID:-} == agent-safehouse || $EUID == 0 ]]; then
   exit 1
 fi
 
-printf 'Apply %s power settings to this Mac?\n' "$1"
-read -r -p "Type 'apply' to continue: " answer
-[[ $answer == apply ]] || exit 1
+if [[ $preapproved == 0 ]]; then
+  printf 'Apply %s power settings to this Mac?\n' "$1"
+  read -r -p "Type 'apply' to continue: " answer
+  [[ $answer == apply ]] || exit 1
+fi
 case $1 in
   private)
     support=$(sudo -n /usr/sbin/systemsetup -getRestartPowerFailure)

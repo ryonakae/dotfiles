@@ -75,6 +75,7 @@ def completed(target, head):
 def main():
   parser = argparse.ArgumentParser(description='Install or explicitly update the managed Hermes checkout')
   parser.add_argument('operation', choices=('install', 'update'))
+  parser.add_argument('--yes', action='store_true', help='skip confirmations already approved by setup')
   args = parser.parse_args()
   stage = 'preflight'
   try:
@@ -110,7 +111,7 @@ def main():
     print(f'Hermes {args.operation}: {target}; origin {ORIGIN}; branch {BRANCH}')
     print('Uses standard installer stages; may add managed uv, Python/Node runtimes and dependencies under ~/.hermes.')
     print('No services are stopped or started; stop any active Hermes services explicitly before updating.')
-    if input(f"Type '{args.operation}' to continue: ").strip() != args.operation:
+    if not args.yes and input(f"Type '{args.operation}' to continue: ").strip() != args.operation:
       raise ValueError('cancelled')
     managed_paths(target)
     if exists:
@@ -127,7 +128,7 @@ def main():
     head = checkout(target, environment)
     print(f'Using Hermes revision {head}')
     stages = ('python-deps', 'node-deps', 'complete') if exists else ('venv', 'python-deps', 'node-deps', 'complete')
-    if input(f"Type '{args.operation}' to run {', '.join(stages)} at revision {head}: ").strip() != args.operation:
+    if not args.yes and input(f"Type '{args.operation}' to run {', '.join(stages)} at revision {head}: ").strip() != args.operation:
       raise ValueError('installer stages cancelled; checkout is incomplete, inspect before resuming')
     managed_paths(target)
     if checkout(target, environment) != head:
