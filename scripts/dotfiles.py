@@ -202,6 +202,9 @@ def setup(configurations):
     for path in declarations:
       run(f'mise trust {path.name}', [*mise, 'trust', str(path)])
     run('mise repos update', [*mise, 'bootstrap', 'repos', 'update', '--yes'])
+    if 'default' in configurations:
+      # mise requires every source to exist, and the Antigravity link's source is only filled by this apply.
+      (home / '.agents/skills').mkdir(parents=True, exist_ok=True)
     run('mise dry-run', [*mise, 'dot', 'apply', '--dry-run'], timeout=60)
     print('Inspect destinations and unknown files/links before approving. Dry-run success does not guarantee apply success.')
     stage = 'mise apply'

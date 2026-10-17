@@ -149,6 +149,17 @@ class SetupCliTests(unittest.TestCase):
     self.assertEqual([c[-1] for c in commands if 'trust' in c],
                      [str(self.root / 'mise.toml'), str(self.root / 'mise.default.toml')])
 
+  def test_default_creates_shared_skill_directory_before_dry_run(self):
+    skills = self.home / '.agents/skills'
+    seen = []
+    def run(command, **kwargs):
+      if '--dry-run' in command:
+        seen.append(skills.is_dir())
+      return self.run_command(command, **kwargs)
+    self.run.side_effect = run
+    self.invoke('default')
+    self.assertEqual(seen, [True])
+
   def test_default_is_explicit_and_installs_home_runtimes_before_first_hermes(self):
     self.invoke('private', 'default')
     commands = self.commands()
