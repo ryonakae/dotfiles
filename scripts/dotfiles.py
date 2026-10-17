@@ -167,20 +167,29 @@ def setup(configurations):
     environment.update(HOME=str(home), USER=user.pw_name, LOGNAME=user.pw_name,
                        PATH=f'{BREW.parent}:{BREW.parents[1] / "sbin"}:' + environment.get('PATH', '/usr/bin:/bin'))
     subprocess.run(['/usr/bin/xcode-select', '-p'], check=True, stdout=subprocess.PIPE, text=True)
+    installer_url = 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh'
+    hermes_declaration = ROOT / 'mise.hermes.toml'
     print(f'Checkout: {ROOT}\nTarget user: {user.pw_name} ({home})')
     print('Configurations (in order): ' + ', '.join(configurations))
-    print('Setup installs/updates selected Brewfiles, obtains repositories, places links and applies selected macOS settings.')
-    print('No cleanup, service restart, shell change, automatic retry or rollback is performed.')
+    if not executable(BREW):
+      print(f'Homebrew is missing and will be installed non-interactively. Official installer: {installer_url}\nPrefix: {BREW.parents[1]}')
+    print('Setup installs/updates selected Brewfiles, obtains repositories, places links and applies selected macOS settings and power settings.')
+    for path in declarations:
+      print(f'Trust only this declaration: {path}\n{snapshot[path].decode("utf-8")}')
+    if 'default' in configurations:
+      print('Changes the login shell to /opt/homebrew/bin/fish (chsh may ask for the password).')
+      print('Installs missing pinned Herdr plugins and registers the Homebrew Zerdr with Herdr and Zed.')
+    if 'private' in configurations:
+      print(f'Trust only this Hermes declaration: {hermes_declaration}\n{snapshot[hermes_declaration].decode("utf-8")}')
+      print('Installs Hermes with its standard installer stages when absent.')
+    print('No cleanup, service restart, automatic retry or rollback is performed. Placement is confirmed again after the dry-run.')
     confirm('setup', 'approve this complete setup scope')
     check_declarations()
     if not executable(BREW):
       stage = 'Homebrew initial install'
-      installer_url = 'https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh'
-      print(f'Homebrew is missing. Official installer: {installer_url}\nPrefix: {BREW.parents[1]}')
-      confirm('install', 'install Homebrew with the official installer')
       installer = run('Homebrew installer download', ['/usr/bin/curl', '-fsSL', installer_url], stdout=subprocess.PIPE, text=True)
       with sudo_authentication():
-        run('Homebrew initial install', ['/bin/bash', '-c', installer.stdout])
+        run('Homebrew initial install', ['/bin/bash', '-c', installer.stdout], env=dict(environment, NONINTERACTIVE='1'))
       check_homebrew()
       if not executable(BREW):
         raise ValueError(f'Homebrew installer did not provide {BREW}')
@@ -195,10 +204,6 @@ def setup(configurations):
     for path in (BREW, MISE, BREW.parent / 'uv'):
       if not executable(path):
         raise ValueError(f'required setup tool missing after Homebrew: {path}')
-    stage = 'mise trust'
-    for path in declarations:
-      print(f'Trust only this declaration: {path}\n{snapshot[path].decode("utf-8")}')
-    confirm('trust', 'trust only these declarations')
     for path in declarations:
       run(f'mise trust {path.name}', [*mise, 'trust', str(path)])
     run('mise repos update', [*mise, 'bootstrap', 'repos', 'update', '--yes'])
@@ -224,22 +229,22 @@ def setup(configurations):
                       MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'config/.config/mise/config.base.toml'))
       home_mise = [str(MISE), '-C', str(home)]
       run('mise runtimes', [*home_mise, 'install', 'node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'], cwd=home, env=home_env)
+      run('Herdr plugins', [*mise, 'run', 'herdr:plugins'])
     if 'private' in configurations:
-      hermes_declaration = ROOT / 'mise.hermes.toml'
       hermes_mise = [str(MISE), '-C', str(ROOT), '-E', 'hermes']
       hermes_env = dict(environment, MISE_ENV='hermes')
-      stage = 'Hermes declaration trust'
-      print(f'Trust only this declaration: {hermes_declaration}\n{snapshot[hermes_declaration].decode("utf-8")}')
-      confirm('trust', 'trust the Hermes lifecycle declaration')
       run('Hermes declaration trust', [*hermes_mise, 'trust', str(hermes_declaration)], env=hermes_env)
-      run('Hermes initial install task', [*hermes_mise, 'run', 'hermes:install'], env=hermes_env)
+      run('Hermes initial install task', [*hermes_mise, 'run', 'hermes:install', '--yes'], env=hermes_env)
       run('Hermes plist placement', ['/usr/bin/python3', str(ROOT / 'scripts/hermes_plists.py')])
     stage = 'macOS settings'
     with sudo_authentication():
       run('mise macOS defaults', [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'])
+      if 'default' in configurations:
+        run('login shell', [*mise, 'bootstrap', 'user', 'apply', '--yes'])
       for name in configurations:
-        run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name])
+        run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name, '--yes'])
     print('Setup complete: ' + ', '.join(completed))
+    print('Restart the Mac to reflect macOS settings such as the Dock layout and to start the new login shell.')
     print('No services were restarted. Apply updated Hermes definitions explicitly with hermes-gateway / hermes-dashboard when needed.')
   except BaseException:
     print(f"Setup stopped at {stage}. Completed: {', '.join(completed) or 'none'}", file=sys.stderr)

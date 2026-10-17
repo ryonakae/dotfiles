@@ -78,7 +78,7 @@ class SetupCliTests(unittest.TestCase):
     return result
 
   def confirm(self, prompt):
-    for answer in ('setup', 'install', 'trust', 'apply'):
+    for answer in ('setup', 'apply'):
       if f"'{answer}'" in prompt:
         return answer
     self.fail(f'Unexpected prompt: {prompt}')
@@ -124,12 +124,16 @@ class SetupCliTests(unittest.TestCase):
       [*mise, 'dot', 'apply', '--dry-run'],
       [*mise, 'dot', 'apply', '--yes'],
       [*hermes_mise, 'trust', str(self.root / 'mise.hermes.toml')],
-      [*hermes_mise, 'run', 'hermes:install'],
+      [*hermes_mise, 'run', 'hermes:install', '--yes'],
       ['/usr/bin/python3', str(self.root / 'scripts/hermes_plists.py')],
       ['/usr/bin/sudo', '-v'],
       [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'],
-      ['/bin/bash', str(self.root / 'scripts/macos-settings.sh'), 'private'],
+      ['/bin/bash', str(self.root / 'scripts/macos-settings.sh'), 'private', '--yes'],
     ])
+    self.assertEqual([c.args[0] for c in self.prompt.call_args_list if "'setup'" in c.args[0]], [self.prompt.call_args_list[0].args[0]])
+    self.assertEqual(len(self.prompt.call_args_list), 2)
+    self.assertIn('Trust only this Hermes declaration', self.module.sys.stdout.getvalue())
+    self.assertIn('Restart the Mac', self.module.sys.stdout.getvalue())
     dryrun = next(c for c in self.run.call_args_list if '--dry-run' in c.args[0])
     self.assertEqual(dryrun.kwargs['timeout'], 60)
     for call in self.run.call_args_list:
@@ -146,6 +150,14 @@ class SetupCliTests(unittest.TestCase):
     commands = self.commands()
     self.assertTrue(any(c[-5:] == ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'] for c in commands))
     self.assertFalse(any('hermes:install' in c or c[0] == '/usr/bin/python3' for c in commands))
+    mise = [str(self.module.MISE), '-C', str(self.root), '-E', 'default']
+    herdr = commands.index([*mise, 'run', 'herdr:plugins'])
+    shell = commands.index([*mise, 'bootstrap', 'user', 'apply', '--yes'])
+    self.assertLess(next(i for i, c in enumerate(commands) if 'node' in c), herdr)
+    self.assertLess(commands.index([*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes']), shell)
+    self.assertIn(['/usr/bin/sudo', '-v'], commands[herdr:shell])
+    self.assertIn('login shell to /opt/homebrew/bin/fish', self.module.sys.stdout.getvalue())
+    self.assertIn('Herdr plugins', self.module.sys.stdout.getvalue())
     self.assertEqual([c[-1] for c in commands if 'trust' in c],
                      [str(self.root / 'mise.toml'), str(self.root / 'mise.default.toml')])
 
@@ -169,7 +181,7 @@ class SetupCliTests(unittest.TestCase):
       '--file=' + str(self.root / 'brew/Brewfile.default'),
     ])
     hermes_mise = [str(self.module.MISE), '-C', str(self.root), '-E', 'hermes']
-    hermes_task = [*hermes_mise, 'run', 'hermes:install']
+    hermes_task = [*hermes_mise, 'run', 'hermes:install', '--yes']
     hermes_trust = [*hermes_mise, 'trust', str(self.root / 'mise.hermes.toml')]
     for command in commands:
       if '-E' in command:
@@ -186,7 +198,7 @@ class SetupCliTests(unittest.TestCase):
     plists = ['/usr/bin/python3', str(self.root / 'scripts/hermes_plists.py')]
     self.assertLess(commands.index(hermes_task), commands.index(plists))
     self.assertLess(commands.index(plists), next(i for i, c in enumerate(commands) if 'defaults' in c))
-    self.assertEqual([c[-1] for c in commands if c[0] == '/bin/bash'], ['private', 'default'])
+    self.assertEqual([c[2] for c in commands if c[0] == '/bin/bash'], ['private', 'default'])
     for call in self.run.call_args_list:
       if 'install' in call.args[0]:
         self.assertEqual(call.kwargs['cwd'], self.home)
@@ -282,7 +294,10 @@ class SetupCliTests(unittest.TestCase):
     self.assertIn(download, commands)
     self.assertIn(['/bin/bash', '-c', installer], commands)
     self.assertLess(commands.index(download), commands.index(['/bin/bash', '-c', installer]))
-    self.assertTrue(any("'install'" in c.args[0] for c in self.prompt.call_args_list))
+    installer_call = next(c for c in self.run.call_args_list if c.args[0] == ['/bin/bash', '-c', installer])
+    self.assertEqual(installer_call.kwargs['env']['NONINTERACTIVE'], '1')
+    self.assertEqual(len(self.prompt.call_args_list), 2)
+    self.assertIn('Homebrew is missing', self.module.sys.stdout.getvalue())
     self.assertLess(commands.index(['/bin/bash', '-c', installer]), commands.index([str(self.module.BREW), 'install', 'mise', 'uv']))
     self.assertIn(f'eval "$({self.module.BREW} shellenv)"', self.module.sys.stdout.getvalue())
 
@@ -300,8 +315,7 @@ class SetupCliTests(unittest.TestCase):
         path.write_bytes(before)
 
   def test_declaration_changes_after_each_confirmation_stop_before_that_stage(self):
-    for word, changed in (('setup', 'brew/Brewfile.private'), ('trust', 'mise.private.toml'),
-                          ('apply', 'mise.toml')):
+    for word, changed in (('setup', 'brew/Brewfile.private'), ('apply', 'mise.toml')):
       with self.subTest(word=word):
         self.run.reset_mock()
         path = self.root / changed
@@ -315,7 +329,7 @@ class SetupCliTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'changed after confirmation'):
           self.invoke('private')
         commands = self.commands()
-        forbidden = {'setup': 'bundle', 'trust': 'trust', 'apply': '--yes'}[word]
+        forbidden = {'setup': 'bundle', 'apply': '--yes'}[word]
         if word == 'apply':
           self.assertFalse(any('dot' in c and forbidden in c for c in commands))
         else:
@@ -323,7 +337,7 @@ class SetupCliTests(unittest.TestCase):
         path.write_bytes(before)
 
   def test_cancelling_each_approval_does_not_run_the_declined_operation(self):
-    for word in ('setup', 'trust', 'apply'):
+    for word in ('setup', 'apply'):
       with self.subTest(word=word):
         self.run.reset_mock()
         self.prompt.side_effect = lambda prompt: 'no' if f"'{word}'" in prompt else self.confirm(prompt)
@@ -332,14 +346,12 @@ class SetupCliTests(unittest.TestCase):
         commands = self.commands()
         if word == 'setup':
           self.assertEqual(commands, [['/usr/bin/xcode-select', '-p']])
-        elif word == 'trust':
-          self.assertFalse(any('trust' in c for c in commands))
         else:
           self.assertEqual(commands[-1][-3:], ['dot', 'apply', '--dry-run'])
 
   def test_each_command_failure_stops_later_stages_and_reports_partial_completion(self):
     for failing in ('clt', 'sudo', 'bundle', 'trust', 'repos', 'dry-run', 'apply',
-                    'runtimes', 'hermes-trust', 'hermes-install', 'plist', 'defaults', 'supplement'):
+                    'runtimes', 'herdr', 'hermes-trust', 'hermes-install', 'plist', 'defaults', 'login-shell', 'supplement'):
       with self.subTest(failing=failing):
         self.run.reset_mock()
         self.module.sys.stdout.truncate(0)
@@ -355,6 +367,8 @@ class SetupCliTests(unittest.TestCase):
             'apply': 'dot' in command and '--yes' in command,
             'runtimes': command[-5:] == ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'],
             'hermes-trust': 'trust' in command and command[-1] == str(self.root / 'mise.hermes.toml'),
+            'herdr': 'herdr:plugins' in command,
+            'login-shell': command[-3:] == ['user', 'apply', '--yes'],
             'hermes-install': 'hermes:install' in command,
             'plist': command[0] == '/usr/bin/python3',
             'defaults': 'defaults' in command,
@@ -373,26 +387,22 @@ class SetupCliTests(unittest.TestCase):
         self.assertNotIn('Setup complete:', self.module.sys.stdout.getvalue())
         self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
 
-  def test_hermes_trust_cancellation_and_changed_files_stop_before_task(self):
-    for changed in (None, 'mise.hermes.toml', 'scripts/hermes-install.py'):
+  def test_hermes_files_changed_after_setup_confirmation_stop_before_task(self):
+    for changed in ('mise.hermes.toml', 'scripts/hermes-install.py'):
       with self.subTest(changed=changed):
         self.run.reset_mock()
-        path = self.root / changed if changed else None
-        before = path.read_bytes() if path else None
-        def confirm(prompt):
-          if 'Hermes lifecycle' in prompt:
-            if path:
-              path.write_text('changed after setup confirmation\n')
-            else:
-              return 'no'
-          return self.confirm(prompt)
-        self.prompt.side_effect = confirm
-        with self.assertRaisesRegex(ValueError, 'changed after confirmation|cancelled'):
+        path = self.root / changed
+        before = path.read_bytes()
+        def run(command, **kwargs):
+          if command[-3:] == ['dot', 'apply', '--yes']:
+            path.write_text('changed after setup confirmation\n')
+          return self.run_command(command, **kwargs)
+        self.run.side_effect = run
+        with self.assertRaisesRegex(ValueError, 'changed after confirmation'):
           self.invoke('private')
         self.assertFalse(any('hermes:install' in c or 'defaults' in c for c in self.commands()))
         self.assertFalse(any('trust' in c and c[-1] == str(self.root / 'mise.hermes.toml') for c in self.commands()))
-        if path:
-          path.write_bytes(before)
+        path.write_bytes(before)
 
   def test_dry_run_timeout_preserves_existing_home_and_does_not_apply(self):
     marker = self.home / 'unmanaged-file'
@@ -447,7 +457,7 @@ class SetupCliTests(unittest.TestCase):
     (self.root / 'scripts/hermes_plists.py').unlink()
     self.invoke('work')
     self.assertFalse(any('install' in c for c in self.commands()))
-    self.assertEqual([c[-1] for c in self.commands() if c[0] == '/bin/bash'], ['work'])
+    self.assertEqual([c[2] for c in self.commands() if c[0] == '/bin/bash'], ['work'])
     self.assertEqual([c[-1] for c in self.commands() if 'trust' in c], [str(self.root / 'mise.toml'), str(self.root / 'mise.work.toml')])
 
   def test_other_cwd_and_inherited_mise_configuration_cannot_expand_setup_scope(self):
