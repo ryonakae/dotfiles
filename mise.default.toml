@@ -220,3 +220,25 @@ domain = "com.apple.symbolichotkeys"
 key = "AppleSymbolicHotKeys"
 path = ["33"]
 value = { enabled = true, value = { type = "standard", parameters = [119, 13, 262144] } }
+
+[bootstrap.user]
+login_shell = "/opt/homebrew/bin/fish"
+
+[tasks."herdr:plugins"]
+description = "Install pinned Herdr plugins only when absent and register the Homebrew Zerdr"
+run = '''
+set -euo pipefail
+installed=$(/opt/homebrew/bin/herdr plugin list --json | /opt/homebrew/bin/jq -r '.result.plugins[].plugin_id')
+install() {
+  if grep -Fxq "$1" <<<"$installed"; then
+    echo "Herdr plugin $1 is already installed; leaving it unchanged."
+  else
+    /opt/homebrew/bin/herdr plugin install "$2" --ref "$3" --yes
+  fi
+}
+install ryonakae.agent-context ryonakae/herdr-agent-context 10b8ead9d86b2cbb7b13d87ef50dec4b87ee21cd
+install worktrunk devashish2203/herdr-worktrunk a3107ca566bafcd463bc138007a0c01051970784
+"$(/opt/homebrew/bin/brew --prefix ryonakae/tap/zerdr)/bin/zerdr" setup install
+'''
+shell = "bash -c"
+raw = true
