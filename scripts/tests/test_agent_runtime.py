@@ -515,9 +515,13 @@ class AgentRuntimeTests(unittest.TestCase):
             self.assertEqual(result.returncode, 23)
 
   def hermes_launcher(self, *, executable=True):
-    install = self.home / '.hermes/hermes-agent'
-    (install / 'venv/bin').mkdir(parents=True, exist_ok=True)
-    hermes = install / 'venv/bin/hermes'
+    install = self.home / 'Dev/private/hermes-agent'
+    (install / '.hermes/bin').mkdir(parents=True, exist_ok=True)
+    hermes = install / '.hermes/bin/hermes'
+    legacy = install / 'venv/bin/hermes'
+    legacy.parent.mkdir(parents=True, exist_ok=True)
+    legacy.write_text('#!/bin/sh\nprintf wrong-legacy-runtime\nexit 99\n')
+    legacy.chmod(0o755)
     hermes.write_text('#!' + sys.executable + '\n'
       'import json, os, sys\n'
       'print(json.dumps({"args": sys.argv[1:], "cwd": os.getcwd(), '
@@ -549,7 +553,7 @@ class AgentRuntimeTests(unittest.TestCase):
       with self.subTest(missing=missing):
         launcher = self.hermes_launcher(executable=False)
         if missing:
-          (self.home / '.hermes/hermes-agent/venv/bin/hermes').unlink()
+          (self.home / 'Dev/private/hermes-agent/.hermes/bin/hermes').unlink()
         self.program('hermes', '#!/bin/sh\nprintf wrong-hermes\n')
         result = subprocess.run(['/bin/sh', str(launcher)], env=self.env, cwd=self.project,
                                 capture_output=True, text=True, timeout=15)

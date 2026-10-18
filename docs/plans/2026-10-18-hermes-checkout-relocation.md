@@ -32,7 +32,7 @@
 
 review base: `adb75dd`
 
-- [ ] **dotfiles のパス・installer 追従**（`libexec/hermes`・`test_agent_runtime.py` 以外は実装済み。`test_hermes_install.py` 23件成功）: 次のファイルを変更する。
+- [x] **dotfiles のパス・installer 追従**（`test_hermes_install.py` 26件、`test_agent_runtime.py` 24件成功）: 次のファイルを変更する。
   - `mise.hermes.toml`: `[bootstrap.repos]` のキーを `"~/Dev/private/hermes-agent"` にする。
   - `config/.local/libexec/hermes`: exec 先を `$HOME/Dev/private/hermes-agent/.hermes/bin/hermes` にする。
   - `scripts/hermes-install.py`: `target` を新パスにし、Implementation Decisions のとおり stage 構成・完了判定・管理パスを現行 installer に合わせる。
@@ -40,7 +40,7 @@ review base: `adb75dd`
   - `scripts/tests/test_agent_runtime.py`: `hermes_launcher` の install ルートを新パスにする。旧パスの legacy launcher が選ばれないことの確認は、新旧の配置で意味が通る形に保つ。
   - 注意: `config/.pi/agent/settings.json` は stage しない。`config/.local/libexec/hermes` だけは、移行手順の手順4で編集する。
 - [x] **dotfiles 文書**: `docs/apps.md`（配置先、`venv/bin/hermes` の記述、「ブラウザ本体・cua-driver は追加導入しない」の記述）、`docs/troubleshooting.md`（Hermes 復旧手順を新パスと現行 stage `python-deps → products → complete` に更新し、`node-deps` の手順は削除）、`.agents/skills/dotfiles-setup/references/setup.md`（配置先、launcher の参照先、installer の stage の記述、「browser/cua-driver の追加導入を省き」の記述）を、現行の配置と stage、および agent-browser・cua-driver の固定版を PM に管理させる方針に合わせる。
-- [ ] **稼働環境の移行**: Safehouse 外で、`$SHELL` が fish の端末から実行する（herdr のペインは条件を満たす）。dotfiles の作業ツリーはシンボリックリンク経由で即座に稼働環境へ効くので、手順は次の順序を守る。
+- [x] **稼働環境の移行**: Safehouse 外で、`$SHELL` が fish の端末から実行する（herdr のペインは条件を満たす）。dotfiles の作業ツリーはシンボリックリンク経由で即座に稼働環境へ効くので、手順は次の順序を守る。
   1. 事前確認: `git -C ~/.hermes/hermes-agent status --short` が空であること。HEAD が `origin/ryonakae` に push 済みであること。上記2タスク（`config/.local/libexec/hermes` を除く）の編集と、その検証が済んでいること。
   2. `hermes-gateway stop`、`hermes-dashboard stop`。
   3. `mv ~/.hermes/hermes-agent ~/Dev/private/hermes-agent`。旧パスを cwd にしているシェルやセッションは、以後すべて絶対パスで操作する。
@@ -48,8 +48,9 @@ review base: `adb75dd`
   5. 新パスで installer の stage を順に実行する。
      - `bash ~/Dev/private/hermes-agent/scripts/install.sh --stage python-deps --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae`
      - 続けて同じ引数で `--stage products`、`--stage complete` を実行する。
+     - `products` 後も `~/.local/bin/hermes`・`hermes-acp`・`hermes-agent` が旧パスを指している場合は、この3ファイルを削除して `products` を再実行する。`expose_cli` は別の root を指す既存の wrapper を上書きしない（`hermes_cli/_launchers.py` の `_owns_launcher`）。（実施時に判明し、ユーザーの承認を得て追加）
   6. `hermes-gateway start`、`hermes-dashboard start`。
-- [ ] **ローカルスクリプトの固定パス**: `~/.hermes/scripts/tests/test_restart_gateway_from_slash.py:18` の `HERMES_SOURCE` を新パスにする（git 管理外のファイル）。
+- [x] **ローカルスクリプトの固定パス**: `~/.hermes/scripts/tests/test_restart_gateway_from_slash.py:18` の `HERMES_SOURCE` を新パスにする（git 管理外のファイル）。
 
 ## 切り戻し
 
@@ -58,7 +59,7 @@ review base: `adb75dd`
 1. `hermes-gateway stop`、`hermes-dashboard stop`
 2. dotfiles の今回の変更を元に戻す（未コミットなら該当ファイルを、コミット済みなら `git revert` で）。`libexec/hermes` は `.hermes/bin/hermes` 方式のまま旧パスを指す状態に戻す。
 3. `mv ~/Dev/private/hermes-agent ~/.hermes/hermes-agent`
-4. 旧パスで `python-deps` → `products` stage を実行し、install state と `.hermes/bin/hermes`、`~/.local/bin/hermes*` を旧パスに戻す。旧 install state が pruner に消されていなければ、`python-deps` は既存の環境を検証するだけで終わる。
+4. 新パスを指す `~/.local/bin/hermes`・`hermes-acp`・`hermes-agent` を削除し、旧パスで `python-deps` → `products` stage を実行して、install state と `.hermes/bin/hermes`、`~/.local/bin/hermes*` を旧パスに戻す。旧 install state が pruner に消されていなければ、`python-deps` は既存の環境を検証するだけで終わる。
 5. `hermes-gateway start`、`hermes-dashboard start`
 
 ## Final Validation
@@ -71,5 +72,6 @@ review base: `adb75dd`
   - 移設前の同じ範囲の基準値: 1054 passed / 698 failed、ガードによる失敗 720件（2026-10-18、`8631ce1889`）。
   - 新しい install key で初めて実行するときは、test-environment が作り直されるので時間がかかる。
   - これ以外の失敗が残る場合は一覧にして、ユーザーに報告する。
+  - 結果（`8631ce1889`、新パス）: 1752 passed / 65 failed。`manifest.json` のガードは0件。65件はすべて移設前から失敗していたテストで（新しい失敗はない）、state.db の holder 判定・修復・保守系に集中している。残る136件のガード表示（多くはログ行の重複）は `~/.hermes/logs/gateway.log` で、稼働中のゲートウェイが開いているファイルを holder 判定（`hermes_state_holders.py:558`）が走査したもの。checkout の位置とは関係しない。
 
 > 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
