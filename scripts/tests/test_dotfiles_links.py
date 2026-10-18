@@ -47,7 +47,7 @@ class DotfilesLinksTests(unittest.TestCase):
         path.write_text('')
     declaration = tomllib.loads((self.repo / 'mise.default.toml').read_text())
     for entry in declaration['dotfiles'].values():
-      source = entry['source']
+      source = entry if isinstance(entry, str) else entry['source']
       if source.startswith('~/.local/share/'):
         path = self.home / source.removeprefix('~/')
         path.mkdir(parents=True, exist_ok=True)

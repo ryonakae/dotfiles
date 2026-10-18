@@ -9,7 +9,7 @@
 | 通常 CLI / GUI / App Store アプリ | `brew/Brewfile.{default,private,work}`。標準 Homebrew Bundle |
 | 通常設定・自作スクリプト・自作スキル | `config/`。構成別 `mise.<name>.toml` の配置宣言 |
 | 共通 runtime | `config/.config/mise/config.base.toml`。mise の exact 版 |
-| 外部スキル・fish / Yazi plugin | 構成別 mise の repos と選択配置宣言 |
+| 外部スキル・fish / Yazi plugin | 構成別 mise の repos と配置宣言（fish は glob、他は選択） |
 | macOS preferences | 構成別 mise の defaults と `scripts/macos-settings.sh` |
 | Hermes 本体 | `mise.hermes.toml` の repos・task、指定 fork の標準 shell installer |
 | Hermes launcher / wrapper / plist | Git 正本の直接リンクと `scripts/hermes_plists.py` の通常ファイル配置 |
@@ -56,6 +56,7 @@
 - アプリ・設定ディレクトリ単位の `symlink-each` / Git manifest を使う。HOME 一括配置、親ディレクトリ置換、自前コピー運用は追加しない。
 - 自作の配布対象は Git 追跡ファイル。example・秘密・実行時状態を含めない。`exclude` は配布不要物と別宣言の対象に限る。
 - 所有記録の欠落・不正時には配置先全体の走査が残る。`exclude` で初回走査が止まると仮定せず、内部状態を手動生成しない。
+- glob の source は apply 開始時に展開される。同じ apply で作る宛先を source にすると2回目まで反映されないため使わない。bootstrap では repos 取得後に再展開されるので、clone 済み checkout は source にできる。
 - 本文編集は即時反映。manifest 内の追跡ファイル増減は apply、新規宛先は宣言も更新する。削除・改名は宣言を消す前に標準 unapply。
 - 未知の実体・リンクの自動拒否を仮定しない。dry-run と人による確認を通し、force や一括退避を使わない。アプリがリンクを通常ファイルへ置換した場合も保持して確認する。
 - Karabiner は[公式仕様](https://karabiner-elements.pqrs.org/docs/manual/misc/configuration-file-path/)に合わせてディレクトリ全体を symlink。既存設定の保全・サーバー再起動は別承認とし、apply に再起動を組み込まない。
@@ -76,6 +77,7 @@
 
 - Homebrew fish と plugin の初期化を使い、対話 mise / zoxide の二重 activation を避ける。非対話・launchd は明示 PATH と mise shims。プロジェクト版選択と起動 cwd を維持する。
 - fish の bobthefish / fzf、Yazi の git / smart-enter / full-border は setup 時の最新版更新を許容する。宣言済み方式と別の manager を重ねず、読み込みまで確認する。
+- fish plugin は `~/.local/share/fish-plugins/` の checkout を glob で全て配置するため、追加は repos 宣言だけでよい。Yazi は共通 checkout から使う plugin だけ明示配置する。
 - runtime の exact pin、Ruby `compile = true` とビルド依存を維持する。AWS CLI は `aqua:aws/aws-cli` と `symlink_bins = true`、同梱 Python を使い、Homebrew へ重複宣言しない。`~/.aws` は保持する。
 - ログインシェルは `mise.default.toml` の `[bootstrap.user]` で宣言し、`/etc/shells` の追記と chsh は mise に任せる。`fish_variables`・履歴を管理しない。Cua installer の既存 PATH 追加、`~/.local/bin` や universal PATH を一括削除・変更しない。
 - 最新版・解決先・使用版・管理元提供版を分ける。同名の別ソフトに注意し、更新して希望版に届かない場合は対応を相談する。
