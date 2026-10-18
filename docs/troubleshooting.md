@@ -96,34 +96,33 @@ mise -C ~/dotfiles -E hermes run hermes:install
 取得元・branch・HEAD・作業差分を確認する。想定外の origin、別 branch、dirty checkout、symlink があれば、その変更の扱いを決めるまで進めない。
 
 ```fish
-git -C ~/.hermes/hermes-agent remote get-url origin
-git -C ~/.hermes/hermes-agent branch --show-current
-git -C ~/.hermes/hermes-agent rev-parse HEAD
-git -C ~/.hermes/hermes-agent status --short
+git -C ~/Dev/private/hermes-agent remote get-url origin
+git -C ~/Dev/private/hermes-agent branch --show-current
+git -C ~/Dev/private/hermes-agent rev-parse HEAD
+git -C ~/Dev/private/hermes-agent status --short
 ```
 
-想定する取得元は `https://github.com/ryonakae/hermes-agent.git`、branch は `ryonakae`。取得途中の失敗や venv 作成失敗では、既存実体を削除・再作成せず個別に確認する。標準 installer の `venv` 段階は既存 venv を削除するため、再実行しない。
+想定する取得元は `https://github.com/ryonakae/hermes-agent.git`、branch は `ryonakae`。取得途中の失敗では、既存実体を削除・再作成せず個別に確認する。
 
-checkout と venv が正常で、Python 依存の導入だけ失敗した例では、原因を解消してから同じ HEAD の installer を次のように呼ぶ。通常端末で実行し、利用中の CLI・サービスは先に停止する。
+checkout が正常で、依存の導入だけ失敗した例では、原因を解消してから同じ HEAD の installer を次のように呼ぶ。通常端末で実行し、利用中の CLI・サービスは先に停止する。
 
 ```fish
-bash ~/.hermes/hermes-agent/scripts/install.sh --stage python-deps \
-  --dir ~/.hermes/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+bash ~/Dev/private/hermes-agent/scripts/install.sh --stage python-deps \
+  --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae
 ```
 
-成功したら未完了の `node-deps` を実行する。そこだけが失敗していた場合は、Python 段階を繰り返さずここから再開する。
+成功したら未完了の `products` を実行し、launcher と `~/.local/bin/hermes*` を生成する。そこだけが失敗していた場合は、依存の段階を繰り返さずここから再開する。PATH 追記先が fish になるよう `SHELL` を固定する。
 
 ```fish
-bash ~/.hermes/hermes-agent/scripts/install.sh --stage node-deps \
-  --dir ~/.hermes/hermes-agent --hermes-home ~/.hermes --branch ryonakae \
-  --skip-browser --skip-computer-use
+env SHELL=/opt/homebrew/bin/fish bash ~/Dev/private/hermes-agent/scripts/install.sh --stage products \
+  --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae
 ```
 
-対象の依存導入がすべて成功してから完了記録を更新し、初回導入 task が完了済みと判定することを確認する。
+対象の段階がすべて成功してから完了記録を更新し、初回導入 task が完了済みと判定することを確認する。
 
 ```fish
-bash ~/.hermes/hermes-agent/scripts/install.sh --stage complete \
-  --dir ~/.hermes/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+bash ~/Dev/private/hermes-agent/scripts/install.sh --stage complete \
+  --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae
 mise -C ~/dotfiles -E hermes run hermes:install
 ```
 
@@ -153,7 +152,7 @@ setup のログインシェル変更が失敗した場合は、`/opt/homebrew/bi
 
 - Homebrew：formula / cask の提供版と実際の解決先を確認する。Brewfile は全依存の版固定ではない。
 - mise：共通設定の exact pin と `mise which` を確認する。個別プロジェクトの設定が優先される場合がある。
-- Hermes：`git -C ~/.hermes/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認する。指定 checkout の `venv/bin/hermes` を使い、別の `hermes` が PATH で先に選ばれていないか確認する。
+- Hermes：`git -C ~/Dev/private/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認する。指定 checkout の `.hermes/bin/hermes` を使い、別の `hermes` が PATH で先に選ばれていないか確認する。
 
 上流最新版、管理元の提供版、導入済み版を区別する。復元のためだけに包括的な更新を実行しない。
 

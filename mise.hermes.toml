@@ -1,5 +1,5 @@
 [bootstrap.repos]
-"~/.hermes/hermes-agent" = { url = "https://github.com/ryonakae/hermes-agent.git", ref = "ryonakae" }
+"~/Dev/private/hermes-agent" = { url = "https://github.com/ryonakae/hermes-agent.git", ref = "ryonakae" }
 
 [tasks."hermes:install"]
 description = "Install Hermes using its standard installer stages, only when absent"

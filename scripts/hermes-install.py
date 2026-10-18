@@ -12,19 +12,18 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 MISE = Path('/opt/homebrew/bin/mise')
+LOGIN_SHELL = '/opt/homebrew/bin/fish'
 ORIGIN = 'https://github.com/ryonakae/hermes-agent.git'
 BRANCH = 'ryonakae'
 
 
-def managed_paths(target):
-  directories = [target.parent, target, target / '.git', target / 'scripts',
-                 target / 'venv', target / 'venv/bin', target / 'node_modules',
-                 target / 'ui-tui', target / 'ui-tui/node_modules',
-                 target.parent / 'bin', target.parent / 'node']
-  files = [target / 'scripts/install.sh', target / 'venv/bin/hermes',
+def managed_paths(target, hermes_home):
+  directories = [hermes_home, hermes_home / 'tools', target.parent, target, target / '.git',
+                 target / 'scripts', target / '.hermes', target / '.hermes/bin']
+  files = [target / 'scripts/install.sh', target / '.hermes/bin/hermes',
            target / '.git/config', target / '.git/HEAD',
            target / '.hermes-bootstrap-complete', target / '.hermes-bootstrap-complete.tmp',
-           target / '.install_method', target.parent / 'bin/uv']
+           target / '.install_method']
   for path in [*directories, *files]:
     for ancestor in (path, *path.parents):
       if ancestor.is_symlink():
@@ -67,9 +66,9 @@ def completed(target, head):
     datetime.strptime(record['completedAt'], '%Y-%m-%dT%H:%M:%S.%fZ')
   except (OSError, ValueError, KeyError, TypeError, AttributeError) as error:
     raise ValueError(f'incomplete checkout or unknown completion marker: {error}; inspect before resuming standard installer stages') from error
-  executable = target / 'venv/bin/hermes'
+  executable = target / '.hermes/bin/hermes'
   if not executable.is_file() or not os.access(executable, os.X_OK):
-    raise ValueError('incomplete checkout: venv/bin/hermes is not executable')
+    raise ValueError('incomplete checkout: .hermes/bin/hermes is not executable')
 
 
 def main():
@@ -86,7 +85,8 @@ def main():
     home = Path(os.environ.get('HOME', ''))
     if not home.is_absolute() or home != Path(pwd.getpwuid(os.getuid()).pw_dir):
       raise ValueError('HOME must match the current user')
-    target = home / '.hermes/hermes-agent'
+    hermes_home = home / '.hermes'
+    target = home / 'Dev/private/hermes-agent'
     if any(os.environ.get(key) for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_INDEX_FILE')):
       raise ValueError('unset Git directory/worktree/index overrides before operating on Hermes')
     environment = {key: value for key, value in os.environ.items()
@@ -97,7 +97,7 @@ def main():
       MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'mise.toml'),
       MISE_SYSTEM_CONFIG_FILE=str(ROOT / 'mise.toml'),
     )
-    managed_paths(target)
+    managed_paths(target, hermes_home)
     exists = os.path.lexists(target)
     if exists:
       completed(target, checkout(target, environment))
@@ -113,7 +113,7 @@ def main():
     print('No services are stopped or started; stop any active Hermes services explicitly before updating.')
     if not args.yes and input(f"Type '{args.operation}' to continue: ").strip() != args.operation:
       raise ValueError('cancelled')
-    managed_paths(target)
+    managed_paths(target, hermes_home)
     if exists:
       completed(target, checkout(target, environment))
       (target / '.hermes-bootstrap-complete').unlink()
@@ -124,29 +124,28 @@ def main():
     subprocess.run([str(MISE), '-C', str(ROOT), '-E', 'hermes',
                     'bootstrap', 'repos', *repos, '--yes'],
                    cwd=ROOT, env=environment, check=True)
-    managed_paths(target)
+    managed_paths(target, hermes_home)
     head = checkout(target, environment)
     print(f'Using Hermes revision {head}')
-    stages = ('python-deps', 'node-deps', 'complete') if exists else ('venv', 'python-deps', 'node-deps', 'complete')
+    stages = ('python-deps', 'products', 'complete') if exists else ('venv', 'python-deps', 'products', 'complete')
     if not args.yes and input(f"Type '{args.operation}' to run {', '.join(stages)} at revision {head}: ").strip() != args.operation:
       raise ValueError('installer stages cancelled; checkout is incomplete, inspect before resuming')
-    managed_paths(target)
+    managed_paths(target, hermes_home)
     if checkout(target, environment) != head:
       raise ValueError('checkout HEAD changed during revision confirmation')
     for stage in stages:
       command = ['/bin/bash', str(target / 'scripts/install.sh'), '--stage', stage,
-                 '--dir', str(target), '--branch', BRANCH, '--hermes-home', str(home / '.hermes')]
-      if stage == 'node-deps':
-        command += ['--skip-browser', '--skip-computer-use']
-      managed_paths(target)
-      if stage == 'venv' and os.path.lexists(target / 'venv'):
-        raise ValueError('existing venv; do not recreate automatically')
+                 '--dir', str(target), '--branch', BRANCH, '--hermes-home', str(hermes_home)]
+      managed_paths(target, hermes_home)
+      # products appends a PATH line to the rc file of $SHELL; during setup that is still the shell
+      # from before chsh, while fish already carries the line.
+      stage_environment = dict(environment, SHELL=LOGIN_SHELL) if stage == 'products' else environment
       if stage == 'complete':
         if checkout(target, environment) != head:
           raise ValueError('checkout HEAD changed during dependency synchronization')
       print(f'Hermes installer stage: {stage}', flush=True)
-      subprocess.run(command, cwd=target, env=environment, check=True)
-    managed_paths(target)
+      subprocess.run(command, cwd=target, env=stage_environment, check=True)
+    managed_paths(target, hermes_home)
     completed(target, checkout(target, environment))
     print('Hermes installation complete. Additional optional features are not verified.')
   except (ValueError, OSError, subprocess.SubprocessError, EOFError, KeyboardInterrupt) as error:
@@ -160,9 +159,9 @@ def main():
         marker.unlink()
       except (ValueError, OSError) as marker_error:
         print(f'Completion marker not removed; inspect unknown state: {marker_error}', file=sys.stderr)
-    if stage in ('venv', 'python-deps', 'node-deps', 'complete'):
+    if stage in ('venv', 'python-deps', 'products', 'complete'):
       print(f'Inspect this stage and any partial changes before manually resuming with the standard installer: {shlex.join(command)}', file=sys.stderr)
-      print('Run later stages only after this stage succeeds; run complete last. Do not rerun venv over an existing environment.', file=sys.stderr)
+      print('Run later stages only after this stage succeeds; run complete last.', file=sys.stderr)
     raise SystemExit(130 if isinstance(error, KeyboardInterrupt) else 1)
 
 

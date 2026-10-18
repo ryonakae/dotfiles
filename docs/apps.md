@@ -79,7 +79,7 @@ gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` �
 
 共通 API キー、Hermes の認証・設定を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
 
-Hermes 本体は mise task から指定 fork の標準 shell installer を呼んで導入する。取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/.hermes/hermes-agent`。`private` を選択した通常 setup は未導入時だけ導入し、導入済み本体は更新しない。
+Hermes 本体は mise task から指定 fork の標準 shell installer を呼んで導入する。取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/Dev/private/hermes-agent`（データの置き場 `~/.hermes` の外）。`private` を選択した通常 setup は未導入時だけ導入し、導入済み本体は更新しない。
 
 本体だけを初回導入する場合は、通常端末でルートと Hermes 用の宣言を確認してから実行する。
 
@@ -89,9 +89,9 @@ mise -C ~/dotfiles -E hermes trust ~/dotfiles/mise.hermes.toml
 mise -C ~/dotfiles -E hermes run hermes:install
 ```
 
-表示された取得元・revision・導入段階を確認して進める。installer は専用 uv・venv と依存を管理する。ブラウザ本体・cua-driver・Desktop は追加導入しない。途中状態や未知の実体で止まった場合は、[Hermes の復旧](troubleshooting.md#hermes-の導入更新が途中で止まった)へ進む。
+表示された取得元・revision・導入段階を確認して進める。installer は専用 uv・Python と依存を管理する。agent-browser・cua-driver は Hermes が固定した版を installer に管理させる（cua-driver は PATH の別実体を使わないため）。Desktop は追加導入しない。途中状態や未知の実体で止まった場合は、[Hermes の復旧](troubleshooting.md#hermes-の導入更新が途中で止まった)へ進む。
 
-起動 wrapper は mise の直接リンク、plist は setup の配置処理がユーザー所有の通常ファイルとして配置する。installer に PATH・設定・サービスの生成は任せない。`hermes gateway install` で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
+起動 wrapper は mise の直接リンク、plist は setup の配置処理がユーザー所有の通常ファイルとして配置する。installer の `products` 段階は checkout 内の `.hermes/bin/hermes` と `~/.local/bin/hermes*` を生成する。この段階の PATH 追記は fish の既存設定で不要になるよう、task は `SHELL` を fish に固定して実行する。installer に設定・サービスの生成は任せない。`hermes gateway install` で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
 
 起動定義だけを再配置する場合は、通常端末から引数なしで実行する。
 
@@ -143,9 +143,9 @@ Restart on crash (plist): enabled
 mise -C ~/dotfiles -E hermes run hermes:update
 ```
 
-対象と表示された revision・段階を確認して進める。task は Hermes の repo だけを更新し、既存 venv に依存を再導入する。dirty checkout・取得元の不一致・未完了状態では停止する。`hermes update` や包括的な `mise upgrade`、repos 更新だけでの本体更新は使わない。
+対象と表示された revision・段階を確認して進める。task は Hermes の repo だけを更新し、既存の依存環境を同期して launcher を再生成する。dirty checkout・取得元の不一致・未完了状態では停止する。`hermes update` や包括的な `mise upgrade`、repos 更新だけでの本体更新は使わない。
 
-成功後に `git -C ~/.hermes/hermes-agent rev-parse HEAD` と CLI の起動を確認する。`~/.local/libexec/hermes` は checkout 内の `venv/bin/hermes` を実行し、起動時の導入・更新は行わない。依存の fallback が表示された場合は警告を確認する。終了0は全追加機能の動作保証ではない。
+成功後に `git -C ~/Dev/private/hermes-agent rev-parse HEAD` と CLI の起動を確認する。`~/.local/libexec/hermes` は checkout 内の `.hermes/bin/hermes` を実行し、起動時の導入・更新は行わない。依存の fallback が表示された場合は警告を確認する。終了0は全追加機能の動作保証ではない。
 
 更新のために止めたサービスだけ、対象ユーザーの GUI ドメインを操作できる端末から `hermes-gateway start` / `hermes-dashboard start` で再開する。元から停止中だったサービスは起動しない。task はサービスを操作せず、失敗時に自動 rollback もしない。
 

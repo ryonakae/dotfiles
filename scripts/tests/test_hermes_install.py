@@ -24,7 +24,6 @@ while [ "$#" -gt 0 ]; do
     --branch) branch="$2"; shift 2;;
     --dir) dir="$2"; shift 2;;
     --hermes-home) test "$2" = "$HOME/.hermes"; shift 2;;
-    --skip-browser|--skip-computer-use) shift;;
     *) exit 89;;
   esac
 done
@@ -32,13 +31,15 @@ printf '%s\\n' "$stage" >> "$HOME/stages.log"
 if [ "$stage" = "${FIXTURE_FAIL_STAGE:-}" ]; then exit 27; fi
 case "$stage" in
   venv)
-    test ! -e "$dir/venv"
-    mkdir -p "$dir/venv/bin"
-    printf '#!/bin/sh\\nexit 0\\n' > "$dir/venv/bin/hermes"
-    chmod +x "$dir/venv/bin/hermes";;
-  python-deps|node-deps)
-    test -x "$dir/venv/bin/hermes"
-    if [ "$stage" = node-deps ] && [ "${FIXTURE_DIRTY_NODE:-}" = 1 ]; then
+    mkdir -p "$HOME/.hermes/tools";;
+  python-deps)
+    test -d "$HOME/.hermes/tools";;
+  products)
+    test "$SHELL" = /opt/homebrew/bin/fish || exit 87
+    mkdir -p "$dir/.hermes/bin"
+    printf '#!/bin/sh\\nexit 0\\n' > "$dir/.hermes/bin/hermes"
+    chmod +x "$dir/.hermes/bin/hermes"
+    if [ "${FIXTURE_DIRTY_PRODUCTS:-}" = 1 ]; then
       printf 'unexpected generated change\\n' > "$dir/revision"
     fi;;
   complete)
@@ -81,11 +82,12 @@ class HermesInstallTests(unittest.TestCase):
     (self.remote / 'scripts').mkdir()
     (self.remote / 'scripts/install.sh').write_text(INSTALLER)
     (self.remote / '.gitignore').write_text(
-      '/venv/\n/node_modules/\n.hermes-bootstrap-complete\n.install_method\n')
+      '/.hermes/\n.hermes-bootstrap-complete\n.install_method\n')
     (self.remote / 'revision').write_text('initial\n')
     self.git('-C', self.remote, 'add', '.')
     self.git('-C', self.remote, 'commit', '--quiet', '-m', 'Initial fixture')
-    self.target = self.home / '.hermes/hermes-agent'
+    self.target = self.home / 'Dev/private/hermes-agent'
+    self.launcher = self.target / '.hermes/bin/hermes'
     self.marker = self.target / '.hermes-bootstrap-complete'
     self.log = self.home / 'stages.log'
     (self.root / 'mise.toml').write_text('[settings]\nexperimental = true\n')
@@ -155,17 +157,16 @@ class HermesInstallTests(unittest.TestCase):
 
   def test_fresh_install_uses_standard_stages_and_marker(self):
     self.assert_ok(self.invoke())
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps', 'complete'])
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete'])
     record = json.loads(self.marker.read_text())
     self.assertEqual(record['pinnedCommit'], self.git('-C', self.target, 'rev-parse', 'HEAD'))
     self.assertEqual(record['pinnedBranch'], 'ryonakae')
-    self.assertTrue(os.access(self.target / 'venv/bin/hermes', os.X_OK))
+    self.assertTrue(os.access(self.launcher, os.X_OK))
     commands = [command for command, _ in self.commands]
     self.assertIn([str(MISE), '-C', str(self.root), '-E', 'hermes',
                    'bootstrap', 'repos', 'apply', '--yes'], commands)
-    node = next(c for c in commands if 'node-deps' in c)
-    self.assertIn('--skip-browser', node)
-    self.assertIn('--skip-computer-use', node)
+    # PM manages Hermes' pinned agent-browser / cua-driver; declining them disables computer use.
+    self.assertFalse(any(flag in c for c in commands for flag in ('--skip-browser', '--skip-computer-use')))
     for forbidden in ('prerequisites', 'repository', 'path', 'config', 'setup', 'gateway', 'desktop'):
       self.assertFalse(any('--stage' in c and c[c.index('--stage') + 1] == forbidden for c in commands))
 
@@ -177,32 +178,29 @@ class HermesInstallTests(unittest.TestCase):
     self.assert_ok(self.invoke(answer='not needed'))
     self.assertEqual(self.marker.read_bytes(), before)
     self.assertEqual(self.git('-C', self.target, 'rev-parse', 'HEAD'), head)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps', 'complete'])
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete'])
     self.assertFalse(any(c[0] in (str(MISE), '/bin/bash') for c, _ in self.commands))
 
-  def test_explicit_update_advances_ref_and_preserves_existing_venv(self):
+  def test_explicit_update_advances_ref_without_rerunning_venv(self):
     self.assert_ok(self.invoke())
-    executable = self.target / 'venv/bin/hermes'
-    before = executable.stat().st_ino
     updated = self.advance()
     self.assert_ok(self.invoke('update'))
     self.assertEqual(self.git('-C', self.target, 'rev-parse', 'HEAD'), updated)
-    self.assertEqual(executable.stat().st_ino, before)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps', 'complete',
-                                    'python-deps', 'node-deps', 'complete'])
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete',
+                                    'python-deps', 'products', 'complete'])
     self.assertEqual(json.loads(self.marker.read_text())['pinnedCommit'], updated)
     self.assertTrue(any(c[-3:] == ['update', str(self.target), '--yes'] for c, _ in self.commands))
 
   def test_symlink_managed_paths_stop_even_for_completed_install(self):
     self.assert_ok(self.invoke())
-    for relative in ('.hermes', '.hermes/hermes-agent',
-                     '.hermes/hermes-agent/scripts',
-                     '.hermes/hermes-agent/scripts/install.sh',
-                     '.hermes/hermes-agent/.git',
-                     '.hermes/hermes-agent/venv',
-                     '.hermes/hermes-agent/venv/bin',
-                     '.hermes/hermes-agent/venv/bin/hermes',
-                     '.hermes/hermes-agent/.hermes-bootstrap-complete'):
+    for relative in ('.hermes', '.hermes/tools', 'Dev', 'Dev/private', 'Dev/private/hermes-agent',
+                     'Dev/private/hermes-agent/scripts',
+                     'Dev/private/hermes-agent/scripts/install.sh',
+                     'Dev/private/hermes-agent/.git',
+                     'Dev/private/hermes-agent/.hermes',
+                     'Dev/private/hermes-agent/.hermes/bin',
+                     'Dev/private/hermes-agent/.hermes/bin/hermes',
+                     'Dev/private/hermes-agent/.hermes-bootstrap-complete'):
       with self.subTest(path=relative):
         path = self.home / relative
         saved = self.base / 'saved'
@@ -260,21 +258,20 @@ class HermesInstallTests(unittest.TestCase):
       self.assertEqual(path.read_text(), 'local work\n')
       self.assertEqual(self.marker.read_bytes(), valid)
 
-  def test_incomplete_checkout_never_recreates_existing_venv(self):
+  def test_incomplete_checkout_is_not_resumed_automatically(self):
     self.assert_ok(self.invoke())
     self.marker.unlink()
-    executable = self.target / 'venv/bin/hermes'
-    before = executable.stat().st_ino
+    before = self.launcher.stat().st_ino
     for mode in ('install', 'update'):
       self.assertNotEqual(self.invoke(mode), 0)
       self.assertIn('incomplete', self.output.getvalue())
       self.assertFalse(any(c[0] in (str(MISE), '/bin/bash') for c, _ in self.commands))
-      self.assertEqual(executable.stat().st_ino, before)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps', 'complete'])
+      self.assertEqual(self.launcher.stat().st_ino, before)
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete'])
 
   def test_non_executable_entrypoint_is_not_treated_as_complete(self):
     self.assert_ok(self.invoke())
-    (self.target / 'venv/bin/hermes').chmod(0o644)
+    self.launcher.chmod(0o644)
     for mode in ('install', 'update'):
       self.assertNotEqual(self.invoke(mode), 0)
       self.assertIn('executable', self.output.getvalue())
@@ -287,19 +284,17 @@ class HermesInstallTests(unittest.TestCase):
     self.assertIn('python-deps', self.output.getvalue())
     self.assertFalse(self.marker.exists())
     self.assertEqual(self.git('-C', self.target, 'rev-parse', 'HEAD'), head)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps', 'complete', 'python-deps'])
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete', 'python-deps'])
     self.assertNotEqual(self.invoke(), 0)
     self.assertFalse(any(c[0] in (str(MISE), '/bin/bash') for c, _ in self.commands))
 
   def test_failed_fresh_stage_stops_without_retry_or_marker(self):
-    self.assertNotEqual(self.invoke(FIXTURE_FAIL_STAGE='node-deps'), 0)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps'])
+    self.assertNotEqual(self.invoke(FIXTURE_FAIL_STAGE='products'), 0)
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products'])
     self.assertFalse(self.marker.exists())
-    self.assertIn('node-deps', self.output.getvalue())
-    before = (self.target / 'venv/bin/hermes').stat().st_ino
+    self.assertIn('products', self.output.getvalue())
     self.assertNotEqual(self.invoke(), 0)
-    self.assertEqual((self.target / 'venv/bin/hermes').stat().st_ino, before)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps'])
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products'])
 
   def test_diverged_history_stops_standard_update_without_reset(self):
     self.assert_ok(self.invoke())
@@ -314,7 +309,7 @@ class HermesInstallTests(unittest.TestCase):
     self.assertEqual(self.git('-C', self.target, 'rev-parse', 'HEAD'), local)
     self.assertEqual((self.target / 'revision').read_text(), 'local commit\n')
     self.assertFalse(self.marker.exists())
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps', 'complete'])
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete'])
 
   def test_revision_and_stages_are_confirmed_before_installer_execution(self):
     self.assertNotEqual(self.invoke(answers=['install', 'no']), 0)
@@ -322,7 +317,7 @@ class HermesInstallTests(unittest.TestCase):
     self.assertTrue(any(head in prompt and 'venv' in prompt and 'complete' in prompt
                         for prompt in self.prompts))
     self.assertEqual(self.stages(), [])
-    self.assertFalse((self.target / 'venv').exists())
+    self.assertFalse(self.launcher.exists())
     self.assertFalse(self.marker.exists())
     self.assertNotEqual(self.invoke(), 0)
     self.assertEqual(self.prompts, [])
@@ -360,7 +355,7 @@ class HermesInstallTests(unittest.TestCase):
     before = self.git('-C', self.target, 'rev-parse', 'HEAD')
     source = (ROOT / 'mise.default.toml').read_text()
     declaration = tomllib.loads(source)
-    self.assertNotIn('~/.hermes/hermes-agent', declaration['bootstrap']['repos'])
+    self.assertNotIn('~/Dev/private/hermes-agent', declaration['bootstrap']['repos'])
     for branch in ('main', 'master'):
       self.git('-C', self.remote, 'branch', branch)
     for repository in declaration['bootstrap']['repos'].values():
@@ -406,8 +401,8 @@ class HermesInstallTests(unittest.TestCase):
     self.assertEqual(self.prompts, [])
 
   def test_unexpected_dependency_changes_are_preserved_without_completing(self):
-    self.assertNotEqual(self.invoke(FIXTURE_DIRTY_NODE='1'), 0)
-    self.assertEqual(self.stages(), ['venv', 'python-deps', 'node-deps'])
+    self.assertNotEqual(self.invoke(FIXTURE_DIRTY_PRODUCTS='1'), 0)
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products'])
     self.assertEqual((self.target / 'revision').read_text(), 'unexpected generated change\n')
     self.assertFalse(self.marker.exists())
 
@@ -431,7 +426,7 @@ class HermesInstallTests(unittest.TestCase):
     sentinels = []
     for name in ('.hermes/config.yaml', '.hermes/.env', '.hermes/memories/local',
                  '.hermes/sessions/local', '.hermes/hooks/local', '.hermes/cron/local',
-                 '.hermes/skills/local', '.zshrc', '.bashrc',
+                 '.hermes/skills/local', '.zshrc', '.zprofile', '.bashrc',
                  'Library/LaunchAgents/ai.hermes.gateway.plist',
                  'Library/LaunchAgents/ai.hermes.dashboard.plist'):
       path = self.home / name
