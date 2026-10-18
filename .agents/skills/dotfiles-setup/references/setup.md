@@ -88,7 +88,7 @@
 
 - 専用 mise task から `ryonakae/hermes-agent` の `ryonakae` ブランチの標準 installer を呼ぶ。checkout は `~/Dev/private/hermes-agent`（データの置き場 `~/.hermes` の外）に置く。独自 plugin・依存ビルド処理は追加しない。通常 setup は初回だけ、更新は別 task。dirty・未知・途中状態では停止し、復旧は[標準段階の手動実行](../../../../docs/troubleshooting.md#hermes-の導入更新が途中で止まった)で行う。
 - 初回だけ `venv` 段階（Python の準備）を実行し、更新では依存の同期から始める。標準完了 marker は操作前に無効化し、全対象段階の成功後だけ作成する。自動 stash/reset・retry・rollback は行わず、同時 setup/install/update は避ける。
-- installer の `python-deps`・`products`・`complete` 段階を使い、設定・gateway・Desktop 段階は呼ばない。`products` は launcher と `~/.local/bin/hermes*` を生成し、PATH 追記が fish の既存設定で不要になるよう `SHELL` を fish に固定して呼ぶ。専用 uv/runtime は標準 installer に任せ、共通 runtime の exact pin を変えない。agent-browser・cua-driver は Hermes が固定した版を installer に管理させ（cua-driver は PATH の別実体を使わない）、依存 fallback の警告は隠さない。
+- installer の `python-deps`・`products`・`complete` 段階を使い、`config`（初期設定の生成）・gateway・Desktop 段階は呼ばない。`products` は launcher と `~/.local/bin/hermes*` の生成、skills・profile の同期、`config.yaml` の移行を行う。PATH 追記が fish の既存設定で不要になるよう `SHELL` を fish に固定して呼び、`config.fish` に `~/.local/bin` の `fish_add_path` 行がなければ導入前に止める。専用 uv/runtime は標準 installer に任せ、共通 runtime の exact pin を変えない。agent-browser・cua-driver は Hermes が固定した版を installer に管理させ（cua-driver は PATH の別実体を使わない）、依存 fallback の警告は隠さない。
 - `~/.local/libexec/hermes` は固定 checkout の `.hermes/bin/hermes` を exec する。起動時の自動導入・更新、PATH の別 Hermes への fallback、Hermes の cwd 変更を追加しない。
 - wrapper・GUI domain 操作補助は Git 正本。Safehouse の HOME 許可・環境継承・profile 順・サービス feature 差分、引数・終了コードを維持する。
 - plist は通常ファイル。配置 CLI は引数なし、初回生成・差分置換に `y` 確認、同一なら noop。symlink・未知の実体・所有の問題は停止し、手動差分を確認なしで上書きしない。比較失敗は停止し、mise の自動ロードする LaunchAgent 管理へ移さない。

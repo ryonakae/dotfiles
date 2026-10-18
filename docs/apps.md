@@ -91,7 +91,7 @@ mise -C ~/dotfiles -E hermes run hermes:install
 
 表示された取得元・revision・導入段階を確認して進める。installer は専用 uv・Python と依存を管理する。agent-browser・cua-driver は Hermes が固定した版を installer に管理させる（cua-driver は PATH の別実体を使わないため）。Desktop は追加導入しない。途中状態や未知の実体で止まった場合は、[Hermes の復旧](troubleshooting.md#hermes-の導入更新が途中で止まった)へ進む。
 
-起動 wrapper は mise の直接リンク、plist は setup の配置処理がユーザー所有の通常ファイルとして配置する。installer の `products` 段階は checkout 内の `.hermes/bin/hermes` と `~/.local/bin/hermes*` を生成する。この段階の PATH 追記は fish の既存設定で不要になるよう、task は `SHELL` を fish に固定して実行する。installer に設定・サービスの生成は任せない。`hermes gateway install` で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
+起動 wrapper は mise の直接リンク、plist は setup の配置処理がユーザー所有の通常ファイルとして配置する。installer の `products` 段階は checkout 内の `.hermes/bin/hermes` と `~/.local/bin/hermes*` を生成し、tui/web のビルド、bundled skills・profile の同期、`~/.hermes/config.yaml` の移行（非対話で自動適用）も行う。この段階の PATH 追記は fish の既存設定で不要になるよう、task は `SHELL` を fish に固定して実行し、`config.fish` に `~/.local/bin` の `fish_add_path` 行がなければ導入前に止まる（先に `default` を適用する）。初期設定を生成する `config` 段階とサービスの生成は installer に任せない。`hermes gateway install` で plist を再生成しない。Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
 
 起動定義だけを再配置する場合は、通常端末から引数なしで実行する。
 

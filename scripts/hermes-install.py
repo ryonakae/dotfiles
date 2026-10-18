@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import pwd
+import re
 import shlex
 import subprocess
 import sys
@@ -13,6 +14,8 @@ import sys
 ROOT = Path(__file__).resolve().parents[1]
 MISE = Path('/opt/homebrew/bin/mise')
 LOGIN_SHELL = '/opt/homebrew/bin/fish'
+# install.sh's wire_shell_path test: without a match, products creates or appends to config.fish.
+FISH_PATH_LINE = r'(?m)^[ \t]*fish_add_path.*\.local/bin'
 ORIGIN = 'https://github.com/ryonakae/hermes-agent.git'
 BRANCH = 'ryonakae'
 
@@ -106,10 +109,18 @@ def main():
         return
     elif args.operation == 'update':
       raise ValueError('Hermes is absent; use the hermes:install task first')
+    fish_config = home / '.config/fish/config.fish'
+    try:
+      fish_ready = re.search(FISH_PATH_LINE, fish_config.read_text()) is not None
+    except OSError:
+      fish_ready = False
+    if not fish_ready:
+      raise ValueError(f'{fish_config} has no fish_add_path line for ~/.local/bin; apply the default configuration first')
     if not sys.stdin.isatty():
       raise ValueError('an interactive terminal is required for confirmation')
     print(f'Hermes {args.operation}: {target}; origin {ORIGIN}; branch {BRANCH}')
     print('Uses standard installer stages; may add managed uv, Python/Node runtimes and dependencies under ~/.hermes.')
+    print('The products stage also builds the launcher and ~/.local/bin/hermes*, syncs bundled skills and profiles, and migrates ~/.hermes/config.yaml.')
     print('No services are stopped or started; stop any active Hermes services explicitly before updating.')
     if not args.yes and input(f"Type '{args.operation}' to continue: ").strip() != args.operation:
       raise ValueError('cancelled')

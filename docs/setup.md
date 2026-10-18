@@ -84,7 +84,7 @@ macOS 設定は [mise.default.toml](../mise.default.toml)などの構成別宣�
 bash scripts/dotfiles.sh setup default private
 ```
 
-選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime、Herdr のプラグイン、未導入の Hermes、macOS 設定、ログインシェルを順に適用する。共通 runtime・Herdr のプラグイン・fish へのログインシェル変更は `default`、Hermes の導入は `private` を選択した場合だけ。導入済みの Hermes 本体と Herdr のプラグインは更新しない。
+選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime、Herdr のプラグイン、未導入の Hermes、macOS 設定、ログインシェルを順に適用する。共通 runtime・Herdr のプラグイン・fish へのログインシェル変更は `default`、Hermes の導入は `private` を選択した場合だけ。Hermes の導入は `default` が配置する fish 設定を前提にするため、`default` を一度も適用していない環境で `private` 単独の setup を実行すると Hermes の段階で止まる。導入済みの Hermes 本体と Herdr のプラグインは更新しない。
 
 全体を sudo で起動せず、表示された対象と確認に応答する。確認語の入力は2回。
 

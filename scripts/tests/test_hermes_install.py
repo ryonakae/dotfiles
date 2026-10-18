@@ -88,6 +88,9 @@ class HermesInstallTests(unittest.TestCase):
     self.git('-C', self.remote, 'commit', '--quiet', '-m', 'Initial fixture')
     self.target = self.home / 'Dev/private/hermes-agent'
     self.launcher = self.target / '.hermes/bin/hermes'
+    self.fish_config = self.home / '.config/fish/config.fish'
+    self.fish_config.parent.mkdir(parents=True)
+    self.fish_config.write_text('fish_add_path --path --move --prepend "$HOME/.local/bin"\n')
     self.marker = self.target / '.hermes-bootstrap-complete'
     self.log = self.home / 'stages.log'
     (self.root / 'mise.toml').write_text('[settings]\nexperimental = true\n')
@@ -169,6 +172,38 @@ class HermesInstallTests(unittest.TestCase):
     self.assertFalse(any(flag in c for c in commands for flag in ('--skip-browser', '--skip-computer-use')))
     for forbidden in ('prerequisites', 'repository', 'path', 'config', 'setup', 'gateway', 'desktop'):
       self.assertFalse(any('--stage' in c and c[c.index('--stage') + 1] == forbidden for c in commands))
+
+  def test_missing_fish_path_line_stops_before_any_installer_change(self):
+    valid = self.fish_config.read_text()
+    for content in (None, 'set -gx EDITOR vim\n'):
+      with self.subTest(content=content):
+        if content is None:
+          self.fish_config.unlink()
+        else:
+          self.fish_config.write_text(content)
+        self.assertNotEqual(self.invoke(), 0)
+        self.assertIn('default', self.output.getvalue())
+        self.assertEqual(self.commands, [])
+        self.assertFalse(self.target.exists())
+        self.assertEqual(self.fish_config.exists(), content is not None)
+    self.fish_config.write_text(valid)
+    self.assert_ok(self.invoke())
+    marker = self.marker.read_bytes()
+    self.fish_config.unlink()
+    self.assertNotEqual(self.invoke('update'), 0)
+    self.assertIn('default', self.output.getvalue())
+    self.assertFalse(any(c[0] in (str(MISE), '/bin/bash') for c, _ in self.commands))
+    self.assertEqual(self.marker.read_bytes(), marker)
+    self.assertEqual(self.stages(), ['venv', 'python-deps', 'products', 'complete'])
+
+  def test_dotfiles_fish_config_satisfies_installer_path_check(self):
+    text = (ROOT / 'config/.config/fish/config.fish').read_text()
+    self.assertRegex(text, self.module.FISH_PATH_LINE)
+
+  def test_confirmation_lists_products_side_effects(self):
+    self.assertNotEqual(self.invoke(answer='no'), 0)
+    for effect in ('~/.local/bin/hermes', 'skills', 'config.yaml'):
+      self.assertIn(effect, self.output.getvalue())
 
   def test_completed_install_is_noop_even_when_upstream_advances(self):
     self.assert_ok(self.invoke())
