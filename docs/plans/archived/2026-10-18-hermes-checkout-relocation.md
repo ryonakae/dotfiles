@@ -64,14 +64,22 @@ review base: `adb75dd`
 
 ## Final Validation
 
-- [ ] **dotfiles の installer と launcher の契約**: `cd ~/dotfiles; uv run --no-project python scripts/tests/test_hermes_install.py` と `uv run --no-project python scripts/tests/test_agent_runtime.py` → それぞれ全件成功。統合テストの skip は成功扱いにしない。
-- [ ] **dotfiles の構文と文書**: `sh -n config/.local/libexec/hermes`、`mise.hermes.toml` の TOML 構文確認、`git diff --check` → エラーなし。文書中の掲載コマンドが、現行の `install.sh --manifest` の stage 名と一致すること。
-- [ ] **旧パス参照の残り**: `rg -n '\.hermes/hermes-agent|node-deps|venv/bin/hermes' ~/dotfiles --glob '!docs/plans/archived/**' --glob '!docs/dig/**'` → この計画書以外にヒットしない。
-- [ ] **稼働の確認**: `hermes-gateway status` が稼働中であること。`head -3 ~/.local/bin/hermes` と `~/Dev/private/hermes-agent/.hermes/bin/hermes` が新パスを指すこと。Slack からメッセージを送ると応答があり、`~/.hermes/logs/gateway.error.log` に新しい `Transcript read failed` が出ないこと。
-- [ ] **テストガードの解消**（今回の目的）: 新パスで `scripts/run_tests.sh tests/hermes_state tests/agent/test_compression_rotation_state.py tests/agent/test_compression_refusal_restores_transcript.py tests/agent/test_salvage_grown_transcript.py tests/agent/test_transcript_decoration_idempotence.py` を herdr ペインなど Safehouse 外で実行する → `TEST BUG: file I/O against the REAL hermes home: /Users/ryo.nakae/.hermes/manifest.json` が0件。
+- [x] **dotfiles の installer と launcher の契約**: `cd ~/dotfiles; uv run --no-project python scripts/tests/test_hermes_install.py` と `uv run --no-project python scripts/tests/test_agent_runtime.py` → それぞれ全件成功。統合テストの skip は成功扱いにしない。
+- [x] **dotfiles の構文と文書**: `sh -n config/.local/libexec/hermes`、`mise.hermes.toml` の TOML 構文確認、`git diff --check` → エラーなし。文書中の掲載コマンドが、現行の `install.sh --manifest` の stage 名と一致すること。
+- [x] **旧パス参照の残り**: `rg -n '\.hermes/hermes-agent|node-deps|venv/bin/hermes' ~/dotfiles --glob '!docs/plans/**' --glob '!docs/dig/**'` → ヒットは `scripts/tests/test_agent_runtime.py` の意図的な legacy fixture（旧 `venv/bin/hermes` が選ばれないことの確認用）だけ。
+- [x] **稼働の確認**: `hermes-gateway status` が稼働中であること。`head -3 ~/.local/bin/hermes` と `~/Dev/private/hermes-agent/.hermes/bin/hermes` が新パスを指すこと。Slack からメッセージを送ると応答があり、`~/.hermes/logs/gateway.error.log` に新しい `Transcript read failed` が出ないこと。
+- [x] **テストガードの解消**（今回の目的）: 新パスで `scripts/run_tests.sh tests/hermes_state tests/agent/test_compression_rotation_state.py tests/agent/test_compression_refusal_restores_transcript.py tests/agent/test_salvage_grown_transcript.py tests/agent/test_transcript_decoration_idempotence.py` を herdr ペインなど Safehouse 外で実行する → `TEST BUG: file I/O against the REAL hermes home: /Users/ryo.nakae/.hermes/manifest.json` が0件。
   - 移設前の同じ範囲の基準値: 1054 passed / 698 failed、ガードによる失敗 720件（2026-10-18、`8631ce1889`）。
   - 新しい install key で初めて実行するときは、test-environment が作り直されるので時間がかかる。
   - これ以外の失敗が残る場合は一覧にして、ユーザーに報告する。
   - 結果（`8631ce1889`、新パス）: 1752 passed / 65 failed。`manifest.json` のガードは0件。65件はすべて移設前から失敗していたテストで（新しい失敗はない）、state.db の holder 判定・修復・保守系に集中している。残る136件のガード表示（多くはログ行の重複）は `~/.hermes/logs/gateway.log` で、稼働中のゲートウェイが開いているファイルを holder 判定（`hermes_state_holders.py:558`）が走査したもの。checkout の位置とは関係しない。
+
+## Gate Summary
+
+- レビュー対象: `d6b286a`、`bc03f7c`、`cd84551`（base `adb75dd`）。read-only の独立レビューを3回行い、`blocking/high` はいずれもなし。
+- `decision required` 2件はユーザーが決定（`products` の副作用の明示、fish の PATH 行を前提条件にする）。`bc03f7c` で実装し、scoped re-review で解消を確認した。
+- 移行中に判明した、旧パスを指す `~/.local/bin/hermes*` の扱いは、ユーザーの承認を得て手順に追加・実施した。
+- 未修正で残した medium/low: 失敗時に表示する復旧コマンドに `SHELL` の固定がない。update の経路で `--skip-*` を渡さないことのテストがない。禁止 stage の一覧に、現行にない `'path'` が残っている。`config.fish` が UTF-8 以外のときは案内文ではなくデコードエラーが表示される。手動の復旧手順には fish の前提条件の判定がない。計画の決定文（PM の既定ツールの導入、tui/web のビルド）が、docs と告知の記載より広い。
+- 未解決の blocker はなし。
 
 > 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
