@@ -6,6 +6,7 @@
 
 - [Claude Code](#claude-code)
 - [Pi](#pi)
+- [OpenCode](#opencode)
 - [oMLX](#omlx)
 - [Hermes](#hermes)
 - [Herdr](#herdr)
@@ -35,35 +36,33 @@ MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバー�
 
 本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
 
-### ローカルモデル用の作業場所
+## OpenCode
 
-`~/Dev/local` とその配下では、mise が `PI_CODING_AGENT_DIR` を `~/Dev/local/.pi` に切り替える。通常の `pi` コマンドを使い、LFM2.5 または Qwen3.6 を oMLX 経由で選択する。
+本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
 
-`~/Dev/local/mise.toml` と `.pi/` はマシン上の実ファイルで、dotfiles では管理・復元しない。既存設定を変更した場合は、通常の fish で mise 設定を trust する。
-
-```fish
-mise trust ~/Dev/local/mise.toml
-cd ~/Dev/local
-```
-
-次のプロンプトが表示されたら、設定元を確認して起動する。
+LLM は Strata / Splash のローカルモデルだけを使う。SwiftBar の Local LLM Server メニューから使いたいサーバーを起動してから、任意の作業ディレクトリで OpenCode を起動する。
 
 ```fish
-printf '%s\n' $PI_CODING_AGENT_DIR
-pi
+opencode models
+opencode
 ```
 
-設定元が `~/Dev/local/.pi` の絶対パスになっていればよい。
+モデル一覧に次の2つだけが表示されることを確認する。既定は Strata。起動後は `/models` で切り替える。
 
-mise のプロンプトフックが動かない非対話起動では、対象ディレクトリで `mise exec -- fish -c 'pi'` を使い、通常の Safehouse 起動関数を通す。
+| モデル ID | モデル | 接続先 |
+|---|---|---|
+| `strata/qwen3.8-flash-next-q2_0` | Qwen3.8 Flash Next Q2_0 | `http://127.0.0.1:8080/v1` |
+| `splash/bonsai-2-27b-pq2_0` | Bonsai 2 27B PQ2_0 | `http://127.0.0.1:8000/v1` |
+
+サーバー停止中もモデルは一覧に表示されるが、推論はできない。モデルの取得・起動・停止は OpenCode では行わない。SwiftBar の登録モデルを変更した場合は、OpenCode 側のモデル ID・接続先・コンテキスト長も合わせて更新する。
+
+[プロバイダーポリシー](https://opencode.ai/v2/docs/policies/)で他のプロバイダーを禁止する。MCP などの外部通信はこの制限の対象外。プロジェクト設定で許可済みプロバイダーの接続先やモデル定義を書き換えることまでは防がない。
 
 ## oMLX
 
 [公式 Releases](https://github.com/jundot/omlx/releases) の DMG から手動導入し、アプリ内の更新機能で更新する。メニューバーアプリからサーバーの起動・停止を行い、モデルは管理画面 `http://127.0.0.1:8000/admin` でダウンロード・ロードする。Homebrew の Formula 版は併用しない。
 
 サーバーは `127.0.0.1:8000` で待ち受け、API キー認証を使う。発行したキーは[環境変数の追加手順](secrets.md#値を追加更新する)で `OMLX_API_KEY` として登録する。
-
-Pi の[ローカルモデル用の作業場所](#ローカルモデル用の作業場所)で使用する。モデル定義は `~/Dev/local/.pi/models.json`。
 
 oMLX の設定は `~/.omlx/settings.json`、モデルの標準保存先は `~/.omlx/models/`。
 
