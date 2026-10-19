@@ -3,6 +3,7 @@
 "~/.config" = { source = "config/.config", mode = "symlink-each", manifest = "git", exclude = ["tests", "*.example", "mise", "karabiner"] }
 "~/.config/mise/config.toml" = "config/.config/mise/config.base.toml"
 "~/.config/karabiner" = "config/.config/karabiner"
+"~/.hammerspoon" = { source = "config/.hammerspoon", mode = "symlink-each", manifest = "git" }
 "~/.local/bin/rm" = "config/.local/bin/rm"
 "~/.vimrc" = "config/.vimrc"
 
@@ -92,6 +93,7 @@
 "~/.local/share/agent-skill-sources/worktrunk" = { url = "https://github.com/max-sixty/worktrunk.git", ref = "main" }
 
 [bootstrap.macos.defaults."NSGlobalDomain"]
+"AppleEnableSwipeNavigateWithScrolls" = true
 "AppleInterfaceStyleSwitchesAutomatically" = true
 "AppleKeyboardUIMode" = 2
 "ApplePressAndHoldEnabled" = false
@@ -143,6 +145,8 @@
   { "tile-data" = { "arrangement" = 2, "displayas" = 1, "file-data" = { "_CFURLString" = "file:///Users/ryo.nakae/Downloads", "_CFURLStringType" = 15 }, "showas" = 1 }, "tile-type" = "directory-tile" },
 ]
 "show-recents" = false
+"showAppExposeGestureEnabled" = true
+"showMissionControlGestureEnabled" = true
 "wvous-bl-corner" = 3
 "wvous-br-corner" = 4
 "wvous-tl-corner" = 2
@@ -160,6 +164,19 @@
 "ShowStatusBar" = true
 "_FXSortFoldersFirst" = true
 "_FXSortFoldersFirstOnDesktop" = true
+
+# Built-in trackpad and Magic Trackpad read separate domains.
+[bootstrap.macos.defaults."com.apple.AppleMultitouchTrackpad"]
+"TrackpadFourFingerHorizSwipeGesture" = 2
+"TrackpadFourFingerVertSwipeGesture" = 2
+"TrackpadThreeFingerHorizSwipeGesture" = 1
+"TrackpadThreeFingerVertSwipeGesture" = 1
+
+[bootstrap.macos.defaults."com.apple.driver.AppleBluetoothMultitouch.trackpad"]
+"TrackpadFourFingerHorizSwipeGesture" = 2
+"TrackpadFourFingerVertSwipeGesture" = 2
+"TrackpadThreeFingerHorizSwipeGesture" = 1
+"TrackpadThreeFingerVertSwipeGesture" = 1
 
 [bootstrap.macos.defaults."com.apple.screensaver"]
 "askForPassword" = true
@@ -187,6 +204,19 @@ domain = "com.apple.controlcenter"
 key = "Sound"
 host = "current"
 value = 18
+
+# System Settings mirrors the three-finger page swipe here as well.
+[[bootstrap.macos.defaults_entries]]
+domain = "NSGlobalDomain"
+key = "com.apple.trackpad.threeFingerHorizSwipeGesture"
+host = "current"
+value = 1
+
+[[bootstrap.macos.defaults_entries]]
+domain = "NSGlobalDomain"
+key = "com.apple.trackpad.threeFingerVertSwipeGesture"
+host = "current"
+value = 1
 
 # Mission Control: ctrl+q
 [[bootstrap.macos.defaults_entries]]

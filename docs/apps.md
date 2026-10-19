@@ -14,6 +14,7 @@
 - [Cua Spaces](#cua-spaces)
 - [Unity CLI](#unity-cli)
 - [Karabiner](#karabiner)
+- [Hammerspoon](#hammerspoon)
 - [macOS とその他のアプリ](#macos-とその他のアプリ)
 
 ## Claude Code
@@ -277,6 +278,14 @@ Hermes は対話セッションの `/reload-mcp` で反映する。
 既存設定がある Mac は、配置前に必要な JSON を保全する。
 
 ディレクトリの配置場所が変わった後は、[公式手順](https://karabiner-elements.pqrs.org/docs/manual/misc/configuration-file-path/)に従って `Karabiner-Console-User-Server` を一度再起動する。再起動までは新しい場所の変更が自動検知されない。
+
+## Hammerspoon
+
+設定は `config/.hammerspoon/init.lua` を編集する。トラックパッドの4本指クリックを `Cmd+W`、3本指クリックをミドルクリックに変える。スワイプは macOS の defaults で設定し、[macOS の部分操作](usage.md#macos-設定を適用する)で反映する。
+
+初回起動時に、システム設定の「プライバシーとセキュリティ > アクセシビリティ」で Hammerspoon を許可する。ログイン時の起動は Hammerspoon の Preferences で有効にする。
+
+`init.lua` の変更後は、メニューバーの Hammerspoon アイコンから「Reload Config」を選ぶ。3本指または4本指でクリックし、ミドルクリックまたはウィンドウが閉じる動作になれば成功。
 
 ## macOS とその他のアプリ
 
