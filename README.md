@@ -14,12 +14,11 @@ macOS の開発環境と AI エージェントの個人設定。
 | `brew/` | 構成別の Brewfile |
 | `mise.<構成>.toml` | 構成別の設定リンク・外部リポジトリ・macOS 設定の宣言 |
 | `scripts/` | setup の入口と補助スクリプト |
-| `docs/` | ユーザー向け手順 |
 
 ## ドキュメント
 
 - [初回セットアップ](docs/setup.md)
 - [日常操作](docs/usage.md)
-- [共通 API キー](docs/secrets.md)
+- [環境変数の管理](docs/secrets.md)
 - [アプリ別設定](docs/apps.md)
 - [トラブル対応](docs/troubleshooting.md)
