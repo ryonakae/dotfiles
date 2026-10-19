@@ -10,3 +10,10 @@ insert_final_newline = true
 
 [*.md]
 trim_trailing_whitespace = false
+
+[config/.config/karabiner/karabiner.json]
+indent_size = 4
+insert_final_newline = false
+
+[config/.pi/agent/settings.json]
+insert_final_newline = false

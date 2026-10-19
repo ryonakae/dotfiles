@@ -4,3 +4,4 @@
 /config/.config/fish/fish_variables
 /.ruff_cache/
 __pycache__/
+/config/.config/karabiner/automatic_backups/
