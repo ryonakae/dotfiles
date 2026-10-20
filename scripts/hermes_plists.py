@@ -8,7 +8,7 @@ import sys
 import tempfile
 
 
-SERVICES = ('gateway', 'dashboard')
+SERVICES = ('gateway',)
 
 
 def definitions(home):
@@ -17,14 +17,12 @@ def definitions(home):
   result = {}
   for name in SERVICES:
     environment = {'HOME': str(home), 'HERMES_HOME': str(home / '.hermes'), 'PATH': path}
-    if name == 'dashboard':
-      environment.update(HERMES_DASHBOARD_HOST='0.0.0.0', HERMES_DASHBOARD_PORT='9120')
     result[f'ai.hermes.{name}.plist'] = plistlib.dumps({
       'Label': f'ai.hermes.{name}',
       'ProgramArguments': [str(home / f'.config/agent-safehouse/safe-hermes-{name}.sh')],
       'WorkingDirectory': str(home / '.hermes'),
       'EnvironmentVariables': environment,
-      'Disabled': True, 'RunAtLoad': True, 'KeepAlive': name == 'gateway',
+      'Disabled': True, 'RunAtLoad': True, 'KeepAlive': True,
       'StandardOutPath': str(home / f'.hermes/logs/{name}.log'),
       'StandardErrorPath': str(home / f'.hermes/logs/{name}.error.log'),
     })

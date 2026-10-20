@@ -151,11 +151,7 @@ class AgentRuntimeTests(unittest.TestCase):
                  [hermes, 'computer-use', 'doctor']),
       'gateway': (['/bin/bash', str(runtime / 'safe-hermes-gateway.sh')],
                   [hermes, '--profile', 'default', 'gateway', 'run']),
-      'dashboard': (['/bin/bash', str(runtime / 'safe-hermes-dashboard.sh')],
-                    [hermes, '--profile', 'default', 'dashboard', '--host',
-                     '127.0.0.1', '--port', '3210', '--no-open']),
     }
-    self.env.update(HERMES_DASHBOARD_HOST='127.0.0.1', HERMES_DASHBOARD_PORT='3210')
     for name, (command, tail) in wrappers.items():
       with self.subTest(wrapper=name):
         result = subprocess.run(command, env=self.env, capture_output=True, text=True, timeout=15)
@@ -172,7 +168,7 @@ class AgentRuntimeTests(unittest.TestCase):
         features = next(arg for arg in args if arg.startswith('--enable='))
         enabled = set(features.removeprefix('--enable=').split(','))
         self.assertTrue({'keychain', 'process-control'} <= enabled)
-        if name in ('gateway', 'dashboard'):
+        if name == 'gateway':
           self.assertTrue(enabled.isdisjoint({'clipboard', 'cleanshot', 'xcode'}))
         self.assertEqual([arg for arg in args if arg.startswith('--append-profile=')],
                          ['--append-profile=' + str(runtime / 'compatibility.sb'),
@@ -363,7 +359,6 @@ class AgentRuntimeTests(unittest.TestCase):
       'else: sys.exit(88)\n')
     for service, native_arguments in {
       'gateway': {'stop': ['gateway', 'stop']},
-      'dashboard': {'status': ['dashboard', '--status'], 'stop': ['dashboard', '--stop']},
     }.items():
       for action, arguments in native_arguments.items():
         with self.subTest(service=service, action=action):
@@ -446,7 +441,7 @@ class AgentRuntimeTests(unittest.TestCase):
     return result, operations
 
   def test_background_service_start_targets_gui_without_global_environment_mutation(self):
-    for service in ['gateway', 'dashboard']:
+    for service in ['gateway']:
       with self.subTest(service=service):
         result, operations = self.service_action(service, 'start')
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -457,7 +452,7 @@ class AgentRuntimeTests(unittest.TestCase):
         ])
 
   def test_restart_retries_transient_bootstrap_eio_without_repeating_shutdown(self):
-    for service in ['gateway', 'dashboard']:
+    for service in ['gateway']:
       with self.subTest(service=service):
         result, operations = self.service_action(service, 'restart', BOOTSTRAP_FAILURES=1)
         self.assertEqual(result.returncode, 0, result.stderr)
@@ -473,7 +468,7 @@ class AgentRuntimeTests(unittest.TestCase):
       ({'GUI_LOADED': 0, 'BOOTSTRAP_FAILURES': 1, 'QUERY_EXIT': 3}, 3, 1),
       ({'GUI_LOADED': 1, 'BOOTSTRAP_FAILURES': 1}, 5, 1),
     ]
-    for service in ['gateway', 'dashboard']:
+    for service in ['gateway']:
       for settings, code, attempts in cases:
         with self.subTest(service=service, settings=settings):
           result, operations = self.service_action(service, 'start', **settings)
@@ -482,7 +477,7 @@ class AgentRuntimeTests(unittest.TestCase):
           self.assertFalse(any(op[0] in ['native', 'bootout', 'disable'] for op in operations))
 
   def test_background_stop_gracefully_stops_native_and_unloads_only_gui_job(self):
-    for service in ['gateway', 'dashboard']:
+    for service in ['gateway']:
       for loaded, native_removes in [(1, 0), (1, 1), (0, 0), (0, 1)]:
         with self.subTest(service=service, loaded=loaded, native_removes=native_removes):
           result, operations = self.service_action(service, 'stop', GUI_LOADED=loaded,
@@ -490,8 +485,7 @@ class AgentRuntimeTests(unittest.TestCase):
           self.assertEqual(result.returncode, 0, result.stderr)
           domain = f'gui/{os.getuid()}'
           target = f'{domain}/ai.hermes.{service}'
-          native = ['native', '--profile', 'default', service,
-                    'stop' if service == 'gateway' else '--stop']
+          native = ['native', '--profile', 'default', service, 'stop']
           self.assertIn(native, operations)
           self.assertEqual(operations[-1], ['disable', target])
           self.assertNotIn(['managername'], operations)
@@ -502,7 +496,7 @@ class AgentRuntimeTests(unittest.TestCase):
             self.assertNotIn(['bootout', target], operations)
 
   def test_service_restart_does_not_start_after_failed_shutdown_or_query(self):
-    for service in ['gateway', 'dashboard']:
+    for service in ['gateway']:
       for settings in [dict(NATIVE_EXIT=23), dict(QUERY_EXIT=5), dict(QUERY_EXIT=3),
                        dict(QUERY_EXIT=125), dict(DOMAIN_EXIT=113), dict(BOOTOUT_EXIT=5)]:
         with self.subTest(service=service, settings=settings):
@@ -565,7 +559,7 @@ class AgentRuntimeTests(unittest.TestCase):
     self.env['UPDATE_LOG'] = str(log)
     for name in ['mise', 'hermes', 'launchctl']:
       self.program(name, '#!/bin/sh\nprintf forbidden >> "$UPDATE_LOG"\nexit 99\n')
-    for service in ['gateway', 'dashboard']:
+    for service in ['gateway']:
       with self.subTest(service=service):
         result = subprocess.run([shutil.which('fish'), '--no-config', '-c',
           'source "$argv[1]/hermes-$argv[2].fish"; hermes-$argv[2] update',

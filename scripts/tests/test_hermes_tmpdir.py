@@ -47,7 +47,7 @@ class HermesTmpdirTests(unittest.TestCase):
         destination.write_text(text)
         destination.chmod(source.stat().st_mode)
 
-      for name in ['run-with-agent-env.sh', 'safe-hermes-gateway.sh', 'safe-hermes-dashboard.sh']:
+      for name in ['run-with-agent-env.sh', 'safe-hermes-gateway.sh']:
         copy_wrapper(ROOT / 'config/.config/agent-safehouse' / name, runtime / name)
       for name in ['compatibility.sb', 'local-overrides.sb']:
         (runtime / name).touch()
@@ -64,7 +64,6 @@ class HermesTmpdirTests(unittest.TestCase):
                 'source "$argv[1]/hermes.fish"; hermes computer-use doctor',
                 str(fish_dir)],
         'gateway': ['/bin/bash', str(runtime / 'safe-hermes-gateway.sh')],
-        'dashboard': ['/bin/bash', str(runtime / 'safe-hermes-dashboard.sh')],
       }
       cases = {
         'unset': (None, user_tmp),
@@ -79,8 +78,7 @@ class HermesTmpdirTests(unittest.TestCase):
         for wrapper, command in commands.items():
           for case, (value, expected) in cases.items():
             with self.subTest(wrapper=wrapper, case=case):
-              env = dict(os.environ, PATH=str(bin_dir) + ':' + os.environ['PATH'], HOME=str(base),
-                         HERMES_DASHBOARD_HOST='127.0.0.1', HERMES_DASHBOARD_PORT='3210')
+              env = dict(os.environ, PATH=str(bin_dir) + ':' + os.environ['PATH'], HOME=str(base))
               env.pop('TMPDIR', None)
               if value is not None:
                 env['TMPDIR'] = value

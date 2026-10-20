@@ -113,11 +113,10 @@ dotenvx set NEW_API_KEY --no-armor --no-create -f "$HOME/dotfiles/config/.config
 環境変数は起動時に読み込む。既に動いているプロセスには自動反映されない。
 
 - コーディングエージェントと Hermes CLI：作業を保存して終了し、新しい端末から起動し直す。
-- Hermes gateway / dashboard：稼働中で変更を反映したいサービスだけ、次の管理関数で再起動する。
+- Hermes gateway：稼働中で変更を反映したい場合は、次の管理関数で再起動する。
 
 ```fish
 hermes-gateway restart
-hermes-dashboard restart
 ```
 
 `config.fish` や端末で同名の変数を export している場合は、それが `.env` より優先される。不要な旧定義を取り除いてから新しい端末を開く。

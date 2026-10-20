@@ -46,9 +46,8 @@ class HermesActivationTests(unittest.TestCase):
 
   def test_first_install_places_user_owned_regular_files_with_service_contract(self):
     self.populate()
-    self.assertEqual(sorted(p.name for p in self.plists.iterdir()),
-                     ['ai.hermes.dashboard.plist', 'ai.hermes.gateway.plist'])
-    for name in ['gateway', 'dashboard']:
+    self.assertEqual(sorted(p.name for p in self.plists.iterdir()), ['ai.hermes.gateway.plist'])
+    for name in ['gateway']:
       with self.subTest(service=name):
         path = self.plists / f'ai.hermes.{name}.plist'
         self.assertFalse(path.is_symlink())
@@ -60,7 +59,7 @@ class HermesActivationTests(unittest.TestCase):
         self.assertEqual(definition['WorkingDirectory'], str(self.home / '.hermes'))
         self.assertIs(definition['Disabled'], True)
         self.assertIs(definition['RunAtLoad'], True)
-        self.assertIs(definition['KeepAlive'], name == 'gateway')
+        self.assertIs(definition['KeepAlive'], True)
         self.assertEqual(definition['StandardOutPath'], str(self.home / f'.hermes/logs/{name}.log'))
         self.assertEqual(definition['StandardErrorPath'], str(self.home / f'.hermes/logs/{name}.error.log'))
         environment = definition['EnvironmentVariables']
@@ -70,12 +69,6 @@ class HermesActivationTests(unittest.TestCase):
           str(self.home / '.local/bin'), str(self.home / '.local/share/mise/shims'),
           '/usr/bin', '/bin', '/usr/sbin', '/sbin', '/opt/homebrew/bin', '/usr/local/bin',
         ])
-        if name == 'dashboard':
-          self.assertEqual(environment['HERMES_DASHBOARD_HOST'], '0.0.0.0')
-          self.assertEqual(environment['HERMES_DASHBOARD_PORT'], '9120')
-        else:
-          self.assertNotIn('HERMES_DASHBOARD_HOST', environment)
-          self.assertNotIn('HERMES_DASHBOARD_PORT', environment)
     self.assertFalse((self.home / '.hermes').exists())
 
   def test_identical_definitions_are_noop_without_confirmation(self):
@@ -97,8 +90,6 @@ class HermesActivationTests(unittest.TestCase):
     gateway = self.plists / 'ai.hermes.gateway.plist'
     expected = gateway.read_bytes()
     gateway.write_text('manual configuration')
-    dashboard = self.plists / 'ai.hermes.dashboard.plist'
-    timestamp = dashboard.stat().st_mtime_ns
     for answer in ['n\n', '']:
       result = self.run_cli(answer=answer)
       self.assertNotEqual(result.returncode, 0)
@@ -107,7 +98,6 @@ class HermesActivationTests(unittest.TestCase):
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertIn('Replace differing', result.stdout)
     self.assertEqual(gateway.read_bytes(), expected)
-    self.assertEqual(dashboard.stat().st_mtime_ns, timestamp)
 
   def test_symlinks_and_nonregular_files_are_rejected_even_with_confirmation(self):
     self.populate()
@@ -156,14 +146,13 @@ class HermesActivationTests(unittest.TestCase):
     self.populate()
     gateway = self.plists / 'ai.hermes.gateway.plist'
     gateway.write_text('manual configuration')
-    dashboard = self.plists / 'ai.hermes.dashboard.plist'
-    dashboard.chmod(0o000)
+    gateway.chmod(0o000)
     try:
       result = self.run_cli()
       self.assertNotEqual(result.returncode, 0)
-      self.assertEqual(gateway.read_text(), 'manual configuration')
     finally:
-      dashboard.chmod(0o644)
+      gateway.chmod(0o644)
+    self.assertEqual(gateway.read_text(), 'manual configuration')
 
   def test_symlinked_parent_directories_are_not_followed(self):
     library = self.home / 'Library'

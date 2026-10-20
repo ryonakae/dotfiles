@@ -462,8 +462,7 @@ class HermesInstallTests(unittest.TestCase):
     for name in ('.hermes/config.yaml', '.hermes/.env', '.hermes/memories/local',
                  '.hermes/sessions/local', '.hermes/hooks/local', '.hermes/cron/local',
                  '.hermes/skills/local', '.zshrc', '.zprofile', '.bashrc',
-                 'Library/LaunchAgents/ai.hermes.gateway.plist',
-                 'Library/LaunchAgents/ai.hermes.dashboard.plist'):
+                 'Library/LaunchAgents/ai.hermes.gateway.plist'):
       path = self.home / name
       path.parent.mkdir(parents=True, exist_ok=True)
       path.write_text('unmanaged fixture\n')
