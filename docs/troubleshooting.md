@@ -94,10 +94,10 @@ mise -C ~/dotfiles -E hermes run hermes:install
 取得元・branch・HEAD・作業差分を確認する。想定外の origin、別 branch、dirty checkout、symlink があれば、その変更の扱いを決めるまで進めない。
 
 ```fish
-git -C ~/Dev/private/hermes-agent remote get-url origin
-git -C ~/Dev/private/hermes-agent branch --show-current
-git -C ~/Dev/private/hermes-agent rev-parse HEAD
-git -C ~/Dev/private/hermes-agent status --short
+git -C ~/Dev/personal/hermes-agent remote get-url origin
+git -C ~/Dev/personal/hermes-agent branch --show-current
+git -C ~/Dev/personal/hermes-agent rev-parse HEAD
+git -C ~/Dev/personal/hermes-agent status --short
 ```
 
 想定する取得元は `https://github.com/ryonakae/hermes-agent.git`、branch は `ryonakae`。
@@ -105,22 +105,22 @@ git -C ~/Dev/private/hermes-agent status --short
 checkout が正常で、依存の導入だけ失敗した例では、原因を解消してから同じ HEAD の installer を次のように呼ぶ。通常端末で実行し、利用中の CLI・サービスは先に停止する。
 
 ```fish
-bash ~/Dev/private/hermes-agent/scripts/install.sh --stage python-deps \
-  --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+bash ~/Dev/personal/hermes-agent/scripts/install.sh --stage python-deps \
+  --dir ~/Dev/personal/hermes-agent --hermes-home ~/.hermes --branch ryonakae
 ```
 
 成功したら未完了の `products` を実行し、launcher と `~/.local/bin/hermes*` を生成する。そこだけが失敗していた場合は、依存の段階を繰り返さずここから再開する。
 
 ```fish
-env SHELL=/opt/homebrew/bin/fish bash ~/Dev/private/hermes-agent/scripts/install.sh --stage products \
-  --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+env SHELL=/opt/homebrew/bin/fish bash ~/Dev/personal/hermes-agent/scripts/install.sh --stage products \
+  --dir ~/Dev/personal/hermes-agent --hermes-home ~/.hermes --branch ryonakae
 ```
 
 対象の段階がすべて成功してから完了記録を更新し、初回導入 task が完了済みと判定することを確認する。
 
 ```fish
-bash ~/Dev/private/hermes-agent/scripts/install.sh --stage complete \
-  --dir ~/Dev/private/hermes-agent --hermes-home ~/.hermes --branch ryonakae
+bash ~/Dev/personal/hermes-agent/scripts/install.sh --stage complete \
+  --dir ~/Dev/personal/hermes-agent --hermes-home ~/.hermes --branch ryonakae
 mise -C ~/dotfiles -E hermes run hermes:install
 ```
 
@@ -148,7 +148,7 @@ setup のログインシェル変更が失敗した場合は、`/opt/homebrew/bi
 
 - Homebrew：formula / cask の提供版と実際の解決先を確認する。
 - mise：共通設定の exact pin と `mise which` を確認する。
-- Hermes：`git -C ~/Dev/private/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認し、別の `hermes` が PATH で先に選ばれていないか確認する。
+- Hermes：`git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認し、別の `hermes` が PATH で先に選ばれていないか確認する。
 
 ## 会社が管理するアプリをスキップする
 

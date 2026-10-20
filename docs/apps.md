@@ -77,7 +77,7 @@ gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` �
 
 環境変数、Hermes の認証・設定を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
 
-取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/Dev/private/hermes-agent`。`private` を選択した setup は未導入時だけ導入する。
+取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/Dev/personal/hermes-agent`。`private` を選択した setup は未導入時だけ導入する。
 
 本体だけを初回導入する場合は、通常端末でルートと Hermes 用の宣言を確認してから実行する。
 
@@ -137,7 +137,7 @@ mise -C ~/dotfiles -E hermes run hermes:update
 
 対象と表示された revision・段階を確認して進める。
 
-成功後に `git -C ~/Dev/private/hermes-agent rev-parse HEAD` と CLI の起動を確認する。依存の fallback が表示された場合は警告を確認する。
+成功後に `git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と CLI の起動を確認する。依存の fallback が表示された場合は警告を確認する。
 
 更新のために止めたサービスだけ、対象ユーザーの GUI ドメインを操作できる端末から `hermes-gateway start` / `hermes-dashboard start` で再開する。
 

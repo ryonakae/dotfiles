@@ -515,7 +515,7 @@ class AgentRuntimeTests(unittest.TestCase):
             self.assertEqual(result.returncode, 23)
 
   def hermes_launcher(self, *, executable=True):
-    install = self.home / 'Dev/private/hermes-agent'
+    install = self.home / 'Dev/personal/hermes-agent'
     (install / '.hermes/bin').mkdir(parents=True, exist_ok=True)
     hermes = install / '.hermes/bin/hermes'
     legacy = install / 'venv/bin/hermes'
@@ -553,7 +553,7 @@ class AgentRuntimeTests(unittest.TestCase):
       with self.subTest(missing=missing):
         launcher = self.hermes_launcher(executable=False)
         if missing:
-          (self.home / 'Dev/private/hermes-agent/.hermes/bin/hermes').unlink()
+          (self.home / 'Dev/personal/hermes-agent/.hermes/bin/hermes').unlink()
         self.program('hermes', '#!/bin/sh\nprintf wrong-hermes\n')
         result = subprocess.run(['/bin/sh', str(launcher)], env=self.env, cwd=self.project,
                                 capture_output=True, text=True, timeout=15)
