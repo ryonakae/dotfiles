@@ -19,13 +19,7 @@
 
 ## Claude Code
 
-Herdr の Claude hook を使う場合は、Homebrew 版 Herdr の標準 installer で登録する。
-
-```fish
-herdr integration install claude
-```
-
-この操作は Claude の settings を変更する。実行前後の Git 差分を確認し、既存の設定を保持する。
+Herdr との連携は [エージェント連携の導入](#エージェント連携の導入)で登録する。
 
 statusline の初回取得には npm registry への接続が必要。
 
@@ -36,6 +30,8 @@ OpenAI の認証は Pi 内で `/login openai` を実行し、`Sign in with ChatG
 MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバーは `pi mcp login SERVER` を使う。`SERVER` は設定したサーバー名に置き換える。
 
 本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
+
+Herdr との連携は [エージェント連携の導入](#エージェント連携の導入)で登録する。
 
 ## OpenCode
 
@@ -58,6 +54,8 @@ opencode
 サーバー停止中もモデルは一覧に表示されるが、推論はできない。モデルの取得・起動・停止は OpenCode では行わない。SwiftBar の登録モデルを変更した場合は、OpenCode 側のモデル ID・接続先・コンテキスト長も合わせて更新する。
 
 [プロバイダーポリシー](https://opencode.ai/v2/docs/policies/)で他のプロバイダーを禁止する。MCP などの外部通信はこの制限の対象外。プロジェクト設定で許可済みプロバイダーの接続先やモデル定義を書き換えることまでは防がない。
+
+Herdr との連携は [エージェント連携の導入](#エージェント連携の導入)で登録する。
 
 ## oMLX
 
@@ -166,6 +164,29 @@ mise -C ~/dotfiles -E default run herdr:plugins
 プラグインを更新する場合は task の commit を変更し、`herdr plugin install <repo> --ref <commit> --yes` で入れ直す。Agent Context の導入には release binary と checksum を取得するネットワーク接続が必要。Worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
 
 worktree の作成・削除は Worktrunk を使う。Herdr の `worktree open` は既存 checkout の登録だけに使う。
+
+### エージェント連携の導入
+
+Claude Code・Pi・Codex・OpenCode の状態を Herdr に伝える hook や拡張を、Homebrew 版 Herdr の標準 installer で登録する。
+
+```fish
+herdr integration install claude
+herdr integration install pi
+herdr integration install codex
+herdr integration install opencode
+```
+
+登録状態を確認する。
+
+```fish
+herdr integration status
+```
+
+`claude`・`pi`・`codex`・`opencode` が `current` になっている。Herdr の更新後に `current` 以外になった場合は、同じ installer を再実行する。
+
+Claude の `settings.json` と Codex の `config.toml` は Git 正本への書き込みとなる。実行前後の Git 差分を確認し、既存の設定を保持する。それ以外に作られるファイルは installer の管理物として Git に加えない。
+
+連携は各エージェントの起動時に読み込まれる。導入前から起動しているエージェントは再起動する。
 
 ### 設定の反映と稼働確認
 
