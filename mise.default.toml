@@ -166,16 +166,17 @@
 "_FXSortFoldersFirstOnDesktop" = true
 
 # Built-in trackpad and Magic Trackpad read separate domains.
+# Three-finger horizontal swipes are left to Hammerspoon for tab switching.
 [bootstrap.macos.defaults."com.apple.AppleMultitouchTrackpad"]
 "TrackpadFourFingerHorizSwipeGesture" = 2
 "TrackpadFourFingerVertSwipeGesture" = 2
-"TrackpadThreeFingerHorizSwipeGesture" = 1
+"TrackpadThreeFingerHorizSwipeGesture" = 0
 "TrackpadThreeFingerVertSwipeGesture" = 1
 
 [bootstrap.macos.defaults."com.apple.driver.AppleBluetoothMultitouch.trackpad"]
 "TrackpadFourFingerHorizSwipeGesture" = 2
 "TrackpadFourFingerVertSwipeGesture" = 2
-"TrackpadThreeFingerHorizSwipeGesture" = 1
+"TrackpadThreeFingerHorizSwipeGesture" = 0
 "TrackpadThreeFingerVertSwipeGesture" = 1
 
 [bootstrap.macos.defaults."com.apple.screensaver"]
@@ -210,7 +211,7 @@ value = 18
 domain = "NSGlobalDomain"
 key = "com.apple.trackpad.threeFingerHorizSwipeGesture"
 host = "current"
-value = 1
+value = 0
 
 [[bootstrap.macos.defaults_entries]]
 domain = "NSGlobalDomain"
