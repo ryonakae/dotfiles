@@ -69,15 +69,15 @@ oMLX の設定は `~/.omlx/settings.json`、モデルの標準保存先は `~/.o
 
 ## Hermes
 
-CLI・gateway・dashboard は[環境変数](secrets.md)を起動時に読み込む。
+CLI・gateway は[環境変数](secrets.md)を起動時に読み込む。
 
-gateway / dashboard はホストの launchd で動かす。同じ `~/.hermes` を使う Docker dashboard を同時起動しない。
+gateway はホストの launchd で動かす。
 
 ### 初回設定と起動
 
 環境変数、Hermes の認証・設定を準備する。`openai-codex` を使う場合は `~/.codex` の認証も復元する。
 
-取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/Dev/private/hermes-agent`。`private` を選択した setup は未導入時だけ導入する。
+取得元は `ryonakae/hermes-agent` の `ryonakae` ブランチ、配置先は `~/Dev/personal/hermes-agent`。`private` を選択した setup は未導入時だけ導入する。
 
 本体だけを初回導入する場合は、通常端末でルートと Hermes 用の宣言を確認してから実行する。
 
@@ -101,16 +101,12 @@ Hermes の setup でサービス導入・即時起動を聞かれたら No を�
 
 起動・停止・再起動は、対象ユーザーの `gui/<UID>` ドメインで行う。macOS にそのユーザーがログイン済みで、操作する端末から対象ドメインへアクセスできる必要がある。
 
-使うサービスだけ開始する。
-
 ```fish
 hermes-gateway start
-hermes-dashboard start
 hermes-gateway status
-hermes-dashboard status
 ```
 
-start したサービスは以後のログイン時も起動対象になる。stop すると次の start まで無効化される。Gateway は KeepAlive により、`/restart-gateway` による終了や異常終了後に自動再起動する。Dashboard は自動再起動しない。
+start すると以後のログイン時も起動対象になる。stop すると次の start まで無効化される。KeepAlive により、`/restart-gateway` による終了や異常終了後に自動再起動する。
 
 ### status の表示を確認する
 
@@ -129,7 +125,7 @@ Restart on crash (plist): enabled
 
 ### Hermes を停止・更新する
 
-本体更新は全体 setup と分けて行う。利用中の CLI を終了し、稼働中のサービスだけ `hermes-gateway stop` / `hermes-dashboard stop` で先に止める。
+本体更新は全体 setup と分けて行う。利用中の CLI を終了し、gateway が稼働中なら `hermes-gateway stop` で先に止める。
 
 ```fish
 mise -C ~/dotfiles -E hermes run hermes:update
@@ -137,24 +133,11 @@ mise -C ~/dotfiles -E hermes run hermes:update
 
 対象と表示された revision・段階を確認して進める。
 
-成功後に `git -C ~/Dev/private/hermes-agent rev-parse HEAD` と CLI の起動を確認する。依存の fallback が表示された場合は警告を確認する。
+成功後に `git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と CLI の起動を確認する。依存の fallback が表示された場合は警告を確認する。
 
-更新のために止めたサービスだけ、対象ユーザーの GUI ドメインを操作できる端末から `hermes-gateway start` / `hermes-dashboard start` で再開する。
+更新のために止めた場合は、対象ユーザーの GUI ドメインを操作できる端末から `hermes-gateway start` で再開する。
 
-停止だけしたい場合は `hermes-gateway stop` / `hermes-dashboard stop` を使う。停止処理はタイムアウト時に強制終了する場合があり、DB の整合したバックアップは別途必要。
-
-### リモートアクセス
-
-Hermes dashboard の認証を設定し、信頼できる LAN / VPN 内で使う。
-
-iPhone から Tailscale 経由で利用する場合は、必要なポートだけ公開する。
-
-```fish
-tailscale serve --bg --https=9119 http://127.0.0.1:9120
-tailscale serve status
-```
-
-表示されたホスト名の `:9119` が Hermes の dashboard。ローカルでは `hermes-dashboard open` で開く。
+停止だけしたい場合は `hermes-gateway stop` を使う。停止処理はタイムアウト時に強制終了する場合があり、DB の整合したバックアップは別途必要。
 
 ### Google Workspace
 

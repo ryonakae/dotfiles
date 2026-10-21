@@ -4,7 +4,7 @@ macOS の開発環境と AI エージェントの個人設定。
 
 - アプリは Homebrew の Brewfile、設定ファイルのリンク・ランタイム・macOS 設定は mise で管理する。
 - 導入対象は構成で選ぶ。共通の `default` に、家用の `private` か仕事用の `work` を組み合わせる。
-- Claude Code・Codex・Pi などのエージェントは、fish の起動関数から Agent Safehouse のサンドボックス内で起動する。HOME への広いアクセスを許可する構成で、完全隔離ではない。
+- Claude Code・Codex・Pi などのエージェントは、fish の起動関数から Agent Safehouse のサンドボックス内で起動する。HOME と指定した外付け SSD・NAS 共有への読み書きを許可する構成で、完全隔離ではない。
 
 ## リポジトリの中身
 

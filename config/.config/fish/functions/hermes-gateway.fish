@@ -159,7 +159,7 @@ function hermes-gateway --description "Manage hermes gateway (launchd + safehous
             echo "Hermes is managed by mise; no service was stopped or updated." >&2
             echo "Stop active Hermes services before updating; the checkout is updated in place." >&2
             echo "Update explicitly: /opt/homebrew/bin/mise -C ~/dotfiles -E hermes run hermes:update" >&2
-            echo "After success, start only the services you stopped with hermes-gateway start / hermes-dashboard start." >&2
+            echo "After success, start only the services you stopped with hermes-gateway start." >&2
             return 1
         case '*'
             echo "Usage: hermes-gateway {start|stop|restart|status|update}" >&2

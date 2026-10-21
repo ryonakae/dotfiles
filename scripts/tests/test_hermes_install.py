@@ -86,7 +86,7 @@ class HermesInstallTests(unittest.TestCase):
     (self.remote / 'revision').write_text('initial\n')
     self.git('-C', self.remote, 'add', '.')
     self.git('-C', self.remote, 'commit', '--quiet', '-m', 'Initial fixture')
-    self.target = self.home / 'Dev/private/hermes-agent'
+    self.target = self.home / 'Dev/personal/hermes-agent'
     self.launcher = self.target / '.hermes/bin/hermes'
     self.fish_config = self.home / '.config/fish/config.fish'
     self.fish_config.parent.mkdir(parents=True)
@@ -228,14 +228,14 @@ class HermesInstallTests(unittest.TestCase):
 
   def test_symlink_managed_paths_stop_even_for_completed_install(self):
     self.assert_ok(self.invoke())
-    for relative in ('.hermes', '.hermes/tools', 'Dev', 'Dev/private', 'Dev/private/hermes-agent',
-                     'Dev/private/hermes-agent/scripts',
-                     'Dev/private/hermes-agent/scripts/install.sh',
-                     'Dev/private/hermes-agent/.git',
-                     'Dev/private/hermes-agent/.hermes',
-                     'Dev/private/hermes-agent/.hermes/bin',
-                     'Dev/private/hermes-agent/.hermes/bin/hermes',
-                     'Dev/private/hermes-agent/.hermes-bootstrap-complete'):
+    for relative in ('.hermes', '.hermes/tools', 'Dev', 'Dev/personal', 'Dev/personal/hermes-agent',
+                     'Dev/personal/hermes-agent/scripts',
+                     'Dev/personal/hermes-agent/scripts/install.sh',
+                     'Dev/personal/hermes-agent/.git',
+                     'Dev/personal/hermes-agent/.hermes',
+                     'Dev/personal/hermes-agent/.hermes/bin',
+                     'Dev/personal/hermes-agent/.hermes/bin/hermes',
+                     'Dev/personal/hermes-agent/.hermes-bootstrap-complete'):
       with self.subTest(path=relative):
         path = self.home / relative
         saved = self.base / 'saved'
@@ -390,7 +390,7 @@ class HermesInstallTests(unittest.TestCase):
     before = self.git('-C', self.target, 'rev-parse', 'HEAD')
     source = (ROOT / 'mise.default.toml').read_text()
     declaration = tomllib.loads(source)
-    self.assertNotIn('~/Dev/private/hermes-agent', declaration['bootstrap']['repos'])
+    self.assertNotIn('~/Dev/personal/hermes-agent', declaration['bootstrap']['repos'])
     for branch in ('main', 'master'):
       self.git('-C', self.remote, 'branch', branch)
     for repository in declaration['bootstrap']['repos'].values():
@@ -462,8 +462,7 @@ class HermesInstallTests(unittest.TestCase):
     for name in ('.hermes/config.yaml', '.hermes/.env', '.hermes/memories/local',
                  '.hermes/sessions/local', '.hermes/hooks/local', '.hermes/cron/local',
                  '.hermes/skills/local', '.zshrc', '.zprofile', '.bashrc',
-                 'Library/LaunchAgents/ai.hermes.gateway.plist',
-                 'Library/LaunchAgents/ai.hermes.dashboard.plist'):
+                 'Library/LaunchAgents/ai.hermes.gateway.plist'):
       path = self.home / name
       path.parent.mkdir(parents=True, exist_ok=True)
       path.write_text('unmanaged fixture\n')

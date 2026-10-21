@@ -245,7 +245,7 @@ def setup(configurations):
         run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name, '--yes'])
     print('Setup complete: ' + ', '.join(completed))
     print('Restart the Mac to reflect macOS settings such as the Dock layout and to start the new login shell.')
-    print('No services were restarted. Apply updated Hermes definitions explicitly with hermes-gateway / hermes-dashboard when needed.')
+    print('No services were restarted. Apply updated Hermes definitions explicitly with hermes-gateway when needed.')
   except BaseException:
     print(f"Setup stopped at {stage}. Completed: {', '.join(completed) or 'none'}", file=sys.stderr)
     print('Setup is non-atomic. Inspect partial changes; no automatic retry or rollback was attempted.', file=sys.stderr)

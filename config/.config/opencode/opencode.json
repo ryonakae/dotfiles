@@ -1,6 +1,6 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "strata/qwen3.8-flash-next-q2_0",
+  "model": "strata/qwen3.8-flash-next-iq3_xxs",
   "providers": {
     "strata": {
       "name": "Strata",
@@ -11,6 +11,21 @@
       "models": {
         "qwen3.8-flash-next-q2_0": {
           "name": "Qwen3.8 Flash Next Q2_0",
+          "capabilities": {
+            "tools": true,
+            "input": ["text"],
+            "output": ["text"]
+          },
+          "compatibility": {
+            "reasoningField": "reasoning_content"
+          },
+          "limit": {
+            "context": 131072,
+            "output": 8192
+          }
+        },
+        "qwen3.8-flash-next-iq3_xxs": {
+          "name": "Qwen3.8 Flash Next IQ3_XXS",
           "capabilities": {
             "tools": true,
             "input": ["text"],

@@ -37,9 +37,9 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 
 ## 起動・保護設定
 
-- `__safehouse_args.fish` と `safe-hermes-gateway.sh` / `safe-hermes-dashboard.sh` の HOME 許可・環境継承・profile 順・feature を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
+- `__safehouse_args.fish` と `safe-hermes-gateway.sh` の HOME 許可・環境継承・profile 順・feature を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
 - ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。実秘密の移行、Keychain 登録・バックアップはユーザーが通常端末で行う。
-- Hermes は `hermes-gateway` / `hermes-dashboard` から fork 標準処理で操作する。自動停止・再開・状態保存を適用処理に追加せず、直接の launchctl や installer の plist 再生成で管理を迂回しない。
+- Hermes は `hermes-gateway` から fork 標準処理で操作する。自動停止・再開・状態保存を適用処理に追加せず、直接の launchctl や installer の plist 再生成で管理を迂回しない。
 - Herdr の Claude hook は Homebrew 本体の標準 integration installer。実設定への適用は別承認し、既存 settings 差分を保持する。
 - Herdr plugin の追加・削除時は `mise.default.toml` の `herdr:plugins` task と[導入手順](docs/apps.md#herdr)を更新する。worktree の作成・削除は Herdr 本体ではなく Worktrunk を使う。
 - Pi の `extensions/` に `hooks/` という名前のディレクトリを作らない。通知処理も extension として自動読込されるため。

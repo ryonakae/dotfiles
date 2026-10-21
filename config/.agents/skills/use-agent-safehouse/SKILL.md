@@ -166,7 +166,7 @@ Electron アプリには `--no-sandbox` フラグを維持してネストされ�
 
 追加profileは `compatibility.sb` → `local-overrides.sb` の順。IPCの広域許可とSimulatorの `system-fsctl` は `compatibility.sb` にまとめる。すでに許可されたMach/network/signalの個別allowを重複追加しない。
 
-対話wrapper・Hermes gateway・dashboardの3経路は `--allow-profile-writes` を指定する。Safehouse標準のappend profile書き込み保護を省く設定であり、書き込みgrantは追加せず、`.safehouse` の保護も解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
+対話wrapper・Hermes gatewayの2経路は `--allow-profile-writes` を指定する。Safehouse標準のappend profile書き込み保護を省く設定であり、書き込みgrantは追加せず、`.safehouse` の保護も解除しない。承認された変更は `config/` の正本へ行い、次回起動で反映する。現在のsandboxで拒否された場合は無断で外側へ回さない。
 
 ## 対応エージェント
 

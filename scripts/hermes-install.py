@@ -89,7 +89,7 @@ def main():
     if not home.is_absolute() or home != Path(pwd.getpwuid(os.getuid()).pw_dir):
       raise ValueError('HOME must match the current user')
     hermes_home = home / '.hermes'
-    target = home / 'Dev/private/hermes-agent'
+    target = home / 'Dev/personal/hermes-agent'
     if any(os.environ.get(key) for key in ('GIT_DIR', 'GIT_WORK_TREE', 'GIT_COMMON_DIR', 'GIT_INDEX_FILE')):
       raise ValueError('unset Git directory/worktree/index overrides before operating on Hermes')
     environment = {key: value for key, value in os.environ.items()

@@ -7,6 +7,19 @@
     (home-subpath "/.android/cache")
 )
 
+;; Keep grants available even when these volumes are not mounted at startup.
+(allow file-read* file-write*
+    (subpath "/Volumes/External SSD")
+    (subpath "/Volumes/Movies")
+    (subpath "/Volumes/Downloads")
+    (subpath "/Volumes/Pictures")
+    (subpath "/Volumes/Other")
+    (subpath "/Volumes/Books")
+    (subpath "/Volumes/Design")
+    (subpath "/Volumes/Documents")
+    (subpath "/Volumes/Music")
+)
+
 ;; 通常rmはmacos-trashへ転送し、絶対パス指定による直接削除を防ぐ。
 (deny process-exec (literal "/bin/rm"))
 
