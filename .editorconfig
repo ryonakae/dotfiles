@@ -17,3 +17,9 @@ insert_final_newline = false
 
 [config/.pi/agent/settings.json]
 insert_final_newline = false
+
+[config/.claude/settings.json]
+insert_final_newline = false
+
+[config/.config/ccstatusline/settings.json]
+insert_final_newline = false
