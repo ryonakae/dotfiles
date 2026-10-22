@@ -35,6 +35,7 @@
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
 - worktree の操作は `git worktree` を直接使わず、`wt`（Worktrunk）と `use-worktrunk` スキルで行う
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
+- dotenvx の private key は macOS Keychain（`dotenvx native`）に保存し、1Password へバックアップする
 - iOS Simulator での UI 動作検証や `.ad` テストの作成・実行は、`use-agent-device` と `agent-device` スキルで行う。配置・初期状態・実行方法は対象アプリの既存規約を優先する
 
 ### ドキュメント・Web検索
