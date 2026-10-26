@@ -22,7 +22,6 @@ brew "imagemagick"
 brew "jq"
 brew "trasta298/tap/keifu", trusted: true
 brew "ketch"
-brew "macos-trash"
 brew "mas"
 brew "mise"
 brew "mkcert"

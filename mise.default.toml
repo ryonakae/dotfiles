@@ -4,7 +4,6 @@
 "~/.config/mise/config.toml" = "config/.config/mise/config.base.toml"
 "~/.config/karabiner" = "config/.config/karabiner"
 "~/.hammerspoon" = { source = "config/.hammerspoon", mode = "symlink-each", manifest = "git" }
-"~/.local/bin/rm" = "config/.local/bin/rm"
 "~/.vimrc" = "config/.vimrc"
 
 # fish and Yazi plugins cloned by [bootstrap.repos]
