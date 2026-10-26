@@ -1,5 +1,0 @@
-# worktree は repo 本体の並びから隔離して 1 箇所に集約する。
-# owner を挟むのは、別ホスト・別 owner にある同名 repo との衝突を避けるため。
-# owner は remote 由来なので remote 無しの repo では未定義になり、fallback が無いと
-# worktree 作成自体が "Failed to expand worktree-path" で落ちる。
-worktree-path = '~/Dev/_worktrees/{{ owner | default("_local") }}/{{ repo }}/{{ branch | sanitize }}'

@@ -39,7 +39,6 @@ brew "tree"
 brew "usage"
 brew "uv"
 brew "vim"
-brew "worktrunk"
 brew "yazi"
 brew "zoxide"
 

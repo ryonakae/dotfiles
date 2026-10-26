@@ -33,7 +33,7 @@
 - 未確認のオプションや環境変数の挙動を推測して使わず、ヘルプや公式ドキュメントで確認する
 - 作業開始前に `HERDR_ENV` を確認し、`1` なら `herdr` スキルを読んで、必要に応じてペイン・タブなどを操作する
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
-- worktree の操作は `git worktree` を直接使わず、`wt`（Worktrunk）と `use-worktrunk` スキルで行う
+- worktree の作成・削除は T3 Code（スレッド起動時の worktree 指定や `t3_*` ツール）で行い、`git worktree` を直接使わない
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - dotenvx の private key は macOS Keychain（`dotenvx native`）に保存し、1Password へバックアップする
 - iOS Simulator での UI 動作検証や `.ad` テストの作成・実行は、`use-agent-device` と `agent-device` スキルで行う。配置・初期状態・実行方法は対象アプリの既存規約を優先する

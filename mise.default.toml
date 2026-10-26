@@ -46,7 +46,6 @@
 "~/.agents/skills/stop-slop" = "~/.local/share/agent-skill-sources/stop-slop"
 "~/.agents/skills/stop-slop-ja" = "~/.local/share/agent-skill-sources/stop-slop-ja"
 "~/.agents/skills/tdd" = "~/.local/share/agent-skill-sources/tdd/skills/engineering/tdd"
-"~/.agents/skills/worktrunk" = "~/.local/share/agent-skill-sources/worktrunk/skills/worktrunk"
 
 # External skills: Claude Code
 "~/.claude/skills/agent-browser" = "~/.local/share/agent-skill-sources/agent-browser/skills/agent-browser"
@@ -63,7 +62,6 @@
 "~/.claude/skills/stop-slop" = "~/.local/share/agent-skill-sources/stop-slop"
 "~/.claude/skills/stop-slop-ja" = "~/.local/share/agent-skill-sources/stop-slop-ja"
 "~/.claude/skills/tdd" = "~/.local/share/agent-skill-sources/tdd/skills/engineering/tdd"
-"~/.claude/skills/worktrunk" = "~/.local/share/agent-skill-sources/worktrunk/skills/worktrunk"
 
 # Antigravity CLI reads the shared skills
 "~/.gemini/antigravity-cli/skills" = "~/.agents/skills"
@@ -87,7 +85,6 @@
 "~/.local/share/agent-skill-sources/stop-slop-ja" = { url = "https://github.com/kyaukyuai/stop-slop-ja.git", ref = "main" }
 "~/.local/share/agent-skill-sources/tdd" = { url = "https://github.com/mattpocock/skills.git", ref = "main" }
 "~/.local/share/agent-skill-sources/tech-writing" = { url = "https://github.com/f4ah6o/tech-write-ja.git", ref = "main" }
-"~/.local/share/agent-skill-sources/worktrunk" = { url = "https://github.com/max-sixty/worktrunk.git", ref = "main" }
 
 [bootstrap.macos.defaults."NSGlobalDomain"]
 "AppleEnableSwipeNavigateWithScrolls" = true
