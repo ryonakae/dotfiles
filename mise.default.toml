@@ -18,6 +18,8 @@
 "~/.codex" = { source = "config/.codex", mode = "symlink-each", manifest = "git" }
 "~/.gemini" = { source = "config/.gemini", mode = "symlink-each", manifest = "git" }
 "~/.pi" = { source = "config/.pi", mode = "symlink-each", manifest = "git" }
+"~/.t3/userdata/keybindings.json" = "config/.t3/userdata/keybindings.json"
+"~/.t3/userdata/settings.json" = "config/.t3/userdata/settings.json"
 
 # Shared agent instructions
 "~/.claude/CLAUDE.md" = "config/.agents/AGENTS.md"

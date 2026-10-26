@@ -1,0 +1,120 @@
+{
+  "providerModelPreferences": {
+    "claudeAgent": {
+      "hiddenModels": [
+        "claude-fable-5",
+        "claude-opus-5",
+        "claude-opus-4-8",
+        "claude-opus-4-7",
+        "claude-opus-4-6",
+        "claude-opus-4-5",
+        "claude-sonnet-5",
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5"
+      ],
+      "modelOrder": [
+        "claude-fable-5-1",
+        "claude-opus-5-5",
+        "claude-sonnet-5-5",
+        "claude-haiku-5-5",
+        "claude-fable-5",
+        "claude-opus-5",
+        "claude-opus-4-8",
+        "claude-opus-4-7",
+        "claude-opus-4-6",
+        "claude-opus-4-5",
+        "claude-sonnet-5",
+        "claude-sonnet-4-6",
+        "claude-haiku-4-5"
+      ]
+    },
+    "codex": {
+      "hiddenModels": [
+        "gpt-6-sol",
+        "gpt-5.6-sol",
+        "gpt-5.6-terra",
+        "gpt-5.6-luna"
+      ],
+      "modelOrder": [
+        "gpt-6-astra",
+        "gpt-6.1-sol",
+        "gpt-6-luna",
+        "gpt-6-sol",
+        "gpt-5.6-sol",
+        "gpt-5.6-terra",
+        "gpt-5.6-luna"
+      ]
+    },
+    "pi": {
+      "hiddenModels": [
+        "default",
+        "openai-codex/gpt-5.3-codex-spark",
+        "openai-codex/gpt-5.5",
+        "openai-codex/gpt-5.6-luna",
+        "openai-codex/gpt-5.6-sol",
+        "openai-codex/gpt-5.6-terra",
+        "openai-codex/gpt-6-sol"
+      ],
+      "modelOrder": [
+        "openai-codex/gpt-6-astra",
+        "openai-codex/gpt-6.1-sol",
+        "openai-codex/gpt-6-luna",
+        "default",
+        "openai-codex/gpt-5.3-codex-spark",
+        "openai-codex/gpt-5.5",
+        "openai-codex/gpt-5.6-luna",
+        "openai-codex/gpt-5.6-sol",
+        "openai-codex/gpt-5.6-terra",
+        "openai-codex/gpt-6-sol"
+      ]
+    }
+  },
+  "defaultRuntimeMode": "auto",
+  "projectSettingsFolded": true,
+  "idleCompaction": "onReturn",
+  "providerInstances": {
+    "pi": {
+      "driver": "pi",
+      "displayName": "Pi",
+      "environment": [
+        {
+          "name": "CONTEXT7_API_KEY",
+          "value": "",
+          "sensitive": true,
+          "valueRedacted": true
+        },
+        {
+          "name": "GIT_OPTIONAL_LOCKS",
+          "value": "0",
+          "sensitive": false
+        }
+      ],
+      "enabled": true
+    },
+    "codex": {
+      "driver": "codex",
+      "environment": [
+        {
+          "name": "CONTEXT7_API_KEY",
+          "value": "",
+          "sensitive": true,
+          "valueRedacted": true
+        }
+      ]
+    },
+    "claudeAgent": {
+      "driver": "claudeAgent",
+      "environment": [
+        {
+          "name": "CONTEXT7_API_KEY",
+          "value": "",
+          "sensitive": true,
+          "valueRedacted": true
+        }
+      ],
+      "config": {
+        "launchArgs": "--mcp-config /Users/ryo.nakae/.claude/mcp.json"
+      }
+    }
+  }
+}
