@@ -21,7 +21,7 @@
 
 エージェントは T3 Code から起動する。worktree・ターミナル・通知も T3 Code の機能を使う。
 
-設定は `~/.t3/userdata/` の `settings.json` と `keybindings.json` を dotfiles で管理する。画面での変更も Git 正本への書き込みになるので、Git 差分を確認する。`keybindings.json` は起動時に既定のキーが追記されることがある。
+設定は `~/.t3/userdata/settings.json` を dotfiles で管理する。画面での変更も Git 正本への書き込みになるので、Git 差分を確認する。キーバインドは既定のまま使い、管理しない。
 
 新しいスレッドの権限モードは Auto を既定にしている（**Settings → General → New threads → Permissions**）。Claude は自動承認の分類器、Codex は workspace-write の sandbox と自動レビューで危険な操作を止める。Pi は Auto に対応しないため、Supervised か Full access を選ぶ。
 

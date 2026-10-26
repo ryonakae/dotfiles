@@ -13,7 +13,7 @@
 | macOS preferences | 構成別 mise の defaults と `scripts/macos-settings.sh` |
 | Hermes 本体 | `mise.hermes.toml` の repos・task、指定 fork の標準 shell installer |
 | Hermes gateway | fork 標準の `hermes gateway` が生成する launchd 定義 |
-| T3 Code | `config/.t3/userdata/` の `settings.json`・`keybindings.json`。秘密・state・client / desktop 設定は管理外 |
+| T3 Code | `config/.t3/userdata/settings.json`。キーバインド・秘密・state・client / desktop 設定は管理外 |
 
 - Bash / fish / mise / usage は Homebrew。mise は更新可能だが、共通 runtime の指定版は setup で変更しない。Intel 用 Homebrew は追加しない。
 - 標準 Bundle で導入・更新し、`--no-upgrade` や自動 cleanup は使わない。宣言削除をアンインストールとみなさず、対象を指定して削除する。PostgreSQL のデータ・サービスや未宣言アプリをついでに削除・停止しない。
