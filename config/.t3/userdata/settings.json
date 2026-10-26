@@ -115,6 +115,19 @@
       "config": {
         "launchArgs": "--mcp-config /Users/ryo.nakae/.claude/mcp.json"
       }
+    },
+    "opencode": {
+      "driver": "opencode",
+      "displayName": "OpenCode",
+      "environment": [
+        {
+          "name": "CONTEXT7_API_KEY",
+          "value": "",
+          "sensitive": true,
+          "valueRedacted": true
+        }
+      ],
+      "enabled": true
     }
   }
 }
