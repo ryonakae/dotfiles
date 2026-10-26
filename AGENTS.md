@@ -9,7 +9,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 - 全体入口は setup のみ。全構成を明示し、private/work へ default を自動追加しない。部分操作・明示更新は標準 brew / mise。setup に cleanup・サービス再起動を追加しない。
 - 共通 runtime の exact 版を維持し、Hermes は専用 mise task から指定 fork の標準 installer で初回導入する。本体更新は別 task。通常 repos 更新へ混ぜず、起動時に導入・更新しない。外部スキル・fish/Yazi plugin は取得元ブランチの最新版追従を許容する。
 - 未知の実体を force で置換しない。自動再試行・rollback は追加しない。
-- 非秘密の適用対象定義は Git 管理する。マシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。マシン非依存の定数は wrapper に置く。
+- 非秘密の適用対象定義は Git 管理する。マシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。
 - Hermes の認証・memory・session・`.env`・自己更新する hooks / cron / skills、T3 Code の secrets・state・client / desktop 設定は管理対象に加えない。
 
@@ -18,7 +18,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 変更したファイルの構文、差分、関連テストを確認する。配布やサービス再起動は検証目的では実行しない。
 
 - fish は `fish --no-execute`、shell は shebang に対応する shell の `-n`。
-- 起動 wrapper・setup 入口は `scripts/tests/` の関連 `test_*.py` を `uv run --no-project python` で実行する。必要な実ツールがないための統合テスト skip は成功と扱わない。
+- setup 入口と補助スクリプトは `scripts/tests/` の関連 `test_*.py` を `uv run --no-project python` で実行する。必要な実ツールがないための統合テスト skip は成功と扱わない。
 - TOML と Brewfile は標準ツールの構文表示・dry-run で確認する。実 HOME の apply や installer 起動を検証の代わりにしない。
 - 文書・スキルはリンク・参照パス、掲載コマンドと現行コードの整合、`git diff --check`。
 

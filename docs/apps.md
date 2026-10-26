@@ -110,22 +110,22 @@ hermes gateway status
 
 ### 独自管理の gateway から移行する
 
-以前の dotfiles で `hermes-gateway` 関数を使っていた Mac では、dotfiles を更新する前に旧 gateway を止める。
+以前の dotfiles で `hermes-gateway` 関数を使っていた Mac では、dotfiles を更新する前に、旧 gateway を止めて旧 launcher のリンクを外す。どちらも更新後は使えなくなる。
 
 ```fish
 hermes-gateway stop
+mise -C ~/dotfiles -E default,private dot unapply ~/.local/libexec/hermes ~/.local/libexec/hermes-gui-launchctl/launchctl
 ```
+
+[dotenvx からの移行](secrets.md#dotenvx-から移行する)に従って、`~/.hermes/.env` を作る。
 
 dotfiles を更新して[設定を配置](usage.md#設定ファイルを変更する)したあと、旧 plist を退避し、無効化された登録を戻してから標準の手順で登録する。
 
 ```fish
 mv ~/Library/LaunchAgents/ai.hermes.gateway.plist ~/.hermes/ai.hermes.gateway.plist.old
-rm ~/.local/libexec/hermes ~/.local/libexec/hermes-gui-launchctl/launchctl
 launchctl enable gui/(id -u)/ai.hermes.gateway
 hermes gateway install
 ```
-
-Keychain に残った dotenvx の復号鍵は、値を `~/.hermes/.env` と T3 Code へ移し終えてから削除する。
 
 ### Hermes を停止・更新する
 

@@ -257,7 +257,7 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertFalse((shared / 'local-only/SKILL.md').exists())
     self.assertEqual((targets[2] / 'external/SKILL.md').read_text(), 'external skill\n')
 
-  def test_apply_excludes_examples_tests_and_state(self):
+  def test_apply_excludes_examples_and_state(self):
     excluded = ['.config/tool/config.toml.example']
     untracked = ['.config/fish/fish_variables', '.pi/agent/sessions/last.json',
                  '.config/fish/functions/local-only.fish']

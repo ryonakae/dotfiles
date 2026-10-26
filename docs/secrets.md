@@ -19,7 +19,11 @@ T3 Code はログインシェルの環境変数を一部しか引き継がない
 1. T3 Code の **Settings → Providers** で対象の provider（Claude、Codex、Pi など）を開く。
 2. **Environment variables** に変数名と値を入力し、**Sensitive** をオンにして保存する。
 
-Sensitive の値は `~/.t3/userdata/secrets/` に保存され、dotfiles で管理する `settings.json` には値の入っていない項目だけが書かれる。保存後に `git -C ~/dotfiles diff config/.t3/userdata/settings.json` を実行し、値が含まれていないことを確認する。
+Sensitive の値は `~/.t3/userdata/secrets/` に保存され、dotfiles で管理する `settings.json` には値の入っていない項目だけが書かれる。保存後に次を実行し、登録した変数の `value` が空で `valueRedacted` が `true` になっていることを確認する。
+
+```sh
+jq '.providerInstances | map_values(.environment)' ~/.t3/userdata/settings.json
+```
 
 現在使う変数と登録先：
 
@@ -30,7 +34,7 @@ Sensitive の値は `~/.t3/userdata/secrets/` に保存され、dotfiles で管�
 
 エージェントが `env` などで環境変数を表示すると、その出力は T3 Code の会話履歴に平文で残る。値を出力させない。
 
-値を変えたら、その provider の新しいスレッドから反映される。
+値を変えたら、その provider の新しいスレッドから反映される。ターミナルから直接起動したエージェントには渡らないので、API キーが必要な作業は T3 Code から行う。
 
 ## Hermes に渡す
 
@@ -46,6 +50,16 @@ chmod 600 "$HOME/.hermes/.env"
 ```fish
 hermes gateway restart
 ```
+
+## dotenvx から移行する
+
+以前の dotfiles で `~/.config/.env` を dotenvx で暗号化していた Mac では、dotenvx を削除する前に値を取り出し、上の各置き場所へ登録する。値は画面に表示されるので、登録したら端末の表示を消す。
+
+```sh
+dotenvx get --no-armor -f "$HOME/.config/.env"
+```
+
+登録が済んだら、`~/.config/.env` のリンクと実ファイル `~/dotfiles/config/.config/.env` を削除し、Keychain の dotenvx の項目と、1Password に控えた復号鍵を削除する。
 
 ## プロジェクトで使う
 
