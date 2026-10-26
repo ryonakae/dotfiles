@@ -86,7 +86,9 @@ description: ユーザーがcommit-pushスキルの実行を明示した場合�
 
 1. commit-onlyへの制限が指定されていない場合だけ`git push`する。
 2. 明示呼び出しの引数でcommit-onlyに制限されている場合はpushせず、作成したコミットと「pushは未実行」であることを伝えて終了する。
-3. push に失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
+3. remote に未取り込みのコミットがあり non-fast-forward で拒否された場合は、確認せず `git pull --rebase --autostash` してから `git push` を 1 回だけ再実行する。未 push の local コミットは公開前なので、remote の先頭へ載せ直しても他者の履歴を壊さない。
+4. rebase が conflict で止まった場合は `git rebase --abort` で元に戻し、conflict したファイルと次のアクション候補を伝えて終了する。
+5. それ以外で push に失敗したらエラー要点と次のアクション候補だけを伝えて終了する。
 
 ## 代表ケース
 
@@ -100,7 +102,7 @@ description: ユーザーがcommit-pushスキルの実行を明示した場合�
 
 ## 注意
 
-- 破壊的な操作（`reset` `clean` `rebase` `push --force` など）はしない。
+- 破壊的な操作（`reset` `clean` `push --force` など）はしない。`rebase` はステップ7 の non-fast-forward 対応に限る。
 - ユーザーや別プロセスの変更を巻き込まないことを優先する。対象外の変更がある場合は、コミットせず残す。
 - 対象外の既存 staged 変更はユーザーの意図がある可能性を尊重し、勝手に unstage しない。commit-push 対象に含めると決めた staged 変更だけは、コミット分割のために対象範囲内で unstage / restage してよい。
 - hunk 単位の staging が必要な場面では、patch を推測で作らずユーザー確認を待つ。
