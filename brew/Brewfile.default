@@ -1,4 +1,3 @@
-tap "dotenvx/brew"
 tap "trasta298/tap"
 
 brew "actionlint"
@@ -7,7 +6,6 @@ brew "agent-browser"
 brew "bash"
 brew "cocoapods"
 brew "ctx7"
-brew "dotenvx/brew/dotenvx", trusted: true
 brew "exiftool"
 brew "fastlane"
 brew "fd"

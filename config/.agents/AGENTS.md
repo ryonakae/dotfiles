@@ -35,7 +35,7 @@
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
 - worktree の作成・削除は T3 Code（スレッド起動時の worktree 指定や `t3_*` ツール）で行い、`git worktree` を直接使わない
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
-- dotenvx の private key は macOS Keychain（`dotenvx native`）に保存し、1Password へバックアップする
+- 秘密は Git 管理外の `.env` に置き、値のない `.env.example` だけを管理する。値を出力に表示しない
 - iOS Simulator での UI 動作検証や `.ad` テストの作成・実行は、`use-agent-device` と `agent-device` スキルで行う。配置・初期状態・実行方法は対象アプリの既存規約を優先する
 
 ### ドキュメント・Web検索
