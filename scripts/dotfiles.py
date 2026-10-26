@@ -178,7 +178,6 @@ def setup(configurations):
       print(f'Trust only this declaration: {path}\n{snapshot[path].decode("utf-8")}')
     if 'default' in configurations:
       print('Changes the login shell to /opt/homebrew/bin/fish (chsh may ask for the password).')
-      print('Installs missing pinned Herdr plugins and registers the Homebrew Zerdr with Herdr and Zed.')
     if 'private' in configurations:
       print(f'Trust only this Hermes declaration: {hermes_declaration}\n{snapshot[hermes_declaration].decode("utf-8")}')
       print('Installs Hermes with its standard installer stages when absent.')
@@ -229,7 +228,6 @@ def setup(configurations):
                       MISE_GLOBAL_CONFIG_FILE=str(ROOT / 'config/.config/mise/config.base.toml'))
       home_mise = [str(MISE), '-C', str(home)]
       run('mise runtimes', [*home_mise, 'install', 'node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'], cwd=home, env=home_env)
-      run('Herdr plugins', [*mise, 'run', 'herdr:plugins'])
     if 'private' in configurations:
       hermes_mise = [str(MISE), '-C', str(ROOT), '-E', 'hermes']
       hermes_env = dict(environment, MISE_ENV='hermes')

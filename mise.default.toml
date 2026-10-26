@@ -1,6 +1,6 @@
 [dotfiles]
 # General config
-"~/.config" = { source = "config/.config", mode = "symlink-each", manifest = "git", exclude = ["tests", "*.example", "mise", "karabiner"] }
+"~/.config" = { source = "config/.config", mode = "symlink-each", manifest = "git", exclude = ["*.example", "mise", "karabiner"] }
 "~/.config/mise/config.toml" = "config/.config/mise/config.base.toml"
 "~/.config/karabiner" = "config/.config/karabiner"
 "~/.hammerspoon" = { source = "config/.hammerspoon", mode = "symlink-each", manifest = "git" }
@@ -39,7 +39,6 @@
 "~/.agents/skills/cua-spaces" = "~/.local/share/agent-skill-sources/cua-driver/libs/cua/skills/cua-spaces"
 "~/.agents/skills/find-docs" = "~/.local/share/agent-skill-sources/find-docs/skills/find-docs"
 "~/.agents/skills/ghostwriter" = "~/.local/share/agent-skill-sources/ghostwriter/skills/ghostwriter"
-"~/.agents/skills/herdr" = "~/.local/share/agent-skill-sources/herdr/skills/herdr"
 "~/.agents/skills/japanese-tech-writing" = "~/.local/share/agent-skill-sources/tech-writing/skills/japanese-tech-writing"
 "~/.agents/skills/ketch" = "~/.local/share/agent-skill-sources/ketch/skills/ketch"
 "~/.agents/skills/readme-i18n" = "~/.local/share/agent-skill-sources/readme-i18n/skills/readme-i18n"
@@ -57,7 +56,6 @@
 "~/.claude/skills/cua-spaces" = "~/.local/share/agent-skill-sources/cua-driver/libs/cua/skills/cua-spaces"
 "~/.claude/skills/find-docs" = "~/.local/share/agent-skill-sources/find-docs/skills/find-docs"
 "~/.claude/skills/ghostwriter" = "~/.local/share/agent-skill-sources/ghostwriter/skills/ghostwriter"
-"~/.claude/skills/herdr" = "~/.local/share/agent-skill-sources/herdr/skills/herdr"
 "~/.claude/skills/japanese-tech-writing" = "~/.local/share/agent-skill-sources/tech-writing/skills/japanese-tech-writing"
 "~/.claude/skills/ketch" = "~/.local/share/agent-skill-sources/ketch/skills/ketch"
 "~/.claude/skills/readme-i18n" = "~/.local/share/agent-skill-sources/readme-i18n/skills/readme-i18n"
@@ -82,7 +80,6 @@
 "~/.local/share/agent-skill-sources/cua-driver" = { url = "https://github.com/trycua/cua.git", ref = "main" }
 "~/.local/share/agent-skill-sources/find-docs" = { url = "https://github.com/upstash/context7.git", ref = "master" }
 "~/.local/share/agent-skill-sources/ghostwriter" = { url = "https://github.com/mblode/agent-skills.git", ref = "main" }
-"~/.local/share/agent-skill-sources/herdr" = { url = "https://github.com/herdrdev/herdr.git", ref = "master" }
 "~/.local/share/agent-skill-sources/ketch" = { url = "https://github.com/1broseidon/ketch.git", ref = "main" }
 "~/.local/share/agent-skill-sources/readme-i18n" = { url = "https://github.com/xixu-me/skills.git", ref = "main" }
 "~/.local/share/agent-skill-sources/skill-creator" = { url = "https://github.com/anthropics/skills.git", ref = "main" }
@@ -235,22 +232,3 @@ value = { enabled = true, value = { type = "standard", parameters = [119, 13, 26
 
 [bootstrap.user]
 login_shell = "/opt/homebrew/bin/fish"
-
-[tasks."herdr:plugins"]
-description = "Install pinned Herdr plugins only when absent and register the Homebrew Zerdr"
-run = '''
-set -euo pipefail
-installed=$(/opt/homebrew/bin/herdr plugin list --json | /opt/homebrew/bin/jq -r '.result.plugins[].plugin_id')
-install() {
-  if grep -Fxq "$1" <<<"$installed"; then
-    echo "Herdr plugin $1 is already installed; leaving it unchanged."
-  else
-    /opt/homebrew/bin/herdr plugin install "$2" --ref "$3" --yes
-  fi
-}
-install ryonakae.agent-context ryonakae/herdr-agent-context 10b8ead9d86b2cbb7b13d87ef50dec4b87ee21cd
-install worktrunk devashish2203/herdr-worktrunk a3107ca566bafcd463bc138007a0c01051970784
-"$(/opt/homebrew/bin/brew --prefix ryonakae/tap/zerdr)/bin/zerdr" setup install
-'''
-shell = "bash -c"
-raw = true

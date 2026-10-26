@@ -15,25 +15,9 @@
           }
         ]
       }
-    ],
-    "SessionStart": [
-      {
-        "matcher": "^(startup|resume|clear|compact|fork)$",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash '/Users/ryo.nakae/.claude/hooks/herdr-agent-state.sh' session",
-            "timeout": 10
-          }
-        ]
-      }
     ]
   },
   "workflowKeywordTriggerEnabled": false,
-  "statusLine": {
-    "type": "command",
-    "command": "npx -y ccstatusline@2.2.30"
-  },
   "language": "日本語",
   "feedbackSurveyRate": 0,
   "feedbackDrafts": "off",

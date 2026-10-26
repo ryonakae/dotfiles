@@ -116,7 +116,7 @@ class DotfilesLinksTests(unittest.TestCase):
                      'updated external skill\n')
     expected = {
       'agent-browser', 'agent-device', 'cognitive-rhythm-writing', 'cua-driver',
-      'cua-spaces', 'find-docs', 'ghostwriter', 'herdr', 'japanese-tech-writing',
+      'cua-spaces', 'find-docs', 'ghostwriter', 'japanese-tech-writing',
       'ketch', 'readme-i18n', 'skill-creator', 'stop-slop', 'stop-slop-ja',
       'tdd', 'worktrunk',
     }
@@ -268,10 +268,7 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertEqual((targets[2] / 'external/SKILL.md').read_text(), 'external skill\n')
 
   def test_apply_excludes_examples_tests_and_state(self):
-    excluded = [
-      '.config/herdr/scripts/tests/test_helper.py',
-      '.config/tool/config.toml.example',
-    ]
+    excluded = ['.config/tool/config.toml.example']
     untracked = ['.config/fish/fish_variables', '.pi/agent/sessions/last.json',
                  '.config/fish/functions/local-only.fish']
     for name in excluded:

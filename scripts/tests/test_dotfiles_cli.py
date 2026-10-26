@@ -151,13 +151,11 @@ class SetupCliTests(unittest.TestCase):
     self.assertTrue(any(c[-5:] == ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'] for c in commands))
     self.assertFalse(any('hermes:install' in c or c[0] == '/usr/bin/python3' for c in commands))
     mise = [str(self.module.MISE), '-C', str(self.root), '-E', 'default']
-    herdr = commands.index([*mise, 'run', 'herdr:plugins'])
+    runtimes = next(i for i, c in enumerate(commands) if 'node' in c)
     shell = commands.index([*mise, 'bootstrap', 'user', 'apply', '--yes'])
-    self.assertLess(next(i for i, c in enumerate(commands) if 'node' in c), herdr)
     self.assertLess(commands.index([*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes']), shell)
-    self.assertIn(['/usr/bin/sudo', '-v'], commands[herdr:shell])
+    self.assertIn(['/usr/bin/sudo', '-v'], commands[runtimes:shell])
     self.assertIn('login shell to /opt/homebrew/bin/fish', self.module.sys.stdout.getvalue())
-    self.assertIn('Herdr plugins', self.module.sys.stdout.getvalue())
     self.assertEqual([c[-1] for c in commands if 'trust' in c],
                      [str(self.root / 'mise.toml'), str(self.root / 'mise.default.toml')])
 
@@ -351,7 +349,7 @@ class SetupCliTests(unittest.TestCase):
 
   def test_each_command_failure_stops_later_stages_and_reports_partial_completion(self):
     for failing in ('clt', 'sudo', 'bundle', 'trust', 'repos', 'dry-run', 'apply',
-                    'runtimes', 'herdr', 'hermes-trust', 'hermes-install', 'plist', 'defaults', 'login-shell', 'supplement'):
+                    'runtimes', 'hermes-trust', 'hermes-install', 'plist', 'defaults', 'login-shell', 'supplement'):
       with self.subTest(failing=failing):
         self.run.reset_mock()
         self.module.sys.stdout.truncate(0)
@@ -367,7 +365,6 @@ class SetupCliTests(unittest.TestCase):
             'apply': 'dot' in command and '--yes' in command,
             'runtimes': command[-5:] == ['node', 'python', 'ruby', 'bun', 'aqua:aws/aws-cli'],
             'hermes-trust': 'trust' in command and command[-1] == str(self.root / 'mise.hermes.toml'),
-            'herdr': 'herdr:plugins' in command,
             'login-shell': command[-3:] == ['user', 'apply', '--yes'],
             'hermes-install': 'hermes:install' in command,
             'plist': command[0] == '/usr/bin/python3',
