@@ -106,25 +106,6 @@ hermes gateway status
 
 以後の起動・停止・再起動は `hermes gateway start|stop|restart` を使う。
 
-### 独自管理の gateway から移行する
-
-以前の dotfiles で `hermes-gateway` 関数を使っていた Mac では、dotfiles を更新する前に、旧 gateway を止めて旧 launcher のリンクを外す。どちらも更新後は使えなくなる。
-
-```fish
-hermes-gateway stop
-mise -C ~/dotfiles -E default,private dot unapply ~/.local/libexec/hermes ~/.local/libexec/hermes-gui-launchctl/launchctl
-```
-
-[dotenvx からの移行](secrets.md#dotenvx-から移行する)に従って、`~/.hermes/.env` を作る。
-
-dotfiles を更新して[設定を配置](usage.md#設定ファイルを変更する)したあと、旧 plist を退避し、無効化された登録を戻してから標準の手順で登録する。
-
-```fish
-mv ~/Library/LaunchAgents/ai.hermes.gateway.plist ~/.hermes/ai.hermes.gateway.plist.old
-launchctl enable gui/(id -u)/ai.hermes.gateway
-hermes gateway install
-```
-
 ### Hermes を停止・更新する
 
 本体更新は全体 setup と分けて行う。利用中の CLI を終了し、gateway が稼働中なら `hermes gateway stop` で先に止める。

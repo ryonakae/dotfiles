@@ -51,16 +51,6 @@ chmod 600 "$HOME/.hermes/.env"
 hermes gateway restart
 ```
 
-## dotenvx から移行する
-
-以前の dotfiles で `~/.config/.env` を dotenvx で暗号化していた Mac では、dotenvx を削除する前に値を取り出し、上の各置き場所へ登録する。値は画面に表示されるので、エージェントには実行させず通常の端末で実行し、登録したら端末の表示を消す。
-
-```sh
-dotenvx get --no-armor -f "$HOME/.config/.env"
-```
-
-登録が済んだら、`~/.config/.env` のリンクと実ファイル `~/dotfiles/config/.config/.env` を削除する。Keychain には、このファイルの公開鍵（`dotenvx keypair DOTENV_PUBLIC_KEY --no-armor -f "$HOME/.config/.env"` で表示）をアカウント名とする `dotenvx` の項目があり、ファイルの削除後は不要になる。
-
 ## プロジェクトで使う
 
 プロジェクト直下の `.env` に値を置き、`.gitignore` に `.env` を加える。必要な変数名は、値を空にした `.env.example` で管理する。
