@@ -92,8 +92,6 @@ def sudo_authentication():
 def interactive_user(parser):
   if os.geteuid() == 0:
     parser.error('run setup as the target user, not with sudo')
-  if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
-    parser.error('setup must be run by the user outside Safehouse')
   if not sys.stdin.isatty():
     parser.error('setup requires an interactive terminal for confirmation')
 
@@ -130,7 +128,7 @@ def setup(configurations):
   if 'default' in configurations:
     protected.append(ROOT / 'config/.config/mise/config.base.toml')
   if 'private' in configurations:
-    protected += [ROOT / 'mise.hermes.toml', ROOT / 'scripts/hermes-install.py', ROOT / 'scripts/hermes_plists.py']
+    protected += [ROOT / 'mise.hermes.toml', ROOT / 'scripts/hermes-install.py']
   snapshot = {}
   environment = {key: value for key, value in os.environ.items()
                  if not key.startswith('MISE_') or key == 'MISE_DATA_DIR'}
@@ -233,7 +231,6 @@ def setup(configurations):
       hermes_env = dict(environment, MISE_ENV='hermes')
       run('Hermes declaration trust', [*hermes_mise, 'trust', str(hermes_declaration)], env=hermes_env)
       run('Hermes initial install task', [*hermes_mise, 'run', 'hermes:install', '--yes'], env=hermes_env)
-      run('Hermes plist placement', ['/usr/bin/python3', str(ROOT / 'scripts/hermes_plists.py')])
     stage = 'macOS settings'
     with sudo_authentication():
       run('mise macOS defaults', [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'])
@@ -243,7 +240,7 @@ def setup(configurations):
         run(f'macOS supplement {name}', ['/bin/bash', str(ROOT / 'scripts/macos-settings.sh'), name, '--yes'])
     print('Setup complete: ' + ', '.join(completed))
     print('Restart the Mac to reflect macOS settings such as the Dock layout and to start the new login shell.')
-    print('No services were restarted. Apply updated Hermes definitions explicitly with hermes-gateway when needed.')
+    print('No services were restarted. Install or restart the Hermes gateway explicitly with hermes gateway when needed.')
   except BaseException:
     print(f"Setup stopped at {stage}. Completed: {', '.join(completed) or 'none'}", file=sys.stderr)
     print('Setup is non-atomic. Inspect partial changes; no automatic retry or rollback was attempted.', file=sys.stderr)

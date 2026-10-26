@@ -1,11 +1,9 @@
-tap "eugene1g/safehouse"
 tap "dotenvx/brew"
 tap "trasta298/tap"
 
 brew "actionlint"
 brew "age"
 brew "agent-browser"
-brew "eugene1g/safehouse/agent-safehouse", trusted: true
 brew "bash"
 brew "cocoapods"
 brew "ctx7"

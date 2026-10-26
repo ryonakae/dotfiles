@@ -363,8 +363,8 @@ class HermesInstallTests(unittest.TestCase):
     self.assertEqual(self.stages()[-1], 'complete')
     self.assertTrue(self.marker.exists())
 
-  def test_root_safehouse_and_noninteractive_mutation_are_rejected(self):
-    for options in ({'uid': 0}, {'APP_SANDBOX_CONTAINER_ID': 'agent-safehouse'}, {'interactive': False}):
+  def test_root_and_noninteractive_mutation_are_rejected(self):
+    for options in ({'uid': 0}, {'interactive': False}):
       with self.subTest(options=options):
         self.assertNotEqual(self.invoke(**options), 0)
         self.assertEqual(self.commands, [])

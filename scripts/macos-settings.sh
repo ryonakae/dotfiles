@@ -15,8 +15,8 @@ case $1 in
   *) echo "Unknown configuration: $1" >&2; exit 2 ;;
 esac
 
-if [[ ${APP_SANDBOX_CONTAINER_ID:-} == agent-safehouse || $EUID == 0 ]]; then
-  echo 'Run as the target user outside Safehouse, not as root.' >&2
+if [[ $EUID == 0 ]]; then
+  echo 'Run as the target user, not as root.' >&2
   exit 1
 fi
 

@@ -69,23 +69,13 @@ class DotfilesLinksTests(unittest.TestCase):
                           cwd=self.base, env=self.env, capture_output=True,
                           text=True, timeout=30)
 
-  def test_hermes_launchers_are_private_links_without_owning_the_helper_directory(self):
-    helper = self.home / '.local/libexec/hermes-gui-launchctl'
-    helper.mkdir(parents=True)
-    local = helper / 'unmanaged.txt'
-    local.write_text('local state\n')
+  def test_hermes_files_are_private_links(self):
     result = self.mise('apply', '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
-    for name in ('.hermes', '.local/libexec/hermes', '.local/libexec/hermes-gui-launchctl/launchctl'):
-      self.assertFalse(os.path.lexists(self.home / name), name)
+    self.assertFalse(os.path.lexists(self.home / '.hermes'))
     result = self.mise('apply', '--yes', profile='private')
     self.assertEqual(result.returncode, 0, result.stderr)
     self.assertEqual((self.home / '.hermes/SOUL.md').readlink(), self.repo / 'config/.hermes/SOUL.md')
-    for name in ('hermes', 'hermes-gui-launchctl/launchctl'):
-      target = self.home / '.local/libexec' / name
-      self.assertEqual(target.readlink(), self.repo / 'config/.local/libexec' / name)
-    self.assertFalse(helper.is_symlink())
-    self.assertEqual(local.read_text(), 'local state\n')
 
   def test_private_only_does_not_apply_default_links(self):
     self.source('.vimrc')

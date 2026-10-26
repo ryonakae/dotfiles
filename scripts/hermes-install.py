@@ -83,8 +83,6 @@ def main():
   try:
     if os.geteuid() == 0 or os.getuid() == 0:
       raise ValueError('run as the target user, not root or sudo')
-    if os.environ.get('APP_SANDBOX_CONTAINER_ID') == 'agent-safehouse':
-      raise ValueError('run outside Safehouse in a normal terminal')
     home = Path(os.environ.get('HOME', ''))
     if not home.is_absolute() or home != Path(pwd.getpwuid(os.getuid()).pw_dir):
       raise ValueError('HOME must match the current user')

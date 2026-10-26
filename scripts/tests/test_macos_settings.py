@@ -27,7 +27,7 @@ class MacOSSettingsTests(unittest.TestCase):
                     'sys.exit(int(os.environ.get("SUDO_EXIT", "0")))\n')
     sudo.chmod(0o755)
     self.env = dict(os.environ, PATH=str(self.base) + ':' + os.environ['PATH'],
-                    COMMAND_LOG=str(self.log), APP_SANDBOX_CONTAINER_ID='')
+                    COMMAND_LOG=str(self.log))
 
   def run_profile(self, *profiles, answer='apply\n'):
     return subprocess.run(['/bin/bash', str(SCRIPT), *profiles], env=self.env,
@@ -64,12 +64,6 @@ class MacOSSettingsTests(unittest.TestCase):
     self.assertEqual(self.commands(), [
       ['-n', '/usr/sbin/systemsetup', '-getRestartPowerFailure'],
     ])
-
-  def test_sandbox_application_is_rejected(self):
-    self.env['APP_SANDBOX_CONTAINER_ID'] = 'agent-safehouse'
-    result = self.run_profile('private')
-    self.assertNotEqual(result.returncode, 0)
-    self.assertEqual(self.commands(), [])
 
   def test_cancelled_confirmation_and_invalid_profiles_make_no_changes(self):
     for profiles, answer in [(('private',), 'no\n'), (('unknown',), 'apply\n'),

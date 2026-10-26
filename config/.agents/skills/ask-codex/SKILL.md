@@ -19,9 +19,8 @@ OpenAI Codex CLI の非対話モードで外部視点を得る。
 
 1. 利用可能なファイル閲覧・検索ツールで、質問に必要なコンテキストを集める。
 2. 現在の会話は Codex に引き継がれないため、前提、論点、制約、期待する回答をプロンプトに含める。
-3. 実行環境を判定する。`APP_SANDBOX_CONTAINER_ID=agent-safehouse` なら「Agent Safehouse 内での実行」に従う。
-4. 依頼に合う `exec` または `exec review` を実行する。
-5. Codex の回答を現在の分析やプロジェクト固有の事情と照合して報告する。
+3. 依頼に合う `exec` または `exec review` を実行する。
+4. Codex の回答を現在の分析やプロジェクト固有の事情と照合して報告する。
 
 ## 調査・設計相談
 
@@ -75,18 +74,6 @@ codex -a never -s read-only exec --ephemeral review "認証まわりの回帰を
 ```
 
 `--uncommitted`、`--base`、`--commit`、独自プロンプトは相互排他なので、同時に指定しない。
-
-## Agent Safehouse 内での実行
-
-`APP_SANDBOX_CONTAINER_ID=agent-safehouse` の場合は、各コマンドの `-a never -s read-only` を `--dangerously-bypass-approvals-and-sandbox` に置き換える。
-
-```bash
-codex --dangerously-bypass-approvals-and-sandbox exec --ephemeral "質問内容"
-```
-
-外側の Agent Safehouse がセキュリティ境界になるため、このフラグは Safehouse の外では使わない。実行ファイルの場所は固定せず、Bash から `PATH` 上の `codex` を直接呼び出す。fish の `codex` wrapper は Safehouse を追加で起動するため、既に Safehouse 内にいる場合は使わない。
-
-`-s read-only` とのネストで `sandbox_apply: Operation not permitted` が発生した場合や、外側の Safehouse がアクセスを拒否した場合は、回避策を試さずユーザーへ報告する。
 
 ## 報告
 

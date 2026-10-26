@@ -39,7 +39,7 @@ class SetupCliTests(unittest.TestCase):
       path.parent.mkdir(parents=True, exist_ok=True)
       path.write_text('fixture\n')
     (self.root / 'mise.hermes.toml').write_text('# Hermes lifecycle\n')
-    for name in ('hermes_plists.py', 'hermes-install.py', 'macos-settings.sh'):
+    for name in ('hermes-install.py', 'macos-settings.sh'):
       (self.root / 'scripts' / name).write_text('fixture\n')
     prefix = base / 'homebrew'
     (prefix / 'bin').mkdir(parents=True)
@@ -63,7 +63,7 @@ class SetupCliTests(unittest.TestCase):
     prompt = patch('builtins.input', side_effect=self.confirm)
     self.prompt = prompt.start()
     self.addCleanup(prompt.stop)
-    environment = patch.dict(os.environ, {'HOME': str(self.home), 'APP_SANDBOX_CONTAINER_ID': '', 'MISE_ENV': 'work'})
+    environment = patch.dict(os.environ, {'HOME': str(self.home), 'MISE_ENV': 'work'})
     environment.start()
     self.addCleanup(environment.stop)
 
@@ -125,7 +125,6 @@ class SetupCliTests(unittest.TestCase):
       [*mise, 'dot', 'apply', '--yes'],
       [*hermes_mise, 'trust', str(self.root / 'mise.hermes.toml')],
       [*hermes_mise, 'run', 'hermes:install', '--yes'],
-      ['/usr/bin/python3', str(self.root / 'scripts/hermes_plists.py')],
       ['/usr/bin/sudo', '-v'],
       [*mise, 'bootstrap', 'macos', 'defaults', 'apply', '--yes'],
       ['/bin/bash', str(self.root / 'scripts/macos-settings.sh'), 'private', '--yes'],
@@ -144,7 +143,7 @@ class SetupCliTests(unittest.TestCase):
     self.assertFalse(any(t.name == 'dotfiles-sudo-refresh' for t in threading.enumerate()))
 
   def test_default_only_installs_runtimes_without_hermes(self):
-    for name in ('mise.hermes.toml', 'scripts/hermes-install.py', 'scripts/hermes_plists.py'):
+    for name in ('mise.hermes.toml', 'scripts/hermes-install.py'):
       (self.root / name).unlink()
     self.invoke('default')
     commands = self.commands()
@@ -193,9 +192,7 @@ class SetupCliTests(unittest.TestCase):
     self.assertIn(hermes_trust, commands)
     self.assertLess(commands.index(installs[0]), commands.index(hermes_trust))
     self.assertLess(commands.index(hermes_trust), commands.index(hermes_task))
-    plists = ['/usr/bin/python3', str(self.root / 'scripts/hermes_plists.py')]
-    self.assertLess(commands.index(hermes_task), commands.index(plists))
-    self.assertLess(commands.index(plists), next(i for i, c in enumerate(commands) if 'defaults' in c))
+    self.assertLess(commands.index(hermes_task), next(i for i, c in enumerate(commands) if 'defaults' in c))
     self.assertEqual([c[2] for c in commands if c[0] == '/bin/bash'], ['private', 'default'])
     for call in self.run.call_args_list:
       if 'install' in call.args[0]:
@@ -233,14 +230,13 @@ class SetupCliTests(unittest.TestCase):
         self.run.assert_not_called()
         self.prompt.assert_not_called()
 
-  def test_root_safehouse_and_noninteractive_setup_are_rejected_before_changes(self):
-    for guard in ('root', 'Safehouse', 'noninteractive'):
+  def test_root_and_noninteractive_setup_are_rejected_before_changes(self):
+    for guard in ('root', 'noninteractive'):
       with self.subTest(guard=guard):
         self.module.os.geteuid.return_value = 0 if guard == 'root' else 501
         self.module.sys.stdin.isatty.return_value = guard != 'noninteractive'
-        with patch.dict(os.environ, {'APP_SANDBOX_CONTAINER_ID': 'agent-safehouse' if guard == 'Safehouse' else ''}):
-          with self.assertRaises(SystemExit) as error:
-            self.invoke('private')
+        with self.assertRaises(SystemExit) as error:
+          self.invoke('private')
         self.assertEqual(error.exception.code, 2)
         self.run.assert_not_called()
         self.prompt.assert_not_called()
@@ -349,7 +345,7 @@ class SetupCliTests(unittest.TestCase):
 
   def test_each_command_failure_stops_later_stages_and_reports_partial_completion(self):
     for failing in ('clt', 'sudo', 'bundle', 'trust', 'repos', 'dry-run', 'apply',
-                    'runtimes', 'hermes-trust', 'hermes-install', 'plist', 'defaults', 'login-shell', 'supplement'):
+                    'runtimes', 'hermes-trust', 'hermes-install', 'defaults', 'login-shell', 'supplement'):
       with self.subTest(failing=failing):
         self.run.reset_mock()
         self.module.sys.stdout.truncate(0)
@@ -367,7 +363,6 @@ class SetupCliTests(unittest.TestCase):
             'hermes-trust': 'trust' in command and command[-1] == str(self.root / 'mise.hermes.toml'),
             'login-shell': command[-3:] == ['user', 'apply', '--yes'],
             'hermes-install': 'hermes:install' in command,
-            'plist': command[0] == '/usr/bin/python3',
             'defaults': 'defaults' in command,
             'supplement': command[0] == '/bin/bash',
           }[failing]
@@ -451,7 +446,6 @@ class SetupCliTests(unittest.TestCase):
     (self.root / 'brew/Brewfile.default').unlink()
     (self.root / 'mise.hermes.toml').unlink()
     (self.root / 'scripts/hermes-install.py').unlink()
-    (self.root / 'scripts/hermes_plists.py').unlink()
     self.invoke('work')
     self.assertFalse(any('install' in c for c in self.commands()))
     self.assertEqual([c[2] for c in self.commands() if c[0] == '/bin/bash'], ['work'])
