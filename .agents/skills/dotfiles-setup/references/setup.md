@@ -12,7 +12,8 @@
 | 外部スキル・fish / Yazi plugin | 構成別 mise の repos と配置宣言（fish は glob、他は選択） |
 | macOS preferences | 構成別 mise の defaults と `scripts/macos-settings.sh` |
 | Hermes 本体 | `mise.hermes.toml` の repos・task、指定 fork の標準 shell installer |
-| Hermes launcher / wrapper / plist | Git 正本の直接リンクと `scripts/hermes_plists.py` の通常ファイル配置 |
+| Hermes gateway | fork 標準の `hermes gateway` が生成する launchd 定義 |
+| T3 Code | `config/.t3/userdata/` の `settings.json`・`keybindings.json`。秘密・state・client / desktop 設定は管理外 |
 
 - Bash / fish / mise / usage は Homebrew。mise は更新可能だが、共通 runtime の指定版は setup で変更しない。Intel 用 Homebrew は追加しない。
 - 標準 Bundle で導入・更新し、`--no-upgrade` や自動 cleanup は使わない。宣言削除をアンインストールとみなさず、対象を指定して削除する。PostgreSQL のデータ・サービスや未宣言アプリをついでに削除・停止しない。
@@ -24,7 +25,7 @@
 - `scripts/dotfiles.sh` は CLT の `/usr/bin/python3` を使う。初回に fish / mise / Homebrew の導入済みを要求しない。
 - 未指定・未知・重複の構成は変更前に拒否する。ユーザー指定順を維持し、不明な構成から default へ切り替えない。
 - 対象 checkout と `-E` で構成を固定し、継承された `MISE_ENV` や別 cwd による追加構成・プロジェクト設定の混入を防ぐ。private 単独を共通設定・runtime の導入に読み替えない。
-- 確認語は、最初の全体承認と dry-run 後の配置承認の2回。単独実行時の確認は残す。Hermes plist は差分がある場合だけ確認する。
+- 確認語は、最初の全体承認と dry-run 後の配置承認の2回。単独実行時の確認は残す。
 - 外部 source の初回取得前に full dry-run 成功を必須にしない。
 - private だけ Hermes 用宣言を trust し、install task を呼ぶ。完了判定は既知 checkout の origin/branch・標準完了 marker の HEAD・実行ファイルを照合する。通常 repos 更新と分離し、`command -v hermes` で導入判定しない。包括的な `mise upgrade` を setup に入れない。
 - サービスの自動停止・再開、Dock/端末の自動再起動、cleanup を setup に追加しない。macOS 設定の画面反映は完了時に Mac の再起動を案内する。setup の再実行を無変更の冪等操作と説明しない。
@@ -32,7 +33,7 @@
 ### 実機操作の承認
 
 - 秘密・権限・OS設定・サービス・バックアップ・削除は、対象を示して直前にも承認を得る。編集・計画承認だけで実機操作をしない。
-- setup は対象ユーザーの通常対話端末で行い、全体を sudo で起動しない。Herdr のペインへの実操作委譲にも承認が必要。
+- setup は対象ユーザーの通常対話端末で行い、全体を sudo で起動しない。
 - 変更・衝突する対象だけ保全する。全アプリ停止、HOME 全量バックアップ、無関係な導入物の全件棚卸しは求めない。
 - 未知のファイル・リンク、既存 backup、確認後の変更を上書きしない。秘密・認証・session・DB・管理外の兄弟は保持する。
 
@@ -88,18 +89,14 @@ cask などがキャッシュを失効させて更新に失敗した場合は、
 - 初回だけ `venv` 段階（Python の準備）を実行し、更新では依存の同期から始める。標準完了 marker は操作前に無効化し、全対象段階の成功後だけ作成する。自動 stash/reset・retry・rollback は行わず、同時 setup/install/update は避ける。
 - installer の `python-deps`・`products`・`complete` 段階を使い、`config`（初期設定の生成）・gateway・Desktop 段階は呼ばない。PATH 追記が fish の既存設定で不要になるよう `SHELL` を fish に固定して呼び、`config.fish` に `~/.local/bin` の `fish_add_path` 行がなければ導入前に止める。専用 uv/runtime は標準 installer に任せ、共通 runtime の exact pin を変えない。agent-browser・cua-driver は Hermes が固定した版を installer に管理させ（cua-driver は PATH の別実体を使わない）、依存 fallback の警告は隠さない。
 - 起動時の自動導入・更新、PATH の別 Hermes への fallback、Hermes の cwd 変更を追加しない。
-- wrapper・GUI domain 操作補助は Git 正本。Safehouse の HOME 許可・環境継承・profile 順・サービス feature 差分、引数・終了コードを維持する。
-- plist は通常ファイル。symlink・未知の実体・所有の問題は停止し、手動差分を確認なしで上書きしない。比較失敗は停止し、mise の自動ロードする LaunchAgent 管理へ移さない。
+- gateway の登録・起動・停止は導入後にユーザーが `hermes gateway install|start|stop` で行う。setup・task から呼ばず、plist を dotfiles で生成・配置しない。
 - 追加依存・全機能確認を導入の前提にしない。
-- `hermes gateway install`、installer の全体 main、別 venv 管理を重ねない。
-- 管理関数は対象ユーザーの `gui/<UID>` を固定し、操作元の managername だけで判断しない。失敗時に別ドメインや直接起動へ fallback しない。
+- installer の全体 main、別 venv 管理を重ねない。
 
-### Claude・Pi・Herdr
+### T3 Code・Pi
 
-- Herdr hook は二重登録しない。
+- T3 Code の provider 設定（Environment variables・Launch arguments）は画面から変更する。Sensitive の値が `settings.json` に平文で書かれていないことを Git 差分で確認する。
 - Pi は live link と標準パッケージ管理を使い、認証・session を配布しない。
-- Herdr plugins の一覧・ref は `mise.default.toml` の `herdr:plugins` task が正本。checkout / state / session / log は可変データとして保持する。
-- Zerdr は Homebrew 本体がローカル plugin と Zed tasks を生成する。通常設定配布と二重所有させない。
 
 ## macOS 設定
 

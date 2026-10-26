@@ -64,16 +64,16 @@ macOS 設定は [mise.default.toml](../mise.default.toml)などの構成別宣�
 bash scripts/dotfiles.sh setup default private
 ```
 
-選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime、Herdr のプラグイン、未導入の Hermes、macOS 設定、ログインシェルを順に適用する。共通 runtime・Herdr のプラグイン・fish へのログインシェル変更は `default`、Hermes の導入は `private` を選択した場合だけ。
+選択した Brewfile、外部リポジトリ、設定リンク、共通 runtime、未導入の Hermes、macOS 設定、ログインシェルを順に適用する。共通 runtime・fish へのログインシェル変更は `default`、Hermes の導入は `private` を選択した場合だけ。
 
 表示された対象と確認に応答する。
 
 | 表示された確認 | 進めてよい条件 | 入力 |
 |---|---|---|
-| 全体 setup | 対象ユーザー・checkout・構成・更新範囲、Homebrew の導入（未導入時）、信頼する mise 宣言の全文、電源設定・ログインシェル・Herdr・Hermes の対象が正しい | `setup` |
+| 全体 setup | 対象ユーザー・checkout・構成・更新範囲、Homebrew の導入（未導入時）、信頼する mise 宣言の全文、電源設定・ログインシェル・Hermes の対象が正しい | `setup` |
 | リンクの配置 | dry-run の配置予定に不明なファイルや衝突がない | `apply` |
 
-ほかに止まるのは、パスワードの入力と、導入済みの Hermes で起動定義（plist）に差分がある場合の `y` だけ。Karabiner に既存設定がある場合は、配置前に[Karabiner の手順](apps.md#karabiner)を確認する。
+ほかに止まるのは、パスワードの入力だけ。Karabiner に既存設定がある場合は、配置前に[Karabiner の手順](apps.md#karabiner)を確認する。
 
 sudo のパスワードは端末のプロンプトへ入力する。アプリの導入中や会社のポリシーによっては再入力が必要。`sudo cache refresh failed` と表示されても setup は続くので、求められたらパスワードを入力する。ログインシェルの変更（`chsh`）も別にパスワードを求める場合がある。
 
@@ -92,16 +92,8 @@ ls -l ~/.config/fish/config.fish ~/.config/mise/config.toml
 
 再起動後にターミナルを開き、fish が起動して Dock が[宣言](../mise.default.toml)どおりに並んでいれば完了。fish にならない場合は[fish の切替](troubleshooting.md#fish-に切り替わらない)を確認する。
 
-## 7. 環境変数を準備してエージェントを起動する
+## 7. T3 Code でエージェントを起動する
 
-[環境変数の初回設定](secrets.md#初回設定)を済ませる。別の Mac から引き継ぐ場合は、同ページの[バックアップと復元](secrets.md#バックアップと復元)を使う。
+T3 Code を開き、使うエージェントにログインする。[環境変数の管理](secrets.md#t3-code-のエージェントに渡す)に従って、API キーを provider ごとに登録する。
 
-準備後、使うエージェントを起動する。Pi の例：
-
-```fish
-cd ~/dotfiles
-type pi
-pi
-```
-
-`type pi` が fish 関数を示し、Safehouse 経由で画面が開けば導入完了。各エージェントへのログイン、Apple Account、権限は別操作。[アプリ別の設定](apps.md)を参照する。
+新しいスレッドを作り、権限モードが Auto になっていて、エージェントが応答すれば導入完了。Apple Account や macOS の権限は別操作。[アプリ別の設定](apps.md)を参照する。

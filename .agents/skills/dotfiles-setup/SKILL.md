@@ -26,7 +26,7 @@ description: >-
 | 設定・アプリ・runtime・macOS の更新 | [日常操作](../../../docs/usage.md) |
 | 環境変数の準備・追加・更新 | [環境変数の管理](../../../docs/secrets.md) |
 | 失敗の対処・配置の再開 | [トラブル対応](../../../docs/troubleshooting.md) |
-| Hermes・Herdr・個別アプリ | [アプリ別設定](../../../docs/apps.md) |
+| T3 Code・Hermes・個別アプリ | [アプリ別設定](../../../docs/apps.md) |
 
 ## 変更・適用・復旧
 

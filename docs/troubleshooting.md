@@ -12,7 +12,6 @@
 | 設定配置後の `mise install` が失敗する | [ランタイム導入だけ再開](#ランタイム導入だけ再開する) |
 | fish が起動しない | [fish](#fish-に切り替わらない) |
 | インストールした版が選ばれない | [バージョンの確認](#期待したバージョンが使われない) |
-| 削除したファイルを戻したい | [ゴミ箱から復元](#削除したファイルを復元する) |
 
 ## Xcode・App Store
 
@@ -32,7 +31,6 @@
 | `Could not write domain com.apple.universalaccess` | 実行元アプリの[フルディスクアクセス](setup.md#2-ターミナルにフルディスクアクセスを許可する)を確認し、端末を開き直す |
 | `brew bundle` の失敗 | 失敗した formula / cask と理由を確認する。無効化された cask は Brewfile を直し、失敗した構成だけ `brew bundle` を再開する |
 | repos の dirty / origin 不一致 | 対象 checkout の変更と取得元を確認する |
-| plist の衝突・手動変更 | 実配置と生成結果・所有元を確認する |
 | macOS / 電源設定の失敗 | 変更済みの対象キー・構成を確認し、[macOS の部分操作](usage.md#macos-設定を適用する)を使う |
 | その他の衝突 | 該当ファイル・リンク・変更済み範囲を確認する |
 
@@ -66,14 +64,13 @@ setup の `Completed` に `link verification` があり、共通 runtime 導入�
 env MISE_ENV= /opt/homebrew/bin/mise -C ~ install node python ruby bun aqua:aws/aws-cli
 ```
 
-設定済みの版を導入する。setup 時と同じ `MISE_DATA_DIR` を使い、カスタム指定がある場合は保持する。成功しても後続の Hermes・plist・macOS 設定は未実施なので、次の手順へ進む。
+設定済みの版を導入する。setup 時と同じ `MISE_DATA_DIR` を使い、カスタム指定がある場合は保持する。成功しても後続の Hermes・macOS 設定は未実施なので、次の手順へ進む。
 
 ### runtime 復旧後の残りを完了する
 
 `Completed` を確認し、未完了の段階だけを順に実行する。各操作が成功してから次へ進む。以下の Hermes 操作は `private` を選択していた場合だけ行う。
 
-1. `default` を選択していた場合は、[Herdr のプラグイン導入](apps.md#プラグインの導入登録)を行う。
-2. [Hermes の初回導入 task](apps.md#初回設定と起動)を実行する。ルートと Hermes 用宣言が未 trust なら、内容を確認して先に trust する。
+1. [Hermes の初回導入 task](apps.md#初回設定と起動)を実行する。ルートと Hermes 用宣言が未 trust なら、内容を確認して先に trust する。
 
 ```fish
 mise -C ~/dotfiles -E hermes run hermes:install
@@ -81,8 +78,7 @@ mise -C ~/dotfiles -E hermes run hermes:install
 
 途中状態で止まったら、下の[導入・更新の復旧](#hermes-の導入更新が途中で止まった)へ進む。
 
-3. [Hermes の起動定義配置](apps.md#hermes)を行う。
-4. [macOS の部分操作](usage.md#macos-設定を適用する)で、当初選択した構成の defaults と電源設定を完了する。`default` を選択していた場合は、ログインシェルも `mise -C ~/dotfiles -E default bootstrap user apply` で変更する。
+2. [macOS の部分操作](usage.md#macos-設定を適用する)で、当初選択した構成の defaults と電源設定を完了する。`default` を選択していた場合は、ログインシェルも `mise -C ~/dotfiles -E default bootstrap user apply` で変更する。
 
 残りの段階が完了してから、[初回セットアップの再起動以降](setup.md#6-mac-を再起動する)へ戻る。
 
@@ -137,7 +133,7 @@ setup のログインシェル変更が失敗した場合は、`/opt/homebrew/bi
 
 - Homebrew：formula / cask の提供版と実際の解決先を確認する。
 - mise：共通設定の exact pin と `mise which` を確認する。
-- Hermes：`git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と `~/.local/libexec/hermes` の参照先を確認し、別の `hermes` が PATH で先に選ばれていないか確認する。
+- Hermes：`git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と `~/.local/bin/hermes` の参照先を確認し、別の `hermes` が PATH で先に選ばれていないか確認する。
 
 ## 会社が管理するアプリをスキップする
 
@@ -148,14 +144,3 @@ HOMEBREW_BUNDLE_CASK_SKIP=zoom
 ```
 
 既存ファイルと除外名を保持し、複数名は空白区切りにする。
-
-## 削除したファイルを復元する
-
-Safehouse 内の `rm` は Finder のゴミ箱へ移す。通常端末の `rm` は直接削除なので、この方法では戻せない。通常端末でもゴミ箱を使いたい場合は macOS 標準の `trash` を使う。
-
-1. Finder でゴミ箱を開く。
-2. 戻したい項目を右クリックし、「戻す」を選ぶ。元の場所に戻れば完了。
-
-「戻す」が表示されない項目は、元の場所へ手で移す。Safehouse 内の `rm` を並行して実行した場合などに起こる。Safehouse 内からゴミ箱の中身は操作できないので、復元と掃除は Finder か通常端末で行う。
-
-外部ボリューム上のファイルは、Safehouse 内の `rm` ではゴミ箱へ移せず、元のまま残る。

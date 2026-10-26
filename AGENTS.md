@@ -11,7 +11,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 - 未知の実体を force で置換しない。自動再試行・rollback は追加しない。
 - 非秘密の適用対象定義は Git 管理する。マシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。マシン非依存の定数は wrapper に置く。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。
-- Hermes の認証・memory・session・自己更新する hooks / cron / skills、Herdr の plugins 実体・session・log は管理対象に加えない。
+- Hermes の認証・memory・session・`.env`・自己更新する hooks / cron / skills、T3 Code の secrets・state・client / desktop 設定は管理対象に加えない。
 
 ## 検証
 
@@ -37,8 +37,6 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 
 ## 起動・保護設定
 
-- `__safehouse_args.fish` と `safe-hermes-gateway.sh` の HOME 許可・環境継承・profile 順・feature を合わせて確認する。サービスが対話用 feature を省く差分は維持する。
-- ポリシー変更は次回起動から適用される。現在の sandbox 制限を回避しない。実秘密の移行、Keychain 登録・バックアップはユーザーが通常端末で行う。
-- Hermes は `hermes-gateway` から fork 標準処理で操作する。自動停止・再開・状態保存を適用処理に追加せず、直接の launchctl や installer の plist 再生成で管理を迂回しない。
-- Herdr plugin の追加・削除時は `mise.default.toml` の `herdr:plugins` task と[導入手順](docs/apps.md#herdr)を更新する。worktree の作成・削除は Herdr 本体ではなく Worktrunk を使う。
-- Pi の `extensions/` に `hooks/` という名前のディレクトリを作らない。通知処理も extension として自動読込されるため。
+- エージェントは T3 Code から起動し、危険な操作は T3 Code の権限モードで止める。起動 wrapper や独自 sandbox を追加しない。
+- 秘密は T3 Code の provider ごとの Environment variables と `~/.hermes/.env` に置く。値の登録・移行はユーザーが行う。
+- Hermes の gateway は fork 標準の `hermes gateway` で操作する。自動停止・再開・状態保存を適用処理に追加しない。

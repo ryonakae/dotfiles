@@ -4,7 +4,7 @@
 
 | やりたいこと | 手順 |
 |---|---|
-| 環境変数を追加・変更する | [環境変数の管理](secrets.md#値を追加更新する) |
+| 環境変数を追加・変更する | [環境変数の管理](secrets.md) |
 | 設定を書き換える・配置する | [設定ファイル](#設定ファイルを変更する) |
 | アプリを更新・追加・削除する | [Homebrew](#アプリを更新追加削除する) |
 | Node・Python などの版を変える | [ランタイム](#ランタイムの版を変える) |
@@ -12,7 +12,7 @@
 | 外部スキル・plugin を更新する | [外部リポジトリ](#外部スキルと-plugin-を更新する) |
 | Hermes を更新・開始・停止する | [Hermes](apps.md#hermes-を停止更新する) |
 
-コマンドは Safehouse 外の通常端末で実行する。全体導入が必要な場合だけ、[setup](setup.md#5-アプリと設定を導入する)を実行する。
+コマンドは通常の端末で実行する。全体導入が必要な場合だけ、[setup](setup.md#5-アプリと設定を導入する)を実行する。
 
 以降は家用の `default,private` を例にする。仕事用は `default,work`、共通だけなら `default` に置き換える。構成はすべて明示し、`private` / `work` に `default` は自動追加されない。
 
@@ -58,13 +58,6 @@ brew upgrade --cask CASK
 `FORMULA` / `CASK` は対象名に置き換える。全アプリを更新したい場合だけ `brew upgrade` を使う。
 
 追加・削除は対象の Brewfile も変更し、対象だけ `brew install` / `brew uninstall` する。GUI は `--cask` を付ける。宣言から削除しただけではアンインストールされない。
-
-mosh の更新後は署名とファイアウォール登録をやり直す。
-
-```fish
-cd ~/dotfiles
-bash scripts/allow-mosh-firewall.sh
-```
 
 会社が管理するアプリをこの Mac だけ除外したい場合は、[Bundle のスキップ設定](troubleshooting.md#会社が管理するアプリをスキップする)を使う。
 

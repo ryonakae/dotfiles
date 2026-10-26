@@ -4,12 +4,12 @@
 
 必要なアプリの項目だけを使う。
 
+- [T3 Code](#t3-code)
 - [Claude Code](#claude-code)
 - [Pi](#pi)
 - [OpenCode](#opencode)
 - [oMLX](#omlx)
 - [Hermes](#hermes)
-- [Herdr](#herdr)
 - [CuaDriver](#cuadriver)
 - [Cua Spaces](#cua-spaces)
 - [Unity CLI](#unity-cli)
@@ -17,11 +17,27 @@
 - [Hammerspoon](#hammerspoon)
 - [macOS とその他のアプリ](#macos-とその他のアプリ)
 
+## T3 Code
+
+エージェントは T3 Code から起動する。worktree・ターミナル・通知も T3 Code の機能を使う。
+
+設定は `~/.t3/userdata/` の `settings.json` と `keybindings.json` を dotfiles で管理する。画面での変更も Git 正本への書き込みになるので、Git 差分を確認する。`keybindings.json` は起動時に既定のキーが追記されることがある。
+
+新しいスレッドの権限モードは Auto を既定にしている（**Settings → General → New threads → Permissions**）。Claude は自動承認の分類器、Codex は workspace-write の sandbox と自動レビューで危険な操作を止める。Pi は Auto に対応しないため、Supervised か Full access を選ぶ。
+
+エージェントに渡す API キーは[環境変数の管理](secrets.md#t3-code-のエージェントに渡す)で登録する。
+
+Zed は `zed` コマンドが PATH にあれば、T3 Code の「エディタで開く」に表示される。
+
 ## Claude Code
 
-Herdr との連携は [エージェント連携の導入](#エージェント連携の導入)で登録する。
+dotfiles 管理の MCP 定義 `~/.claude/mcp.json` を読ませるため、T3 Code の **Settings → Providers → Claude** の **Launch arguments** に `--mcp-config` と絶対パスを指定する。`~` は展開されない。
 
-statusline の初回取得には npm registry への接続が必要。
+```text
+--mcp-config /Users/USER/.claude/mcp.json
+```
+
+`USER` はユーザー名に置き換える。ターミナルから起動する場合も `claude --mcp-config ~/.claude/mcp.json` を使う。
 
 ## Pi
 
@@ -31,7 +47,7 @@ MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバー�
 
 本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
 
-Herdr との連携は [エージェント連携の導入](#エージェント連携の導入)で登録する。
+T3 Code の Pi の **Environment variables** に `PI_TELEMETRY=0` と `GIT_OPTIONAL_LOCKS=0` を登録し、テレメトリ送信と Git の任意ロックを止める。
 
 ## OpenCode
 
@@ -55,21 +71,17 @@ opencode
 
 [プロバイダーポリシー](https://opencode.ai/v2/docs/policies/)で他のプロバイダーを禁止する。MCP などの外部通信はこの制限の対象外。プロジェクト設定で許可済みプロバイダーの接続先やモデル定義を書き換えることまでは防がない。
 
-Herdr との連携は [エージェント連携の導入](#エージェント連携の導入)で登録する。
-
 ## oMLX
 
 [公式 Releases](https://github.com/jundot/omlx/releases) の DMG から手動導入し、アプリ内の更新機能で更新する。メニューバーアプリからサーバーの起動・停止を行い、モデルは管理画面 `http://127.0.0.1:8000/admin` でダウンロード・ロードする。Homebrew の Formula 版は併用しない。
 
-サーバーは `127.0.0.1:8000` で待ち受け、API キー認証を使う。発行したキーは[環境変数の追加手順](secrets.md#値を追加更新する)で `OMLX_API_KEY` として登録する。
+サーバーは `127.0.0.1:8000` で待ち受け、API キー認証を使う。発行したキーは[T3 Code の Environment variables](secrets.md#t3-code-のエージェントに渡す)に `OMLX_API_KEY` として登録する。
 
 oMLX の設定は `~/.omlx/settings.json`、モデルの標準保存先は `~/.omlx/models/`。
 
 ## Hermes
 
-CLI・gateway は[環境変数](secrets.md)を起動時に読み込む。
-
-gateway はホストの launchd で動かす。
+CLI・gateway は `~/.hermes/.env` の[環境変数](secrets.md#hermes-に渡す)を起動時に読み込む。gateway は Hermes 標準の launchd サービスで動かす。
 
 ### 初回設定と起動
 
@@ -85,45 +97,39 @@ mise -C ~/dotfiles -E hermes trust ~/dotfiles/mise.hermes.toml
 mise -C ~/dotfiles -E hermes run hermes:install
 ```
 
-表示された取得元・revision・導入段階を確認して進める。途中状態や未知の実体で止まった場合は、[Hermes の復旧](troubleshooting.md#hermes-の導入更新が途中で止まった)へ進む。
+表示された取得元・revision・導入段階を確認して進める。途中状態や未知の実体で止まった場合は、[Hermes の復旧](troubleshooting.md#hermes-の導入更新が途中で止まった)へ進む。導入処理は gateway を登録しない。
 
-Hermes の setup でサービス導入・即時起動を聞かれたら No を選ぶ。
-
-起動定義だけを再配置する場合は、通常端末から引数なしで実行する。
+gateway を launchd に登録して起動する。
 
 ```fish
-/usr/bin/python3 ~/dotfiles/scripts/hermes_plists.py
+hermes gateway install
+hermes gateway status
 ```
 
-同一なら無変更。初回作成・差分置換は表示を確認して `y` を入力する。
+以後の起動・停止・再起動は `hermes gateway start|stop|restart` を使う。
 
-起動・停止・再起動は、対象ユーザーの `gui/<UID>` ドメインで行う。macOS にそのユーザーがログイン済みで、操作する端末から対象ドメインへアクセスできる必要がある。
+### 独自管理の gateway から移行する
+
+以前の dotfiles で `hermes-gateway` 関数を使っていた Mac では、dotfiles を更新する前に旧 gateway を止める。
 
 ```fish
-hermes-gateway start
-hermes-gateway status
+hermes-gateway stop
 ```
 
-start すると以後のログイン時も起動対象になる。stop すると次の start まで無効化される。KeepAlive により、`/restart-gateway` による終了や異常終了後に自動再起動する。
+dotfiles を更新して[設定を配置](usage.md#設定ファイルを変更する)したあと、旧 plist を退避し、無効化された登録を戻してから標準の手順で登録する。
 
-### status の表示を確認する
-
-`hermes-gateway status` は launchd の稼働状態と起動設定を表示する。
-
-```text
-Gateway: running (PID 10250)
-Program: /Users/ryo.nakae/.config/agent-safehouse/safe-hermes-gateway.sh
-Start at login: enabled
-Restart on crash (plist): enabled
+```fish
+mv ~/Library/LaunchAgents/ai.hermes.gateway.plist ~/.hermes/ai.hermes.gateway.plist.old
+rm ~/.local/libexec/hermes ~/.local/libexec/hermes-gui-launchctl/launchctl
+launchctl enable gui/(id -u)/ai.hermes.gateway
+hermes gateway install
 ```
 
-`Gateway: running` と PID が表示されれば、プロセスは稼働している。`Program` は launchd に登録された実行先、`Start at login` は plist と launchd の有効・無効設定から判定した値。`Restart on crash (plist)` は配置済み plist の設定。
-
-停止中・未登録・状態や設定の取得失敗時は非ゼロで終了する。`unavailable` の場合は、併記された launchctl のエラーで未登録か取得失敗かを確認する。
+Keychain に残った dotenvx の復号鍵は、値を `~/.hermes/.env` と T3 Code へ移し終えてから削除する。
 
 ### Hermes を停止・更新する
 
-本体更新は全体 setup と分けて行う。利用中の CLI を終了し、gateway が稼働中なら `hermes-gateway stop` で先に止める。
+本体更新は全体 setup と分けて行う。利用中の CLI を終了し、gateway が稼働中なら `hermes gateway stop` で先に止める。
 
 ```fish
 mise -C ~/dotfiles -E hermes run hermes:update
@@ -131,11 +137,7 @@ mise -C ~/dotfiles -E hermes run hermes:update
 
 対象と表示された revision・段階を確認して進める。
 
-成功後に `git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と CLI の起動を確認する。依存の fallback が表示された場合は警告を確認する。
-
-更新のために止めた場合は、対象ユーザーの GUI ドメインを操作できる端末から `hermes-gateway start` で再開する。
-
-停止だけしたい場合は `hermes-gateway stop` を使う。停止処理はタイムアウト時に強制終了する場合があり、DB の整合したバックアップは別途必要。
+成功後に `git -C ~/Dev/personal/hermes-agent rev-parse HEAD` と CLI の起動を確認する。依存の fallback が表示された場合は警告を確認する。更新のために止めた gateway は `hermes gateway start` で再開する。
 
 ### Google Workspace
 
@@ -147,99 +149,7 @@ env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
     gws auth login
 ```
 
-ログインが成功したら、稼働中の gateway を `hermes-gateway restart` で再起動する。
-
-## Herdr
-
-`default` を選択した setup は、Herdr の設定・キーバインド・プラグイン設定を配置し、未導入のプラグインを導入して Zerdr を登録する。初回導入や別 Mac への復元で追加の操作は不要。
-
-### プラグインの導入・登録
-
-導入するプラグインと固定 commit は [mise.default.toml](../mise.default.toml) の `herdr:plugins` task が正本。setup を使わずに導入する場合は、Safehouse 外の通常の fish 端末で実行する。
-
-```fish
-mise -C ~/dotfiles -E default run herdr:plugins
-```
-
-プラグインを更新する場合は task の commit を変更し、`herdr plugin install <repo> --ref <commit> --yes` で入れ直す。Agent Context の導入には release binary と checksum を取得するネットワーク接続が必要。Worktrunk プラグインには `wt >= 0.60.0`、`fzf`、`jq` が必要。
-
-worktree の作成・削除は Worktrunk を使う。Herdr の `worktree open` は既存 checkout の登録だけに使う。
-
-### エージェント連携の導入
-
-Claude Code・Pi・Codex・OpenCode の状態を Herdr に伝える hook や拡張を、Homebrew 版 Herdr の標準 installer で登録する。
-
-```fish
-herdr integration install claude
-herdr integration install pi
-herdr integration install codex
-herdr integration install opencode
-```
-
-登録状態を確認する。
-
-```fish
-herdr integration status
-```
-
-`claude`・`pi`・`codex`・`opencode` が `current` になっている。Herdr の更新後に `current` 以外になった場合は、同じ installer を再実行する。
-
-Claude の `settings.json` と Codex の `config.toml` は Git 正本への書き込みとなる。実行前後の Git 差分を確認し、既存の設定を保持する。それ以外に作られるファイルは installer の管理物として Git に加えない。
-
-連携は各エージェントの起動時に読み込まれる。導入前から起動しているエージェントは再起動する。
-
-### 設定の反映と稼働確認
-
-Herdr を起動し、そのセッション内の通常端末で設定を検証する。設定変更後も同じ手順を使う。
-
-```fish
-herdr config check
-```
-
-成功したら反映する。
-
-```fish
-herdr server reload-config
-```
-
-登録と常駐プロセスを確認する。
-
-```fish
-herdr plugin list
-herdr plugin action list
-pgrep -fl herdr-agent-context
-```
-
-- プラグイン一覧で Agent Context・Worktrunk・Zerdr が有効になっている。
-- アクション一覧に `worktrunk.open`・`worktrunk.open-current`・`worktrunk.remove`・`zerdr.open-zed`・`zerdr.detach-thread` がある。
-- `herdr-agent-context listen` のプロセスがある。
-
-`prefix + Shift + g` で Worktrunk の選択画面が開くことを確認し、操作せずキャンセルする。Pi などの対応エージェントを起動・再開し、Agent Context によるタブ名とサイドバーの最終メッセージが更新されることも確認する。
-
-### Agent Context が起動しない場合
-
-Agent Context は Herdr 起動時に常駐プロセスを開始する。稼働中のセッションへ後から導入した場合、設定の再読み込みだけでは起動しないことがある。上のプロセス確認で何も表示されなければ、セッションを再起動する。
-
-**停止すると、そのセッション内のペインとエージェントを含む実行中プロセスが終了する。** 作業を保存し、必要な会話の再開方法を確認してから、Herdr 外の通常端末で実行する。画面の開き直しだけではサーバーの再起動にならない。
-
-```fish
-herdr session list
-```
-
-対象を確認する。以下は `default` セッションの場合。停止が成功してから起動する。
-
-```fish
-herdr session stop default
-herdr
-```
-
-名前付きセッションの場合は `default` を対象名に置き換え、起動には `herdr session attach セッション名` を使う。
-
-再起動後、対象セッション内でプロセスと表示を再確認する。まだ動かない場合はログを確認する。
-
-```fish
-herdr plugin log list --plugin ryonakae.agent-context --limit 20
-```
+ログインが成功したら、稼働中の gateway を `hermes gateway restart` で再起動する。
 
 ## CuaDriver
 
@@ -251,7 +161,7 @@ herdr plugin log list --plugin ryonakae.agent-context --limit 20
 
 Pi・Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。
 
-Claude Code は fish の `claude` 関数が `~/.claude/mcp.json` を追加指定する。関数を経由せず起動するときは `claude --mcp-config ~/.claude/mcp.json` を使う。
+Claude Code は [Launch arguments の `--mcp-config`](#claude-code) で `~/.claude/mcp.json` を読み込む。
 
 Hermes の `~/.hermes/config.yaml` は管理外。既存の設定に次を追加・統合する。
 
