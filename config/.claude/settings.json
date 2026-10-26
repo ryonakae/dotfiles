@@ -4,19 +4,6 @@
     "defaultMode": "bypassPermissions"
   },
   "model": "opus",
-  "hooks": {
-    "Notification": [
-      {
-        "matcher": "permission_prompt|idle_prompt",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "$HOME/.claude/hooks/notification.sh"
-          }
-        ]
-      }
-    ]
-  },
   "workflowKeywordTriggerEnabled": false,
   "language": "日本語",
   "feedbackSurveyRate": 0,
