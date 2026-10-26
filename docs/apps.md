@@ -47,8 +47,6 @@ MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバー�
 
 本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
 
-T3 Code の Pi の **Environment variables** に `PI_TELEMETRY=0` と `GIT_OPTIONAL_LOCKS=0` を登録し、テレメトリ送信と Git の任意ロックを止める。
-
 ## OpenCode
 
 本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
@@ -75,7 +73,7 @@ opencode
 
 [公式 Releases](https://github.com/jundot/omlx/releases) の DMG から手動導入し、アプリ内の更新機能で更新する。メニューバーアプリからサーバーの起動・停止を行い、モデルは管理画面 `http://127.0.0.1:8000/admin` でダウンロード・ロードする。Homebrew の Formula 版は併用しない。
 
-サーバーは `127.0.0.1:8000` で待ち受け、API キー認証を使う。発行したキーは[T3 Code の Environment variables](secrets.md#t3-code-のエージェントに渡す)に `OMLX_API_KEY` として登録する。
+サーバーは `127.0.0.1:8000` で待ち受ける。
 
 oMLX の設定は `~/.omlx/settings.json`、モデルの標準保存先は `~/.omlx/models/`。
 
