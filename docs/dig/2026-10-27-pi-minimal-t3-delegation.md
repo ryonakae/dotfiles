@@ -35,9 +35,9 @@
   - 出典: Q4
 - Pi の `pi-subagents`、`agent-tool-description.md`、`agents/*.md`、`subagents.json` を削除する。
   - 出典: dig 開始前のユーザー回答
-- `APPEND_SYSTEM.md` は「Pi-Specific Behavior > MCP / codemode」の節だけ残し、Progress Updates・Task Execution・Communication・Subagents・Skills の節は削除する。
-  - 理由: codemode はオンのままなので使い方の指示は必要。その他は共通 `AGENTS.md` と重なるか、削除する拡張が前提。
-  - 出典: dig 開始前のユーザー回答、Q5
+- `APPEND_SYSTEM.md` は削除する（Pi への追記はなし）。
+  - 理由: MCP の codemode 経由は Pi の既定動作、codemode の使い方は Pi 本体のツール説明と重なる。残る心得は codemode 固有ではなく、必要なら共通 `AGENTS.md` に足す。Pi を素のシステムプロンプトで使う方針に合う。
+  - 出典: 実装完了後のユーザー判断（Q5 の決定を置換）
 - `pi-auto-name`、`pi-inline-skills` を削除する。`pi-footer`、`pi-tool-call-markers`（TUI をたまに使うため）、`pi-vcc` は残す。
   - 出典: dig 開始前のユーザー回答
 - codemode は Pi 本体の機能なのでオンのまま（`defaultTools` の `+codemode` を維持）。`mcp.json`（cua）は残す。
@@ -73,5 +73,7 @@
 - 作業開始時点で未コミットの `config/.codex/config.toml` の変更。
 
 ## 撤回・置換済み
+- Q5「`APPEND_SYSTEM.md` は MCP / codemode の節だけ残す」は、実装後に再検討して全削除へ置換。
+  - 理由: 上記の決定事項を参照。
 - codemode の節・`+codemode` の削除案は撤回。codemode はオンのまま。
   - 出典: dig 開始前のユーザー回答
