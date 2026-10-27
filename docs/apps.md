@@ -43,7 +43,7 @@ dotfiles 管理の MCP 定義 `~/.claude/mcp.json` を読ませるため、T3 Co
 
 ## Pi
 
-OpenAI の認証は Pi 内で `/login openai` を実行し、`Sign in with ChatGPT` を選ぶ。
+OpenAI の認証は Pi 内で `/login openai-codex` を実行し、ChatGPT のサブスクリプションでサインインする。
 
 MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバーは `pi mcp login SERVER` を使う。`SERVER` は設定したサーバー名に置き換える。
 

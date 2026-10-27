@@ -1,5 +1,5 @@
 {
-  "lastChangelogVersion": "1.3.0",
+  "lastChangelogVersion": "1.4.0",
   "defaultProvider": "openai-codex",
   "defaultModel": "gpt-6-astra",
   "defaultThinkingLevel": "medium",
@@ -21,9 +21,9 @@
   "tuiMode": "fullscreen",
   "quietStartup": true,
   "enabledModels": [
-    "openai/gpt-6-luna",
-    "openai/gpt-6.1-sol",
-    "openai/gpt-6-astra"
+    "openai-codex/gpt-6-luna",
+    "openai-codex/gpt-6.1-sol",
+    "openai-codex/gpt-6-astra"
   ],
   "hideThinkingBlock": true,
   "terminal": {
