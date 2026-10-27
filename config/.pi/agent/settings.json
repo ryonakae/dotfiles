@@ -5,17 +5,14 @@
   "defaultThinkingLevel": "medium",
   "enableInstallTelemetry": false,
   "collapseChangelog": true,
-  "enableSkillCommands": false,
   "defaultTools": [
     "+codemode"
   ],
   "packages": [
-    "git:github.com/ryonakae/pi-subagents@5f4be85487118ad1e4b992544acde3571cd32f6a",
-    "npm:pi-footer@0.5.1",
-    "npm:@tifan/pi-inline-skills@1.0.6",
-    "npm:@normful/pi-auto-name@2.0.0",
-    "npm:@pi-kaush/pi-tool-call-markers@0.3.9",
-    "npm:@sting8k/pi-vcc@0.10.0"
+    "npm:pi-footer",
+    "npm:@pi-kaush/pi-tool-call-markers",
+    "npm:@sting8k/pi-vcc",
+    "npm:pi-web-access"
   ],
   "theme": "dark",
   "tuiMode": "fullscreen",

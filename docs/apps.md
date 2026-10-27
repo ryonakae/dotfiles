@@ -47,7 +47,9 @@ OpenAI の認証は Pi 内で `/login openai-codex` を実行し、ChatGPT の�
 
 MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバーは `pi mcp login SERVER` を使う。`SERVER` は設定したサーバー名に置き換える。
 
-本体は Homebrew で更新する。拡張の版指定は `config/.pi/agent/settings.json` で管理する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
+Web 検索・ページ取得は `pi-web-access` 拡張が担う。API キーなしで動き、`openai-codex` でサインイン済みなら OpenAI の検索を使う。
+
+本体は Homebrew で更新する。拡張は `config/.pi/agent/settings.json` に版を固定せず列挙し、`pi update --extensions` で更新する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
 
 ## OpenCode
 
