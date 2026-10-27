@@ -1,6 +1,6 @@
 # Pi の素化と T3 Code 委譲スキル Implementation Plan
 
-決定記録: [dig log](../dig/2026-10-27-pi-minimal-t3-delegation.md)
+決定記録: [dig log](../../dig/2026-10-27-pi-minimal-t3-delegation.md)
 
 ## Requirements
 
@@ -77,23 +77,30 @@ review base: `71374d5`
     - Web 検索は `pi-web-access` で、設定なしで使う旨を足す。
 - [x] **ketch の削除**: 承認後に `-E default,work` で2件を unapply 済み。TOML 構文 OK、Brewfile list 成功（ketch なし）、links 11件・sources 4件のテスト成功（skip なし）、参照の残りなし。
   - unapply（承認後）のあと、次から ketch を外す: `mise.default.toml` の3行（`~/.agents/skills/ketch`、`~/.claude/skills/ketch`、repos の `~/.local/share/agent-skill-sources/ketch`）、`brew/Brewfile.default` の `brew "ketch"`、`scripts/tests/test_dotfiles_links.py` の期待集合の `'ketch'`。
-- [ ] **実機への反映（要承認）**:
+- [x] **実機への反映（要承認）**: 承認後に実施。apply（`~/.config` 1件・`~/.pi` 5件の古いリンク削除、`use-t3-code` のリンク作成）、`brew uninstall ketch`、ketch checkout 削除。`pi update --extensions` 後も `@normful/pi-auto-name`・`@tifan/pi-inline-skills`・`pi-subagents` の実体が残ったため `pi remove` で削除（"No matching package found" と表示されたが実体は削除され、`settings.json` に差分なし）。
   - apply の dry-run を確認してから apply する。対象は、削除した Pi・pi-auto-name のリンクの整理と、`use-t3-code` のリンクの作成。
   - そのあと、`brew uninstall ketch`、ketch の checkout の削除、Pi のパッケージの後始末を、それぞれ承認を得て行う。
 
 ## Final Validation
 
-- [ ] **設定ファイルの構文**: `python3 -m json.tool config/.pi/agent/settings.json` と `python3 -c 'import tomllib; tomllib.load(open("mise.default.toml","rb"))'` → どちらもエラーなし
-- [ ] **配置宣言とテスト**: `uv run --no-project python scripts/tests/test_dotfiles_links.py` と `uv run --no-project python scripts/tests/test_dotfiles_sources.py` → すべて成功し、skip なし
-- [ ] **Brewfile**: `brew bundle list --file brew/Brewfile.default` → エラーがなく、`ketch` を含まない
-- [ ] **配置予定**: `mise -C ~/dotfiles -E <構成> dot apply --dry-run` → ketch のリンクを作らない。`use-t3-code` のリンクを作り、Pi の削除対象のリンクを整理する。それ以外に不明な実体や衝突がない
-- [ ] **参照の残り**: `rg -n 'ketch|agent-tool-description|pi-subagents|subagents\.json|inline-skills|pi-auto-name' --glob '!docs/dig/**' --glob '!docs/plans/**'` → 該当なし。あわせて `git diff --check` も問題なし
-- [ ] **スキルの内容**:
+- [x] **設定ファイルの構文**: `python3 -m json.tool config/.pi/agent/settings.json` と `python3 -c 'import tomllib; tomllib.load(open("mise.default.toml","rb"))'` → どちらもエラーなし
+- [x] **配置宣言とテスト**: links 11件・sources 4件 OK。 `uv run --no-project python scripts/tests/test_dotfiles_links.py` と `uv run --no-project python scripts/tests/test_dotfiles_sources.py` → すべて成功し、skip なし
+- [x] **Brewfile**: `brew bundle list --file brew/Brewfile.default` → エラーがなく、`ketch` を含まない
+- [x] **配置予定**: `-E default,work` で想定どおり。 `mise -C ~/dotfiles -E <構成> dot apply --dry-run` → ketch のリンクを作らない。`use-t3-code` のリンクを作り、Pi の削除対象のリンクを整理する。それ以外に不明な実体や衝突がない
+- [x] **参照の残り**: レビュー指摘で `--hidden` を追加して再実行し、該当なし。 `rg -n --hidden --glob '!.git/**' 'ketch|agent-tool-description|pi-subagents|subagents\.json|inline-skills|pi-auto-name' --glob '!docs/dig/**' --glob '!docs/plans/**'` → 該当なし。あわせて `git diff --check` も問題なし
+- [x] **スキルの内容**:
   - 比較表に8モデル分の行があり、各値の出典リンクと確認日がある。
   - `use-t3-code` が `orchestrator_capabilities` と矛盾しない。provider ID、モデル ID、options のキー名を、実行時の出力と照らし合わせる。
-- [ ] **実機（apply 後）**:
+- [x] **実機（apply 後）**: リンク 2 件が正本を指す。`pi list` は残す 4 拡張のみ。T3 の Pi 子タスクで codemode・`delegate_task`・`task_status`・`vcc_recall`・`tool_search`・`web_enable` を確認し、Agent / subagent 系ツールはなし。`web_search` は pi-web-access v0.45.0 の既定（`toolActivation: auto`）で `web_enable` 呼び出し後に追加される方式で、実検索は Pi のツール承認待ちで止まるため未検証（ユーザー判断で未検証のまま完了）。
   - `~/.agents/skills/use-t3-code` と `~/.claude/skills/use-t3-code` が正本を指している。
   - T3 で Pi のスレッドを新しく開き、`web_search` と `mcp__t3-code__delegate_task` が使え、Agent / subagent 系のツールがないことを確かめる。
   - `pi list` に削除した拡張が出ない。
 
 > 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
+
+## Gate summary
+
+- review 対象: `71374d5..a17e040`（`1c613f9`、`1aa5cee`、`8adac73`、`a17e040`）。独立レビューは Codex `gpt-6.1-sol` / medium。
+- blocking/high・decision required: なし。correction commit なし。
+- medium/low: 計画の参照確認コマンドに `--hidden` がなく hidden ディレクトリを見逃す（low）。コマンドを修正して再実行し、該当なし。
+- 未検証: Pi での `web_search` の実検索（上記）。
