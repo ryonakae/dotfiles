@@ -75,7 +75,7 @@ review base: `71374d5`
   - `docs/apps.md` の Pi 節を直す。
     - 「拡張の版指定は `settings.json` で管理する」を、版を固定せず `pi update --extensions` で更新する旨に書き換える。
     - Web 検索は `pi-web-access` で、設定なしで使う旨を足す。
-- [ ] **ketch の削除**:
+- [x] **ketch の削除**: 承認後に `-E default,work` で2件を unapply 済み。TOML 構文 OK、Brewfile list 成功（ketch なし）、links 11件・sources 4件のテスト成功（skip なし）、参照の残りなし。
   - unapply（承認後）のあと、次から ketch を外す: `mise.default.toml` の3行（`~/.agents/skills/ketch`、`~/.claude/skills/ketch`、repos の `~/.local/share/agent-skill-sources/ketch`）、`brew/Brewfile.default` の `brew "ketch"`、`scripts/tests/test_dotfiles_links.py` の期待集合の `'ketch'`。
 - [ ] **実機への反映（要承認）**:
   - apply の dry-run を確認してから apply する。対象は、削除した Pi・pi-auto-name のリンクの整理と、`use-t3-code` のリンクの作成。

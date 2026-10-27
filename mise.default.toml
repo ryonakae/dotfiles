@@ -40,7 +40,6 @@
 "~/.agents/skills/find-docs" = "~/.local/share/agent-skill-sources/find-docs/skills/find-docs"
 "~/.agents/skills/ghostwriter" = "~/.local/share/agent-skill-sources/ghostwriter/skills/ghostwriter"
 "~/.agents/skills/japanese-tech-writing" = "~/.local/share/agent-skill-sources/tech-writing/skills/japanese-tech-writing"
-"~/.agents/skills/ketch" = "~/.local/share/agent-skill-sources/ketch/skills/ketch"
 "~/.agents/skills/readme-i18n" = "~/.local/share/agent-skill-sources/readme-i18n/skills/readme-i18n"
 "~/.agents/skills/skill-creator" = "~/.local/share/agent-skill-sources/skill-creator/skills/skill-creator"
 "~/.agents/skills/stop-slop" = "~/.local/share/agent-skill-sources/stop-slop"
@@ -56,7 +55,6 @@
 "~/.claude/skills/find-docs" = "~/.local/share/agent-skill-sources/find-docs/skills/find-docs"
 "~/.claude/skills/ghostwriter" = "~/.local/share/agent-skill-sources/ghostwriter/skills/ghostwriter"
 "~/.claude/skills/japanese-tech-writing" = "~/.local/share/agent-skill-sources/tech-writing/skills/japanese-tech-writing"
-"~/.claude/skills/ketch" = "~/.local/share/agent-skill-sources/ketch/skills/ketch"
 "~/.claude/skills/readme-i18n" = "~/.local/share/agent-skill-sources/readme-i18n/skills/readme-i18n"
 "~/.claude/skills/skill-creator" = "~/.local/share/agent-skill-sources/skill-creator/skills/skill-creator"
 "~/.claude/skills/stop-slop" = "~/.local/share/agent-skill-sources/stop-slop"
@@ -78,7 +76,6 @@
 "~/.local/share/agent-skill-sources/cua-driver" = { url = "https://github.com/trycua/cua.git", ref = "main" }
 "~/.local/share/agent-skill-sources/find-docs" = { url = "https://github.com/upstash/context7.git", ref = "master" }
 "~/.local/share/agent-skill-sources/ghostwriter" = { url = "https://github.com/mblode/agent-skills.git", ref = "main" }
-"~/.local/share/agent-skill-sources/ketch" = { url = "https://github.com/1broseidon/ketch.git", ref = "main" }
 "~/.local/share/agent-skill-sources/readme-i18n" = { url = "https://github.com/xixu-me/skills.git", ref = "main" }
 "~/.local/share/agent-skill-sources/skill-creator" = { url = "https://github.com/anthropics/skills.git", ref = "main" }
 "~/.local/share/agent-skill-sources/stop-slop" = { url = "https://github.com/hardikpandya/stop-slop.git", ref = "main" }

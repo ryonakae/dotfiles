@@ -107,7 +107,7 @@ class DotfilesLinksTests(unittest.TestCase):
     expected = {
       'agent-browser', 'agent-device', 'cognitive-rhythm-writing', 'cua-driver',
       'cua-spaces', 'find-docs', 'ghostwriter', 'japanese-tech-writing',
-      'ketch', 'readme-i18n', 'skill-creator', 'stop-slop', 'stop-slop-ja',
+      'readme-i18n', 'skill-creator', 'stop-slop', 'stop-slop-ja',
       'tdd',
     }
     for agent in ('agents', 'claude'):
