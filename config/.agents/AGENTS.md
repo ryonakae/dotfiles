@@ -36,6 +36,7 @@
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - 秘密は Git 管理外の `.env` に置き、値のない `.env.example` だけを管理する。値を出力に表示しない
 - iOS Simulator での UI 動作検証や `.ad` テストの作成・実行は、`use-agent-device` と `agent-device` スキルで行う。配置・初期状態・実行方法は対象アプリの既存規約を優先する
+- iOS Simulator はリポジトリごとに `{機種名} ({リポジトリ名})`（例: `iPhone 17 (dotfiles)`）の専用端末を使う。なければ `xcrun simctl create` で作り、他リポジトリの端末は操作しない
 
 ### ドキュメント・Web検索
 
