@@ -33,7 +33,6 @@
 
 # External skills cloned by [bootstrap.repos]: shared location
 "~/.agents/skills/agent-browser" = "~/.local/share/agent-skill-sources/agent-browser/skills/agent-browser"
-"~/.agents/skills/agent-device" = "~/.local/share/agent-skill-sources/agent-device/skills/agent-device"
 "~/.agents/skills/cognitive-rhythm-writing" = "~/.local/share/agent-skill-sources/tech-writing/skills/cognitive-rhythm-writing"
 "~/.agents/skills/cua-driver" = "~/.local/share/agent-skill-sources/cua-driver/libs/cua-driver/rust/Skills/cua-driver"
 "~/.agents/skills/cua-spaces" = "~/.local/share/agent-skill-sources/cua-driver/libs/cua/skills/cua-spaces"
@@ -48,7 +47,6 @@
 
 # External skills: Claude Code
 "~/.claude/skills/agent-browser" = "~/.local/share/agent-skill-sources/agent-browser/skills/agent-browser"
-"~/.claude/skills/agent-device" = "~/.local/share/agent-skill-sources/agent-device/skills/agent-device"
 "~/.claude/skills/cognitive-rhythm-writing" = "~/.local/share/agent-skill-sources/tech-writing/skills/cognitive-rhythm-writing"
 "~/.claude/skills/cua-driver" = "~/.local/share/agent-skill-sources/cua-driver/libs/cua-driver/rust/Skills/cua-driver"
 "~/.claude/skills/cua-spaces" = "~/.local/share/agent-skill-sources/cua-driver/libs/cua/skills/cua-spaces"
@@ -72,7 +70,6 @@
 
 # External skill sources
 "~/.local/share/agent-skill-sources/agent-browser" = { url = "https://github.com/vercel-labs/agent-browser.git", ref = "main" }
-"~/.local/share/agent-skill-sources/agent-device" = { url = "https://github.com/callstack/agent-device.git", ref = "main" }
 "~/.local/share/agent-skill-sources/cua-driver" = { url = "https://github.com/trycua/cua.git", ref = "main" }
 "~/.local/share/agent-skill-sources/find-docs" = { url = "https://github.com/upstash/context7.git", ref = "master" }
 "~/.local/share/agent-skill-sources/ghostwriter" = { url = "https://github.com/mblode/agent-skills.git", ref = "main" }
