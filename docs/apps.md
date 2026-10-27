@@ -27,6 +27,8 @@
 
 エージェントに渡す API キーは[環境変数の管理](secrets.md#t3-code-のエージェントに渡す)で登録する。
 
+iOS Simulator の Device パネルとエージェントからの操作は全プロジェクトで有効にしている。一覧には一度起動したシミュレーターだけが出るので、新しく作った・入れ直した機種は先に DeviceHub（`open -a DeviceHub`。Xcode 27 に Simulator.app はない）か `xcrun simctl boot <UDID>` で起動する。
+
 Zed は `zed` コマンドが PATH にあれば、T3 Code の「エディタで開く」に表示される。
 
 ## Claude Code
