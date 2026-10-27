@@ -153,12 +153,16 @@
       ]
     }
   },
+  "storageCleanup": {
+    "worktreeOnMerge": true,
+    "worktreeOnDelete": true
+  },
   "defaultRuntimeMode": "auto",
   "projectSettingsFolded": true,
   "enableAgentDeviceAccess": true,
   "enableDeviceSupport": true,
   "deviceOnboardingCompleted": true,
-  "idleCompaction": "onReturn",
+  "idleCompaction": "off",
   "branchNamingMode": "semantic",
   "providerInstances": {
     "pi": {
