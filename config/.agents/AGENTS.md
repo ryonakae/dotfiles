@@ -32,12 +32,9 @@
 
 - 未確認のオプションや環境変数の挙動を推測して使わず、ヘルプや公式ドキュメントで確認する
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
-- worktree の作成・削除は T3 Code（スレッド起動時の worktree 指定や `t3_*` ツール）で行い、`git worktree` を直接使わない
-- サブエージェントへ委譲する（内蔵機能・T3 Code の `delegate_task`）ときは、モデルを選ぶ前に `use-t3-code` スキルを読む
+- サブエージェントへの委譲（内蔵機能・T3 Code の `delegate_task`）と iOS Simulator の操作は、始める前に `use-t3-code` スキルを読む
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - 秘密は Git 管理外の `.env` に置き、値のない `.env.example` だけを管理する。値を出力に表示しない
-- iOS Simulator での UI 動作検証や `.ad` テストの作成・実行は、`use-agent-device` と `agent-device` スキルで行う。配置・初期状態・実行方法は対象アプリの既存規約を優先する
-- iOS Simulator はリポジトリごとに `{機種名} ({リポジトリ名})`（例: `iPhone 17 (dotfiles)`）の専用端末を使う。なければ `xcrun simctl create` で作り、他リポジトリの端末は操作しない
 
 ### ドキュメント・Web検索
 
