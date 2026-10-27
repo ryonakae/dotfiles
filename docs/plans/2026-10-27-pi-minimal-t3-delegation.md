@@ -57,14 +57,14 @@ T3 Code で委譲するとき、モデルと思考レベルを根拠を持って
 
 review base: `71374d5`
 
-- [ ] **`use-t3-code` スキルの作成**: `config/.agents/skills/use-t3-code/SKILL.md` を作る。
+- [x] **`use-t3-code` スキルの作成**: 作成済み。比較表は 8 モデル × 5 effort（40 行、2026-10-27 に全モデル再取得）。Luna medium の秒/task のみ未掲載。provider・モデル ID・option キーは `orchestrator_capabilities` の出力と一致。 `config/.agents/skills/use-t3-code/SKILL.md` を作る。
   - Requirements の内訳を書き、Pi 版から引き継ぐ内容は T3 向けに書き換える。
     - `run_in_background` / `get_subagent_result` → `mode: "async"` / `task_status`
     - モデル ID → `providerInstanceId` + `model`
     - `thinking` → `target.options`
   - Pi 固有の節（長時間コマンド、`SubagentWorkflow`、`max_turns`）は移さない。
   - description には、サブエージェントへの委譲・`delegate_task`・モデル選択で使う旨を書く。
-- [ ] **共通指示の更新**: `config/.agents/AGENTS.md` に `use-t3-code` の参照行を足し、ketch の2行を Requirements の文言に書き換える。
+- [x] **共通指示の更新**: ketch の 2 行は ketch 削除コミットで、参照行はスキル作成コミットで反映。 `config/.agents/AGENTS.md` に `use-t3-code` の参照行を足し、ketch の2行を Requirements の文言に書き換える。
 - [x] **Pi の素化**: 実施済み。`settings.json` は JSON 構文 OK、削除対象への参照は dig・plans 以外に残りなし。
   - 削除する: `config/.pi/agent/agent-tool-description.md`、`config/.pi/agent/agents/`、`config/.pi/agent/subagents.json`、`config/.config/pi-auto-name/`。
   - `config/.pi/agent/settings.json` を変更する。
