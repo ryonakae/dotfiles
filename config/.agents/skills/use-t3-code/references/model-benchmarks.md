@@ -3,13 +3,13 @@
 [Artificial Analysis](https://artificialanalysis.ai/)（2026-10-27 確認）。8 モデルとも low / medium / high / xhigh / max の 4 指標・費用・時間を取得した。表はサイトの表示精度で記載し、未掲載値の補間や他世代からの流用はしない。起動ごとの再検索は不要。
 
 - **Intelligence**: Intelligence Index v4.3.2。10 評価の総合指標で、成功率ではない。
-- **Terminal-Bench**: Terminal-Bench 4.0。ターミナル上の複雑な作業の成功率。実装・修正・検証を任せる際の参考にする。
+- **Terminal-Bench**: Terminal-Bench 4.0。ターミナル上の複雑な作業の成功率。
 - **AA-LCR**: AA-LCR v1.1。長文資料の抽出・推論・統合の正答率。リポジトリ探索やコードの依存関係追跡を直接測るものではない。
-- **Omniscience**: AA-Omniscience Index（−100〜100）。正答を加点、誤答を減点し、回答保留は減点しない。検索能力やレビューの誤検出率ではない。
+- **Omniscience**: AA-Omniscience Index（−100〜100）。正答を加点、誤答を減点し、回答保留は減点しない。検索能力ではない。
 - **USD/task**: Intelligence Index の評価タスクあたり加重平均費用。T3 での実作業費用やサブスクリプションの消費量ではない。
 - **秒/task**: 比較ページの「Time per Task」。低い方がよい。T3 での実測完了時間ではない。「未掲載」は 0 秒ではなく、速度比較の根拠にしない。
 
-4 指標はすべて高い方がよい。個別 3 評価は Intelligence の構成要素でもあるため、足し合わせて独自の総合点にしない。主に英語・テキストでの評価であり、日本語、画面操作、コードレビュー、T3 上での性能を直接保証しない。Claude 系の行はサイト上の「(effort, Default Fallback)」バリアントの値である（Haiku 5.5 は Fallback 表記なし）。
+4 指標はすべて高い方がよい。個別 3 評価は Intelligence の構成要素でもある。主に英語・テキストでの評価である。Claude 系の行はサイト上の「(effort, Default Fallback)」バリアントの値である（Haiku 5.5 は Fallback 表記なし）。
 
 | モデル | effort | Intelligence | Terminal-Bench % | AA-LCR % | Omniscience | USD/task（参考） | 秒/task |
 |---|---|---:|---:|---:|---:|---:|---:|
