@@ -1,73 +1,27 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "strata/qwen3.8-flash-next-iq3_xxs",
   "providers": {
-    "strata": {
-      "name": "Strata",
+    "omlx": {
+      "name": "oMLX",
       "package": "@opencode/ai/providers/openai-compatible",
       "settings": {
-        "baseURL": "http://127.0.0.1:8080/v1"
+        "baseURL": "http://127.0.0.1:8000/v1",
+        "apiKey": "{env:OMLX_API_KEY}"
       },
-      "models": {
-        "qwen3.8-flash-next-q2_0": {
-          "name": "Qwen3.8 Flash Next Q2_0",
-          "capabilities": {
-            "tools": true,
-            "input": ["text"],
-            "output": ["text"]
-          },
-          "compatibility": {
-            "reasoningField": "reasoning_content"
-          },
-          "limit": {
-            "context": 131072,
-            "output": 8192
-          }
-        },
-        "qwen3.8-flash-next-iq3_xxs": {
-          "name": "Qwen3.8 Flash Next IQ3_XXS",
-          "capabilities": {
-            "tools": true,
-            "input": ["text"],
-            "output": ["text"]
-          },
-          "compatibility": {
-            "reasoningField": "reasoning_content"
-          },
-          "limit": {
-            "context": 131072,
-            "output": 8192
-          }
-        }
-      }
-    },
-    "splash": {
-      "name": "Splash",
-      "package": "@opencode/ai/providers/openai-compatible",
-      "settings": {
-        "baseURL": "http://127.0.0.1:8000/v1"
-      },
-      "models": {
-        "bonsai-2-27b-pq2_0": {
-          "modelID": "prism-ml/Ternary-Bonsai-2-27B-gguf:PQ2_0",
-          "name": "Bonsai 2 27B PQ2_0",
-          "capabilities": {
-            "tools": true,
-            "input": ["text"],
-            "output": ["text"]
-          },
-          "limit": {
-            "context": 262144,
-            "output": 2048
-          }
-        }
-      }
+      "models": {}
     }
   },
   "policies": [
-    { "action": "provider.use", "resource": "*", "effect": "deny" },
-    { "action": "provider.use", "resource": "strata", "effect": "allow" },
-    { "action": "provider.use", "resource": "splash", "effect": "allow" }
+    {
+      "action": "provider.use",
+      "resource": "*",
+      "effect": "deny"
+    },
+    {
+      "action": "provider.use",
+      "resource": "omlx",
+      "effect": "allow"
+    }
   ],
   "permissions": [
     {
@@ -80,7 +34,13 @@
     "servers": {
       "cua": {
         "type": "local",
-        "command": ["cua", "daemon", "mcp", "--permissions", "spaces:all"]
+        "command": [
+          "cua",
+          "daemon",
+          "mcp",
+          "--permissions",
+          "spaces:all"
+        ]
       },
       "context7": {
         "type": "remote",

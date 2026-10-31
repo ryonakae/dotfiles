@@ -30,6 +30,7 @@ jq '.providerInstances | map_values(.environment)' ~/.t3/userdata/settings.json
 | 変数 | 登録する provider | 用途 |
 |---|---|---|
 | `CONTEXT7_API_KEY` | Claude、Codex、Pi、OpenCode | Context7 によるドキュメント参照 |
+| `OMLX_API_KEY` | OpenCode | oMLX のローカル API への認証 |
 | `GIT_OPTIONAL_LOCKS` | Pi | 値は `0`。秘密ではないので Sensitive は不要。Git の任意ロックを止め、並行する Git 操作との競合を避ける |
 
 エージェントが `env` などで環境変数を表示すると、その出力は T3 Code の会話履歴に平文で残る。値を出力させない。

@@ -55,21 +55,16 @@ Web 検索・ページ取得は `pi-web-access` 拡張が担う。API キーな�
 
 本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
 
-LLM は Strata / Splash のローカルモデルだけを使う。SwiftBar の Local LLM Server メニューから使いたいサーバーを起動してから、任意の作業ディレクトリで OpenCode を起動する。
+LLM は [oMLX](#omlx) のローカルモデルだけを使う。API キーは環境変数 `OMLX_API_KEY` から読む。
+
+OpenCode は oMLX のモデルを自動検出しない。oMLX でモデルをダウンロードしたら、設定の `providers.omlx.models` にモデル ID・ツール対応・コンテキスト長を追記し、必要なら `model` に既定値を指定する。oMLX のサーバーを起動してから、任意の作業ディレクトリで OpenCode を起動する。
 
 ```fish
 opencode models
 opencode
 ```
 
-モデル一覧に次の2つだけが表示されることを確認する。既定は Strata。起動後は `/models` で切り替える。
-
-| モデル ID | モデル | 接続先 |
-|---|---|---|
-| `strata/qwen3.8-flash-next-q2_0` | Qwen3.8 Flash Next Q2_0 | `http://127.0.0.1:8080/v1` |
-| `splash/bonsai-2-27b-pq2_0` | Bonsai 2 27B PQ2_0 | `http://127.0.0.1:8000/v1` |
-
-サーバー停止中もモデルは一覧に表示されるが、推論はできない。モデルの取得・起動・停止は OpenCode では行わない。SwiftBar の登録モデルを変更した場合は、OpenCode 側のモデル ID・接続先・コンテキスト長も合わせて更新する。
+サーバー停止中もモデルは一覧に表示されるが、推論はできない。モデルの取得・起動・停止は OpenCode では行わない。
 
 [プロバイダーポリシー](https://opencode.ai/v2/docs/policies/)で他のプロバイダーを禁止する。MCP などの外部通信はこの制限の対象外。プロジェクト設定で許可済みプロバイダーの接続先やモデル定義を書き換えることまでは防がない。
 
