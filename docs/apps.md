@@ -137,6 +137,14 @@ env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
 
 `cua` は Cua Spaces アプリ同梱の CLI を使う。アプリの「Install the Cua CLI」でシンボリックリンクとして導入し、アプリの更新に追従させる。`command -v cua` と `cua --version` で利用可能か確認する。アプリ本体の導入・認証は別途行い、`cua agents setup` によるスキル・MCP の自動配置は使わない。
 
+Linux の Space は `cua spaces create linux --kind microvm` で作る。
+
+`private` 構成では、Space の自動起動と relay への再登録を LaunchAgent で行う。[スクリプト](../config/.local/bin/cua-relay-keepalive.example)と [plist](../config/Library/LaunchAgents/com.ryonakae.cua-relay-keepalive.plist.example) の example を元に、Space ID、`cua spaces relay-register` が返す relay ID、ホームのパスを埋めた実ファイルを `~/.local/bin/`（実行権限付き）と `~/Library/LaunchAgents/` に置き、読み込む。
+
+```fish
+launchctl bootstrap gui/(id -u) ~/Library/LaunchAgents/com.ryonakae.cua-relay-keepalive.plist
+```
+
 Pi・Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。
 
 Claude Code は [Launch arguments の `--mcp-config`](#claude-code) で `~/.claude/mcp.json` を読み込む。

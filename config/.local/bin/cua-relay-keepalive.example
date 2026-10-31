@@ -1,0 +1,41 @@
+#!/bin/sh
+# cua は Mac の再起動後に Space を自動起動しないため、止まっていれば起動する。
+# relay との接続は VM の再起動なしでも切れることがあるため、疎通できないときだけ再登録する
+set -u
+
+SPACE="${CUA_KEEPALIVE_SPACE:-local:SPACE_NAME}"
+RELAY_ID="${CUA_KEEPALIVE_RELAY_ID:-relay:RELAY_ID}"
+CUA="$HOME/.local/bin/cua"
+
+# macOS には timeout がないため perl の alarm で打ち切る
+with_timeout() {
+	secs="$1"
+	shift
+	perl -e 'alarm shift; exec @ARGV' "$secs" "$@"
+}
+
+log() {
+	printf '%s %s\n' "$(date '+%Y-%m-%dT%H:%M:%S%z')" "$*"
+}
+
+if ! with_timeout 60 "$CUA" sandbox exec "$SPACE" true >/dev/null 2>&1; then
+	log "space unreachable: $SPACE"
+	if out=$(with_timeout 300 "$CUA" spaces start "$SPACE" 2>&1); then
+		log "started: $out"
+	else
+		log "start failed: $out"
+		exit 1
+	fi
+fi
+
+if with_timeout 60 "$CUA" sandbox exec "$RELAY_ID" true >/dev/null 2>&1; then
+	exit 0
+fi
+
+log "relay unreachable: $RELAY_ID"
+if out=$(with_timeout 120 "$CUA" spaces relay-register "$SPACE" 2>&1); then
+	log "re-registered: $out"
+else
+	log "re-register failed: $out"
+	exit 1
+fi
