@@ -5,6 +5,7 @@ description: >-
   内蔵のサブエージェント機能（Claude Code の Agent ツールなど）や T3 Code の delegate_task を使う前、
   委譲するかどうかの判断、委譲先の provider・モデル・思考レベル（effort / reasoningEffort）の選択、
   独立レビューの依頼先選び、子タスクの結果確認で使う。
+  T3 Code で文章作成・推敲・ドキュメント更新を行うときの Gemini 優先方針にも使う。
   worktree を作成・移動・削除するとき（git worktree や内蔵の worktree 機能を使う前）にも使う。
   T3 Code の device_* ツールで iOS Simulator を開いて操作するとき、UI 動作検証や .ad テストを扱うときにも使う。
   スレッドを settle・unsettle・archive・unarchive するとき、スレッドの整理や片付けを頼まれたときにも使う。
@@ -19,7 +20,7 @@ T3 Code が注入する指示に、この環境での判断基準と運用を補
 
 | 用途 | 読む資料 |
 |---|---|
-| サブエージェントへの委譲、独立レビューの依頼、子タスクの結果確認 | [references/delegation.md](references/delegation.md)。モデル × 思考レベルを比較するときは [references/model-benchmarks.md](references/model-benchmarks.md) も読む |
+| サブエージェントへの委譲、文章作成・ドキュメント更新、独立レビューの依頼、子タスクの結果確認 | [references/delegation.md](references/delegation.md)。モデル × 思考レベルを比較するときは [references/model-benchmarks.md](references/model-benchmarks.md) も読む |
 | iOS Simulator の操作、UI 動作検証、`.ad` テスト | [references/ios-simulator.md](references/ios-simulator.md) |
 
 ## worktree
