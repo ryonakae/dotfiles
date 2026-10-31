@@ -143,6 +143,7 @@ Linux の Space は `cua spaces create ghcr.io/trycua/linux:24.04-slim --kind mi
 - `fonts-noto-cjk`、`language-pack-ja`、`language-pack-gnome-ja` を入れ、`ja_JP.UTF-8` を生成して `/etc/default/locale` に設定し、タイムゾーンを `Asia/Tokyo` にする。
 - デスクトップも cua 経由で起動したアプリも、イメージの `LANG=C.UTF-8` と `TZ=Etc/UTC` を引き継ぐ。デスクトップは `~/.config/xfce4/xinitrc` で `/etc/default/locale` と `TZ` を読み込んでから `/etc/xdg/xfce4/xinitrc` を実行し、Chromium は `/etc/chromium.d/` に `LANG`・`TZ` と `--accept-lang=ja,en-US` を設定する。
 - Chromium のメニューは日本語リソースがないため英語のまま。サイトの表示言語は `--accept-lang` で日本語になる。
+- イメージの Chromium ポリシー `/etc/chromium/policies/managed/cua.json` はパスワード保存を無効にしている。保存できるようにするため、`PasswordManagerEnabled` を削除する。保存したパスワードは Space を操作するエージェントも自動入力に使える。
 
 `private` 構成では、Space の自動起動と relay への再登録を LaunchAgent で行う。[スクリプト](../config/.local/bin/cua-relay-keepalive.example)と [plist](../config/Library/LaunchAgents/com.ryonakae.cua-relay-keepalive.plist.example) の example を元に、Space ID、`cua spaces relay-register` が返す relay ID、ホームのパスを埋めた実ファイルを `~/.local/bin/`（実行権限付き）と `~/Library/LaunchAgents/` に置き、読み込む。
 
