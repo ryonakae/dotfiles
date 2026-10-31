@@ -137,7 +137,12 @@ env GOOGLE_WORKSPACE_CLI_CONFIG_DIR="$HOME/.hermes/gws" \
 
 `cua` は Cua Spaces アプリ同梱の CLI を使う。アプリの「Install the Cua CLI」でシンボリックリンクとして導入し、アプリの更新に追従させる。`command -v cua` と `cua --version` で利用可能か確認する。アプリ本体の導入・認証は別途行い、`cua agents setup` によるスキル・MCP の自動配置は使わない。
 
-Linux の Space は `cua spaces create ghcr.io/trycua/linux:24.04-slim --kind microvm` で作る。作成後に日本語フォント（`fonts-noto-cjk`）、`ja_JP.UTF-8` ロケール、`Asia/Tokyo` タイムゾーンを設定する。デスクトップはイメージの `LANG` と `TZ` を引き継ぐため、`~/.config/xfce4/xinitrc` で上書きしてから `/etc/xdg/xfce4/xinitrc` を実行する。
+Linux の Space は `cua spaces create ghcr.io/trycua/linux:24.04-slim --kind microvm` で作り、中で日本語環境を整える。
+
+- イメージは翻訳ファイルを入れない設定のため、`/etc/dpkg/dpkg.cfg.d/excludes` から `/usr/share/locale/*/LC_MESSAGES/*.mo` の除外を外し、Xfce のパッケージを再インストールする。
+- `fonts-noto-cjk`、`language-pack-ja`、`language-pack-gnome-ja` を入れ、`ja_JP.UTF-8` を生成して `/etc/default/locale` に設定し、タイムゾーンを `Asia/Tokyo` にする。
+- デスクトップも cua 経由で起動したアプリも、イメージの `LANG=C.UTF-8` と `TZ=Etc/UTC` を引き継ぐ。デスクトップは `~/.config/xfce4/xinitrc` で `/etc/default/locale` と `TZ` を読み込んでから `/etc/xdg/xfce4/xinitrc` を実行し、Chromium は `/etc/chromium.d/` に `LANG`・`TZ` と `--accept-lang=ja,en-US` を設定する。
+- Chromium のメニューは日本語リソースがないため英語のまま。サイトの表示言語は `--accept-lang` で日本語になる。
 
 `private` 構成では、Space の自動起動と relay への再登録を LaunchAgent で行う。[スクリプト](../config/.local/bin/cua-relay-keepalive.example)と [plist](../config/Library/LaunchAgents/com.ryonakae.cua-relay-keepalive.plist.example) の example を元に、Space ID、`cua spaces relay-register` が返す relay ID、ホームのパスを埋めた実ファイルを `~/.local/bin/`（実行権限付き）と `~/Library/LaunchAgents/` に置き、読み込む。
 
