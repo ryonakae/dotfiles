@@ -1,0 +1,4 @@
+interface:
+  display_name: "Documentation Updater"
+  short_description: "Update documentation affected by the selected changes"
+  default_prompt: "Use $doc-updater to update documentation affected by the current changes."

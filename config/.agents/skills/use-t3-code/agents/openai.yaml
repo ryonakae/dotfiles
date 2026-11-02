@@ -1,0 +1,4 @@
+interface:
+  display_name: "Use T3 Code"
+  short_description: "Guide delegation, worktrees, and devices in T3 Code"
+  default_prompt: "Use $use-t3-code to guide this task in the T3 Code environment."

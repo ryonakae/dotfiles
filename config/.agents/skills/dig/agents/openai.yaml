@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dig"
+  short_description: "Question assumptions in plans and design decisions"
+  default_prompt: "Use $dig to examine the assumptions and gaps in this design with me."

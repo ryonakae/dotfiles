@@ -1,2 +1,7 @@
+interface:
+  display_name: "Implement"
+  short_description: "Implement an approved plan through review and delivery"
+  default_prompt: "Use $implement to carry out the approved implementation plan."
+
 policy:
   allow_implicit_invocation: false

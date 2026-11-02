@@ -1,0 +1,7 @@
+interface:
+  display_name: "Cleanup"
+  short_description: "Review obsolete code and propose approved cleanup"
+  default_prompt: "Use $cleanup to inspect this repository and propose cleanup for my approval."
+
+policy:
+  allow_implicit_invocation: false

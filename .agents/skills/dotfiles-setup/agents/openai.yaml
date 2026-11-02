@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dotfiles Setup"
+  short_description: "Set up, update, and restore this macOS dotfiles repository"
+  default_prompt: "Use $dotfiles-setup to help update this Mac using the dotfiles repository."

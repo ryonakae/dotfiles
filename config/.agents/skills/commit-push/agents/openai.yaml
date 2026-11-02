@@ -1,2 +1,7 @@
+interface:
+  display_name: "Commit and Push"
+  short_description: "Create focused commits and push requested changes"
+  default_prompt: "Use $commit-push to commit the current changes and push them."
+
 policy:
   allow_implicit_invocation: false
