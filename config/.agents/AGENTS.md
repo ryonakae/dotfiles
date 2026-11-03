@@ -33,6 +33,7 @@
 - 未確認のオプションや環境変数の挙動を推測して使わず、ヘルプや公式ドキュメントで確認する
 - ユーザーに提示するシェルコマンドや環境変数設定は、指定がない限り `fish` の構文で記述する
 - T3 Code 環境では、サブエージェントへの委譲（内蔵機能・`delegate_task`）、worktree の作成・移動・削除、iOS Simulator の操作、スレッドの settle・archive は、始める前に `use-t3-code` スキルを読む
+- T3 Code の `delegate_task` で、作業中のリポジトリのコード・差分・文書と依頼に必要な情報を、`orchestrator_capabilities` に表示される有効な provider の子タスクへ渡すことを承認する。秘密（`.env`、認証情報、トークン）は渡さない
 - Python: CLI ツールは `uvx`、スクリプトは `uv run`、パッケージ追加は `uv add`
 - 秘密は Git 管理外の `.env` に置き、値のない `.env.example` だけを管理する。値を出力に表示しない
 
