@@ -1,4 +1,4 @@
 interface:
-  display_name: "Plan"
+  display_name: "plan"
   short_description: "Create and save a concrete software implementation plan"
   default_prompt: "Use $plan to create and save an implementation plan for this request."

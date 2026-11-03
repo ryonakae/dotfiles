@@ -1,5 +1,5 @@
 interface:
-  display_name: "Commit and Push"
+  display_name: "commit-push"
   short_description: "Create focused commits and push requested changes"
   default_prompt: "Use $commit-push to commit the current changes and push them."
 

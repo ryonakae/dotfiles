@@ -1,5 +1,5 @@
 interface:
-  display_name: "Implement"
+  display_name: "implement"
   short_description: "Implement an approved plan through review and delivery"
   default_prompt: "Use $implement to carry out the approved implementation plan."
 
