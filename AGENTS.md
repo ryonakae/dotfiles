@@ -32,7 +32,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 
 - このリポジトリ専用は `.agents/skills/` が正本。`.claude/skills/` の相対 symlink で参照し、HOME への配布対象とは分ける。
 - `config/.agents/skills/` は他プロジェクトでも使う自作スキルのみ。外部の追加・更新・復元は dotfiles-setup に従う。
-- 自作は mise の共通・Claude 向け2 glob で追跡ファイルごとに直接リンクする。通常追加で名前を列挙しない。削除・`.disabled/` 移動は先に対象を unapply し、外部との優先関係が変わる場合は構成別の外部配置宣言も確認する。
+- 自作は mise の共通・Claude 向け2 glob でスキルディレクトリごとに直接リンクする。通常追加で名前を列挙しない。削除・`.disabled/` 移動は先に対象を unapply し、外部との優先関係が変わる場合は構成別の外部配置宣言も確認する。
 - 共通配置先は `~/.agents/skills/`。Claude 専用同名優先と Antigravity CLI の共通参照を維持し、配布先を増やさない。
 
 ## 起動・保護設定

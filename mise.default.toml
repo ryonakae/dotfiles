@@ -28,8 +28,9 @@
 "~/.pi/agent/AGENTS.md" = "config/.agents/AGENTS.md"
 
 # Self-made skills; dot-prefixed directories such as .disabled stay undeployed
-"~/.agents/skills/[!.]*" = { source = "config/.agents/skills/[!.]*", mode = "symlink-each", manifest = "git" }
-"~/.claude/skills/[!.]*" = { source = "config/.agents/skills/[!.]*", mode = "symlink-each", manifest = "git" }
+# Codex discovers directory symlinks, but skips symlinked SKILL.md files.
+"~/.agents/skills/[!.]*" = "config/.agents/skills/[!.]*"
+"~/.claude/skills/[!.]*" = "config/.agents/skills/[!.]*"
 
 # External skills cloned by [bootstrap.repos]: shared location
 "~/.agents/skills/agent-browser" = "~/.local/share/agent-skill-sources/agent-browser/skills/agent-browser"

@@ -240,7 +240,7 @@ class DotfilesLinksTests(unittest.TestCase):
   def test_local_skill_links_preserve_external_siblings_and_share_with_antigravity(self):
     source = self.source('.agents/skills/ask-codex/SKILL.md')
     self.source('.agents/skills/.disabled/disabled/SKILL.md')
-    self.source('.agents/skills/local-only/SKILL.md', tracked=False)
+    reference = self.source('.agents/skills/ask-codex/references/guide.md')
     shared = self.home / '.agents/skills'
     shared.mkdir(parents=True, exist_ok=True)
     external = shared / 'external'
@@ -250,11 +250,12 @@ class DotfilesLinksTests(unittest.TestCase):
                self.home / '.gemini/antigravity-cli/skills']
     result = self.mise('apply', '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
-    self.assertEqual((targets[0] / 'SKILL.md').readlink(), source)
-    self.assertEqual((targets[1] / 'SKILL.md').readlink(), source)
+    for target in targets[:2]:
+      self.assertEqual(target.readlink(), source.parent)
+      self.assertFalse((target / 'SKILL.md').is_symlink())
+      self.assertEqual((target / 'references/guide.md').resolve(), reference)
     self.assertEqual(targets[2].readlink(), shared)
     self.assertFalse((shared / '.disabled').exists())
-    self.assertFalse((shared / 'local-only/SKILL.md').exists())
     self.assertEqual((targets[2] / 'external/SKILL.md').read_text(), 'external skill\n')
 
   def test_apply_excludes_examples_and_state(self):
@@ -280,18 +281,18 @@ class DotfilesLinksTests(unittest.TestCase):
     with (self.repo / 'mise.default.toml').open('a') as config:
       config.write('\n[dotfiles."~/.claude/skills/ask-codex"]\n'
                    'source = "config/.claude/skills/ask-codex"\n'
-                   'mode = "symlink-each"\nmanifest = "git"\n')
+                   'mode = "symlink"\n')
     result = self.mise('apply', '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
-    self.assertEqual((self.home / '.agents/skills/ask-codex/SKILL.md').readlink(), shared)
+    self.assertEqual((self.home / '.agents/skills/ask-codex').readlink(), shared.parent)
     target = self.home / '.claude/skills/ask-codex'
-    self.assertEqual((target / 'SKILL.md').readlink(), claude)
+    self.assertEqual(target.readlink(), claude.parent)
     self.assertFalse((target / 'references/shared.md').exists())
     result = self.mise('unapply', str(target), '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
-    self.assertFalse((target / 'SKILL.md').is_symlink())
+    self.assertFalse(os.path.lexists(target))
     self.assertTrue(claude.is_file())
-    self.assertTrue((self.home / '.agents/skills/ask-codex/SKILL.md').is_symlink())
+    self.assertTrue((self.home / '.agents/skills/ask-codex').is_symlink())
 
 
 if __name__ == '__main__':
