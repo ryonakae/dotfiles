@@ -330,7 +330,7 @@
           "valueRedacted": true
         }
       ],
-      "enabled": true
+      "enabled": false
     },
     "antigravity": {
       "driver": "antigravity",
