@@ -56,7 +56,7 @@ review base: dotfiles `5e9667d`、use-figma `22f60fa`
 - [x] **dotenvx の削除と秘密の移行**
   - `config/.config/.env.example`、`scripts/tests/check_dotenvx_runtime.py`、Brewfile の dotenvx と tap を削除する。`.gitignore` の `.env` は残す。
   - `docs/secrets.md` を「T3 の provider instance の Environment variables（Sensitive）／`~/.hermes/.env`／プロジェクトの `.env` と `.env.example`、値の控えは 1Password」の手順に書き直す。
-    - どの変数をどの instance に入れるかを書く。`CONTEXT7_API_KEY` は Claude / Codex / Pi / OpenCode、`OMLX_API_KEY` は OpenCode / Pi。`HOMEBREW_GITHUB_API_TOKEN` と `TYPESAFE_API_KEY` は廃止する（合意済み）。`~/.config/.env` も廃止し、シェル用の読み込み処理は作らない。
+    - どの変数をどの instance に入れるかを書く。`CONTEXT7_API_KEY` は Claude / Codex / Pi / OpenCode。`HOMEBREW_GITHUB_API_TOKEN` と `TYPESAFE_API_KEY` は廃止する（合意済み）。`~/.config/.env` も廃止し、シェル用の読み込み処理は作らない。
     - エージェントの `env` 出力が T3 の `statev2.sqlite` に平文で残る既知の issue（pingdotgg/t3code#24790）を注意として残す。
   - 移す値は `dotenvx get` で `~/.config/.env` から、または 1Password から取り出す。登録は `brew uninstall dotenvx` より前に終える。
   - 実機操作（要承認）: `~/.config/.env` のリンクと実ファイルの扱い、Keychain の dotenvx 鍵の削除は、値を移し終えてからユーザーが行う。

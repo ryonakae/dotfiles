@@ -6,12 +6,9 @@
 
 - `~/Dev/local` を作り、mise 有効な通常の fish からその直下・任意の子ディレクトリで `pi` を起動すると専用設定を使用する。`pi.fish` と通常の Pi 設定は変更しない。
 - `~/Dev/local/mise.toml` と `~/Dev/local/.pi` 全体は dotfiles で管理せず、実ファイルとして保持する。初期に配置したリンクは宣言を削除する前に標準 unapply する。既存の認証・履歴・取得済みパッケージは変更しない。
-- 専用設定元は `~/Dev/local/.pi`。oMLX の OpenAI 互換 API `http://127.0.0.1:8000/v1` と環境変数 `OMLX_API_KEY` を使う。秘密の値を保存・複製しない。
 - モデルは LFM2.5-24B-A2B-MLX-4bit（context/output 131072/8192、デフォルト）と Qwen3.6-35B-A3B-OptiQ-4bit-REAP-19B（262144/81920）。
 - pi-subagents とその専用設定・ツール指示を読み込まない。その他の既存 UI・追加パッケージ・共通指示・スキル・MCP は利用できるようにする。ローカル APPEND_SYSTEM.md は Subagents 節を除いた専用本文にする。
 - これは設定・認証保存先の分離であり、クラウド推論の強制禁止ではない。Pi 本体改変・通信遮断は対象外。mise 未有効・未 trust・明示的な子設定による上書きは保証対象外。
-- OpenCode は oMLX 定義、既定モデル、provider 制限、execute deny、MCP の codemode=false を除去し、CUA・Context7・既存全許可・共通 AGENTS.md リンクを保持する。
-- モデルのダウンロード、oMLX サービス操作、既存の無関係な変更は対象外。
 
 ## Implementation Decisions
 
@@ -41,7 +38,6 @@ Review base: `b4f7a18854bdab90641d2b01b30a52179dc2cab5`（開始時 origin/maste
 - [x] 実 HOME の7設定が symlink ではなく実ファイルで、`.pi/npm` の取得済みパッケージが保持されていること。
 - [x] 通常の fish で `~/Dev/local` と `.pi/npm` の双方が専用 agent directory を参照し、`~/Dev` へ移動すると環境変数が unset に戻ることを Herdr ペインで確認。Safehouse 経由の SDK 起動でも専用設定元が維持された。
 - [x] Pi SDK の実ロード：ルート/子で同一の7拡張・28スキル、追加ツールは vcc_recall のみ、Agent / SubagentWorkflow / get_subagent_result / steer_subagent なし。専用 AGENTS.md と Subagents 節のない APPEND_SYSTEM.md を読み込む。モデル2件、デフォルト LFM。ログ `/tmp/pi-local-resources.log`。
-- [x] 稼働済み oMLX に Pi の `ModelRuntime.completeSimple` から接続し、2モデルとも `stopReason=stop` の最終テキスト応答（LFM は OK、Qwen は OK.）を確認。初回64トークンでは thinking のみで上限到達したため、検証用上限を1024にして完了応答を確認した。永続設定の上限は変更していない。ログ `/tmp/pi-local-inference-complete.log`。
 - [x] OpenCode の設定初期化範囲、MCP・全許可・共通指示リンクの維持を差分で確認。
 
 ## Review

@@ -8,7 +8,6 @@
 - [Claude Code](#claude-code)
 - [Pi](#pi)
 - [OpenCode](#opencode)
-- [oMLX](#omlx)
 - [Hermes](#hermes)
 - [CuaDriver](#cuadriver)
 - [Cua Spaces](#cua-spaces)
@@ -55,26 +54,12 @@ Web 検索・ページ取得は `pi-web-access` 拡張が担う。API キーな�
 
 本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
 
-LLM は [oMLX](#omlx) のローカルモデルだけを使う。API キーは環境変数 `OMLX_API_KEY` から読む。
-
-OpenCode は oMLX のモデルを自動検出しない。oMLX でモデルをダウンロードしたら、設定の `providers.omlx.models` にモデル ID・ツール対応・コンテキスト長を追記し、必要なら `model` に既定値を指定する。oMLX のサーバーを起動してから、任意の作業ディレクトリで OpenCode を起動する。
+`/connect` でプロバイダーを接続し、`/models` でモデルを選ぶ。
 
 ```fish
 opencode models
 opencode
 ```
-
-サーバー停止中もモデルは一覧に表示されるが、推論はできない。モデルの取得・起動・停止は OpenCode では行わない。
-
-[プロバイダーポリシー](https://opencode.ai/v2/docs/policies/)で他のプロバイダーを禁止する。MCP などの外部通信はこの制限の対象外。プロジェクト設定で許可済みプロバイダーの接続先やモデル定義を書き換えることまでは防がない。
-
-## oMLX
-
-[公式 Releases](https://github.com/jundot/omlx/releases) の DMG から手動導入し、アプリ内の更新機能で更新する。メニューバーアプリからサーバーの起動・停止を行い、モデルは管理画面 `http://127.0.0.1:8000/admin` でダウンロード・ロードする。Homebrew の Formula 版は併用しない。
-
-サーバーは `127.0.0.1:8000` で待ち受ける。
-
-oMLX の設定は `~/.omlx/settings.json`、モデルの標準保存先は `~/.omlx/models/`。
 
 ## Hermes
 
