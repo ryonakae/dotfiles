@@ -105,6 +105,6 @@ AutomationBench・AA-Briefcase は候補間の比較の補助にし、下限の�
 - 値はサイトの表示精度で記載し、未掲載値の補間や他世代からの流用はしない。
 - Codex・Claude の effort 別の値は、各モデル `<m>` の比較ページ `https://artificialanalysis.ai/models/comparisons/<m>-low-vs-<m>-medium`（low・medium）、`<m>-high-vs-<m>-xhigh`（high・xhigh）、`<m>-vs-<m>-low`（max）から取得する。`<m>` はリリースページ URL の末尾（例: `gpt-6-1-terra`、`claude-opus-5-5`）。Gemini 3.8 Flash は `gemini-3-8-flash-low-vs-gemini-3-8-flash-medium`（low・medium）と `gemini-3-8-flash-vs-gemini-3-8-flash-medium`（high）。比較ページの列は URL ではなく見出しの順に並ぶ。
 - ぶれ幅は、評価方法のページが信頼区間を公表していないため、問題数を独立した標本数とみなし、反復試行は数えず、得点率 50% を仮定した二項分布の 95% 区間の半幅として概算する。
-- 値を更新したら、ぶれ幅・クラス・軽量クラスの下限も同じ規則で作り直す。
+- 値を更新したら、ぶれ幅・クラス・軽量クラスの下限も同じ規則で作り直し、[delegation.md の既定の委譲先](delegation.md#既定の委譲先) も選定手順で選び直す。
 
 出典: [評価方法](https://artificialanalysis.ai/methodology/intelligence-benchmarking)。リリースページ: [Luna](https://artificialanalysis.ai/models/releases/gpt-6-luna)、[Terra](https://artificialanalysis.ai/models/releases/gpt-6-1-terra)、[Sol](https://artificialanalysis.ai/models/releases/gpt-6-1-sol)、[Astra](https://artificialanalysis.ai/models/releases/gpt-6-astra)、[Haiku 5.5](https://artificialanalysis.ai/models/releases/claude-haiku-5-5)、[Sonnet 5.5](https://artificialanalysis.ai/models/releases/claude-sonnet-5-5)、[Fable 5.1](https://artificialanalysis.ai/models/releases/claude-fable-5-1)、[Opus 5.5](https://artificialanalysis.ai/models/releases/claude-opus-5-5)、[Gemini 3.8 Flash](https://artificialanalysis.ai/models/releases/gemini-3-8-flash)。
