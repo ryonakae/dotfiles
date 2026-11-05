@@ -138,6 +138,7 @@
     "worktreeOnMerge": true,
     "worktreeOnDelete": true
   },
+  "defaultAutoPull": true,
   "defaultModelSelection": {
     "instanceId": "claudeAgent",
     "model": "claude-opus-5-5",
@@ -189,13 +190,13 @@
     },
     "opencode": {
       "driver": "opencode",
-      "displayName": "OpenCode"
+      "displayName": "OpenCode",
+      "enabled": true
     },
     "antigravity": {
       "driver": "antigravity",
       "displayName": "Antigravity",
       "enabled": true
     }
-  },
-  "defaultAutoPull": true
+  }
 }
