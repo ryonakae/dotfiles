@@ -196,5 +196,6 @@
       "displayName": "Antigravity",
       "enabled": true
     }
-  }
+  },
+  "defaultAutoPull": true
 }
