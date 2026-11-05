@@ -6,7 +6,6 @@
 
 - [T3 Code](#t3-code)
 - [Claude Code](#claude-code)
-- [Pi](#pi)
 - [OpenCode](#opencode)
 - [Hermes](#hermes)
 - [CuaDriver](#cuadriver)
@@ -22,7 +21,7 @@
 
 設定は `~/.t3/userdata/settings.json` を dotfiles で管理する。画面での変更も Git 正本への書き込みになるので、Git 差分を確認する。キーバインドは既定のまま使い、管理しない。
 
-新しいスレッドの権限モードは Auto を既定にしている（**Settings → General → New threads → Permissions**）。Claude は自動承認の分類器、Codex は workspace-write の sandbox と自動レビューで危険な操作を止める。Pi は Auto に対応しないため、Supervised か Full access を選ぶ。
+新しいスレッドの権限モードは Auto を既定にしている（**Settings → General → New threads → Permissions**）。Claude は自動承認の分類器、Codex は workspace-write の sandbox と自動レビューで危険な操作を止める。
 
 エージェントに渡す API キーは[環境変数の管理](secrets.md#t3-code-のエージェントに渡す)で登録する。
 
@@ -40,21 +39,11 @@ dotfiles 管理の MCP 定義 `~/.claude/mcp.json` を読ませるため、T3 Co
 
 `USER` はユーザー名に置き換える。ターミナルから起動する場合も `claude --mcp-config ~/.claude/mcp.json` を使う。
 
-## Pi
-
-OpenAI の認証は Pi 内で `/login openai-codex` を実行し、ChatGPT のサブスクリプションでサインインする。
-
-MCP の個人設定は `~/.pi/agent/mcp.json`。OAuth が必要なサーバーは `pi mcp login SERVER` を使う。`SERVER` は設定したサーバー名に置き換える。
-
-Web 検索・ページ取得は `pi-web-access` 拡張が担う。API キーなしで動き、`openai-codex` でサインイン済みなら OpenAI の検索を使う。
-
-本体は Homebrew で更新する。拡張は `config/.pi/agent/settings.json` に版を固定せず列挙し、`pi update --extensions` で更新する。設定・footer の変更は Git 正本への書き込みとなるため、Git 差分を確認する。
-
 ## OpenCode
 
 本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
 
-`/connect` でプロバイダーを接続し、`/models` でモデルを選ぶ。
+OpenCode Zen の DeepSeek V4.1 Flash（`opencode/deepseek-v4.1-flash`）を既定にする。`opencode auth login` で接続する。T3 Code の OpenCode provider では、このモデル以外を `providerModelPreferences.opencode.hiddenModels` で隠している。
 
 ```fish
 opencode models
@@ -136,7 +125,7 @@ Linux の Space は `cua spaces create ghcr.io/trycua/linux:24.04-slim --kind mi
 launchctl bootstrap gui/(id -u) ~/Library/LaunchAgents/com.ryonakae.cua-relay-keepalive.plist
 ```
 
-Pi・Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。
+Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。
 
 Claude Code は [Launch arguments の `--mcp-config`](#claude-code) で `~/.claude/mcp.json` を読み込む。
 

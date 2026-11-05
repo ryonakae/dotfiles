@@ -260,7 +260,7 @@ class DotfilesLinksTests(unittest.TestCase):
 
   def test_apply_excludes_examples_and_state(self):
     excluded = ['.config/tool/config.toml.example']
-    untracked = ['.config/fish/fish_variables', '.pi/agent/sessions/last.json',
+    untracked = ['.config/fish/fish_variables', '.config/tool/state.json',
                  '.config/fish/functions/local-only.fish']
     for name in excluded:
       self.source(name)

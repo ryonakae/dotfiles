@@ -94,10 +94,9 @@ cask などがキャッシュを失効させて更新に失敗した場合は、
 - 追加依存・全機能確認を導入の前提にしない。
 - installer の全体 main、別 venv 管理を重ねない。
 
-### T3 Code・Pi
+### T3 Code
 
 - T3 Code の provider 設定（Environment variables・Launch arguments）は画面から変更する。Sensitive の値が `settings.json` に平文で書かれていないことを Git 差分で確認する。
-- Pi は live link と標準パッケージ管理を使い、認証・session を配布しない。
 
 ## macOS 設定
 

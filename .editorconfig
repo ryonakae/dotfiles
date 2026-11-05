@@ -15,8 +15,5 @@ trim_trailing_whitespace = false
 indent_size = 4
 insert_final_newline = false
 
-[config/.pi/agent/settings.json]
-insert_final_newline = false
-
 [config/.claude/settings.json]
 insert_final_newline = false
