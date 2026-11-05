@@ -47,112 +47,6 @@
         "gpt-5.6-luna"
       ]
     },
-    "pi": {
-      "hiddenModels": [
-        "openai-codex/gpt-5.3-codex-spark",
-        "openai-codex/gpt-5.5",
-        "openai-codex/gpt-5.6-luna",
-        "openai-codex/gpt-5.6-sol",
-        "openai-codex/gpt-5.6-terra",
-        "openai-codex/gpt-6-sol",
-        "default",
-        "openai/gpt-4",
-        "openai/gpt-4-turbo",
-        "openai/gpt-4.1",
-        "openai/gpt-4.1-mini",
-        "openai/gpt-4.1-nano",
-        "openai/gpt-4o",
-        "openai/gpt-4o-2024-05-13",
-        "openai/gpt-4o-2024-08-06",
-        "openai/gpt-4o-2024-11-20",
-        "openai/gpt-4o-mini",
-        "openai/gpt-5",
-        "openai/gpt-5-chat-latest",
-        "openai/gpt-5-mini",
-        "openai/gpt-5-nano",
-        "openai/gpt-5-pro",
-        "openai/gpt-5.1",
-        "openai/gpt-5.2",
-        "openai/gpt-5.2-pro",
-        "openai/gpt-5.3-codex",
-        "openai/gpt-5.3-codex-spark",
-        "openai/gpt-5.4",
-        "openai/gpt-5.4-mini",
-        "openai/gpt-5.4-nano",
-        "openai/gpt-5.4-pro",
-        "openai/gpt-5.5",
-        "openai/gpt-5.5-pro",
-        "openai/gpt-5.6-luna",
-        "openai/gpt-5.6-sol",
-        "openai/gpt-5.6-terra",
-        "openai/gpt-6-sol",
-        "openai/gpt-daybreak-blue-latest",
-        "openai/gpt-daybreak-red-latest",
-        "openai/gpt-realtime-2.1",
-        "openai/o1",
-        "openai/o1-pro",
-        "openai/o3",
-        "openai/o3-mini",
-        "openai/o3-pro",
-        "openai/o4-mini",
-        "openai/gpt-6-luna",
-        "openai/gpt-6.1-sol",
-        "openai/gpt-6-astra"
-      ],
-      "modelOrder": [
-        "openai-codex/gpt-6-astra",
-        "openai-codex/gpt-6.1-sol",
-        "openai-codex/gpt-6.1-terra",
-        "openai-codex/gpt-6-luna",
-        "openai/gpt-6-astra",
-        "openai/gpt-6.1-sol",
-        "openai/gpt-6-luna",
-        "default",
-        "openai/gpt-4",
-        "openai/gpt-4-turbo",
-        "openai/gpt-4.1",
-        "openai/gpt-4.1-mini",
-        "openai/gpt-4.1-nano",
-        "openai/gpt-4o",
-        "openai/gpt-4o-2024-05-13",
-        "openai/gpt-4o-2024-08-06",
-        "openai/gpt-4o-2024-11-20",
-        "openai/gpt-4o-mini",
-        "openai/gpt-5",
-        "openai/gpt-5-chat-latest",
-        "openai/gpt-5-mini",
-        "openai/gpt-5-nano",
-        "openai/gpt-5-pro",
-        "openai/gpt-5.1",
-        "openai/gpt-5.2",
-        "openai/gpt-5.2-pro",
-        "openai/gpt-5.3-codex",
-        "openai/gpt-5.3-codex-spark",
-        "openai/gpt-5.4",
-        "openai/gpt-5.4-mini",
-        "openai/gpt-5.4-nano",
-        "openai/gpt-5.4-pro",
-        "openai/gpt-5.5",
-        "openai/gpt-5.5-pro",
-        "openai/gpt-5.6-luna",
-        "openai/gpt-5.6-sol",
-        "openai/gpt-5.6-terra",
-        "openai/gpt-6-sol",
-        "openai/gpt-daybreak-blue-latest",
-        "openai/gpt-daybreak-red-latest",
-        "openai/gpt-realtime-2.1",
-        "openai/o1",
-        "openai/o1-pro",
-        "openai/o3",
-        "openai/o3-mini",
-        "openai/o3-pro",
-        "openai/o4-mini",
-        "openai-codex/gpt-5.6-luna",
-        "openai-codex/gpt-5.6-sol",
-        "openai-codex/gpt-5.6-terra",
-        "openai-codex/gpt-6-sol"
-      ]
-    },
     "antigravity": {
       "hiddenModels": [
         "claude-sonnet-4-6",
@@ -163,17 +57,6 @@
     },
     "opencode": {
       "hiddenModels": [
-        "opencode/beam-free",
-        "opencode/big-pickle",
-        "opencode/crouton-alpha-free",
-        "opencode/flint-40b-free",
-        "opencode/glm-5.3-flash-free",
-        "opencode/mimo-v2.6-flash-free",
-        "opencode/nemotron-3.5-lightning-free",
-        "opencode/nemotron-3.5-super-vl-free",
-        "opencode/pulse-alpha-free",
-        "opencode/nemotron-3-ultra-free",
-        "opencode/deepseek-v4.1-flash-free",
         "opencode/claude-fable-5",
         "opencode/claude-fable-5-1",
         "opencode/claude-haiku-4-5",
@@ -246,7 +129,9 @@
         "opencode/qwen3.8-flash",
         "opencode/qwen3.8-max"
       ],
-      "modelOrder": []
+      "modelOrder": [
+        "opencode/deepseek-v4.1-flash"
+      ]
     }
   },
   "storageCleanup": {
@@ -259,13 +144,13 @@
     "options": [
       {
         "id": "effort",
-        "value": "high"
+        "value": "medium"
       }
     ]
   },
   "fallbackModelSelection": {
     "instanceId": "codex",
-    "model": "gpt-6-astra"
+    "model": "gpt-6.1-sol"
   },
   "defaultRuntimeMode": "auto",
   "projectSettingsFolded": true,
@@ -274,26 +159,9 @@
   "deviceOnboardingCompleted": true,
   "sidebarAutoSettleAfterDays": 14,
   "idleCompaction": "off",
+  "linkedEnvironmentsEnabled": true,
   "branchNamingMode": "semantic",
   "providerInstances": {
-    "pi": {
-      "driver": "pi",
-      "displayName": "Pi",
-      "environment": [
-        {
-          "name": "CONTEXT7_API_KEY",
-          "value": "",
-          "sensitive": true,
-          "valueRedacted": true
-        },
-        {
-          "name": "GIT_OPTIONAL_LOCKS",
-          "value": "0",
-          "sensitive": false
-        }
-      ],
-      "enabled": false
-    },
     "codex": {
       "driver": "codex",
       "environment": [
@@ -321,16 +189,7 @@
     },
     "opencode": {
       "driver": "opencode",
-      "displayName": "OpenCode",
-      "environment": [
-        {
-          "name": "CONTEXT7_API_KEY",
-          "value": "",
-          "sensitive": true,
-          "valueRedacted": true
-        }
-      ],
-      "enabled": false
+      "displayName": "OpenCode"
     },
     "antigravity": {
       "driver": "antigravity",

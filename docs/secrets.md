@@ -16,7 +16,7 @@ API キーなどの秘密は Git に入れない。値の控えは 1Password に
 
 T3 Code はログインシェルの環境変数を一部しか引き継がないので、fish で export してもエージェントには届かない。provider ごとに登録する。
 
-1. T3 Code の **Settings → Providers** で対象の provider（Claude、Codex、Pi など）を開く。
+1. T3 Code の **Settings → Providers** で対象の provider（Claude、Codex など）を開く。
 2. **Environment variables** に変数名と値を入力し、**Sensitive** をオンにして保存する。
 
 Sensitive の値は `~/.t3/userdata/secrets/` に保存され、dotfiles で管理する `settings.json` には値の入っていない項目だけが書かれる。保存後に次を実行し、登録した変数の `value` が空で `valueRedacted` が `true` になっていることを確認する。
@@ -29,8 +29,7 @@ jq '.providerInstances | map_values(.environment)' ~/.t3/userdata/settings.json
 
 | 変数 | 登録する provider | 用途 |
 |---|---|---|
-| `CONTEXT7_API_KEY` | Claude、Codex、Pi、OpenCode | Context7 によるドキュメント参照 |
-| `GIT_OPTIONAL_LOCKS` | Pi | 値は `0`。秘密ではないので Sensitive は不要。Git の任意ロックを止め、並行する Git 操作との競合を避ける |
+| `CONTEXT7_API_KEY` | Claude、Codex | Context7 によるドキュメント参照 |
 
 エージェントが `env` などで環境変数を表示すると、その出力は T3 Code の会話履歴に平文で残る。値を出力させない。
 
