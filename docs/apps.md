@@ -125,7 +125,9 @@ Linux の Space は `cua spaces create ghcr.io/trycua/linux:24.04-slim --kind mi
 launchctl bootstrap gui/(id -u) ~/Library/LaunchAgents/com.ryonakae.cua-relay-keepalive.plist
 ```
 
-Claude Code・Codex・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。
+Claude Code・OpenCode・Antigravity CLI の MCP 定義は dotfiles 管理。新規ファイルは[設定ファイルの配置](usage.md#設定ファイルを変更する)、公式 `cua-spaces` スキルは[外部 repos の更新と配置](usage.md#外部スキルと-plugin-を更新する)で反映する。
+
+Codex の `~/.codex/config.toml` は管理外。MCP 定義もこの実ファイルで設定する。
 
 Claude Code は [Launch arguments の `--mcp-config`](#claude-code) で `~/.claude/mcp.json` を読み込む。
 
