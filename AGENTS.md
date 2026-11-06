@@ -12,6 +12,7 @@ macOS 用の個人設定。ユーザー向け手順の入口は [README.md](READ
 - 非秘密の適用対象定義は Git 管理する。マシン固有値・秘密は Git 管理外の実ファイルへ置き、値のない `*.example` だけを管理する。
 - 共通エージェント指示の正本は `config/.agents/AGENTS.md`。各エージェント側の symlink を実ファイルに置き換えない。
 - Hermes の認証・memory・session・`.env`・自己更新する hooks / cron / skills、T3 Code の secrets・state・client / desktop 設定は管理対象に加えない。
+- T3 Code で変更をコミット・push したら、操作中の PC 以外の、dotfiles を利用している PC にも同期し、対象ファイルと HOME 側の参照への反映を確認する。別マシンの操作には [use-t3-code の Linked environment 手順](config/.agents/skills/use-t3-code/references/linked-environments.md)を使う。commit-only・同期不要の指定は優先する。接続不能、未コミット変更との衝突、追加の設定移行がある場合はその PC への同期を止め、未完了の理由を報告する。
 
 ## 検証
 
