@@ -5,7 +5,7 @@ description: >-
   質問への回答、読み取り調査、設計・計画、実装、レビュー、文章作成を含み、
   作業規模やサブエージェントへの委譲の予定にかかわらず読む。
   サブエージェントへの積極的な委譲とモデル・思考レベルの選定、
-  worktree、iOS Simulator、スレッド整理の運用を扱う。
+  Linked environment による別マシンでの作業・同期、worktree、iOS Simulator、スレッド整理の運用を扱う。
 ---
 
 # Use T3 Code
@@ -49,6 +49,7 @@ T3 Code が注入する指示に、この環境での判断基準と運用を補
 | 用途 | 読む資料 |
 |---|---|
 | サブエージェントへの委譲、文章作成・ドキュメント更新、独立レビューの依頼、子タスクの結果確認 | [references/delegation.md](references/delegation.md)。モデル × 思考レベルを比較するときは [references/model-benchmarks.md](references/model-benchmarks.md) も読む |
+| Linked environment、別マシンでの調査・操作・同期、別マシンのサブエージェントへの委譲 | [references/linked-environments.md](references/linked-environments.md) |
 | iOS Simulator の操作、UI 動作検証、`.ad` テスト | [references/ios-simulator.md](references/ios-simulator.md) |
 | worktree の作成・移動・削除 | [references/worktree.md](references/worktree.md) |
 | スレッドの settle・unsettle・archive・unarchive、整理・片付け | [references/thread-lifecycle.md](references/thread-lifecycle.md) |
