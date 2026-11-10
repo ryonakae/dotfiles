@@ -111,5 +111,6 @@ low / medium / high は、構成や論旨の判断量、資料の複雑さ、検
 
 - モデルと思考レベルは原則として明示する。省略は、親の provider・モデル・思考レベルが選定結果と一致する場合に限る。内蔵機能で省略すると親のモデルを継承するため、選定結果より上位のモデルになりやすい。
 - 選んだ思考レベルを内蔵機能で指定できない場合は、T3 の指示どおり `delegate_task` を使う。
+- Antigravity は `auto` に対応せず、`auto-accept-edits` でもシェルコマンドのたびに承認待ちになる。文章作成・ドキュメント更新の委譲では `runtimeMode: "full-access"` を指定し、親が差分を確認する。親の権限モードより上を指定して拒否された場合は、`auto-accept-edits` で起動して子スレッドの権限モードを切り替えるようユーザーに伝える。対応する権限モードは `orchestrator_capabilities` の `runtimeModes` で確認する。
 - 速度系の option（`serviceTier`、`fastMode`）はユーザーの指示がある場合だけ指定する。
 - 比較データにない思考レベル（Codex の `ultra`、Claude の `ultracode` / `ultrathink` など）は根拠がないため、ユーザーの指示がある場合だけ使う。
