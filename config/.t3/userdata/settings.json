@@ -11,7 +11,8 @@
         "claude-opus-4-5",
         "claude-sonnet-5",
         "claude-sonnet-4-6",
-        "claude-haiku-4-5"
+        "claude-haiku-4-5",
+        "claude-fable-5-1"
       ],
       "modelOrder": [
         "claude-opus-5-5",
@@ -127,7 +128,9 @@
         "opencode/qwen3.5-plus",
         "opencode/qwen3.6-plus",
         "opencode/qwen3.8-flash",
-        "opencode/qwen3.8-max"
+        "opencode/qwen3.8-max",
+        "opencode/claude-fable-5-2",
+        "opencode/muse-ember-1.0"
       ],
       "modelOrder": [
         "opencode/deepseek-v4.1-flash"
@@ -135,6 +138,7 @@
     }
   },
   "storageCleanup": {
+    "worktreeSettledAfterDays": 8,
     "worktreeOnMerge": true,
     "worktreeOnDelete": true
   },
