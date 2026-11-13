@@ -131,7 +131,9 @@
         "opencode/qwen3.8-flash",
         "opencode/qwen3.8-max",
         "opencode/claude-fable-5-2",
-        "opencode/muse-ember-1.0"
+        "opencode/muse-ember-1.0",
+        "opencode/gemini-4-carbon",
+        "opencode/gemini-4-hydrogen"
       ],
       "modelOrder": [
         "opencode/deepseek-v4.1-flash"
