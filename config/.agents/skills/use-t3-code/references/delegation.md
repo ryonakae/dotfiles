@@ -48,7 +48,11 @@
 
 モデルの明示指定は、作業別の既定より優先する。
 
-low / medium / high は、構成や論旨の判断量、資料の複雑さ、検証の難しさに応じて選ぶ。実装と読者向けの文章の更新が混在する場合も、文章部分を切り出して Gemini に任せる。依頼には読者、目的、文体、根拠となる仕様・コード・資料を渡し、親が事実・コマンド・仕様との整合を確認する。メインがすでに同モデルなら、文脈分離などの必要がない限り直接書いてよい。
+low / medium / high は、構成や論旨の判断量、資料の複雑さ、検証の難しさに応じて選ぶ。メインがすでに同モデルなら、文脈分離などの必要がない限り直接書いてよい。
+
+- `runtimeMode` は `auto-accept-edits`（Auto-accept edits）または `full-access`（Full access）を指定する。文言案の作成には `auto-accept-edits` を既定とする。指定できるモードは、親の権限と `orchestrator_capabilities` の `runtimeModes` に従う。
+- 実装と文章更新が混在する場合も、Gemini の担当は文言案の作成と親への返却に限定する。トークン消費を抑えるため、依頼文に読者、目的、文体、根拠となる仕様・コード・資料の必要箇所を添え、返答には対象箇所と文言案だけを求める。
+- 親が文言案と事実・コマンド・仕様との整合を確認し、採用する文言を対象ファイルへ反映する。
 
 ### 共通の選定手順
 
@@ -61,7 +65,7 @@ low / medium / high は、構成や論旨の判断量、資料の複雑さ、検
    - 外部サービスをツール・API で操作する作業: 作業に含まれる変更・コマンド実行・読解に近い上の指標で選び、AutomationBench を候補間の比較の補助にする。
    - 大量のファイル・資料を探索して成果物にまとめる調査: 同様に上の指標で選び、AA-Briefcase を候補間の比較の補助にする。
    - 複数に当てはまる作業は、該当する指標すべてを満たす組み合わせから選ぶ。
-   - コードレビューの見逃し・誤検出を直接測る指標はない。指摘の正否を確かめるのに必要な作業（コードの変更・コマンド実行）に近い指標を使う。
+   - リポジトリの変更・構造調査では、[Codex・Claude Code での評価](model-benchmarks.md#codexclaude-code-での評価)も参照する。コードレビューの見逃し・誤検出を直接測る指標はないため、指摘の正否を確かめるのに必要な作業に近い指標を使う。
    - Intelligence・Omniscience は補助にとどめる。
 2. **作業の難度を決める。** 委譲前に次の 4 つに答える。
 
@@ -92,29 +96,43 @@ low / medium / high は、構成や論旨の判断量、資料の複雑さ、検
    | high | 原因が分からない不具合、設計判断、複数の状態・契約を追う作業、長い作業 |
    | xhigh・max | 開始レベルにしない。次の比較でぶれ幅を超える伸びがある場合だけ上げる |
 
-   開始レベルを決めたら、手順 1 の指標で同じモデルの上下のレベルと比べる。1 段上の値が開始レベルよりぶれ幅を超えて高ければ、1 段上から始める。次に、その値との差がぶれ幅以内に収まる最も低いレベルまで下げる。Gemini 3.8 Flash は low〜high だけを使う。
+   開始レベルを決めたら、手順 1 の指標で同じモデルの上下のレベルと比べる。1 段上の値が開始レベルよりぶれ幅を超えて高ければ、1 段上から始める。開始レベルより下げるのは、関連する評価が揃い、速度や費用の改善を優先し、結果を容易に検証できる場合に限る。特にリポジトリ変更では、モデル単体の評価で差が小さくても、Codex・Claude Code での評価に現れる差を確認する。Gemini 3.8 Flash は low〜high だけを使う。
 5. **足りなければ上へ切り替える。** 推論が浅ければ思考レベルを上げ、意味の取り違えや能力不足なら一つ上のクラスからモデルを選び直す。情報不足は依頼を補い、時間超過はまず範囲・依存関係・ツール待ちを確認する。認証・権限・ツール障害をモデル変更で解決しようとしない。
 
 ### 指定方法
 
-`target` の provider・モデル ID と、`options` に指定できるキー・値は実行時の `orchestrator_capabilities` を正とする。Codex・Claude は 2026-10-27、Antigravity は 2026-11-03 に確認した対応:
+`target` の provider・モデル ID と、`options` に指定できるキー・値は実行時の `orchestrator_capabilities` を正とする。以下は 2026-11-18 に確認した対応。
 
 | モデル | `providerInstanceId` | `model` | 思考レベルの option |
 |---|---|---|---|
-| Luna / Sol / Astra / Terra | `codex` | `gpt-6-luna` / `gpt-6.1-sol` / `gpt-6-astra` / `gpt-6.1-terra` | `reasoningEffort` |
-| Opus / Fable / Sonnet / Haiku | `claudeAgent` | `claude-opus-5-5` / `claude-fable-5-1` / `claude-sonnet-5-5` / `claude-haiku-5-5` | `effort` |
+| GPT-6 Luna / GPT-6.1 Terra / GPT-6.2 Sol / GPT-6.2 Astra | `codex` | `gpt-6-luna` / `gpt-6.1-terra` / `gpt-6.2-sol` / `gpt-6.2-astra` | `reasoningEffort` |
+| Claude Haiku 5.5 / Claude Sonnet 5.5 / Claude Opus 5.5 / Claude Fable 5.2 | `claudeAgent` | `claude-haiku-5-5` / `claude-sonnet-5-5` / `claude-opus-5-5` / `claude-fable-5-2` | `effort` |
 | Gemini 3.8 Flash | `antigravity` | `gemini-3.8-flash` | `thinking_level`（low / medium / high） |
 
 ```json
-{ "providerInstanceId": "codex", "model": "gpt-6.1-sol", "options": { "reasoningEffort": "medium" } }
+{ "providerInstanceId": "codex", "model": "gpt-6.2-sol", "options": { "reasoningEffort": "medium" } }
 ```
 
 ```json
-{ "providerInstanceId": "antigravity", "model": "gemini-3.8-flash", "options": { "thinking_level": "medium" } }
+{ "providerInstanceId": "claudeAgent", "model": "claude-fable-5-2", "options": { "effort": "high" } }
+```
+
+読者向けの文言案を Gemini に委譲する場合の `delegate_task` 引数の例。
+
+```json
+{
+  "task": "以下の仕様と対象箇所を参照して文言案を作成し、対象箇所と文言案だけを返してください。ファイルへの反映は親が担当します。",
+  "runtimeMode": "auto-accept-edits",
+  "target": {
+    "providerInstanceId": "antigravity",
+    "model": "gemini-3.8-flash",
+    "options": { "thinking_level": "medium" }
+  }
+}
 ```
 
 - モデルと思考レベルは原則として明示する。省略は、親の provider・モデル・思考レベルが選定結果と一致する場合に限る。内蔵機能で省略すると親のモデルを継承するため、選定結果より上位のモデルになりやすい。
 - 選んだ思考レベルを内蔵機能で指定できない場合は、T3 の指示どおり `delegate_task` を使う。
-- Antigravity は `auto` に対応せず、`auto-accept-edits` でもシェルコマンドのたびに承認待ちになる。Gemini への委譲では `runtimeMode: "full-access"` を指定し、親が差分を確認する。親の権限モードより上を指定して拒否された場合は、`auto-accept-edits` で起動して子スレッドの権限モードを切り替えるようユーザーに伝える。対応する権限モードは `orchestrator_capabilities` の `runtimeModes` で確認する。
+- Antigravity は `auto-accept-edits` でもシェルコマンドに承認が必要になる。文章以外の作業を明示指定で Gemini に委譲する場合は、親の権限が許せば `runtimeMode: "full-access"` を指定し、編集を依頼した場合は親が差分を確認する。
 - 速度系の option（`serviceTier`、`fastMode`）はユーザーの指示がある場合だけ指定する。
 - 比較データにない思考レベル（Codex の `ultra`、Claude の `ultracode` / `ultrathink` など）は根拠がないため、ユーザーの指示がある場合だけ使う。
