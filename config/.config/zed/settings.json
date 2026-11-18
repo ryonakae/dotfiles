@@ -1,5 +1,18 @@
 {
   // General
+  "ssh_connections": [
+    {
+      "host": "ryo-mac-mini.local.",
+      "args": [],
+      "projects": [
+        {
+          "paths": [
+            "/Users/ryo.nakae/Dev/personal/c-41"
+          ]
+        }
+      ]
+    }
+  ],
   "cli_default_open_behavior": "new_window",
 
   // Appearance
