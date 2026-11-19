@@ -43,6 +43,10 @@ description: >-
 T3 Code が注入する指示に、この環境での判断基準と運用を補う。
 `delegate_task`・`task_status`・`device_*`・`t3_thread_organize`・worktree 隔離などのツールの使い方と、内蔵機能と `delegate_task` のどちらを使うかは T3 の指示に従い、ここで再定義しない。
 
+## 回答の HTML 表示
+
+回答を HTML で表示する場合は、`html_preview` で確認し、`html_render` で会話内に表示する。配色、書体、余白は `html_render` のスタイル指示に従う。
+
 ## 資料
 
 用途に応じて次を読む。
