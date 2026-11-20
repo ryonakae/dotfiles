@@ -25,7 +25,11 @@
           "capabilities": {
             "tools": true,
             "input": ["text", "image"],
-            "output": ["text"]
+            "output": ["text"],
+            "reasoning": {
+              "supported": true,
+              "effort": ["low", "high", "max"]
+            }
           },
           "limit": {
             "context": 1048576,
@@ -64,7 +68,11 @@
           "capabilities": {
             "tools": true,
             "input": ["text", "image"],
-            "output": ["text"]
+            "output": ["text"],
+            "reasoning": {
+              "supported": true,
+              "effort": ["low", "high", "max"]
+            }
           },
           "limit": {
             "context": 1048576,
@@ -92,7 +100,8 @@
             "input": ["text", "image"],
             "output": ["text"],
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "effort": ["low", "high", "max"]
             }
           },
           "limit": {
@@ -108,7 +117,8 @@
             "input": ["text", "image"],
             "output": ["text"],
             "reasoning": {
-              "supported": true
+              "supported": true,
+              "effort": ["low", "high", "max"]
             }
           },
           "limit": {
