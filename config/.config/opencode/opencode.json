@@ -72,6 +72,51 @@
           }
         }
       }
+    },
+    "sakura": {
+      "name": "さくらのAI Engine",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://api.ai.sakura.ad.jp/v1"
+      },
+      "compatibility": {
+        "reasoningField": "reasoning",
+        "maxTokensField": "max_tokens"
+      },
+      "models": {
+        "deepseek-v4.1-flash": {
+          "modelID": "preview/DeepSeek-V4.1-Flash-1017",
+          "name": "DeepSeek V4.1 Flash 1017",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image"],
+            "output": ["text"],
+            "reasoning": {
+              "supported": true
+            }
+          },
+          "limit": {
+            "context": 1048575,
+            "output": 32000
+          }
+        },
+        "glm-5.3-flash": {
+          "modelID": "preview/GLM-5.3-Flash",
+          "name": "GLM 5.3 Flash",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image"],
+            "output": ["text"],
+            "reasoning": {
+              "supported": true
+            }
+          },
+          "limit": {
+            "context": 1048575,
+            "output": 32000
+          }
+        }
+      }
     }
   }
 }

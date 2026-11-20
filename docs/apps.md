@@ -60,6 +60,19 @@ opencode auth login nous --method key
 
 T3 Code では **Settings → Providers → OpenCode → Refresh provider status** を実行し、モデル一覧の **Nous Portal** からモデルを選択する。表示されない場合は、OpenCode で推論と一覧更新をせずに 30 秒待ち、再度更新する。[T3 Code の更新手順](https://github.com/pingdotgg/t3code/blob/v0.1.10/docs/user/providers-opencode.md#refresh-models-commands-and-skills)
 
+### さくらのAI Engine
+
+DeepSeek V4.1 Flash 1017（`sakura/deepseek-v4.1-flash`）と GLM 5.3 Flash（`sakura/glm-5.3-flash`）を選択できる。基盤モデル無償プランの月3,000リクエストは、Chat Completions 全体の共通枠。[さくらのAI Engine の利用手順](https://manual.sakura.ad.jp/cloud/ai-engine/02-howto.html)
+
+コントロールパネルで発行したアカウントトークンを、`UUID:シークレット` の形式のまま対話プロンプトに入力する。
+
+```fish
+opencode reload
+opencode auth login sakura --method key
+```
+
+T3 Code では **Settings → Providers → OpenCode → Refresh provider status** を実行し、**さくらのAI Engine** のモデルを選択する。
+
 ## Hermes
 
 CLI・gateway は `~/.hermes/.env` の[環境変数](secrets.md#hermes-に渡す)を起動時に読み込む。gateway は Hermes 標準の launchd サービスで動かす。
