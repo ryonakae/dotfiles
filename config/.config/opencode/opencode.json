@@ -1,4 +1,77 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "model": "opencode/deepseek-v4.1-flash"
+  "model": "opencode/deepseek-v4.1-flash",
+  "providers": {
+    "opencode": {
+      "models": {
+        "deepseek-v4.1-flash": {
+          "name": "DeepSeek V4.1 Flash 1017"
+        },
+        "glm-5.3-flash": {
+          "name": "GLM 5.3 Flash"
+        }
+      }
+    },
+    "nous": {
+      "name": "Nous Portal",
+      "package": "@opencode/ai/providers/openai-compatible",
+      "settings": {
+        "baseURL": "https://inference-api.nousresearch.com/v1"
+      },
+      "models": {
+        "deepseek-v4.1-flash": {
+          "modelID": "deepseek/deepseek-v4.1-flash-1017",
+          "name": "DeepSeek V4.1 Flash 1017",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 393216
+          }
+        },
+        "gemini-4-hydrogen": {
+          "modelID": "google/gemini-4-hydrogen",
+          "name": "Gemini 4 Hydrogen",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image", "audio", "video", "pdf"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          }
+        },
+        "gemini-4-neon": {
+          "modelID": "google/gemini-4-neon",
+          "name": "Gemini 4 Neon",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image", "audio", "video", "pdf"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 65536
+          }
+        },
+        "glm-5.3-flash": {
+          "modelID": "z-ai/glm-5.3-flash",
+          "name": "GLM 5.3 Flash",
+          "capabilities": {
+            "tools": true,
+            "input": ["text", "image"],
+            "output": ["text"]
+          },
+          "limit": {
+            "context": 1048576,
+            "output": 131072
+          }
+        }
+      }
+    }
+  }
 }

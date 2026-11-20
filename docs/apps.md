@@ -43,12 +43,22 @@ dotfiles 管理の MCP 定義 `~/.claude/mcp.json` を読ませるため、T3 Co
 
 本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
 
-OpenCode Zen の DeepSeek V4.1 Flash（`opencode/deepseek-v4.1-flash`）を既定にする。`opencode auth login` で接続する。T3 Code の OpenCode provider では、このモデル以外を `providerModelPreferences.opencode.hiddenModels` で隠している。
+OpenCode Zen の DeepSeek V4.1 Flash 1017（`opencode/deepseek-v4.1-flash`）を既定にする。`opencode auth login` で接続する。T3 Code のモデル一覧では、Zen と Nous Portal の両方で DeepSeek V4.1 Flash 1017、Gemini 4 Hydrogen、Gemini 4 Neon、GLM 5.3 Flash を選択できる。Zen のモデル表示は `providerModelPreferences.opencode.hiddenModels` で調整する。
 
 ```fish
 opencode models
 opencode
 ```
+
+### Nous Portal
+
+[Nous Portal の API キー](https://portal.nousresearch.com/api-keys)を発行し、OpenCode の対話プロンプトに入力する。API キー経由の利用には従量課金のクレジットが適用される。[Nous Portal の課金仕様](https://portal.nousresearch.com/compare)
+
+```fish
+opencode auth login nous --method key
+```
+
+T3 Code では **Settings → Providers → OpenCode → Refresh provider status** を実行し、モデル一覧の **Nous Portal** からモデルを選択する。表示されない場合は、OpenCode で推論と一覧更新をせずに 30 秒待ち、再度更新する。[T3 Code の更新手順](https://github.com/pingdotgg/t3code/blob/v0.1.10/docs/user/providers-opencode.md#refresh-models-commands-and-skills)
 
 ## Hermes
 
