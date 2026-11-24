@@ -36,32 +36,6 @@
             "output": 393216
           }
         },
-        "gemini-4-hydrogen": {
-          "modelID": "google/gemini-4-hydrogen",
-          "name": "Gemini 4 Hydrogen",
-          "capabilities": {
-            "tools": true,
-            "input": ["text", "image", "audio", "video", "pdf"],
-            "output": ["text"]
-          },
-          "limit": {
-            "context": 1048576,
-            "output": 65536
-          }
-        },
-        "gemini-4-neon": {
-          "modelID": "google/gemini-4-neon",
-          "name": "Gemini 4 Neon",
-          "capabilities": {
-            "tools": true,
-            "input": ["text", "image", "audio", "video", "pdf"],
-            "output": ["text"]
-          },
-          "limit": {
-            "context": 1048576,
-            "output": 65536
-          }
-        },
         "glm-5.3-flash": {
           "modelID": "z-ai/glm-5.3-flash",
           "name": "GLM 5.3 Flash",
