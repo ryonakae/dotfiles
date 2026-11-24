@@ -16,3 +16,15 @@ settle の前に次の副作用を確認し、問題があれば先にユーザ�
 archived のスレッドはメッセージを受け付けず、settle・unsettle・snooze・pin も拒否される。unarchive は archive の印を外すだけで、settle・pin の状態は archive 前のまま残る。
 
 自動 settle はサーバーが T3 の設定に従って行う（一定期間の非活動、PR の merge・close）。pin しても自動 settle は止まらない。unsettle したスレッドは、新しい活動があるまで自動 settle されない。
+
+## 付随物を片付ける
+
+settle・archive を頼まれたとき、またはプロジェクトの手順でスレッドを片付けるときは、このスレッドと子タスクが作ったものも片付ける。子は `t3_thread_list` の `includeSubagents: true` で `parentThreadId` がこのスレッドのもの、会話に記録した `taskId`・`t3_thread_launch` のスレッドで確かめる。
+
+- **実行中の子タスク**: 不要なら `task_cancel` で止める。
+- **子スレッド**: subagent の子スレッドは、親を settle すると T3 が一緒に settle する。`t3_thread_launch` で作ったスレッドは自動では片付かないので、このスレッドの作業のために作って終わったものを、親と同じ操作で settle・archive する。
+- **ブランチ**: 子のブランチは `t3_worktree_list` に子の `threadId` を渡して調べる。main に入ったものはローカルとリモートから消す。入っていないものは消さずに、名前と最後の commit をユーザーに示して確認する。
+- **worktree**: 手動で消さない。T3 の `storageCleanup` に任せる。
+- **Simulator など**: このスレッドと子が作った端末を消す。プロジェクトに手順やスクリプトがあればそれに従い、なければ作成時に記録した UDID で消す。名前だけで選ばず、記録にない端末には触れない。
+
+消したものと、残したものとその理由を報告する。
