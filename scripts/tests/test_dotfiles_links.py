@@ -105,10 +105,7 @@ class DotfilesLinksTests(unittest.TestCase):
     self.assertEqual((self.home / '.agents/skills/agent-browser/SKILL.md').read_text(),
                      'updated external skill\n')
     expected = {
-      'agent-browser', 'cognitive-rhythm-writing', 'cua-driver',
-      'cua-spaces', 'find-docs', 'ghostwriter', 'japanese-tech-writing',
-      'readme-i18n', 'skill-creator', 'stop-slop', 'stop-slop-ja',
-      'tdd',
+      'agent-browser', 'cua-driver', 'cua-spaces', 'find-docs', 'skill-creator', 'tdd',
     }
     for agent in ('agents', 'claude'):
       targets = self.home / f'.{agent}/skills'
