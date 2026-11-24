@@ -46,7 +46,7 @@
 "~/.claude/skills/tdd" = "~/.local/share/agent-skill-sources/tdd/skills/engineering/tdd"
 
 # Antigravity CLI reads the shared skills
-"~/.gemini/antigravity-cli/skills" = "~/.agents/skills"
+"~/.gemini/config/skills" = "~/.agents/skills"
 
 [bootstrap.repos]
 # fish and Yazi plugins

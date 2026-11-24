@@ -244,7 +244,7 @@ class DotfilesLinksTests(unittest.TestCase):
     external.mkdir()
     (external / 'SKILL.md').write_text('external skill\n')
     targets = [shared / 'ask-codex', self.home / '.claude/skills/ask-codex',
-               self.home / '.gemini/antigravity-cli/skills']
+               self.home / '.gemini/config/skills']
     result = self.mise('apply', '--yes')
     self.assertEqual(result.returncode, 0, result.stderr)
     for target in targets[:2]:
