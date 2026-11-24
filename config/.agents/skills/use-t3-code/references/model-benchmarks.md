@@ -1,6 +1,6 @@
 # モデル × 思考レベルの比較データ
 
-[Artificial Analysis](https://artificialanalysis.ai/) の値。GPT-6.2 Sol・GPT-6.2 Astra・Claude Fable 5.2 と Codex・Claude Code での評価は 2026-11-18 確認。その他の値は 2026-10-31 確認（AutomationBench・AA-Briefcase は 2026-11-03 確認）。起動ごとの再検索は不要。Gemini 3.8 Flash の値は Google のモデルのもので、Antigravity 経由の実測ではない。
+[Artificial Analysis](https://artificialanalysis.ai/) の値。Gemini 4 系は 2026-11-25 確認（Google のモデルのもので、Antigravity 経由の実測ではない）。GPT-6.2 Sol・GPT-6.2 Astra・Claude Fable 5.2 と Codex・Claude Code での評価は 2026-11-18 確認。その他の値は 2026-10-31 確認（AutomationBench・AA-Briefcase は 2026-11-03 確認）。起動ごとの再検索は不要。
 
 内容: 指標、クラス、ぶれ幅、比較表、Codex・Claude Code での評価、データの更新（値を更新するときだけ読む）。
 
@@ -24,11 +24,11 @@
 
 | クラス | 価格比 | 該当（価格比） |
 |---|---|---|
-| 軽量 | 0.12 未満 | Claude Haiku 5.5（0.02）、GPT-6 Luna（0.03）、GPT-6.1 Terra（0.10） |
-| 標準 | 0.12 以上 0.3 未満 | Claude Sonnet 5.5（0.21）、GPT-6.2 Sol（0.25） |
-| 最上位 | 0.3 以上 | Claude Opus 5.5（0.64）、GPT-6.2 Astra（1）、Claude Fable 5.2（1） |
+| 軽量 | 0.12 未満 | Claude Haiku 5.5（0.02）、GPT-6 Luna（0.03）、Gemini 4 Hydrogen（0.09）、GPT-6.1 Terra（0.10） |
+| 標準 | 0.12 以上 0.3 未満 | Claude Sonnet 5.5（0.21）、Gemini 4 Neon（0.22）、GPT-6.2 Sol（0.25） |
+| 最上位 | 0.3 以上 | Claude Opus 5.5（0.64）、Gemini 4 Carbon（0.76）、GPT-6.2 Astra（1）、Claude Fable 5.2（1）、Gemini 4 Argon（1） |
 
-比較対象が 1 モデルしかない provider（Gemini 3.8 Flash）はクラスに入れない。同じクラスの候補をコストで比べるときは、各組み合わせの USD/task を同じ基準値で割った価格比を使う（例: GPT-6.2 Sol medium 0.25、Claude Sonnet 5.5 high 0.43）。
+同じクラスの候補をコストで比べるときは、各組み合わせの USD/task を同じ基準値で割った価格比を使う（例: GPT-6.2 Sol medium 0.25、Claude Sonnet 5.5 high 0.43）。
 
 軽量クラスの下限は、ぶれ幅を超える値とする。まったく機能しない組み合わせと区別できる水準である。下限を満たす組み合わせを秒/task の小さい順に並べた。括弧内は指標の値・秒/task。
 
@@ -36,7 +36,7 @@
 |---|---|---|
 | Terminal-Bench | 13 以上 | GPT-6.1 Terra low（15、48）、Claude Haiku 5.5 low（13、115）、GPT-6.1 Terra medium（32、119） |
 | FrontierCode | 10 以上 | GPT-6.1 Terra low（24、48）、GPT-6.1 Terra medium（35、119）、Claude Haiku 5.5 medium（16、195） |
-| GDP.pdf | 11 以上 | GPT-6.1 Terra low（26、48）、Claude Haiku 5.5 low（11、115）、GPT-6.1 Terra medium（28、119） |
+| GDP.pdf | 11 以上 | GPT-6.1 Terra low（26、48）、Gemini 4 Hydrogen low（28.2、85）、Claude Haiku 5.5 low（11、115）、GPT-6.1 Terra medium（28、119） |
 
 AutomationBench・AA-Briefcase は候補間の比較の補助にし、下限の判定には使わない。
 
@@ -98,9 +98,19 @@ AutomationBench・AA-Briefcase は候補間の比較の補助にし、下限の�
 | Claude Opus 5.5 | high | 52 | 57 | 36 | 29 | 63 | 1682 | 42 | 3.46 | 473.90 |
 | Claude Opus 5.5 | xhigh | 57 | 60 | 44 | 27 | 65 | 1761 | 43 | 6.05 | 792.74 |
 | Claude Opus 5.5 | max | 58 | 60 | 46 | 26 | 70 | 1801 | 48 | 10.04 | 1140.78 |
-| Gemini 3.8 Flash | low | 22 | 10 | 8 | 19 | 37 | 1062 | 13 | 未掲載 | 未掲載 |
-| Gemini 3.8 Flash | medium | 30 | 20 | 16 | 23 | 61 | 1183 | 24 | 6.26 | 未掲載 |
-| Gemini 3.8 Flash | high | 31 | 20 | 19 | 21 | 60 | 1203 | 23 | 7.77 | 785.79 |
+| Gemini 4 Hydrogen | low | 27 | 6.6 | 9.3 | 28.2 | 60.5 | 948 | 36.1 | 0.29 | 85.04 |
+| Gemini 4 Hydrogen | medium | 41 | 29.3 | 31.5 | 32.8 | 72.0 | 1296 | 41.9 | 0.80 | 230.76 |
+| Gemini 4 Hydrogen | high | 51 | 54.0 | 36.3 | 30.0 | 74.4 | 1495 | 43.7 | 1.87 | 508.26 |
+| Gemini 4 Hydrogen | xhigh | 54 | 53.5 | 39.0 | 27.6 | 76.1 | 1568 | 46.3 | 3.16 | 973.58 |
+| Gemini 4 Argon | medium | 48 | 55.1 | 25.0 | 25.6 | 75.8 | 1466 | 41.1 | 8.63 | 1456.24 |
+| Gemini 4 Argon | high | 50 | 57.1 | 25.7 | 21.8 | 77.5 | 1484 | 46.1 | 9.95 | 1405.62 |
+| Gemini 4 Carbon | low | 54 | 62.6 | 29.6 | 28.6 | 63.5 | 1567 | 39.2 | 7.19 | 1668.45 |
+| Gemini 4 Carbon | medium | 58 | 60.6 | 39.5 | 29.6 | 77.6 | 1602 | 46.8 | 6.59 | 1501.29 |
+| Gemini 4 Carbon | high | 60 | 65.2 | 40.6 | 28.4 | 77.8 | 1611 | 53.5 | 7.76 | 2056.85 |
+| Gemini 4 Neon | low | 44 | 32.8 | 26.9 | 31.4 | 76.0 | 1296 | 48.5 | 0.75 | 234.18 |
+| Gemini 4 Neon | medium | 55 | 54.5 | 36.9 | 32.8 | 77.8 | 1517 | 51.1 | 1.90 | 531.29 |
+| Gemini 4 Neon | high | 60 | 61.6 | 43.3 | 33.4 | 79.2 | 1631 | 53.8 | 3.74 | 916.76 |
+| Gemini 4 Neon | xhigh | 61 | 63.6 | 44.4 | 28.0 | 79.3 | 1699 | 54.8 | 6.44 | 1615.38 |
 
 ## Codex・Claude Code での評価
 
@@ -125,8 +135,8 @@ Artificial Analysis が各ハーネスで計測した値。Terminal-Bench は 4.
 
 - 値はサイトの表示精度で記載し、未掲載値の補間や他世代からの流用はしない。
 - 2026-11-18 確認分は [GPT-6.2 Astra と GPT-6.2 Sol のリリース比較](https://artificialanalysis.ai/de/models/comparisons/gpt-6-2-astra-vs-gpt-6-2-sol)と [Claude Fable 5.2 と Claude Sonnet 5.5 のリリース比較](https://artificialanalysis.ai/models/comparisons/claude-fable-5-2-vs-claude-sonnet-5-5)から取得した。
-- その他の Codex・Claude の effort 別の値は、各モデル `<m>` の比較ページ `https://artificialanalysis.ai/models/comparisons/<m>-low-vs-<m>-medium`（low・medium）、`<m>-high-vs-<m>-xhigh`（high・xhigh）、`<m>-vs-<m>-low`（max）から取得する。`<m>` はリリースページ URL の末尾（例: `gpt-6-1-terra`、`claude-opus-5-5`）。Gemini 3.8 Flash は `gemini-3-8-flash-low-vs-gemini-3-8-flash-medium`（low・medium）と `gemini-3-8-flash-vs-gemini-3-8-flash-medium`（high）。比較ページの列は URL ではなく見出しの順に並ぶ。
+- その他の Codex・Claude の effort 別の値は、各モデル `<m>` の比較ページ `https://artificialanalysis.ai/models/comparisons/<m>-low-vs-<m>-medium`（low・medium）、`<m>-high-vs-<m>-xhigh`（high・xhigh）、`<m>-vs-<m>-low`（max）から取得する。`<m>` はリリースページ URL の末尾（例: `gpt-6-1-terra`、`claude-opus-5-5`）。Gemini 4 系は `<m>-low-vs-<m>-medium`（low・medium）、`<m>-high-vs-<m>`（high・xhigh、Neon・Hydrogen）、`<m>-vs-<m>-medium`（high・medium、Argon・Carbon）から取得する（Argon の low は未掲載）。比較ページの列は URL ではなく見出しの順に並ぶ。
 - ぶれ幅は、評価方法のページが信頼区間を公表していないため、問題数を独立した標本数とみなし、反復試行は数えず、得点率 50% を仮定した二項分布の 95% 区間の半幅として概算する。
 - 値を更新したら、ぶれ幅・クラス・軽量クラスの下限も同じ規則で作り直し、[サブエージェントの既定モデル・思考レベル](../SKILL.md#サブエージェントの既定モデル思考レベル)も選定手順で選び直す。
 
-出典: [評価方法](https://artificialanalysis.ai/methodology/intelligence-benchmarking)。リリースページ: [GPT-6 Luna](https://artificialanalysis.ai/models/releases/gpt-6-luna)、[GPT-6.1 Terra](https://artificialanalysis.ai/models/releases/gpt-6-1-terra)、[GPT-6.2 Sol](https://artificialanalysis.ai/models/gpt-6-2-sol)、[GPT-6.2 Astra](https://artificialanalysis.ai/models/gpt-6-2-astra)、[Claude Haiku 5.5](https://artificialanalysis.ai/models/releases/claude-haiku-5-5)、[Claude Sonnet 5.5](https://artificialanalysis.ai/models/releases/claude-sonnet-5-5)、[Claude Fable 5.2](https://artificialanalysis.ai/models/claude-fable-5-2)、[Claude Opus 5.5](https://artificialanalysis.ai/models/releases/claude-opus-5-5)、[Gemini 3.8 Flash](https://artificialanalysis.ai/models/releases/gemini-3-8-flash)。
+出典: [評価方法](https://artificialanalysis.ai/methodology/intelligence-benchmarking)。リリースページ: [GPT-6 Luna](https://artificialanalysis.ai/models/releases/gpt-6-luna)、[GPT-6.1 Terra](https://artificialanalysis.ai/models/releases/gpt-6-1-terra)、[GPT-6.2 Sol](https://artificialanalysis.ai/models/gpt-6-2-sol)、[GPT-6.2 Astra](https://artificialanalysis.ai/models/gpt-6-2-astra)、[Claude Haiku 5.5](https://artificialanalysis.ai/models/releases/claude-haiku-5-5)、[Claude Sonnet 5.5](https://artificialanalysis.ai/models/releases/claude-sonnet-5-5)、[Claude Fable 5.2](https://artificialanalysis.ai/models/claude-fable-5-2)、[Claude Opus 5.5](https://artificialanalysis.ai/models/releases/claude-opus-5-5)、[Gemini 4 Hydrogen](https://artificialanalysis.ai/models/releases/gemini-4-hydrogen)、[Gemini 4 Argon](https://artificialanalysis.ai/models/releases/gemini-4-argon)、[Gemini 4 Carbon](https://artificialanalysis.ai/models/releases/gemini-4-carbon)、[Gemini 4 Neon](https://artificialanalysis.ai/models/releases/gemini-4-neon)。
