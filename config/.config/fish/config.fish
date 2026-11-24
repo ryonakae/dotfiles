@@ -3,6 +3,7 @@ set -gx ANDROID_HOME "$HOME/Library/Android/sdk"
 set -gx JAVA_HOME "/Applications/Android Studio.app/Contents/jbr/Contents/Home"
 set -gx DISABLE_AUTOUPDATER 1
 set -gx AGENT_BROWSER_PROFILE "$HOME/.config/agent-browser/profile"
+set -gx T3CODE_TELEMETRY_ENABLED false
 
 set -l mise_data_dir "$HOME/.local/share/mise"
 if set -q MISE_DATA_DIR; and test -n "$MISE_DATA_DIR"
