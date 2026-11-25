@@ -62,7 +62,10 @@
         "gpt-oss-120b-medium",
         "gemini-3.8-flash",
         "claude-opus-5-5",
-        "claude-sonnet-5-5"
+        "claude-sonnet-5-5",
+        "gemini-pro-orchestrator-neon",
+        "gemini-pro-orchestrator",
+        "gemini-pro-orchestrator-argon"
       ],
       "modelOrder": []
     },
@@ -155,7 +158,8 @@
         "opencode/gpt-6.2-sol",
         "opencode/nemotron-3.5-lightning-free",
         "opencode/nemotron-3.5-super-vl-free",
-        "opencode/tidepool-alpha-free"
+        "opencode/tidepool-alpha-free",
+        "opencode/kimi-k3.1-pro"
       ],
       "modelOrder": [
         "opencode/deepseek-v4.1-flash",
