@@ -43,7 +43,7 @@ dotfiles 管理の MCP 定義 `~/.claude/mcp.json` を読ませるため、T3 Co
 
 本体は Homebrew、グローバル設定は [config/.config/opencode/opencode.json](../config/.config/opencode/opencode.json) で管理する。`default` 構成で `~/.config/opencode/opencode.json` に配置する。既存リンクの本文変更は再配置不要。
 
-OpenCode Zen の DeepSeek V4.1 Flash 1017（`opencode/deepseek-v4.1-flash`）を既定にする。`opencode auth login` で接続する。T3 Code のモデル一覧では、Zen と Nous Portal の両方で DeepSeek V4.1 Flash 1017 と GLM 5.3 Flash を選択できる。Gemini は Antigravity で使うため、Nous Portal には定義せず、Zen の Gemini は T3 Code 側で非表示にする。Zen のモデル表示は `providerModelPreferences.opencode.hiddenModels` で調整する。
+OpenCode Zen の DeepSeek V4.1 Flash 1017（`opencode/deepseek-v4.1-flash`）を既定にする。`opencode auth login` で接続する。T3 Code のモデル一覧では、Zen と Nous Portal の両方で DeepSeek V4.1 Flash 1017 と GLM 5.3 Flash を選択できる。Gemini は Google provider（Google AI Pro の GDP クレジットを充当する Gemini API キー）の Gemini 4 Neon / Hydrogen だけを表示する。Antigravity はサブスク枠で使い、Nous Portal には Gemini を定義せず、Zen の Gemini は T3 Code 側で非表示にする。キーは各マシンで `opencode auth login google` を実行して登録する。モデル表示は `providerModelPreferences.opencode.hiddenModels` で調整する。
 
 ```fish
 opencode models
