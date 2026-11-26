@@ -112,6 +112,18 @@ review の base commit: `f89cd70`
 - [x] **use-t3-code**: `config/.agents/skills/use-t3-code/SKILL.md` に作業場所の判断の節とリンクを足し、description と `agents/openai.yaml` を合わせ、`references/worktree.md` を削除する。`references/thread-lifecycle.md` の子ブランチの取り込み判定を PR の基点に直す。
   - `references/thread-lifecycle.md` の worktree の項は T3 の `storageCleanup` に任せる旨のまま残す。
 
+### レビューによる修正
+
+独立レビュー（対象 `f89cd70..678be95`）の blocking/high 3件を採用し、あわせて記述の食い違いを直した。
+
+- `t3-merge` 手順6: ブランチは `thread-lifecycle.md` ではなく手順5の条件で扱い、手順5で残したブランチを消さない。
+- `t3-merge` 手順2: commit は `commit-push` の commit-only、push はこの手順が同名のリモートブランチを明示して行う。拒否されたら rebase せず止める。
+- `t3-worktree` 冒頭: リポジトリ独自の手順があっても、ユーザーによる作業場所の指定を優先する。
+- `t3-merge` 手順3: 基点が分からない場合は既定ブランチを候補として確認する。
+- `t3-merge` 手順5: リモートの削除対象はマージした PR の作業ブランチだけ。ローカルは追跡先が消えたブランチを `git branch -d` で消す（過去のスレッドの作業ブランチを含む）。上の手順5の「対象は…に限る」と「次に使ったときに消える」の食い違いを、この形に揃えた。
+
+残した指摘: 新しい worktree で `implement` を始めると upstream が未設定のため、`implement` の preflight が確認で止まる。`implement` 側の扱いで、この Plan の対象外。
+
 ## Final Validation
 
 push 前に行う。実 HOME への apply と T3 の設定変更は含めない。
