@@ -2,7 +2,7 @@
 
 ## Requirements
 
-c-41 の `c41-worktree`・`c41-merge` が持つ「T3 Code で worktree を作成し、PR・マージ・片付けまで行う」フローを、どのリポジトリでも使える自作スキルにする。決定の経緯と理由は [dig log](../dig/2026-11-26-t3-worktree-merge-skills.md) にある。
+c-41 の `c41-worktree`・`c41-merge` が持つ「T3 Code で worktree を作成し、PR・マージ・片付けまで行う」フローを、どのリポジトリでも使える自作スキルにする。決定の経緯と理由は [dig log](../../dig/2026-11-26-t3-worktree-merge-skills.md) にある。
 
 - `config/.agents/skills/` に `t3-worktree`・`t3-merge` を新設し、`use-t3-code` からリンクする。
 - 作業場所の判断は `use-t3-code` 本体で行い、現在の場所に倒す。worktree を作るまでもない作業では提案しない。
@@ -132,6 +132,19 @@ review の base commit: `f89cd70`
 - 手順5: ローカルとリモートの削除対象を、マージした PR の作業ブランチとこのスレッドの子タスクのブランチに限り、PR の基点への取り込みを確かめてから消す。過去のスレッドの作業ブランチなど、対象以外のブランチは消さず、報告で削除の候補として挙げる。
 - 帰結: worktree で作業したスレッドのローカルブランチは、マージの時点では使用中で残り、自動では消えない。
 
+### Gate summary
+
+- review の対象: `f89cd70..678be95`（実装）、`678be95..03e56d1`（修正1）、`03e56d1..62dcc71`（修正2）。
+- 採用した finding と correction commit:
+  - 実装レビューの blocking/high 3件 → `03e56d1`
+  - 修正1の再レビューの未解消1件と新規2件 → ユーザーの判断で範囲を限定し `62dcc71`。再レビューで3件とも解消。
+  - 修正2の再レビューの新規1件（子タスクのリモートブランチを、取り込みの確認と削除の間に更新され得るまま消す）→ `73156e7` で、リモートの削除対象を修正1でレビュー済みの「マージした PR の作業ブランチだけ」へ戻した。レビュー済みの記述への復帰のため、追加の再レビューは行っていない。
+- 分岐の読み合わせ7場面は、実装レビューで全場面が期待どおりと確認された。
+- 未解決の blocking/high・decision required はない。
+- 残した medium/low: push の refspec を `refs/heads/` まで明示すると、同名タグがある場合の曖昧さを避けられる。
+- 対象外として残した事項: 新しい worktree で `implement` を始めると、upstream が未設定のため `implement` の preflight が確認で止まる。
+- 履歴の注記: `references/worktree.md` の削除は、スキルの commit ではなく `bfd7ecf`（dig log と Plan の commit）に入っている。
+
 ## Final Validation
 
 push 前に行う。実 HOME への apply と T3 の設定変更は含めない。
@@ -139,8 +152,8 @@ push 前に行う。実 HOME への apply と T3 の設定変更は含めない�
 - [x] スキルの形式: 2つの `SKILL.md` の frontmatter の `name` がディレクトリ名と一致し、description が起動条件を述べている → 一致する。
 - [x] リンクと参照: `config/.agents/skills/` の `SKILL.md` と `references/` の相対リンクがすべて実在のファイル・見出しを指し、削除した `references/worktree.md` へのリンクが現行のスキル・文書に残っていない（`rg -n 'references/worktree.md' config .agents README.md CLAUDE.md` → 該当なし。`docs/dig/`・`docs/plans/` の記録は対象外）。
 - [x] ツールとの整合: スキルに書いたツール名と引数名（`t3_worktree_status`、`t3_worktree_handoff`、`t3_project_read`、`t3_project_update`）を ToolSearch で得た定義と照合する → 矛盾がない。
-- [ ] 決定との整合: dig log の決定事項を1件ずつスキルの記述と照合する → 抜け・矛盾がない。iOS・TestFlight・Simulator・c-41 固有の語が `t3-worktree`・`t3-merge` にない。
-- [ ] 分岐の読み合わせ: 次の場面でスキルの記述をたどり、期待する操作と停止点になることを確かめる。恒久テストは作らない。
+- [x] 決定との整合: dig log の決定事項を1件ずつスキルの記述と照合する → 抜け・矛盾がない。iOS・TestFlight・Simulator・c-41 固有の語が `t3-worktree`・`t3-merge` にない。
+- [x] 分岐の読み合わせ: 次の場面でスキルの記述をたどり、期待する操作と停止点になることを確かめる。恒久テストは作らない。
   - commit だけの依頼を既定ブランチで受けた → `t3-merge` を使わず、ブランチを切らない。
   - 既存 PR のマージだけの依頼 → commit・push を行わず 4 から始まる。
   - `defaultThreadEnvMode` が `local` で、他の作業の未コミット変更がある → 提案せず、変更を混ぜない。
@@ -156,7 +169,7 @@ push 前に行う。実 HOME への apply と T3 の設定変更は含めない�
 実機への反映は Plan の承認に含めない。push の後、PC ごとに内容を示して承認を得る。
 
 - **この PC**: apply して4件のリンクが正本を指すことを確認する。`t3_project_update` で dotfiles プロジェクトの `defaultThreadEnvMode` を `local` にし、`t3_project_read` で確かめる。
-- **別 PC**: [Linked environment 手順](../../config/.agents/skills/use-t3-code/references/linked-environments.md)で pull・apply し、同じ2点を確認・設定する。接続不能や未コミット変更との衝突があれば止めて報告する。
+- **別 PC**: [Linked environment 手順](../../../config/.agents/skills/use-t3-code/references/linked-environments.md)で pull・apply し、同じ2点を確認・設定する。接続不能や未コミット変更との衝突があれば止めて報告する。
 
 ## c-41 側の後続作業（この Plan の対象外）
 
