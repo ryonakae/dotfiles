@@ -1,0 +1,4 @@
+interface:
+  display_name: "t3-worktree"
+  short_description: "Propose and hand off the thread to a new T3 Code worktree"
+  default_prompt: "Use $t3-worktree to decide and set up a worktree for this task."

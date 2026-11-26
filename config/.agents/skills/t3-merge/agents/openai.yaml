@@ -1,0 +1,7 @@
+interface:
+  display_name: "t3-merge"
+  short_description: "Open a PR, merge it, and clean up branches and child threads"
+  default_prompt: "Use $t3-merge to open a PR for this work and merge it."
+
+policy:
+  allow_implicit_invocation: false

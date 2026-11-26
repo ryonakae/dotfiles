@@ -105,18 +105,20 @@ worktree を提案すると判断した後の手順だけを持つ。判断表�
 
 ## Tasks
 
-- [ ] **t3-worktree**: `config/.agents/skills/t3-worktree/SKILL.md` と `agents/openai.yaml` を作成する。
-- [ ] **t3-merge**: `config/.agents/skills/t3-merge/SKILL.md` と `agents/openai.yaml` を作成する。
-- [ ] **use-t3-code**: `config/.agents/skills/use-t3-code/SKILL.md` に作業場所の判断の節とリンクを足し、description と `agents/openai.yaml` を合わせ、`references/worktree.md` を削除する。`references/thread-lifecycle.md` の子ブランチの取り込み判定を PR の基点に直す。
+review の base commit: `f89cd70`
+
+- [x] **t3-worktree**: `config/.agents/skills/t3-worktree/SKILL.md` と `agents/openai.yaml` を作成する。
+- [x] **t3-merge**: `config/.agents/skills/t3-merge/SKILL.md` と `agents/openai.yaml` を作成する。
+- [x] **use-t3-code**: `config/.agents/skills/use-t3-code/SKILL.md` に作業場所の判断の節とリンクを足し、description と `agents/openai.yaml` を合わせ、`references/worktree.md` を削除する。`references/thread-lifecycle.md` の子ブランチの取り込み判定を PR の基点に直す。
   - `references/thread-lifecycle.md` の worktree の項は T3 の `storageCleanup` に任せる旨のまま残す。
 
 ## Final Validation
 
 push 前に行う。実 HOME への apply と T3 の設定変更は含めない。
 
-- [ ] スキルの形式: 2つの `SKILL.md` の frontmatter の `name` がディレクトリ名と一致し、description が起動条件を述べている → 一致する。
-- [ ] リンクと参照: `config/.agents/skills/` の `SKILL.md` と `references/` の相対リンクがすべて実在のファイル・見出しを指し、削除した `references/worktree.md` へのリンクが現行のスキル・文書に残っていない（`rg -n 'references/worktree.md' config .agents README.md CLAUDE.md` → 該当なし。`docs/dig/`・`docs/plans/` の記録は対象外）。
-- [ ] ツールとの整合: スキルに書いたツール名と引数名（`t3_worktree_status`、`t3_worktree_handoff`、`t3_project_read`、`t3_project_update`）を ToolSearch で得た定義と照合する → 矛盾がない。
+- [x] スキルの形式: 2つの `SKILL.md` の frontmatter の `name` がディレクトリ名と一致し、description が起動条件を述べている → 一致する。
+- [x] リンクと参照: `config/.agents/skills/` の `SKILL.md` と `references/` の相対リンクがすべて実在のファイル・見出しを指し、削除した `references/worktree.md` へのリンクが現行のスキル・文書に残っていない（`rg -n 'references/worktree.md' config .agents README.md CLAUDE.md` → 該当なし。`docs/dig/`・`docs/plans/` の記録は対象外）。
+- [x] ツールとの整合: スキルに書いたツール名と引数名（`t3_worktree_status`、`t3_worktree_handoff`、`t3_project_read`、`t3_project_update`）を ToolSearch で得た定義と照合する → 矛盾がない。
 - [ ] 決定との整合: dig log の決定事項を1件ずつスキルの記述と照合する → 抜け・矛盾がない。iOS・TestFlight・Simulator・c-41 固有の語が `t3-worktree`・`t3-merge` にない。
 - [ ] 分岐の読み合わせ: 次の場面でスキルの記述をたどり、期待する操作と停止点になることを確かめる。恒久テストは作らない。
   - commit だけの依頼を既定ブランチで受けた → `t3-merge` を使わず、ブランチを切らない。
@@ -126,8 +128,8 @@ push 前に行う。実 HOME への apply と T3 の設定変更は含めない�
   - 準備スクリプトが失敗した → 実装を始めず報告する。
   - チェックの待ちと失敗が併存する → マージも watch もせず報告して止まる。
   - 別 fork に同名ブランチの PR がある → 再利用しない。
-- [ ] 差分: `git diff --check` → 出力なし。
-- [ ] 配置予定: `mise -C ~/dotfiles -E <この PC の構成> dot apply --dry-run` → `~/.agents/skills/` と `~/.claude/skills/` の `t3-worktree`・`t3-merge` の4件のリンク作成だけ。
+- [x] 差分: `git diff --check` → 出力なし。
+- [x] 配置予定: `mise -C ~/dotfiles -E <この PC の構成> dot apply --dry-run` → `~/.agents/skills/` と `~/.claude/skills/` の `t3-worktree`・`t3-merge` の4件のリンク作成だけ。`default,work`・`default,private` の両方で4件だけを確認。
 
 ## push 後の作業（Plan の完了後、それぞれ承認を得て行う）
 

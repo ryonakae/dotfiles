@@ -5,7 +5,8 @@ description: >-
   質問への回答、読み取り調査、設計・計画、実装、レビュー、文章作成を含み、
   作業規模やサブエージェントへの委譲の予定にかかわらず読む。
   サブエージェントへの積極的な委譲とモデル・思考レベルの選定、
-  Linked environment による別マシンでの作業・同期、worktree、iOS Simulator、スレッド整理の運用を扱う。
+  作業場所（現在の場所か worktree か）の判断、
+  Linked environment による別マシンでの作業・同期、iOS Simulator、スレッド整理の運用を扱う。
 ---
 
 # Use T3 Code
@@ -22,6 +23,30 @@ description: >-
 - Plan・設計案をユーザーへ出す前: 独立レビュー
 - 実装・検証を終え、完了を報告する前: 差分の独立レビュー（数行の自明な変更は除く）
 - 読者向けの文章（README、Web ページのコピー、アプリの UI テキストなど）を作成・推敲するとき
+
+## 作業場所を判断する
+
+依頼を受けたら、編集より先に作業場所を決める。大半の作業は現在の場所で進め、worktree を作るまでもない作業で worktree を提案しない。最初は読取調査でも、変更を進めることになった時点で判断し直す。
+
+| 依頼 | 作業場所 |
+|---|---|
+| 質問への回答、読取調査、レビュー、計測 | 現在の場所。質問への好意的な反応を実装依頼と解釈しない |
+| 誤字・リンク・設定値など、内容と影響が明確で局所的な修正 | 現在の場所 |
+| 判断に迷う中間の作業（1ファイルで完結する不具合修正、依存1件の更新、小さな UI 調整など） | 現在の場所 |
+| 同じ依頼の続き、レビュー指摘の修正 | その依頼の場所を継続する |
+| dig・Plan に進む変更、複数の commit に分かれる規模の変更（機能追加、複数箇所にまたがる修正、整理、性能改善）、PR でのレビューや確認が要る変更 | [t3-worktree](../t3-worktree/SKILL.md) を読み、新しい worktree を提案する |
+
+現在の場所に他の作業の未コミット変更がある場合と、他のスレッドが同じ checkout で作業中の場合は、規模にかかわらず t3-worktree を読む。
+
+判断の材料が重なったときは、次の順で優先する。
+
+1. ユーザーによる作業場所の指定（「今のブランチで」「新しい worktree で」など）
+2. リポジトリ独自の手順（スキル、AGENTS.md の記述など）。あれば、この節と t3-worktree ではなくそちらに従う
+3. T3 のプロジェクト設定（t3-worktree の手順で確認する）
+4. 上の、他の作業と重なる場合の扱い
+5. 表
+
+worktree は、理由・基点・ブランチ名を示してユーザーの承認を得てから作る。
 
 ## サブエージェントの既定モデル・思考レベル
 
@@ -56,5 +81,6 @@ T3 Code が注入する指示に、この環境での判断基準と運用を補
 | サブエージェントへの委譲、読者向けの文章の作成・推敲、独立レビューの依頼、子タスクの結果確認 | [references/delegation.md](references/delegation.md)。モデル × 思考レベルを比較するときは [references/model-benchmarks.md](references/model-benchmarks.md) も読む |
 | Linked environment、別マシンでの調査・操作・同期、別マシンのサブエージェントへの委譲 | [references/linked-environments.md](references/linked-environments.md) |
 | iOS Simulator の操作、UI 動作検証、`.ad` テスト | [references/ios-simulator.md](references/ios-simulator.md) |
-| worktree の作成・移動・削除 | [references/worktree.md](references/worktree.md) |
+| worktree の提案・作成・準備の初期整備、worktree 操作に使うツール | [t3-worktree](../t3-worktree/SKILL.md) スキル |
+| PR の作成・マージ、マージ後のブランチと子スレッドの片付け（頼まれたときだけ） | [t3-merge](../t3-merge/SKILL.md) スキル |
 | スレッドの settle・unsettle・archive・unarchive、整理・片付け | [references/thread-lifecycle.md](references/thread-lifecycle.md) |

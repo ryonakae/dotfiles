@@ -1,4 +1,4 @@
 interface:
   display_name: "use-t3-code"
-  short_description: "Guide delegation, linked environments, worktrees, and devices"
+  short_description: "Guide delegation, workspace choice, linked environments, and devices"
   default_prompt: "Use $use-t3-code to guide this task in the T3 Code environment."
