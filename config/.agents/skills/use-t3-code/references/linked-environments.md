@@ -16,7 +16,7 @@ T3 のツールで別マシンを操作するときは `environmentId` を指定
 
 別マシンでシェル・ファイル作業をする場合は、`delegate_task` の `target.environmentId` に接続先を指定する。プロジェクトを指定するなら `target.projectId` も接続先の ID にする。ローカルのシェル実行は、接続先の名前や ID を書くだけでは遠隔実行にならない。
 
-サブエージェントへの委譲に使う provider・モデル・思考レベルは[既存の選定方針](../SKILL.md#サブエージェントの既定モデル思考レベル)と `orchestrator_capabilities` に従う。通常の委譲のために `t3_thread_launch` などで新しいトップレベルスレッドを作らない。
+サブエージェントへの委譲に使う provider・モデル・思考レベルは[既存の選定方針](../SKILL.md#サブエージェントのモデル思考レベル)と `orchestrator_capabilities` に従う。通常の委譲のために `t3_thread_launch` などで新しいトップレベルスレッドを作らない。
 
 ## サブエージェントへ渡す内容
 

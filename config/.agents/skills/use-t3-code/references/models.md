@@ -8,10 +8,13 @@
 
 | `providerInstanceId` | `model` | 系統 | ティア | effort option | 既定 / 引き上げ / 打ち止め | 根拠（決定記録） | 確認日 |
 |---|---|---|---|---|---|---|---|
-| `codex` | `gpt-6.1-terra` | GPT | 軽量 | `reasoningEffort` | `low` / `medium` / `—` | 軽量下限を満たし最速（Terminal-Bench 15・FrontierCode 24・GDP.pdf 26、48 秒/task） | 2026-10-31 |
+| `codex` | `gpt-6-luna` | GPT | 軽量 | `reasoningEffort` | `low` / `medium` / `—` | 超軽量・最速（26 秒/task、価格比 0.03）。単純な抽出・分類向け | 2026-10-31 |
+| `codex` | `gpt-6.1-terra` | GPT | 軽量 | `reasoningEffort` | `low` / `medium` / `—` | 軽量下限を満たし高速（Terminal-Bench 15・FrontierCode 24・GDP.pdf 26、48 秒/task） | 2026-10-31 |
 | `codex` | `gpt-6.2-sol` | GPT | 標準 | `reasoningEffort` | `medium` / `high` / `—` | Codex 評価で low→medium が +8 点、medium→high は最大 +5 点（FrontierCode 36・Terminal-Bench 49） | 2026-11-18 |
 | `codex` | `gpt-6.2-astra` | GPT | 最上位 | `reasoningEffort` | `high` / `xhigh` / `max` | Codex 評価で medium→high が Terminal-Bench +6 点（FrontierCode 42・Terminal-Bench 60） | 2026-11-18 |
+| `claudeAgent` | `claude-haiku-5-5` | Claude | 軽量 | `effort` | `low` / `medium` / `—` | Claude 系の軽量高速候補（Terminal-Bench 13・GDP.pdf 11、115 秒/task、価格比 0.02） | 2026-10-31 |
 | `claudeAgent` | `claude-sonnet-5-5` | Claude | 標準 | `effort` | `high` / `xhigh` / `—` | GPT 系親に対する別系統の標準候補（Terminal-Bench 44・FrontierCode 26） | 2026-10-31 |
+| `claudeAgent` | `claude-opus-5-5` | Claude | 最上位 | `effort` | `high` / `xhigh` / `max` | Claude 系の最上位候補（価格比 0.64、Terminal-Bench 57・FrontierCode 36） | 2026-10-31 |
 | `claudeAgent` | `claude-fable-5-2` | Claude | 最上位 | `effort` | `high` / `—` / `high` | Claude Code 評価で medium→high が FrontierCode +13 点（49・Terminal-Bench 64）。xhigh は high と同点 | 2026-11-18 |
 | `antigravity` | `gemini-4-neon` | Gemini | 標準 | `thought_level` | `medium` / `high` / `xhigh` | 親・文章スロットの標準主力（Terminal-Bench 54.5・FrontierCode 36.9・GDP.pdf 32.8） | 2026-11-25 |
 | `antigravity` | `gemini-4-hydrogen` | Gemini | 軽量 | `thought_level` | `low` / `medium` / `—` | 文章スロットの軽量候補（GDP.pdf 28.2、85 秒/task） | 2026-11-25 |
@@ -63,7 +66,7 @@
 ### 更新契機
 
 - ユーザーからモデル表の更新を依頼されたとき。
-- `orchestrator_capabilities` の結果で、表に記載した `model` ID が利用不能になった、または表にない新モデルが出現したとき（その委譲では無断切替せず親が対応または確認し、更新を提案する）。
+- `orchestrator_capabilities` の結果で、表に記載した `model` ID が利用不能（消失）になったとき（無断切替せず更新を提案する）。
 
 ### 比較ルールと参照元
 
@@ -90,4 +93,4 @@
   - 軽量: `0.12 未満`（ぶれ幅を超える下限を満たす候補から秒/task が最小のものを採用）
   - 標準: `0.12 以上 0.3 未満`
   - 最上位: `0.3 以上`
-- **effort 選定**: 開始レベル（軽量＝`low`、標準＝`medium`、最上位＝`high`）から 1 段上でぶれ幅を超える伸びがあれば 1 段上を既定にし、伸びが頭打ちになる水準を「打ち止め」列へ記録する。
+- **effort 選定**: 開始レベル（軽量＝`low`、標準＝`medium`、最上位＝`high`）から 1 段上でぶれ幅を超える伸びがあれば 1 段上を既定にする。「引き上げ」列は不足時の再試行先を記載し、伸びが頭打ちになる水準を「打ち止め」列へ記録する。

@@ -46,7 +46,7 @@
   2. `references/models.md` のモデル表から該当ティア・用途（および使用量枠分散・別系統）に合うモデルと開始 effort を選ぶ。親モデル固定の制限は設けない。
   3. 親自身のティアは `models.md` で確認し、親がすでに最上位ティアなら上方委譲は行わない。
   4. 選定の結果、親と同一プロバイダ・同一モデル・同一オプションになった場合のみ内蔵サブエージェントを使用する。それ以外は `delegate_task` で明示指定する。
-  5. `models.md` に記載のモデル ID が `orchestrator_capabilities` で利用不能、または表にない新モデルが出現した場合は、無断で別モデルへ切り替えず親が実施（またはユーザーへ確認）し、`models.md` の更新を提案する。
+  5. `models.md` に記載のモデル ID が `orchestrator_capabilities` で利用不能（消失）な場合は、無断で別モデルへ切り替えず `models.md` の更新を提案する。必須の独立レビュー（`implement` 等）は親が代行せず、利用可能な別モデルまたは親と同一モデルの独立コンテクストへ委譲するかユーザーへ確認する。
   6. 結果が不足する場合の引き上げ（手順 5）は維持する。
 - **読者向け文章の優先方針**: 具体モデル名を外し「`models.md` の文章スロットを使用する。親が同系統なら直接執筆する」へ一般化する。Antigravity の `runtimeMode` 制約（`approval-required` 既定・文言案返却のみ・反映は親が担当）はプロバイダ固有制約として維持する。
 - **移動**: 日付付きのモデル ID 対応表・JSON 指定例（104–133 行）、および作業種別と指標の対応・隣接 effort 比較などのベンチマーク選定手順（61–69 行、84–99 行）は実行手順から削除し、`models.md` のモデル表・更新手順へ移動する。
@@ -54,7 +54,7 @@
 ### 4. `references/models.md`（可変層・数十行の 3 部構成）
 
 1. **モデル表（実行時参照）**:
-   - 現行の採用モデルと親になり得る代表モデルを 6〜8 行で掲載する（例: `gpt-6.1-terra`, `gpt-6.2-sol`, `gpt-6.2-astra`, `claude-sonnet-5-5`, `claude-fable-5-2`, `gemini-4-neon`, `gemini-4-hydrogen`）。
+   - 現行の採用モデルと親になり得るモデルを掲載する（`gpt-6-luna`, `gpt-6.1-terra`, `gpt-6.2-sol`, `gpt-6.2-astra`, `claude-haiku-5-5`, `claude-sonnet-5-5`, `claude-opus-5-5`, `claude-fable-5-2`, `gemini-4-neon`, `gemini-4-hydrogen`）。`gemini-4-carbon`, `gemini-4-argon` は除外。
    - 列: `providerInstanceId`、`model`、系統、ティア（軽量／標準／最上位）、effort の option 名、effort（既定／引き上げ先／打ち止め）、根拠 1 行（決定記録）、確認日。
    - 最小限の `delegate_task` 指定例（JSON）と、速度系 option・根拠のない思考レベルを無断指定しない注意をここへ移す。
 2. **文章スロット**:
@@ -83,7 +83,7 @@
 
 ## Final Validation
 
-- [x] 旧ファイル参照の不在確認: `rg --hidden -n "model-benchmarks" --glob '!docs/plans/archived/**' --glob '!.git/**' .` → 0 件（exit code 1）。
+- [x] 旧ファイル参照の不在確認: `rg --hidden -n "model-benchmarks" --glob '!docs/plans/**' --glob '!.git/**' .` → 0 件（exit code 1）。
 - [x] 不変層からの具体モデル名排除確認: `rg -n "Terra|Sol|Astra|Luna|Haiku|Sonnet|Opus|Fable|Neon|Hydrogen|Carbon|Argon|gpt-6|claude-|gemini-4" config/.agents/skills/use-t3-code/SKILL.md config/.agents/skills/use-t3-code/references/delegation.md` → 0 件（exit code 1）。
 - [x] `models.md` の ID・option 整合確認: 記載した `providerInstanceId`・`model`・option 名が `orchestrator_capabilities` の現行出力と一致することを差分レビューで確認する。
 - [x] リンク・整合・書式確認: `SKILL.md`・`delegation.md`・`models.md` 間の相対リンク・アンカーがすべて実在すること、`plan/SKILL.md`・`implement/SKILL.md` との役割分担に矛盾がないこと、`git diff --check` が exit code 0 であることを確認する。
