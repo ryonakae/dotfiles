@@ -89,4 +89,12 @@
 - [x] リンク・整合・書式確認: `SKILL.md`・`delegation.md`・`models.md` 間の相対リンク・アンカーがすべて実在すること、`plan/SKILL.md`・`implement/SKILL.md` との役割分担に矛盾がないこと、`git diff --check` が exit code 0 であることを確認する。
 - [x] HOME 側の反映確認: `ls ~/.agents/skills/use-t3-code/references/` で `models.md` が参照でき `model-benchmarks.md` が消えていることを確認する（ディレクトリ単位の直接リンクのため即時反映）。
 
+## Gate Summary
+
+- Review 対象 commit: `d20dbbc`（base: `7069bc02`）
+- 採用した finding と correction commit:
+  - `a143e1c`: 発動条件と難度 4 問の優先関係整理、必須独立レビューの親代行禁止、失効検知を表記載 ID の消失（利用不能）に限定、`gpt-6-luna` / `claude-haiku-5-5` / `claude-opus-5-5` の追加、`linked-environments.md:19` のアンカー修復。
+  - `96fee1b`: 必須独立レビュー失効時の無断切替禁止とユーザー確認手順の一本化、Plan の更新契機整合。
+- 独立レビュー最終判定: `pass`（未解決の `blocking/high` / `decision required` なし）。
+
 > 各タスクは対応する検証が成功してから完了にする。実装中の軽微な差分と検証結果は該当箇所へ反映し、要件、対象外、公開契約の変更はユーザーへ確認する。最終確認では有効な検証結果を再利用し、計画と実際の変更が一致することを確認する。必要な検証と実装側の必須レビューが通ったら、計画を同名のまま `docs/plans/archived/` へ移す。
